@@ -10,15 +10,8 @@
 
 (defpackage :runes
   (:use :cl)
-  (:export #:defsubst
+  (:export #:definline
 
-           ;; util.lisp :
-           #:compose
-           #:curry
-           #:rcurry
-           #:until
-           #:while
-    
            ;; runes.lisp
            #:rune
            #:rod
@@ -47,4 +40,29 @@
            #:rod-string
            #:string-rod
            #:rod-subseq
-           #:rod<))
+           #:rod<
+
+           ;; xstream.lisp
+           #:make-xstream
+           #:make-rod-xstream
+           #:close-xstream
+           #:xstream-p
+           #:read-rune
+           #:peek-rune
+           #:fread-rune
+           #:fpeek-rune
+           #:consume-rune
+           #:unread-rune
+           #:xstream-position
+           #:xstream-line-number
+           #:xstream-column-number
+           #:xstream-plist
+           #:xstream-encoding
+           #:set-to-full-speed
+           #:xstream-name))
+
+(defpackage :encoding
+  (:use :cl :runes)
+  (:export
+   #:find-encoding
+   #:decode-sequence))

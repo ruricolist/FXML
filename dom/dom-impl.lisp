@@ -1,3 +1,12 @@
+;;;; dom-impl.lisp -- Implementation of DOM 1 Core
+;;;;
+;;;; This file is part of the CXML parser, released under (L)LGPL.
+;;;; See file COPYING for details.
+;;;;
+;;;; Author: Gilbert Baumann <unk6@rz.uni-karlsruhe.de>
+;;;; Author: David Lichteblau <david@lichteblau.com>
+;;;; Author: knowledgeTools Int. GmbH
+
 (defpackage :dom-impl
   (:use :cl :runes))
 
@@ -26,7 +35,8 @@
 
 (defclass document (node)
   ((doc-type    :initarg :doc-type     :reader dom:doctype)
-   (entities    :initform nil          :reader entities)))
+   (dtd         :initform nil          :reader dtd)
+   (entity-resolver :initform nil)))
 
 (defclass document-fragment (node)
   ())
@@ -91,6 +101,9 @@
    (read-only-p   :initform nil           :reader read-only-p)
    (element-type  :initarg :element-type)))
 
+(defclass attribute-node-map (named-node-map)
+  ((element       :initarg :element)))
+
 
 ;;; Implementation
 
@@ -115,18 +128,19 @@
 (defun move (from to from-start to-start length)
   ;; like (setf (subseq to to-start (+ to-start length))
   ;;            (subseq from from-start (+ from-start length)))
-  ;; but without creating the garbage
+  ;; but without creating the garbage.
+  ;; Also, this is using AREF not ELT so that fill-pointers are ignored.
   (if (< to-start from-start)
       (loop
           repeat length
           for i from from-start
           for j from to-start
-          do (setf (elt to j) (elt from i)))
+          do (setf (aref to j) (aref from i)))
       (loop
           repeat length
-          for i from (+ from-start length -1) by -1
-          for j from (+ to-start length -1) by -1
-          do (setf (elt to j) (elt from i)))))
+          for i downfrom (+ from-start length -1)
+          for j downfrom (+ to-start length -1)
+          do (setf (aref to j) (aref from i)))))
 
 (defun adjust-vector-exponentially (vector new-dimension set-fill-pointer-p)
   (let ((d (array-dimension vector 0)))
@@ -175,14 +189,18 @@
 
 (defmethod dom:create-element ((document document) tag-name)
   (setf tag-name (rod tag-name))
-  (unless (xml::valid-name-p tag-name)
+  (unless (cxml::valid-name-p tag-name)
     (dom-error :INVALID_CHARACTER_ERR "not a name: ~A" (rod-string tag-name)))
-  (make-instance 'element 
-    :tag-name tag-name
-    :owner document
-    :attributes (make-instance 'named-node-map
-                  :element-type :attribute
+  (let ((result (make-instance 'element 
+                  :tag-name tag-name
                   :owner document)))
+    (setf (slot-value result 'attributes)
+          (make-instance 'attribute-node-map
+            :element-type :attribute
+            :owner document
+            :element result))
+    (add-default-attributes result)
+    result))
 
 (defmethod dom:create-document-fragment ((document document))
   (make-instance 'document-fragment
@@ -209,7 +227,7 @@
 (defmethod dom:create-processing-instruction ((document document) target data)
   (setf target (rod target))
   (setf data (rod data))
-  (unless (xml::valid-name-p target)
+  (unless (cxml::valid-name-p target)
     (dom-error :INVALID_CHARACTER_ERR "not a name: ~A" (rod-string target)))
   (make-instance 'processing-instruction
     :owner document
@@ -218,7 +236,7 @@
 
 (defmethod dom:create-attribute ((document document) name)
   (setf name (rod name))
-  (unless (xml::valid-name-p name)
+  (unless (cxml::valid-name-p name)
     (dom-error :INVALID_CHARACTER_ERR "not a name: ~A" (rod-string name)))
   (make-instance 'attribute
     :name name
@@ -227,7 +245,7 @@
 
 (defmethod dom:create-entity-reference ((document document) name)
   (setf name (rod name))
-  (unless (xml::valid-name-p name)
+  (unless (cxml::valid-name-p name)
     (dom-error :INVALID_CHARACTER_ERR "not a name: ~A" (rod-string name)))
   (make-instance 'entity-reference
     :name name
@@ -590,7 +608,7 @@
   (assert-writeable node)
   (setq arg (rod arg))
   (with-slots (value) node
-    (setf value (concatenate (type-of value) value arg)))
+    (setf value (concatenate 'rod value arg)))
   (values))
 
 (defmethod dom:delete-data ((node character-data) offset count)
@@ -680,7 +698,7 @@
     (with-slots (children owner) node
       ;; remove children, add new TEXT-NODE child
       ;; (alas, we must not reuse an old TEXT-NODE)
-      (while (plusp (length children))
+      (cxml::while (plusp (length children))
         (dom:remove-child node (dom:last-child node)))
       (dom:append-child node (dom:create-text-node owner rod))))
   new-value)
@@ -756,7 +774,37 @@
     (unless (find old-attr items)
       (dom-error :NOT_FOUND_ERR "Attribute not found."))
     (setf items (remove old-attr items))
+    (maybe-add-default-attribute element (dom:name old-attr))
     old-attr))
+
+;; eek, defaulting:
+
+(defun maybe-add-default-attribute (element name)
+  (let* ((dtd (dtd (slot-value element 'owner)))
+         (e (cxml::find-element (dom:tag-name element) dtd))
+         (a (when e (cxml::find-attribute e name))))
+    (when (and a (listp (cxml::attdef-default a)))
+      (add-default-attribute element a))))
+
+(defun add-default-attributes (element)
+  (let* ((dtd (dtd (slot-value element 'owner)))
+         (e (cxml::find-element (dom:tag-name element) dtd)))
+    (when e
+      (dolist (a (cxml::elmdef-attributes e))
+        (when (and a (listp (cxml::attdef-default a)))
+          (add-default-attribute element a))))))
+
+(defun add-default-attribute (element adef)
+  (let* ((value (second (cxml::attdef-default adef)))
+         (owner (slot-value element 'owner))
+         (anode (dom:create-attribute owner (cxml::attdef-name adef)))
+         (text (dom:create-text-node owner value)))
+    (setf (slot-value anode 'dom-impl::specified-p) nil)
+    (dom:append-child anode text)
+    (push anode (slot-value (dom:attributes element) 'items))))
+
+(defmethod dom:remove-named-item :after ((self attribute-node-map) name)
+  (maybe-add-default-attribute (slot-value self 'element) name))
 
 (defmethod dom:get-elements-by-tag-name ((element element) name)
   (assert-writeable element)
@@ -771,7 +819,7 @@
                    (i 0)
                    (previous nil))
                ;; careful here, we're modifying the array we are iterating over
-               (while (< i (length children))
+               (cxml::while (< i (length children))
                  (let ((child (elt children i)))
                    (cond
                      ((not (eq (dom:node-type child) :text))
@@ -779,7 +827,7 @@
                        (incf i))
                      ((and previous (eq (dom:node-type previous) :text))
                        (setf (slot-value previous 'value)
-                             (concatenate 'vector
+                             (concatenate 'rod
                                (dom:data previous)
                                (dom:data child)))
                        (dom:remove-child n child)
@@ -816,13 +864,13 @@
 
 (defmethod initialize-instance :after ((instance entity-reference) &key)
   (let* ((owner (dom:owner-document instance))
-         (entities (or (entities owner) xml::*entities*))
-         (children (xml::resolve-entity (dom:name instance) entities)))
-    (setf (slot-value instance 'children)
-          (make-node-list
-           (map 'vector
-             (lambda (node) (dom:import-node owner node t))
-             children))))
+         (handler (dom:make-dom-builder))
+         (resolver (slot-value owner 'entity-resolver)))
+    (unless resolver
+      (dom-error :NOT_SUPPORTED_ERR "No entity resolver registered."))
+    (setf (document handler) owner)
+    (push instance (element-stack handler))
+    (funcall resolver (dom:name instance) handler))
   (labels ((walk (n)
              (setf (slot-value n 'read-only-p) t)
              (when (dom:element-p n)
@@ -925,12 +973,13 @@
   (import-node-internal 'document-fragment document node deep))
 
 (defmethod dom:import-node ((document document) (node element) deep)
-  (let* ((attributes (make-instance 'named-node-map
+  (let* ((attributes (make-instance 'attribute-node-map
                        :element-type :attribute
                        :owner document))
          (result (import-node-internal 'element document node deep
                                        :attributes attributes
                                        :tag-name (dom:tag-name node))))
+    (setf (slot-value attributes 'element) result)
     (dolist (attribute (dom:items (dom:attributes node)))
       (when (or (dom:specified attribute) *clone-not-import*)
         (dom:set-attribute result (dom:name attribute) (dom:value attribute))))
@@ -981,3 +1030,19 @@
 (defmethod dom:clone-node ((node node) deep)
   (let ((*clone-not-import* t))
     (dom:import-node (dom:owner-document node) node deep)))
+
+
+;;; Erweiterung
+
+(defun dom:create-document (&optional document-element)
+  ;; Um ein neues Dokumentenobject zu erzeugen, parsen wir einfach ein
+  ;; Dummydokument.
+  (let* ((handler (dom:make-dom-builder))
+         (cxml::*ctx* (cxml::make-context :handler handler))
+         (result
+          (progn
+            (sax:start-document handler)
+            (sax:end-document handler))))
+    (when document-element
+      (dom:append-child result (dom:import-node result document-element t)))
+    result))

@@ -65,7 +65,7 @@
 ;; XSTREAM/CLOSE os-stream
 ;;
 
-(eval-when (eval compile load)
+(eval-when (:compile-toplevel :load-toplevel :execute)
   (defparameter *fast* '(optimize (speed 3) (safety 0)))
   ;;(defparameter *fast* '(optimize (speed 2) (safety 3)))
   )
@@ -154,6 +154,10 @@
   ;; `buffer-start'.
   )
 
+(defun print-xstream (self sink depth)
+  (declare (ignore depth))
+  (format sink "#<~S ~S>" (type-of self) (xstream-name self)))
+
 (defmacro read-rune (input)
   "Read a single rune off the xstream `input'. In case of end of file :EOF 
    is returned."
@@ -213,7 +217,7 @@
       nil)
     ,input))
 
-(defsubst unread-rune (rune input)
+(definline unread-rune (rune input)
   "Unread the last recently read rune; if there wasn't such a rune, you
    deserve to lose."
   (declare (ignore rune))
@@ -376,9 +380,19 @@
 ;;; controller implementations
 
 (defmethod read-octets (sequence (stream stream) start end)
-  (#+CLISP lisp:read-byte-sequence
+  (#+CLISP ext:read-byte-sequence
    #-CLISP read-sequence
            sequence stream :start start :end end))
+
+#+cmu
+(defmethod read-octets :around (sequence (stream stream) start end)
+  ;; CMUCL <= 19a on non-SunOS accidentally triggers EFAULT in read(2)
+  ;; if SEQUENCE has been write protected by GC.  Workaround: Touch all pages
+  ;; in SEQUENCE and make sure no GC happens between that and the read(2).
+  (ext::without-gcing
+   (loop for i from start below end
+         do (setf (elt sequence i) (elt sequence i)))
+   (call-next-method)))
 
 (defmethod read-octets (sequence (stream null) start end)
   (declare (ignore sequence start end))

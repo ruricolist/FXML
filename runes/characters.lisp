@@ -24,35 +24,35 @@
 
 (in-package :runes)
 
-(deftype rune () 'base-char)
-(deftype rod () 'base-string)
-(deftype simple-rod () 'simple-string)
+(deftype rune () 'character)
+(deftype rod () '(vector character))
+(deftype simple-rod () '(simple-array character))
 
-(defsubst rune (rod index)
+(definline rune (rod index)
   (char rod index))
 
 (defun (setf rune) (new rod index)
   (setf (char rod index) new))
 
-(defsubst %rune (rod index)
+(definline %rune (rod index)
   (aref (the simple-string rod) (the fixnum index)))
 
-(defsubst (setf %rune) (new rod index)
+(definline (setf %rune) (new rod index)
   (setf (aref (the simple-string rod) (the fixnum index)) new))
 
 (defun rod-capitalize (rod)
   (string-upcase rod))
 
-(defsubst code-rune (x) (code-char x))
-(defsubst rune-code (x) (char-code x))
+(definline code-rune (x) (code-char x))
+(definline rune-code (x) (char-code x))
 
-(defsubst rune= (x y) 
+(definline rune= (x y) 
   (char= x y))
 
 (defun rune-downcase (rune)
   (char-downcase rune))
 
-(defsubst rune-upcase (rune)
+(definline rune-upcase (rune)
   (char-upcase rune))
 
 (defun rune-upper-case-letter-p (rune)
@@ -70,13 +70,13 @@
 (defun rod-upcase (rod)
   (string-upcase rod))
 
-(defsubst white-space-rune-p (char)
+(definline white-space-rune-p (char)
   (or (char= char #\tab)
       (char= char #.(code-char 10))     ;Linefeed
       (char= char #.(code-char 13))     ;Carriage Return
       (char= char #\space)))
 
-(defsubst digit-rune-p (char &optional (radix 10))
+(definline digit-rune-p (char &optional (radix 10))
   (digit-char-p char radix))
 
 (defun rod (x)
@@ -100,7 +100,7 @@
 (defun rod-equal (x y)
   (string-equal x y))
 
-(defsubst make-rod (size)
+(definline make-rod (size)
   (make-string size))
 
 (defun char-rune (char)
@@ -132,9 +132,6 @@
       always (char>= a b)))
 
 (defun rodp (object)
-  (stringp object))
-
-(defun really-rod-p (object)
   (stringp object))
 
 (defun rod-subseq (source start &optional (end (length source)))

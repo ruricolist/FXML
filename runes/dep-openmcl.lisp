@@ -5,7 +5,7 @@
 ;;;;
 ;;;; (c) copyright 1999 by Gilbert Baumann
 
-(defmacro runes::defsubst (fun args &body body)
+(defmacro runes::definline (fun args &body body)
   (if (consp fun)
       `(defun ,fun ,args
          ,@body)

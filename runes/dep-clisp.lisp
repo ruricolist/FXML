@@ -30,30 +30,30 @@
   (if (fboundp 'cl::define-compiler-macro)
       (pushnew 'define-compiler-macro *features*)))
 
-(setq lisp:*load-paths* '(#P"./"))
+;;;(setq lisp:*load-paths* '(#P"./"))
+;;;
+;;;#+DEFINE-COMPILER-MACRO
+;;;(cl:define-compiler-macro ldb (bytespec value &whole whole)
+;;;  (let (pos size)
+;;;    (cond ((and (consp bytespec)
+;;;                (= (length bytespec) 3)
+;;;                (eq (car bytespec) 'byte)
+;;;                (constantp (setq size (second bytespec)))
+;;;                (constantp (setq pos (third bytespec))))
+;;;           `(logand ,(if (eql pos 0) value `(ash ,value (- ,pos)))
+;;;                    (1- (ash 1 ,size))))
+;;;          (t
+;;;           whole))))
+;;;
+;;;#-DEFINE-COMPILER-MACRO
+;;;(progn
+;;;  (export 'runes::define-compiler-macro :runes)
+;;;  (defmacro runes::define-compiler-macro (name args &body body)
+;;;    (declare (ignore args body))
+;;;    `(progn
+;;;       ',name)))
 
-#+DEFINE-COMPILER-MACRO
-(cl:define-compiler-macro ldb (bytespec value &whole whole)
-  (let (pos size)
-    (cond ((and (consp bytespec)
-                (= (length bytespec) 3)
-                (eq (car bytespec) 'byte)
-                (constantp (setq size (second bytespec)))
-                (constantp (setq pos (third bytespec))))
-           `(logand ,(if (eql pos 0) value `(ash ,value (- ,pos)))
-                    (1- (ash 1 ,size))))
-          (t
-           whole))))
-
-#-DEFINE-COMPILER-MACRO
-(progn
-  (export 'runes::define-compiler-macro :runes)
-  (defmacro runes::define-compiler-macro (name args &body body)
-    (declare (ignore args body))
-    `(progn
-       ',name)))
-
-(defmacro runes::defsubst (name args &body body)
+(defmacro runes::definline (name args &body body)
   `(progn
      (declaim (inline ,name))
      (defun ,name ,args .,body)))

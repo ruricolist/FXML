@@ -24,7 +24,7 @@
 ;;; superseded by a newer version) or write to the Free Software
 ;;; Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-(defmacro runes::defsubst (name args &body body)
+(defmacro runes::definline (name args &body body)
   `(progn
      (declaim (inline ,name))
      (defun ,name ,args .,body)))

@@ -1,6 +1,11 @@
-;;; -*- Mode: Lisp; Syntax: Common-Lisp; Package: XML; readtable: glisp; Encoding: utf-8; -*-
+;;;; xml-name-rune-p -- character class definitions
+;;;;
+;;;; This file is part of the CXML parser, released under (L)LGPL.
+;;;; See file COPYING for details.
+;;;;
+;;;; Author: Gilbert Baumann <unk6@rz.uni-karlsruhe.de>
 
-(in-package :xml)
+(in-package :cxml)
 
 #.(funcall 
    (compile 
@@ -206,12 +211,14 @@
                      (setf (aref r i) 1))))) )
 
           `(progn
-             (DEFSUBST NAME-RUNE-P (RUNE)
+             (DEFINLINE NAME-RUNE-P (RUNE)
+               (SETF RUNE (RUNE-CODE RUNE))
                (AND (<= 0 RUNE ,*max*)
                     (LOCALLY (DECLARE (OPTIMIZE (SAFETY 0) (SPEED 3)))
                              (= 1 (SBIT ',(predicate-to-bv #'name-rune-p)
                                         (THE FIXNUM RUNE))))))
-             (DEFSUBST NAME-START-RUNE-P (RUNE)
+             (DEFINLINE NAME-START-RUNE-P (RUNE)
+               (SETF RUNE (RUNE-CODE RUNE))
                (AND (<= 0 RUNE ,*MAX*)
                     (LOCALLY (DECLARE (OPTIMIZE (SAFETY 0) (SPEED 3)))
                              (= 1 (SBIT ',(predicate-to-bv #'name-start-rune-p)

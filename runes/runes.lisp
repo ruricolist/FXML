@@ -42,26 +42,26 @@
 (deftype rod () '(array rune (*)))
 (deftype simple-rod () '(simple-array rune (*)))
 
-(defsubst rune (rod index)
+(definline rune (rod index)
   (aref rod index))
 
 (defun (setf rune) (new rod index)
   (setf (aref rod index) new))
 
-(defsubst %rune (rod index)
+(definline %rune (rod index)
   (aref (the (simple-array (unsigned-byte 16) (*)) rod) (the fixnum index)))
 
-(defsubst (setf %rune) (new rod index)
+(definline (setf %rune) (new rod index)
   (setf (aref (the (simple-array (unsigned-byte 16) (*)) rod) (the fixnum index)) new))
 
 (defun rod-capitalize (rod)
   (warn "~S is not implemented." 'rod-capitalize)
   rod)
 
-(defsubst code-rune (x) x)
-(defsubst rune-code (x) x)
+(definline code-rune (x) x)
+(definline rune-code (x) x)
 
-(defsubst rune= (x y) 
+(definline rune= (x y) 
   (= x y))
 
 (defun rune-downcase (rune)
@@ -70,7 +70,7 @@
         ((<= #x00c0 rune #x00de) (+ rune #x20))
         (t rune)))
 
-(defsubst rune-upcase (rune)
+(definline rune-upcase (rune)
   (cond ((<= #x0061 rune #x007a) (- rune #x20))
         ((= rune #x00f7) rune)
         ((<= #x00e0 rune #x00fe) (- rune #x20))
@@ -89,21 +89,19 @@
 
 (defun rod-downcase (rod)
   ;; FIXME
-  (register-rod
-   (map '(simple-array (unsigned-byte 16) (*)) #'rune-downcase rod)))
+  (map '(simple-array (unsigned-byte 16) (*)) #'rune-downcase rod))
 
 (defun rod-upcase (rod)
   ;; FIXME
-  (register-rod
-   (map '(simple-array (unsigned-byte 16) (*)) #'rune-upcase rod)))
+  (map '(simple-array (unsigned-byte 16) (*)) #'rune-upcase rod))
 
-(defsubst white-space-rune-p (char)
+(definline white-space-rune-p (char)
   (or (= char 9)        ;TAB
       (= char 10)       ;Linefeed
       (= char 13)       ;Carriage Return
       (= char 32)))     ;Space
 
-(defsubst digit-rune-p (char &optional (radix 10))
+(definline digit-rune-p (char &optional (radix 10))
   (cond ((<= #.(char-code #\0) char #.(char-code #\9))
          (and (< (- char #.(char-code #\0)) radix)
               (- char #.(char-code #\0))))
@@ -115,11 +113,11 @@
               (- char #.(char-code #\a) -10))) ))
 
 (defun rod (x)
-  (cond ((stringp x)    (register-rod (map 'rod #'char-code x)))
+  (cond ((stringp x)    (map 'rod #'char-code x))
         ((symbolp x)    (rod (string x)))
         ((characterp x) (rod (string x)))
-        ((vectorp x)    (register-rod (coerce x 'rod)))
-        ((integerp x)   (register-rod (map 'rod #'identity (list x))))
+        ((vectorp x)    (coerce x 'rod))
+        ((integerp x)   (map 'rod #'identity (list x)))
         (t              (error "Cannot convert ~S to a ~S" x 'rod))))
 
 (defun runep (x)
@@ -143,19 +141,16 @@
          (unless (rune-equal (rune x i) (rune y i))
            (return nil)))))
 
-(defsubst make-rod (size)
-  (let ((res (make-array size :element-type 'rune)))
-    (register-rod res)
-    res))
+(definline make-rod (size)
+  (make-array size :element-type 'rune))
 
 (defun char-rune (char)
   (code-rune (char-code char)))
 
 (defun rune-char (rune &optional (default #\?))
-  #+CMU
-  (if (< rune 256) (code-char rune) default)
-  #-CMU
-  (or (code-char rune) default))
+  (if (>= rune char-code-limit)
+      default
+      (or (code-char rune) default)))
 
 (defun rod-string (rod &optional (default-char #\?))
   (map 'string (lambda (x) (rune-char x default-char)) rod))
@@ -177,10 +172,6 @@
 
 (defun rodp (object)
   (typep object 'rod))
-
-(defun really-rod-p (object)
-  (and (typep object 'rod)
-       (really-really-rod-p object)))
 
 (defun rod-subseq (source start &optional (end (length source)))
   (unless (rodp source)
@@ -220,45 +211,6 @@
           ((< i 0) res)
         (declare (type fixnum i))
         (setf (%rune res i) (aref source (the fixnum (+ i start))))))))
-
-;;; Support for telling ROD and arrays apart:
-
-#+CMU
-(progn
-  (defvar *rod-hash-table*
-    (make-array 5003 :initial-element nil)))
-
-(defun register-rod (rod)
-  #+CMU
-  (unless (really-really-rod-p rod)
-    (push (ext:make-weak-pointer rod)
-          (aref *rod-hash-table* (mod (cl::pointer-hash rod)
-                                      (length *rod-hash-table*)))))
-  rod)
-
-(defun really-really-rod-p (rod)
-  #+CMU
-  (find rod (aref *rod-hash-table* (mod (cl::pointer-hash rod)
-                                        (length *rod-hash-table*)))
-        :key #'ext:weak-pointer-value))
-
-#+CMU
-(progn
-  (defun rod-hash-table-rehash ()
-    (let* ((n 5003)
-           (new (make-array n :initial-element nil)))
-      (loop for bucket across *rod-hash-table* do
-            (loop for item in bucket do
-                  (let ((v (ext:weak-pointer-value item)))
-                    (when v
-                      (push item (aref new (mod (cl::pointer-hash v) n)))))))
-      (setf *rod-hash-table* new)))
-
-  (defun rod-hash-after-gc-hook ()
-    ;; hmm interesting question: should we rehash?
-    (rod-hash-table-rehash))
-
-  (pushnew 'rod-hash-after-gc-hook extensions:*after-gc-hooks*) )
 
 (defun rod< (rod1 rod2)
   (do ((i 0 (+ i 1)))

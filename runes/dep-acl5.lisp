@@ -40,13 +40,13 @@
 ;; Unfortunately it is also incapable to declaim such functions inline.
 ;; So we revoke the DEFUN hack from dep-gcl here.
 
-(defmacro runes::defsubst (fun args &body body)
+(defmacro runes::definline (fun args &body body)
   (if (and (consp fun) (eq (car fun) 'setf))
       (let ((fnam (intern (concatenate 'string "(SETF " (symbol-name (cadr fun)) ")")
                           (symbol-package (cadr fun)))))
         `(progn
            (defsetf ,(cadr fun) (&rest ap) (new-value) (list* ',fnam new-value ap))
-           (runes::defsubst ,fnam ,args .,body)))
+           (runes::definline ,fnam ,args .,body)))
     (labels ((declp (x)
                (and (consp x) (eq (car x) 'declare))))
       `(progn
