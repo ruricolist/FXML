@@ -781,14 +781,14 @@
 
 (defun maybe-add-default-attribute (element name)
   (let* ((dtd (dtd (slot-value element 'owner)))
-         (e (cxml::find-element (dom:tag-name element) dtd))
+         (e (when dtd (cxml::find-element (dom:tag-name element) dtd)))
          (a (when e (cxml::find-attribute e name))))
     (when (and a (listp (cxml::attdef-default a)))
       (add-default-attribute element a))))
 
 (defun add-default-attributes (element)
   (let* ((dtd (dtd (slot-value element 'owner)))
-         (e (cxml::find-element (dom:tag-name element) dtd)))
+         (e (when dtd (cxml::find-element (dom:tag-name element) dtd))))
     (when e
       (dolist (a (cxml::elmdef-attributes e))
         (when (and a (listp (cxml::attdef-default a)))
