@@ -828,14 +828,14 @@
 (defstruct (internal-entdef
             (:include entdef)
             (:constructor make-internal-entdef (value))
-            (:conc-name #:ENTDEF-))
+            (:conc-name #:entdef-))
   (value (error "missing argument") :type rod)
   (expansion nil))
 
 (defstruct (external-entdef
             (:include entdef)
             (:constructor make-external-entdef (extid ndata))
-            (:conc-name #:ENTDEF-))
+            (:conc-name #:entdef-))
   (extid (error "missing argument") :type extid)
   (ndata nil :type (or rod null)))
 
@@ -875,8 +875,10 @@
 
 (defun absolute-uri (sysid source-stream)
   (let ((base-sysid (zstream-base-sysid source-stream)))
-    (assert (not (null base-sysid)))
-    (puri:merge-uris sysid base-sysid)))
+    ;; XXX is the IF correct?
+    (if base-sysid
+        (puri:merge-uris sysid base-sysid)
+        sysid)))
 
 (defstruct (extid (:constructor make-extid (public system)))
   (public nil :type (or rod null))
@@ -2533,10 +2535,16 @@
          (car (nth-value 1 (peek-token input)))
          (cdr (nth-value 1 (peek-token input))))))
     (consume-token input)))
-  
+
 (defun p/document
     (input handler
      &key validate dtd root entity-resolver disallow-internal-subset)
+  ;; check types of user-supplied arguments for better error messages:
+  (check-type validate boolean)
+  (check-type dtd (or null extid))
+  (check-type root (or null rod))
+  (check-type entity-resolver (or null function symbol))
+  (check-type disallow-internal-subset boolean)
   (let ((*ctx*
          (make-context :handler handler
                        :entity-resolver entity-resolver
