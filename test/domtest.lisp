@@ -1,5 +1,5 @@
 (defpackage :domtest
-  (:use :cl :xml)
+  (:use :cl :cxml)
   (:export #:run-all-tests))
 (defpackage :domtest-tests
   (:use))
@@ -117,7 +117,10 @@
           (write-char #\- out))))))
 
 (defun intern-dom (name)
-  (intern (replace-studly-caps name) :dom))
+  (setf name (replace-studly-caps name))
+  (when (eq :foo :FOO)
+    (setf name (string-upcase name)))
+  (intern name :dom))
 
 (defun child-elements (element)
   (map-child-elements 'list #'identity element))
@@ -167,7 +170,7 @@
 (defun read-members ()
   (let* ((pathname (merge-pathnames "patches/dom1-interfaces.xml" *directory*))
          (builder (dom:make-dom-builder))
-         (library (dom:document-element (xml:parse-file pathname builder)))
+         (library (dom:document-element (cxml:parse-file pathname builder)))
          (methods '())
          (fields '()))
     (do-child-elements (interface library :name "interface")
@@ -189,6 +192,7 @@
 (defun translate-condition (element)
   (string-case (tag-name element)
     ("equals" (translate-equals element))
+    ("notEquals" (translate-not-equals element))
     ("contentType" (translate-content-type element))
     ("hasFeature" (translate-has-feature element))
     ("implementationAttribute" (assert-have-implementation-attribute element))
@@ -197,6 +201,7 @@
     ("notNull" (translate-not-null element))
     ("or" (translate-or element))
     ("same" (translate-same element))
+    ("less" (translate-less element))
     (t (error "unknown condition: ~A" element))))
 
 (defun equalsp (a b test)
@@ -216,13 +221,20 @@
 
 (defun translate-equals (element)
   (with-attributes (|actual| |expected| |ignoreCase|) element
-    `(equalsp ,(%intern actual)
-              ,(parse-java-literal expected)
+    `(equalsp ,(%intern |actual|)
+              ,(parse-java-literal |expected|)
               ',(if (parse-java-literal |ignoreCase|) '%equal '%equal))))
+
+(defun translate-not-equals (element)
+  `(not ,(translate-equals element)))
 
 (defun translate-same (element)
   (with-attributes (|actual| |expected|) element
-    `(eql ,(%intern actual) ,(parse-java-literal expected))))
+    `(eql ,(%intern |actual|) ,(parse-java-literal |expected|))))
+
+(defun translate-less (element)
+  (with-attributes (|actual| |expected|) element
+    `(< ,(%intern |actual|) ,(parse-java-literal |expected|))))
 
 (defun translate-or (element)
   `(or ,@(map-child-elements 'list #'translate-condition element)))
@@ -257,6 +269,13 @@
   (with-attributes (|type|) element 
    `(equal ,|type| "text/xml")))
 
+#-allegro
+(defun translate-uri-equals (element)
+  (declare (ignore element))
+  (warn "oops, assert-uri-equals needs Franz' URI package")
+  (throw 'give-up nil))
+
+#+allegro
 (defun translate-uri-equals (element)
   (with-attributes
       (|actual|
@@ -307,6 +326,7 @@
     ("assertTrue"	(translate-assert-true element))
     ("assertFalse"	(translate-assert-false element))
     ("assertURIEquals"	(translate-assert-uri-equals element))
+    ("assign"		(translate-assign element))
     ("for-each"		(translate-for-each element))
     ("fail"		(translate-fail element))
     ("hasFeature" (translate-has-feature element))
@@ -326,6 +346,10 @@
     (maybe-setf (%intern |var|)
                 `(,fn ,(parse-java-literal |op1|)
                       ,(parse-java-literal |op2|)))))
+
+(defun translate-assign (element)
+  (with-attributes (|var| |value|) element
+    (maybe-setf (%intern |var|) (parse-java-literal |value|))))
 
 (defun translate-unary-assignment (fn element)
   (with-attributes (|var| |value|) element
@@ -529,6 +553,8 @@
 (defun assert-have-implementation-attribute (element)
   (let ((attribute (runes:rod-string (dom:get-attribute element "name"))))
     (string-case attribute
+      ("validating"
+        (setf cxml::*validate* t))
       (t
         (format t "~&implementationAttribute ~A not supported, skipping test~%"
                 attribute)
@@ -536,14 +562,15 @@
 
 (defun slurp-test (pathname)
   (unless *fields*
-    (multiple-value-setq (*methods* *fields*) (read-members *directory*)))
+    (multiple-value-setq (*methods* *fields*) (read-members)))
   (catch 'give-up
     (let* ((builder (dom:make-dom-builder))
-           (test (dom:document-element (xml:parse-file pathname builder)))
+           (cxml::*validate* nil)         ;dom1.dtd is buggy
+           (test (dom:document-element (cxml:parse-file pathname builder)))
            title
            (bindings '())
            (code '()))
-      (declare (ignore title))
+      (declare (ignorable title))
       (do-child-elements (e test)
         (string-case (tag-name e)
           ("metadata"
@@ -580,33 +607,36 @@
   (setf name (runes:rod-string name))
   (let* ((directory (merge-pathnames "tests/level1/core/files/" *directory*))
          (document
-          (xml:parse-file
+          (cxml:parse-file
            (make-pathname :name name :type "xml" :defaults directory)
            (dom:make-dom-builder))))
     document))
 
 (defparameter *bad-tests*
-    '("hc_elementnormalize2.xml" "hc_nodereplacechildnewchildexists.xml"))
+    '("hc_nodereplacechildnewchildexists.xml"
+      "characterdatadeletedatanomodificationallowederr.xml"))
 
 (defun run-all-tests (*directory* &optional verbose)
-  (let* ((xml::*redefinition-warning* nil)
+  (let* ((cxml::*redefinition-warning* nil)
          (test-directory (merge-pathnames "tests/level1/core/" *directory*))
          (all-tests (merge-pathnames "alltests.xml" test-directory))
          (builder (dom:make-dom-builder))
-         (suite (dom:document-element (xml:parse-file all-tests builder)))
+         (suite (dom:document-element (cxml:parse-file all-tests builder)))
          (n 0)
          (i 0)
          (ntried 0)
          (nfailed 0))
     (do-child-elements (member suite)
       (unless
-          (member (runes:rod-string (dom:get-attribute member "href"))
-                  *bad-tests*
-                  :test 'equal)
+          (or (equal (dom:tag-name member) "metadata")
+              (member (runes:rod-string (dom:get-attribute member "href"))
+                      *bad-tests*
+                      :test 'equal))
         (incf n)))
     (do-child-elements (member suite)
       (let ((href (runes:rod-string (dom:get-attribute member "href"))))
-        (unless (member href *bad-tests* :test 'equal)
+        (unless (or (equal (dom:tag-name member) "metadata")
+                    (member href *bad-tests* :test 'equal))
           (format t "~&~D/~D ~A~%" i n href)
           (let ((lisp (slurp-test (merge-pathnames href test-directory))))
             (when verbose
@@ -615,7 +645,8 @@
               (incf ntried)
               (with-simple-restart (skip-test "Skip this test")
                 (handler-case
-                    (funcall (compile nil lisp))
+                    (let ((cxml::*validate* nil))
+                      (funcall (compile nil lisp)))
                   (serious-condition (c)
                     (incf nfailed)
                     (warn "test failed: ~A" c))))))
@@ -625,7 +656,8 @@
 
 (defun run-test (*directory* href)
   (let* ((test-directory (merge-pathnames "tests/level1/core/" *directory*))
-         (lisp (slurp-test (merge-pathnames href test-directory))))
+         (lisp (slurp-test (merge-pathnames href test-directory)))
+         (cxml::*validate* nil))
     (print lisp)
     (when lisp
       (funcall (compile nil lisp)))))
