@@ -1,0 +1,100 @@
+<html>
+  <body>
+    <h1>Closure XML Parser</h1>
+
+    <p>An XML parser written in Common Lisp.</p>
+
+    <p>
+      Closure XML was written by <a
+      href="http://www.stud.uni-karlsruhe.de/~unk6/">Gilbert Baumann</a>
+      (unk6 at rz.uni-karlsruhe.de) as part of the Closure web
+      browser.<br>
+      Contributions to the parser by
+      <ul>
+        <li>
+          Henrik Motakef (hmot at henrik-motakef.de)<br>
+          (SAX layer; namespace support)
+        </li>
+        <li>
+          David Lichteblau at knowledgeTools &lt;david@knowledgetools.de&gt;<br>
+          (conversion into an independent package; DOM bug fixing)
+        </li>
+      </ul>
+    </p>
+
+    <p>
+      <h2>CXML Modules</h2>
+
+      CXML provides three packages:
+      <ul>
+        <li>
+          <tt>RUNES</tt>, a portable implementation of Unicode strings.
+        </li>
+        <li>
+          <tt>XML</tt>, a namespace-aware SAX parser implementing the <a
+          href="http://www.w3.org/TR/2000/REC-xml-20001006">XML 1.0
+          specification</a>.
+        </li> 
+        <li>
+          <tt>DOM</tt>, an implementation of the <a
+          href="http://www.w3.org/TR/REC-DOM-Level-1/level-one-core.html">DOM
+          Level 1 Core</a> interfaces.
+        </li> 
+      </ul>
+    </p>
+
+    <p>
+      <h2>Installation</h2>
+
+      <b>Prerequisites.</b> CXML is written in Common Lisp and should be
+      portable to all Common Lisp implementations.&nbsp; Currently known
+      to work are ACL, SBCL, CMUCL, and CLISP.  (<i>fixme</i>: check
+      this list)
+    </p>
+    </p>
+      <a href="http://www.cliki.net/asdf">ASDF</a> is used for
+      compilation.  These instructions assume that ASDF has already been
+      loaded.  (Some Lisps include ASDF, for example SBCL and any Lisp
+      on Debian and Gentoo.  For other Lisps please load asdf.lisp
+      manually before proceeding.)
+    </p>
+
+    <p>
+      <b>Configuration (optional).</b>
+      CXML has full Unicode code support -- even on Lisps without
+      Unicode strings.  On non-unicode aware Lisps, <tt>DOMString</tt>
+      is implemented as an array of character codes.  If your Lisp
+      supports 16 bit characters natively, you can enable feature
+      <tt>RUNE-IS-CHARACTER</tt> to select an alternative
+      <tt>DOMString</tt> implementatation, which uses real characters
+      instead of characters codes.
+      <pre>  * (pushnew :rune-is-character *features*)</pre>
+    </p>
+
+    <p>
+      <b>Compiling and loading CXML.</b>
+      Register the .asd file, e.g. by symlinking it:
+      <pre>  $ ln -sf `pwd`/cxms.asd /path/to/your/registry</pre>
+      Compile CXML using:
+      <pre>  * (asdf:operate 'asdf:load-op :cxml)</pre>
+    </p>
+
+    <p>
+      <h2>Tests</h2>
+
+      Check out the XML and DOM testsuites:
+      <pre>  $ export CVSROOT=:pserver:anonymous@dev.w3.org:/sources/public
+  $ cvs login    # password is "anonymous"
+  $ cvs co 2001/XML-Test-Suite/xmlconf
+  $ cvs co 2001/DOM-Test-Suite</pre>
+      Run all applicable tests using:
+      <pre>  * (xmlconf:run-all-tests "/path/to/2001/XML-Test-Suite/xmlconf/")
+  * (domtest:run-all-tests "/path/to/2001/2001/DOM-Test-Suite/")</pre>
+      (As always in Lisp, the trailing slash is significant.)
+    <p>
+
+    </p>
+      <i>fixme</i>: Add an explanation of xml/sax-tests here.
+    </p>
+  </body>
+</html>

@@ -1,0 +1,68 @@
+--- orig/xml/xml-name-rune-p.lisp
++++ mod/xml/xml-name-rune-p.lisp
+@@ -206,13 +206,15 @@
+                      (setf (aref r i) 1))))) )
+ 
+           `(progn
+-             (DEFSUBST NAME-RUNE-P (RUNE)
+-               (AND (<= 0 RUNE ,*max*)
+-                    (LOCALLY (DECLARE (OPTIMIZE (SAFETY 0) (SPEED 3)))
+-                             (= 1 (SBIT ',(predicate-to-bv #'name-rune-p)
+-                                        (THE FIXNUM RUNE))))))
+-             (DEFSUBST NAME-START-RUNE-P (RUNE)
+-               (AND (<= 0 RUNE ,*MAX*)
+-                    (LOCALLY (DECLARE (OPTIMIZE (SAFETY 0) (SPEED 3)))
+-                             (= 1 (SBIT ',(predicate-to-bv #'name-start-rune-p)
+-                                        (THE FIXNUM RUNE)))))))) ))))
+\ No newline at end of file
++             (defsubst name-rune-p (rune)
++               (let ((code (rune-code rune)))
++                 (and (<= 0 code ,*max*)
++                      (locally (declare (optimize (safety 0) (speed 3)))
++                        (= 1 (sbit ',(predicate-to-bv #'name-rune-p)
++                                   (the fixnum code)))))))
++             (defsubst name-start-rune-p (rune)
++               (let ((code (rune-code rune)))
++                 (and (<= 0 code ,*max*)
++                      (locally (declare (optimize (safety 0) (speed 3)))
++                        (= 1 (sbit ',(predicate-to-bv #'name-start-rune-p)
++                                   (the fixnum code))))))))) ))))
+
+
+--- orig/xml/xml-parse.lisp
++++ mod/xml/xml-parse.lisp
+@@ -2470,20 +2469,20 @@
+   (let ((input-var (gensym))
+         (collect (gensym))
+         (c (gensym)))
+-    `(LET ((,input-var ,input))
+-       (MULTIPLE-VALUE-BIND (,res ,res-start ,res-end) 
+-           (WITH-RUNE-COLLECTOR/RAW (,collect)
+-             (LOOP
+-               (LET ((,c (PEEK-RUNE ,input-var)))
+-                 (COND ((EQ ,c :EOF) 
++    `(let ((,input-var ,input))
++       (multiple-value-bind (,res ,res-start ,res-end) 
++           (with-rune-collector/raw (,collect)
++             (loop
++               (let ((,c (peek-rune ,input-var)))
++                 (cond ((eq ,c :eof) 
+                         ;; xxx error message
+-                        (RETURN))
+-                       ((FUNCALL ,predicate ,c)
+-                        (RETURN))
++                        (return))
++                       ((funcall ,predicate ,c)
++                        (return))
+                        (t
+                         (,collect ,c)
+-                        (CONSUME-RUNE ,input-var))))))
+-         (LOCALLY
++                        (consume-rune ,input-var))))))
++         (locally
+            ,@body)))))
+   
+ (defun read-name-token (input)
+
+
+

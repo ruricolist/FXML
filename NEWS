@@ -1,0 +1,151 @@
+Changes to Gilbert Baumann's Code
+========================================
+(Stand dieser Liste: patch-54)
+
+base-0
+    Import of Closure's src/xml and src/glisp
+
+
+Build system
+----------------
+patch-14
+    dom-builder.lsp braucht package.lisp
+patch-17
+    xml-parse braucht dom-impl
+patch-18
+    xml-parse braucht encodings
+patch-19
+    xml-parse.lisp needs xml-stream.lisp
+
+
+Interface changes
+----------------
+patch-2
+    export UNPARSE-DOCUMENT
+
+
+Portability issues
+----------------
+patch-1
+    ACL port aktualisiert
+patch-8
+    fixed more mlisp breakage
+
+
+DOM fixes
+----------------
+patch-3
+    add dom:remove-child, dom:import-node
+patch-6
+    fixed dom:remove-child
+patch-7
+    strings->rods in set-attribute, too
+patch-21
+    dom:item und dom:length fuer NodeList implementiert
+patch-22
+    s/remove-atttribute/remove-attribute
+patch-23
+    dom:remove-attribute-node korrigiert
+patch-24
+    neu: dom:remove-attribute
+patch-25
+    dom:normalize implementiert
+patch-26
+    get-elements-by-tag-name fuer Element implementiert
+patch-32
+    s/data/value/ fuer CHARACTER-DATA
+patch-33
+    Aufruf von Setter-Methoden
+patch-34
+    (setf value) nachgetragen
+patch-35
+    (DOM:NODE-VALUE ATTRIBUTE) korrigiert
+patch-36
+    writer fuer DOM:DATA
+patch-37
+    (setf dom:node-value) implementiert
+patch-43
+    hack: implemented CHILD-NODES for ENTITY-REFERENCE
+patch-44
+    ENTITY-REFERENCE-Kinder als read-only markieren
+patch-45
+    DOM-EXCEPTION implementiert
+patch-46
+    fixed special cases in delete-data and replace-data
+patch-47
+    delete-data: Arraytyp korrigiert
+patch-48
+    DOM:INSERT-DATA implementiert
+patch-49
+    bugfix: replace-data for count != (length arg)
+patch-50
+    patch-46 nachgebessert: offset == length ist OK
+patch-51
+    fixed special cases in dom:substring-data
+patch-52
+    fixed patch-36, my (setf dom:data) implementation was bogus
+
+
+xml-parse.lisp changes
+----------------
+patch-5
+    (assert (eql initial-speed 1)) in make-xstream
+patch-20
+    added a forward declaration for *namespace-bindings*
+patch-39
+    fix for thread safety in p/document
+patch-41
+    Warnung ueber (nicht) redefinierte Attribute abschalten koennen
+patch-54
+    call sax:comment; create comment nodes
+
+
+String-Handling
+----------------
+patch-4
+    renamed dom to cdom, added string-dom
+patch-38
+    diverse setter nachgetragen
+
+
+Misc.
+----------------
+patch-9
+    print elements with their tag-name
+patch-11
+    print attributes with name and value
+
+patch-10
+   (reverted by patch-10)
+patch-12
+    REVERT patch-10
+
+
+domtest.cl
+----------------
+patch-27
+    alle DOM Level 1 CORE Tests uebersetzen koennen (mehr schlecht als recht)
+patch-28
+    so, jetzt kompilieren die DOM-Tests auch (wenngleich zwei drittel noch fehlschlagen)
+patch-29
+    einzelnen Test ausfuehren koennen
+patch-30
+    <length/> workaround
+patch-31
+    <equals/> fuer nicht-Strings
+patch-40
+    ?
+patch-42
+    implementationAttribute-Probleme zwar ausgeben, aber kein WARN machen
+patch-53
+    domtest fixes fuer <var/> und <nodeType>
+
+
+xmlconf.cl
+----------------
+patch-13
+    Testfunktion fuer XML Conformance Test Suite
+patch-15
+    run only tests for namespace-aware XML-1.0 parsers
+patch-16
+    mit korrektem OUTPUT abgleichen
