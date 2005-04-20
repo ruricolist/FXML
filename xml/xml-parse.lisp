@@ -3004,8 +3004,10 @@
             (elt octets pos)
           (incf pos)))))
 
-(defmethod stream-read-sequence ((stream octet-input-stream) sequence
-                                 &optional (start 0) (end (length sequence)))
+(defmethod stream-read-sequence
+    #-lispworks ((stream octet-input-stream) sequence
+                 &optional (start 0) (end (length sequence)))
+    #+lispworks ((stream octet-input-stream) sequence start end)
   (with-slots (octets pos) stream
     (let* ((length (min (- end start) (- (length octets) pos)))
            (end1 (+ start length))

@@ -24,9 +24,9 @@
 
 (in-package :runes)
 
-(deftype rune () 'character)
-(deftype rod () '(vector character))
-(deftype simple-rod () '(simple-array character))
+(deftype rune () #-lispworks 'character #+lispworks 'lw:simple-char)
+(deftype rod () '(vector rune))
+(deftype simple-rod () '(simple-array rune))
 
 (definline rune (rod index)
   (char rod index))
@@ -101,7 +101,7 @@
   (string-equal x y))
 
 (definline make-rod (size)
-  (make-string size))
+  (make-string size :element-type 'rune))
 
 (defun char-rune (char)
   char)

@@ -53,7 +53,9 @@
 	    #+(and allegro-version>= (version>= 5.0)) "dep-acl5"
 	    #+(and allegro-version>= (not (version>= 5.0))) "dep-acl"
             #+openmcl                           "dep-openmcl"
-	    #-(or sbcl CLISP CMU allegro openmcl) #.(error "Configure!")
+            #+lispworks                         "dep-lw"
+	    #-(or sbcl CLISP CMU allegro openmcl lispworks)
+            #.(error "unsupported lisp implementation!")
             :depends-on ("package"))
      (:file runes
             :pathname
