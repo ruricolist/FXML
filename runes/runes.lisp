@@ -147,12 +147,17 @@
 (defun char-rune (char)
   (code-rune (char-code char)))
 
-(defun rune-char (rune &optional (default #\?))
-  (if (>= rune char-code-limit)
-      default
-      (or (code-char rune) default)))
+(defparameter *invalid-rune* nil ;;#\?
+  "Rune to use as a replacement in RUNE-CHAR and ROD-STRING for runes not
+   representable as characters.  If NIL, an error is signalled instead.")
 
-(defun rod-string (rod &optional (default-char #\?))
+(defun rune-char (rune &optional (default *invalid-rune*))
+  (or (if (>= rune char-code-limit)
+          default
+          (or (code-char rune) default))
+      (error "rune cannot be represented as a character: ~A" rune)))
+
+(defun rod-string (rod &optional (default-char *invalid-rune*))
   (map 'string (lambda (x) (rune-char x default-char)) rod))
 
 (defun string-rod (string)

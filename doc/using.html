@@ -1,0 +1,705 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+  <head>
+    <title>Closure XML</title>
+    <link rel="stylesheet" type="text/css" href="cxml.css"/>
+  </head>
+  <body>
+    <div class="sidebar">
+      <p>
+	<a href="../README.html">CXML Homepage</a>
+      </p>
+      <ul>
+	<li>
+          <a href="installation.html">Installing Closure XML</a>
+          <ul>
+	    <li><a href="installation.html#download"><b>Download</b></a></li>
+	    <li><a href="installation.html#implementations">Implementation-specific notes</a></li>
+	    <li><a href="installation.html#compilation"><b>Compilation</b></a></li>
+	    <li><a href="installation.html#tests">Tests</a></li>
+          </ul>
+	</li>
+	<li>
+          <a href="using.html">Using Closure XML</a>
+          <ul>
+            <li><a href="using.html#quickstart"><b>Quick-Start Example</b></a></li>
+            <li><a href="using.html#parser">Parsing and Validating</a></li>
+            <li><a href="using.html#serialization">Serialization</a></li>
+            <li><a href="using.html#misc">Miscellaneous Utility Functions</a></li>
+            <li><a href="using.html#xmls">XMLS Compatibility</a></li>
+            <li><a href="using.html#rods">Dealing with Rods</a></li>
+            <li><a href="using.html#dtdcache">Caching of DTD Objects</a></li>
+            <li><a href="using.html#catalogs">XML Catalogs</a></li>
+	    <li><a href="using.html#sax">SAX Interface</a></li>
+	    <li><a href="using.html#dom">DOM Notes</a></li>
+          </ul>
+	</li>
+      </ul>
+    </div>
+    <h1>Using Closure XML</h1>
+
+    <a name="quickstart"/>
+    <h3>Quick-Start Example</h3>
+
+    <p>
+      Make sure to <a href="installation.html#installation">install and load</a> cxml first.
+    </p>
+
+    <p>Create a test file called <tt>example.xml</tt>:</p>
+    <pre>* <b>(with-open-file (s "example.xml" :direction :output)
+    (write-string "&lt;test a='b'&gt;&lt;child/&gt;&lt;/test>" s))</b></pre>
+
+    <p>Parse <tt>example.xml</tt> into a DOM tree (<a href="#parser">read
+    more</a>):</p>
+    <pre>* <b>(cxml:parse-file "example.xml" (dom:make-dom-builder))</b>
+#&lt;DOM-IMPL::DOCUMENT @ #x72206172>
+;; save result for later:
+* <b>(defparameter *example* *)</b>
+*EXAMPLE*</pre>
+
+    <p>Inspect the DOM tree (<a href="#dom">read more</a>):</p>
+    <pre>* <b>(dom:document-element *example*)</b>
+#&lt;DOM-IMPL::ELEMENT test @ #x722b6ba2&gt;
+* <b>(dom:tag-name (dom:document-element *example*))</b>
+"test"
+* <b>(dom:child-nodes (dom:document-element *example*))</b>
+#(#&lt;DOM-IMPL::ELEMENT child @ #x722b6d8a&gt;)
+* <b>(dom:get-attribute (dom:document-element *example*) "a")</b>
+"b"</pre>
+
+    <p>Serialize the DOM document back into a stream (<a
+    href="#serialization">read more</a>):</p>
+    <pre><b>(cxml:unparse-document *example* *standard-output*)</b>
+&lt;test a="b"&gt;&lt;child&gt;&lt;/child>&lt;/test></pre>
+
+    <p>As an alternative to DOM, parse into xmls-compatible list
+    structure (<a href="#xmls">read more</a>):</p>
+    <pre>* <b>(cxml:parse-file "example.xml" (cxml-xmls:make-xmls-builder))</b>
+("test" (("a" "b")) ("child" NIL))</pre>
+
+    <a name="parser"/>
+    <h3>Parsing and Validating</h3>
+    <p>
+      <div class="def">Function CXML:PARSE-FILE (pathname handler &key ...)</div>
+      <div class="def">Function CXML:PARSE-STREAM (stream handler &key ...)</div>
+      <div class="def">Function CXML:PARSE-OCTETS (octets handler &key ...)</div>
+      Parse an XML document.&nbsp;
+      Return values from this function depend on the SAX handler used.<br/>
+      Arguments:
+    </p>
+    <ul>
+      <li><tt>pathname</tt> -- a Common Lisp pathname</li>
+      <li><tt>stream</tt> -- a Common Lisp stream with element-type
+        <tt>(unsigned-byte 8)</tt></li>
+      <li><tt>octets</tt> -- an <tt>(unsigned-byte 8)</tt> array</li>
+      <li><tt>handler</tt> -- a SAX handler</li>
+    </ul>
+    <p>
+      Common keyword arguments:
+    </p>
+    <ul>
+      <li>
+        <tt>validate</tt> -- A boolean.&nbsp; Defaults to
+        <tt>nil</tt>.  If true, parse in validating mode, i.e. assert that
+        the document contains a DOCTYPE declaration and conforms to the
+        DTD declared.
+      </li>
+      <li>
+        <tt>dtd</tt> -- unless <tt>nil</tt>, an extid instance
+        specifying the external subset to load.  This options overrides
+        the extid specified in the document type declaration, if any.
+        See below for <tt>make-extid</tt>.  This option is useful
+        for verification purposes together with the <tt>root</tt>
+        and <tt>disallow-internal-subset</tt> arguments.
+      </li>
+      <li><tt>root</tt> -- the expected root element
+        name, or <tt>nil</tt> (the default).
+      </li>
+      <li>
+        <tt>entity-resolver</tt> -- <tt>nil</tt> or a function of two
+        arguments which is invoked for every entity referenced by the
+        document with the entity's Public ID (a rod) and System ID (an
+        URI object) as arguments.  The function may either return
+        nil, CXML will then try to resolve the entity as usual.
+        Alternatively it may return a Common Lisp stream specialized on
+        <tt>(unsigned-byte 8)</tt> which will be used instead.  (It may
+        also signal an error, of course, which can be useful to prohibit
+        parsed XML documents from including arbitrary files readable by
+        the parser.)
+      </li>
+      <li>
+        <tt>disallow-internal-subset</tt> -- a boolean.  If true, signal
+        an error if the document contains an internal subset.
+      </li>
+    </ul>
+
+    <p>
+      <div class="def">Function CXML:PARSE-DTD-FILE (pathname)</div>
+      <div class="def">Function CXML:PARSE-DTD-STREAM (stream)</div>
+      Parse <a
+      href="http://www.w3.org/TR/2000/REC-xml-20001006#NT-extSubset">declarations</a>
+      from a stand-alone file and return an object representing the DTD,
+      suitable as an argument to <tt>validate</tt>.
+    </p>
+    <ul>
+      <li><tt>pathname</tt> -- a Common Lisp pathname</li>
+      <li><tt>stream</tt> -- a Common Lisp stream with element-type
+        <tt>(unsigned-byte 8)</tt></li>
+    </ul>
+
+    <p>
+      <div class="def">Function CXML:MAKE-EXTID (publicid systemid)</div>
+      Create an object representing the External ID composed
+      of the specified Public ID, a rod or <tt>nil</tt>, and System ID
+      (an URI object).
+    </p>
+
+    <p>
+      <div class="def">Function DOM:MAKE-DOM-BUILDER ()</div>
+      Create a SAX handler which builds a DOM document.&nbsp; Example:
+    </p>
+    <pre>(cxml:parse-file "test.xml" (dom:make-dom-builder))</pre>
+
+    <a name="serialization"/>
+    <h3>Serialization</h3>
+    <p>
+      <div class="def">Function CXML:UNPARSE-DOCUMENT (document stream &rest keys)</div>
+      <div class="def">Function CXML:UNPARSE-DOCUMENT-TO-OCTETS (document &rest keys) => vector</div>
+      Serialize a DOM document object.
+    </p>
+    <ul>
+      <li><tt>document</tt> -- a DOM document object</li>
+      <li><tt>stream</tt> -- a Common Lisp stream with element-type
+        <tt>character</tt></li>
+    </ul>
+    <p>Keyword arguments:</p>
+    <ul>
+      <li>
+        <tt>canonical</tt> -- canonical form, one of NIL, T, 1, 2
+      </li>
+      <li>
+        <tt>indentation</tt> -- indentation level.  An integer or <tt>nil</tt>.
+      </li>
+    </ul>
+    <p>
+      The following <tt>canonical</tt> values are allowed:
+    </p>
+    <ul>
+      <li>
+        <tt>t</tt> or <tt>1</tt>: <a
+         href="http://www.w3.org/TR/2001/REC-xml-c14n-20010315">Canonical
+         XML</a>
+      </li>
+      <li>
+        <tt>2</tt>: <a
+         href="http://dev.w3.org/cvsweb/~checkout~/2001/XML-Test-Suite/xmlconf/sun/cxml.html?content-type=text/html;%20charset=iso-8859-1">Second
+         Canonical Form</a>
+      </li>
+      <li>
+        <tt>NIL</tt>: Use a more readable non-canonical representation.
+      </li>
+    </ul>
+    <p>
+      With an <tt>indentation</tt> level, pretty-print the XML by
+      inserting additional whitespace.&nbsp; Note that indentation
+      changes the document model and should only be used if whitespace
+      does not matter to the application.
+    </p>
+    <p>
+      <tt>unparse-document-to-octets</tt> returns an <tt>(unsigned-byte
+      8)</tt> array, whereas <tt>unparse-document</tt> writes
+      characters.&nbsp; <tt>unparse-document</tt> is useful together
+      with <tt>with-output-to-string</tt>.&nbsp; However, note that the
+      resulting document in both cases is UTF-8 encoded, so the
+      characters written by <tt>unparse-document</tt> are really UTF-8
+      bytes encoded as characters.
+    </p>
+
+    <p>
+      <div class="def">Function CXML:MAKE-CHARACTER-STREAM-SINK (stream &rest keys) => sink</div>
+      <div class="def">Function CXML:MAKE-OCTET-VECTOR-SINK (&rest keys) => sink</div>
+      Return a handle suitable for event-based XML serialization.
+    </p>
+    <p>
+      These function provide the low-level mechanism used by the DOM
+      serialization functions.  To serialize a document without building
+      its DOM tree first, create a sink handle and call SAX functions on that
+      handle.  <tt>sax:end-document</tt> returns the serialized form of
+      the document described by the SAX events.
+    </p>
+
+    <p>
+      <div class="def">Macro CXML:WITH-XML-OUTPUT (sink &body body) => vector</div>
+      <div class="def">Macro CXML:WITH-ELEMENT (qname &body body) => result</div>
+      <div class="def">Function CXML:ATTRIBUTE (name value) => value</div>
+      <div class="def">Function CXML:TEXT (data) => data</div>
+      <div class="def">Function CXML:CDATA (data) => data</div>
+      Convenience syntax for event-based serialization.
+    </p>
+    <p>
+      Example:
+    </p>
+    <pre>(with-xml-output (make-octet-stream-sink stream :indentation 2 :canonical nil)
+  (with-element "foo"
+    (attribute "xyz" "abc")
+    (with-element "bar"
+      (attribute "blub" "bla"))
+    (text "Hi there.")))</pre>
+   <p>
+      Prints this to <tt>stream</tt>, which must be an
+      <tt>(unsigned-byte 8)</tt> stream:
+   </p>
+   <pre>&lt;foo xyz="abc"&gt;
+  &lt;bar blub="bla"&gt;&lt;/bar&gt;
+  Hi there.
+&lt;/foo&gt;</pre>
+   <p>
+      (Note that these functions accept both strings and rods, so we
+      could write <tt>"foo"</tt> instead of <tt>#"foo"</tt> above.)
+   </p>
+
+    <p>
+      <div class="def">Macro XHTML-GENERATOR:WITH-XHTML (sink &rest forms)</div>
+      <div class="def">Macro XHTML-GENERATOR:WRITE-DOCTYPE (sink)</div>
+      Macro <tt>with-xhtml</tt> is a modified version of
+      Franz' <tt>htmlgen</tt> works as a SAX driver for XHTML.
+      It aims to be a plug-in replacement for the <tt>html</tt> macro.
+    </p>
+    <p>
+      <tt>xhtmlgen</tt> is included as <tt>contrib/xhtmlgen.lisp</tt> in
+      the cxml distribution.  Example:
+    </p>
+    <pre>(let ((sink (cxml:make-character-stream-sink *standard-output*)))
+  (sax:start-document sink)
+  (xhtml-generator:write-doctype sink)
+  (xhtml-generator:with-html sink
+    (:html
+     (:head
+      (:title "Titel"))
+     (:body
+      ((:p "style" "font-weight: bold")
+       "Inhalt")
+      (:ul
+       (:li "Eins")
+       (:li "Zwei")
+       (:li "Drei")))))
+  (sax:end-document sink))</pre>
+
+    <a name="misc"/>
+    <h3>Miscellaneous Utility Functions</h3>
+    <p>
+      <div class="def">Function CXML:MAKE-VALIDATOR (dtd root)</div>
+      Create a SAX handler which validates against a DTD instance.&nbsp;
+      The document's root element must be named <tt>root</tt>.&nbsp; 
+      Used with <tt>dom:map-document</tt>, this validates a document
+      object as if by re-reading it with a validating parser, except
+      that declarations recorded in the document instance are completely
+      ignored.<br/>
+      Example:
+    </p>
+    <pre>(let ((d (parse-file "~/test.xml" (dom:make-dom-builder)))
+      (x (parse-dtd-file "~/test.dtd")))
+  (dom:map-document (cxml:make-validator x #"foo") d))</pre>
+
+    <p>
+      <div class="def">Function DOM:MAP-DOCUMENT (handler document &key include-xmlns-attributes include-default-values)</div>
+      Traverse a DOM document and call SAX functions as if an XML
+      representation of the document were processed by a SAX parser.
+    </p>
+
+    <p>
+      <div class="def">Class CXML:SAX-PROXY ()</div>
+      <div class="def">Accessor CXML:PROXY-CHAINED-HANDLER</div>
+      <tt>sax-proxy</tt> is a SAX handler which passes all events it
+      receives on to a user-defined second handler, which defaults
+      to <tt>nil</tt>.  Use <tt>sax-proxy</tt> to modify the events a
+      SAX handler receives by defining your own subclass
+      of <tt>sax-proxy</tt>.  Setting the chained handler to the target
+      handler, and define methods on your handler class for the events
+      to be modified.  All other events will pass through to the chained
+      handler unmodified.
+    </p>
+
+    <a name="xmls"/>
+    <h3>XMLS Compatibility</h3>
+    <p>
+      Like other XML parsers written in Lisp, CXML can work with
+      documents represented as list structures. The specific model
+      implemented by cxml is compatible with the <a
+      href="http://common-lisp.net/project/xmls/">xmls parser</a>.  Xmls
+      list structures are a simpler and faster alternative to full DOM
+      document trees.  They also serve as an example showing how to
+      implement user-defined document models as an independent layer
+      over the the base parser (c.f. <tt>xml/xmls-compat.lisp</tt> in
+      the cxml distribution).  However, note that the list structures do
+      not include all information available in DOM documents and are
+      sometimes more difficult to work wth since many DOM functions
+      cannot be implemented on them.
+    </p>
+    <p>
+      <div class="def">Function CXML-XMLS:MAKE-XMLS-BUILDER (&key include-default-values)</div>
+      Create a SAX handler which builds XMLS list structures.&nbsp;
+      If <tt>include-default-values</tt> is true, default values for
+      attributes declared in a DTD are included as attributes in the
+      xmls output.  <tt>include-default-values</tt> is true by default
+      and can be set to <tt>nil</tt> to suppress inclusion of default
+      values.
+    </p>
+    <p>
+      Example:
+    </p>
+    <pre>(cxml:parse-file "test.xml" (cxml-xmls:make-xmls-builder))</pre>
+    <p>
+      <div class="def">Function CXML-XMLS:MAP-NODE (handler node &key include-xmlns-attributes)</div>
+      Traverse an XMLS document/node and call SAX functions as if an XML
+      representation of the document were processed by a SAX parser.
+    </p>
+    <p>
+      Use this function to serialize XMLS data.  For example, we could
+      define a replacement for <tt>xmls:write-xml</tt> like this:
+    </p>
+    <pre>(defun write-xml (stream node &key indent)
+  (let ((sink (cxml:make-character-stream-sink
+               stream :canonical nil :indentation indent)))
+    (cxml-xmls:map-node sink node)))</pre>
+    <p>
+      <div class="def">Function CXML-XMLS:MAKE-NODE (&key name ns attrs
+      children) => xmls node</div>
+      Build a list node of the form
+      (<em>name</em>&nbsp;((<em>name</em>&nbsp;<em>value</em>)<em>*</em>)&nbsp;<em>child*</em>).
+    </p>
+    <p>
+      The node list's <tt>car</tt> can also be a cons of local <tt>name</tt>
+      and namespace prefix <tt>ns</tt>.
+      <em>fixme:</em> It is unclear to me how namespaces are meant to
+      work in xmls, since xmls documentation differs from how xmls
+      actually works in current releases.  Usually applications need to
+      know both the namespace prefix <em>and</em> the namespace URI.  We
+      currently follow the xmls <em>implementation</em> and use the
+      namespace prefix instead of following its <em>documentation</em> which
+      shows the URI.  We do not follow xmls in munging xmlns attribute
+      values.  Attributes themselves have namespaces and it is not clear
+      to me how that works in xmls.
+    </p>
+    <p>
+      <div class="def">Accessor CXML-XMLS:NODE-NAME (node)</div>
+      <div class="def">Accessor CXML-XMLS:NODE-NS (node)</div>
+      <div class="def">Accessor CXML-XMLS:NODE-ATTRS (node)</div>
+      <div class="def">Accessor CXML-XMLS:NODE-CHILDREN (node)</div>
+      Accessors for xmls node data.
+    </p>
+    <p>
+    </p>
+
+    <a name="rods"/>
+    <h3>Dealing with Rods</h3>
+    <p>
+      As explained above, the XML parser handles character encoding and
+      uses 16bit strings internally.  Instead of using characters and strings
+      it uses <em>runes</em> and <em>rods</em>.  This is seen as a
+      feature, but can be inconvenient.
+    </p>
+    <ul>
+      <li>
+        If your Lisp supports 16 bit unicode strings, use feature
+        <tt>:rune-is-character</tt> and forget about runes and rods.
+        CXML will use ordinary Lisp characters and strings both
+        internally and externally.
+      </li>
+      <li>
+        If your Lisp does not support such strings and your application
+        needs Unicode support, use functions defined in the
+        <tt>runes</tt> package instead of ordinary string operators.
+      </li>
+      <li>
+        If your Lisp does not support such strings and your application
+        does not need Unicode support anyway, it will probably be more
+        convenient to let CXML convert rods into strings automatically.
+        To do that, use <tt>cxml:make-recoder</tt> to chain a special
+        sax handler between the parser and your application handler.
+        The recoder translates all rods using an application defined
+        function, which defaults to <tt>runes:rod-string</tt>.  Although
+        the actual XML parser still uses rods internally, you SAX
+        handler will only see ordinary Lisp strings.
+      </li>
+    </ul>
+    <p>
+      Note that the recoder approach does <em>not</em> work with the DOM
+      builder, since DOM is specified to use UTF-16.
+    </p>
+    <p>
+      <div class="def">Function CXML:MAKE-RECODER (chained-handler &optional recoder-fn)</div>
+      Return a SAX handler which passes all events on to
+      <tt>chained-handler</tt> after converting all strings and rods
+      using <tt>recoder-fn</tt>, a function of one argument which
+      defaults to <tt>runes:rod-string</tt>.
+    </p>
+    <p>
+      <b>Example.</b> In a Lisp which ordinarily would use octet vector rods:
+    </p>
+    <pre>CL-USER(14): (cxml:parse-string "&lt;test/&gt;" (cxml-xmls:make-xmls-builder))
+(#(116 101 115 116) NIL)</pre>
+    <p>
+      Use a SAX recoder to get strings instead::
+    </p>
+    <pre>CL-USER(17): (parse-string "&lt;test/&gt;" (cxml:make-recoder (cxml-xmls:make-xmls-builder)))
+("test" NIL)</pre>
+
+    <a name="dtdcache"/>
+    <h3>Caching of DTD Objects</h3>
+    <p>
+      To avoid spending time parsing the same DTD over and over again,
+      CXML can cache DTD objects.  The parser consults
+      <tt>cxml:*dtd-cache*</tt> whenever it is looking for an external
+      subset in a document which does not have an internal subset and
+      uses the cached DTD instance if one is present in the cache for
+      the System ID in question.
+    </p>
+    <p>
+      Note that DTDs do not expire from the cache automatically.
+      (Future versions of CXML might introduce automatic checks for
+      outdated DTDs.)
+    </p>
+    <p>
+      <div class="def">Variable CXML:*DTD-CACHE*</div>
+      The DTD cache object consulted by the parser when it needs a DTD.
+    </p>
+    <p>
+      <div class="def">Function CXML:MAKE-DTD-CACHE ()</div>
+      Return a new, empty DTD cache object.
+    </p>
+    <p>
+      <div class="def">Variable CXML:*CACHE-ALL-DTDS*</div>
+      If true, instructs the parser to enter all DTDs that could have
+      been cached into <tt>*dtd-cache*</tt> if they were not cached
+      already.  Defaults to <tt>nil</tt>.
+    </p>
+    <p>
+      <div class="def">Reader CXML:GETDTD (uri dtd-cache)</div>
+      Return a cached instance of the DTD at <tt>uri</tt>, if present in
+      the cache, or <tt>nil</tt>.
+    </p>
+    <p>
+      <div class="def">Writer CXML:GETDTD (uri dtd-cache)</div>
+      Enter a new value for <tt>uri</tt> into <tt>dtd-cache</tt>.
+    </p>
+    <p>
+      <div class="def">Function CXML:REMDTD (uri dtd-cache)</div>
+      Ensure that no DTD is recorded for <tt>uri</tt> in the cache and
+      return true if such a DTD was present.
+    </p>
+    <p>
+      <div class="def">Function CXML:CLEAR-DTD-CACHE (dtd-cache)</div>
+      Remove all entries from <tt>dtd-cache</tt>.
+    </p>
+    <p>
+      <em>fixme:</em> thread-safety
+    </p>
+
+    <a name="catalogs"/>
+    <h3>XML Catalogs</h3>
+    <p>
+      External entities (for example, DTDs) are referred to using their
+      Public and System IDs.  Usually the System ID, a URI, is used to
+      locate the entity.  CXML itself handles only file://-URIs, but
+      many System IDs in practical use are http://-URIs.  There are two
+      different mechanims applications can use to allow CXML to locate
+      entities using arbitrary Public ID or System ID:
+    </p>
+    <ul>
+      <li>
+        User-defined entity resolvers can be used to open entities using
+        arbitrary protocols.   For example, an entity resolver could
+        handle all System-IDs with the <tt>http</tt> scheme using some
+        HTTP library.  Refer to the description of the 
+        <tt>entity-resolver</tt> keyword argument to parser functions (see <a
+        href="#parser"><tt>cxml:parse-file</tt></a>) to more
+        information on entity resolvers.
+      </li>
+      <li>
+        XML Catalogs are (local) tables in XML syntax which map External
+        IDs to alternative System IDs.  If, say, the xhtml DTD is
+        present in the local file system and the local copy has been
+        registered with the XML catalog, CXML will use the local copy of
+        the DTD instead of trying to open the version available using HTTP.
+      </li>
+    </ul>
+    <p>
+      This section describes XML Catalogs, the second solution.  CXML
+      implements <a
+      href="http://www.oasis-open.org/committees/entity/spec.html">Oasis
+      XML Catalogs</a>.
+    </p>
+    <p>
+      <div class="def">Variable CXML:*CATALOG*</div>
+      The XML Catalog object consulted by the parser before trying to
+      open an entity.  Initially <tt>nil</tt>.
+    </p>
+    <p>
+      <div class="def">Variable CXML:*PREFER*</div>
+      The default "prefer" mode from the Catalog specification, one
+      of <tt>:public</tt> or <tt>:system</tt>.  Defaults
+      to <tt>:public</tt>.
+    </p>
+    <p>
+      <div class="def">Function CXML:MAKE-CATALOG (&optional uris)</div>
+      Return a catalog object for the catalog files specified.
+    </p>
+    <p>
+      <div class="def">Function CXML:RESOLVE-URI (uri catalog)</div>
+      Look up <tt>uri</tt> in <tt>catalog</tt> and return the
+      resulting URI, or <tt>nil</tt> if no match was found.
+    </p>
+    <p>
+      <div class="def">Function CXML:RESOLVE-EXTID (publicid systemid catalog)</div>
+      Look up the External ID (<tt>publicid</tt>, <tt>systemid</tt>)
+      in <tt>catalog</tt> and return the resulting URI, or <tt>nil</tt>
+      if no match was found.
+    </p>
+    <p>
+      Example:
+    </p>
+    <pre>* (setf cxml:*catalog* nil)
+* (cxml:parse-file "test.xhtml" nil)
+=> Error: URI scheme :HTTP not supported
+
+* (setf cxml:*catalog* (cxml:make-catalog))
+* (cxml:parse-file "test.xhtml" nil)
+;; no error!
+NIL</pre>
+    <p>
+      Note that parsed catalog files are cached in the catalog object.
+      Catalog files cached do not expire automatically.  To ensure that
+      all catalog files are parsed again, create a new catalog object.
+    </p>
+
+    <a name="sax"/>
+    <h2>SAX Interface</h2>
+    <p>
+      A SAX handler is an arbitrary objects that implements some of the
+      generic functions in the SAX package.&nbsp; Note that no default
+      handler class is necessary, because all generic functions have default
+      methods which do nothing.&nbsp; SAX functions are:
+      <div class="def">Function SAX:START-DOCUMENT (handler)</div>
+      <div class="def">Function SAX:END-DOCUMENT (handler)</div>
+      <br/>
+      <div class="def">Function SAX:START-ELEMENT (handler namespace-uri local-name qname attributes)</div>
+      <div class="def">Function SAX:END-ELEMENT (handler namespace-uri local-name qname)</div>
+      <div class="def">Function SAX:START-PREFIX-MAPPING (handler prefix uri)</div>
+      <div class="def">Function SAX:END-PREFIX-MAPPING (handler prefix)</div>
+      <div class="def">Function SAX:PROCESSING-INSTRUCTION (handler target data)</div>
+      <div class="def">Function SAX:COMMENT (handler data)</div>
+      <div class="def">Function SAX:START-CDATA (handler)</div>
+      <div class="def">Function SAX:END-CDATA (handler)</div>
+      <div class="def">Function SAX:CHARACTERS (handler data)</div>
+      <br/>
+      <div class="def">Function SAX:START-DTD (handler name public-id system-id)</div>
+      <div class="def">Function SAX:END-DTD (handler)</div>
+      <div class="def">Function SAX:UNPARSED-ENTITY-DECLARATION (handler name public-id system-id notation-name)</div>
+      <div class="def">Function SAX:EXTERNAL-ENTITY-DECLARATION (handler kind name public-id system-id)</div>
+      <div class="def">Function SAX:INTERNAL-ENTITY-DECLARATION (handler kind name value)</div>
+      <div class="def">Function SAX:NOTATION-DECLARATION (handler name public-id system-id)</div>
+      <div class="def">Function SAX:ELEMENT-DECLARATION (handler name model)</div>
+      <div class="def">Function SAX:ATTRIBUTE-DECLARATION (handler ename aname type default)</div>
+      <br/>
+      <div class="def">Accessor SAX:ATTRIBUTE-PREFIX (attribute)</div>
+      <div class="def">Accessor SAX:ATTRIBUTE-NAMESPACE-URI (attribute)</div>
+      <div class="def">Accessor SAX:ATTRIBUTE-LOCAL-NAME (attribute)</div>
+      <div class="def">Accessor SAX:ATTRIBUTE-VALUE (attribute)</div>
+      <div class="def">Accessor SAX:ATTRIBUTE-QNAME (attribute)</div>
+      <div class="def">Accessor SAX:ATTRIBUTE-SPECIFIED-P (attribute)</div>
+    </p>
+    <p>
+      The entity declaration methods are similar to Java SAX
+      definitions, but parameter entities are distinguished from
+      general entities not by a <tt>%</tt> prefix to the name, but by
+      the <tt>kind</tt> argument, either <tt>:parameter</tt> or
+      <tt>:general</tt>.
+    </p>
+    <p>
+      The arguments to <tt>sax:element-declaration</tt> and
+      <tt>sax:attribute-declaration</tt> differ significantly from their
+      Java counterparts.
+    </p>
+    <p>
+      <i>fixme</i>: For more information on these functions refer to the docstrings.
+    </p>
+
+
+    <a name="dom"/>
+    <h2>DOM Notes</h2>
+    <p>
+      CXML implements the DOM Level 1 Core interfaces.&nbsp; Explaining
+      DOM is better left to the <a
+      href="http://www.w3.org/TR/REC-DOM-Level-1/level-one-core.html">specification</a>,
+      so please refer to the official W3C documents for DOM.
+    </p>
+    <p>
+      However, there is no "standard" DOM mapping for Lisp.&nbsp; DOM
+      is <a
+      href="http://www.w3.org/TR/REC-DOM-Level-1/idl-definitions.html">specified
+      in CORBA IDL</a>, but it refrains from using object-oriented IDL
+      features, allowing for a much more natural Lisp implemenation than
+      the the ordinary IDL/Lisp mapping would.
+    </p>
+    <p>
+      Differences between CXML's DOM and the direct IDL/Lisp mapping:
+    </p>
+    <ul>
+      <li>
+        DOM function names are symbols in the <tt>DOM</tt> package (not
+        the <tt>OP</tt> package).
+      </li>
+      <li>
+        DOM functions have proper required arguments, not a huge
+        <tt>&rest</tt> lambda list.
+      </li>
+      <li>
+        Although most IDL interfaces are implemented as CLOS classes by
+        CXML, the Lisp types of DOM objects is not documented and cannot
+        be relied upon.&nbsp; A node's type can be determined using
+        <tt>dom:node-type</tt> instead.
+      </li>
+      <li>
+        <tt>DOMString</tt> is mapped to <tt>rod</tt>, which is either
+        an <tt>(unsigned-byte 16)</tt> array type or a string type.
+      </li>
+      <li>
+        The IDL/Lisp mapping maps CORBA enums to Lisp keywords.&nbsp;
+        Unfortunately, the DOM IDL does not use enums.&nbsp; Instead,
+        both exception types and node types are defined integer
+        constants.&nbsp; CXML chooses to ignore this definition and uses
+        keywords instead.
+      </li>
+      <li>
+        DOM uses StudlyCaps.&nbsp; Lisp programmers don't.&nbsp; We
+        insert <tt>#\-</tt> before every upper case letter preceded by a
+        lower case letter and before every upper case letter which is
+        followed by a lower case letter, but preceded by a capital
+        letter.&nbsp; This algorithms leads to the natural Lisp spelling
+        of DOM function names.
+      </li>
+      <li>
+        Implementation note: DOM's <tt>NodeList</tt> does not
+        necessarily map to a native "sequence" type.&nbsp; (For example,
+        node lists are objects in Java, not arrays.)&nbsp;
+        <tt>NodeList</tt> is specified to reflect changes done after a
+        node list was created, so node lists cannot be Lisp lists.&nbsp;
+        (A node list could be implemented as a CLOS object pointing to
+        said list though.)&nbsp; Instead, CXML currently implements node
+        lists as adjustable vectors.&nbsp; Note that code which relies on
+        this implementation and uses Lisp sequence functions
+        instead of sticking to <tt>dom:item</tt> and <tt>dom:length</tt>
+        is not portable.&nbsp; As a compromise, you can use our
+        extensions <tt>dom:map-node-list</tt> or
+        <tt>dom:do-node-list</tt>, which can be implemented portably.
+      </li>
+    </ul>
+    <p>Example:</p>
+    <pre>XML(97): (dom:node-type
+          (dom:document-element
+           (cxml:parse-file "~/test.xml" (dom:make-dom-builder))))
+:ELEMENT</pre>
+  </body>
+</html>

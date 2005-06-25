@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+  <head>
+    <title>Closure XML</title>
+    <link rel="stylesheet" type="text/css" href="cxml.css"/>
+  </head>
+  <body>
+    <div class="sidebar">
+      <p>
+	<a href="../README.html">CXML Homepage</a>
+      </p>
+      <ul>
+	<li>
+          <a href="installation.html">Installing Closure XML</a>
+          <ul>
+	    <li><a href="installation.html#download"><b>Download</b></a></li>
+	    <li><a href="installation.html#implementations">Implementation-specific notes</a></li>
+	    <li><a href="installation.html#compilation"><b>Compilation</b></a></li>
+	    <li><a href="installation.html#tests">Tests</a></li>
+          </ul>
+	</li>
+	<li>
+          <a href="using.html">Using Closure XML</a>
+          <ul>
+            <li><a href="using.html#quickstart"><b>Quick-Start Example</b></a></li>
+            <li><a href="using.html#parser">Parsing and Validating</a></li>
+            <li><a href="using.html#serialization">Serialization</a></li>
+            <li><a href="using.html#misc">Miscellaneous Utility Functions</a></li>
+            <li><a href="using.html#xmls">XMLS Compatibility</a></li>
+            <li><a href="using.html#rods">Dealing with Rods</a></li>
+            <li><a href="using.html#dtdcache">Caching of DTD Objects</a></li>
+            <li><a href="using.html#catalogs">XML Catalogs</a></li>
+	    <li><a href="using.html#sax">SAX Interface</a></li>
+	    <li><a href="using.html#dom">DOM Notes</a></li>
+          </ul>
+	</li>
+      </ul>
+    </div>
+    <h1>Installation of Closure XML</h1>
+
+    <a name="download"/>
+    <h2>Download</h2>
+    <ul>
+      <li>
+        <a href="http://common-lisp.net/project/cxml/download/">tarballs</a>
+      </li>
+    <li>
+      Anoncvs (<a href="http://common-lisp.net/cgi-bin/viewcvs.cgi/cxml/?cvsroot=cxml">browse</a>):
+      <pre>$ export CVSROOT=:pserver:anonymous@common-lisp.net:/project/cxml/cvsroot
+$ cvs login
+Logging in to :pserver:anonymous@common-lisp.net:2401/project/cxml/cvsroot
+CVS password: anonymous
+$ cvs co cxml</pre>
+      </lii>
+    </ul>
+
+    <a name="implementations"/>
+    <h2>Implementation-specific notes</h2>
+    <p>
+      CXML should be portable to all Common Lisp implementations
+      supporting gray streams.  Currently supported are ACL, CLISP,
+      CMUCL, LispWorks, OpenMCL, and SBCL.
+    </p>
+    <ul>
+      <li>
+	Note that CMUCL and OpenMCL do not support Unicode
+	natively.&nbsp; (You might want to use the <a
+	href="using.html#rods">recoding SAX handler</a> to work with
+	native strings anyway.)
+      </li>
+      <li>
+	SBCL and CLISP will trip over cxml's non-ASCII source files
+	unless compiled using a suitable locale configuration
+	(<tt>LC_CTYPE=en_US.ISO-8859-1</tt> should help).
+      </li>
+      <li>
+	The SBCL port uses 16 bit surrogate characters instead of taking
+	advantage of SBCL's full 21 bit character support.
+      </li>
+    </ul>
+
+<!--
+    <p>
+      Optional configuration (skip this unless you know better): CXML
+      has full Unicode code support - - even on Lisps without Unicode
+      strings.  On non-unicode aware Lisps, <tt>DOMString</tt> is
+      implemented as an array of character codes.  CXML will auto-detect
+      at compile-time which string representation to use.  To override
+      the auto-detection, you can set one of the features
+      <tt>:rune-is-character</tt> and <tt>:rune-is-octet</tt> before
+      loading <tt>cxml.asd</tt>.  (<tt>fixme</tt>: feature
+      <tt>:rune-is-octet</tt> is of course misnamed, since it uses 16bit
+      runes, not 8bit runes.  It will probably be renamed
+      to <tt>:rune-is-integer</tt> at some point.)
+    </p>
+-->
+
+    <a name="compilation"/>
+    <h2>Compilation</h2>
+    <p>
+      <a href="http://www.cliki.net/asdf">ASDF</a> is used for
+      compilation.  The following instructions assume that ASDF has
+      already been loaded.
+    </p>
+
+    <p>
+      <b>Prerequisites.</b>
+      CXML needs the <a href="http://www.cliki.net/Puri">puri</a> library.
+    </p>
+
+    <p>
+      <b>Compiling and loading CXML.</b>
+      Register the .asd file, e.g. by symlinking it:
+    </p>
+    <pre>$ ln -sf `pwd`/cxml.asd /path/to/your/registry/</pre>
+    <p>Then compile CXML using:</p>
+    <pre>* (asdf:operate 'asdf:load-op :cxml)</pre>
+
+    <p>
+      You can then try the <a href="using.html#quickstart">quick-start example</a>.
+    </p>
+
+    <a name="tests"/>
+    <h2>Tests</h2>
+    <p>Check out the XML and DOM testsuites:</p>
+    <pre>$ export CVSROOT=:pserver:anonymous@dev.w3.org:/sources/public
+$ cvs login    # password is "anonymous"
+$ cvs co 2001/XML-Test-Suite/xmlconf
+$ cvs co -D '2005-05-06 23:00' 2001/DOM-Test-Suite
+$ cd 2001/DOM-Test-Suite && ant dom1-dtd</pre>
+    <p>
+      Omit <tt>-D</tt> to get the latest version, which may not work
+      with cxml yet.  The <tt>ant</tt> step is necessary to run the DOM
+      tests.
+    </p>
+    <p>Usage and expected output:</p>
+    <pre>* (xmlconf:run-all-tests "/path/to/2001/XML-Test-Suite/xmlconf/")
+0/556 tests failed; 1606 tests were skipped
+* (domtest:run-all-tests "/path/to/2001/DOM-Test-Suite/")
+0/449 tests failed; 71 tests were skipped</pre>
+
+    <p>
+      <i>fixme</i>: Add an explanation of xml/sax-tests here.
+    </p>
+
+    <p>
+      <b>fixme</b> My parser does not understand the current testsuite
+      anymore.&nbsp; To fix this problem, revert the affected files
+      manually after check-out:
+    </p>
+
+    <pre>$ cd 2001/XML-Test-Suite/xmlconf/
+xmltest$ patch -p0 -R &lt;/path/to/cxml/test/xmlconf-base.diff</pre>
+
+    <p>
+      The log message for the changes reads "<i>Removed unnecessary
+      xml:base attribute</i>".&nbsp; If I understand correctly, only
+      DOM&nbsp;3 parsers provide the baseURI attribute necessary for
+      understanding <tt>xmlconf.xml</tt> now.&nbsp; We don't have that
+      yet.
+    </p>
+  </body>
+</html>
