@@ -1270,11 +1270,13 @@
           ((rune= #// d)
            (let ((c (peek-rune input)))
              (cond ((name-start-rune-p c)
+                    (ensure-dtd)        ;fixme
                     (read-tag-2 zinput input :etag))
                    (t
                     (error "Expecting name start rune after \"</\".")))))
           ((name-start-rune-p d)
            (unread-rune d input)
+           (ensure-dtd)                ;fixme
            (read-tag-2 zinput input :stag))
           (t
            (error "Expected '!' or '?' after '<' in DTD.")))))
@@ -2435,6 +2437,7 @@
 (defun p/doctype-decl (input &optional dtd-extid)
   (let ()
     (let ((*expand-pe-p* nil)
+          (fresh-dtd-p t)
           name extid)
       (expect input :|<!DOCTYPE|)
       (p/S input)
@@ -2457,6 +2460,7 @@
         (when (disallow-internal-subset *ctx*)
           (error "document includes an internal subset"))
         (ensure-dtd)
+        (setf fresh-dtd-p nil)
         (consume-token input)
         (while (progn (p/S? input)
                       (not (eq (peek-token input) :\] )))
@@ -2480,7 +2484,6 @@
         (let* ((effective-extid
                 (extid-using-catalog (absolute-extid input extid)))
                (sysid (extid-system effective-extid))
-               (fresh-dtd-p (null (dtd *ctx*)))
                (cached-dtd
                 (and fresh-dtd-p
                      (not (standalone-p *ctx*))
@@ -2896,28 +2899,31 @@
       (values nil nil)))
 
 (defun uri-to-pathname (uri)
-  (let ((scheme (puri:uri-scheme uri))
-        (path (puri:uri-parsed-path uri)))
-    (unless (member scheme '(nil :file))
-      (error 'parser-error
-             :format-control "URI scheme ~S not supported"
-             :format-arguments (list scheme)))
-    (if (eq (car path) :relative)
-        (multiple-value-bind (name type)
-            (parse-name.type (car (last path)))
-          (make-pathname :directory (butlast path)
-                         :name name
-                         :type type))
-        (multiple-value-bind (name type)
-            (parse-name.type (car (last (cdr path))))
-          (destructuring-bind (host device)
-              (split-sequence-if (lambda (x) (eql x #\+))
-                                 (or (puri:uri-host uri) "+"))
-            (make-pathname :host (string-or host)
-                           :device (string-or device)
-                           :directory (cons :absolute (butlast (cdr path)))
+  (flet ((unescape (str)
+           (puri::decode-escaped-encoding str t puri::*reserved-characters*)))
+    (let ((scheme (puri:uri-scheme uri))
+          (path (puri:uri-parsed-path uri)))
+      (setf path (cons (car path) (mapcar #'unescape (cdr path))))
+      (unless (member scheme '(nil :file))
+        (error 'parser-error
+               :format-control "URI scheme ~S not supported"
+               :format-arguments (list scheme)))
+      (if (eq (car path) :relative)
+          (multiple-value-bind (name type)
+              (parse-name.type (car (last path)))
+            (make-pathname :directory (butlast path)
                            :name name
-                           :type type))))))
+                           :type type))
+          (multiple-value-bind (name type)
+              (parse-name.type (car (last (cdr path))))
+            (destructuring-bind (host device)
+                (split-sequence-if (lambda (x) (eql x #\+))
+                                   (or (puri:uri-host uri) "+"))
+              (make-pathname :host (string-or host)
+                             :device (string-or device)
+                             :directory (cons :absolute (butlast (cdr path)))
+                             :name name
+                             :type type)))))))
 
 (defun parse-xstream (xstream handler &rest args)
   (let ((zstream (make-zstream :input-stack (list xstream))))
@@ -3246,20 +3252,20 @@
   (let ((input-var (gensym))
         (collect (gensym))
         (c (gensym)))
-    `(LET ((,input-var ,input))
-       (MULTIPLE-VALUE-BIND (,res ,res-start ,res-end) 
-           (WITH-RUNE-COLLECTOR/RAW (,collect)
-             (LOOP
-               (LET ((,c (PEEK-RUNE ,input-var)))
-                 (COND ((EQ ,c :EOF) 
+    `(let ((,input-var ,input))
+       (multiple-value-bind (,res ,res-start ,res-end) 
+           (with-rune-collector/raw (,collect)
+             (loop
+               (let ((,c (peek-rune ,input-var)))
+                 (cond ((eq ,c :eof) 
                         ;; xxx error message
-                        (RETURN))
-                       ((FUNCALL ,predicate ,c)
-                        (RETURN))
+                        (return))
+                       ((funcall ,predicate ,c)
+                        (return))
                        (t
                         (,collect ,c)
-                        (CONSUME-RUNE ,input-var))))))
-         (LOCALLY
+                        (consume-rune ,input-var))))))
+         (locally
            ,@body)))))
   
 (defun read-name-token (input)
