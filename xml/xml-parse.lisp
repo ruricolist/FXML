@@ -23,8 +23,8 @@
 ;;; Library General Public License for more details.
 ;;;
 ;;; You should have received a copy of the GNU Library General Public
-;;; License along with this library; if not, write to the 
-;;; Free Software Foundation, Inc., 59 Temple Place - Suite 330, 
+;;; License along with this library; if not, write to the
+;;; Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 ;;; Boston, MA  02111-1307  USA.
 
 ;;; Streams
@@ -83,7 +83,7 @@
 ;;    :#fixed
 ;;    :#pcdata
 ;;    :s
-;;    :\[ :\] :\( :\) :|\ :\> :\" :\' :\, :\? :\* :\+ 
+;;    :\[ :\] :\( :\) :|\ :\> :\" :\' :\, :\? :\* :\+
 
 ;; *data-behaviour* = :DOC
 ;;
@@ -96,7 +96,7 @@
 ;;; NOTES
 ;;
 ;; Stream buffers as well as RODs are supposed to be encoded in
-;; UTF-16. 
+;; UTF-16.
 
 ;; where does the time go?
 ;; DATA-RUNE-P
@@ -105,7 +105,7 @@
 ;; CLOSy DOM
 ;; UTF-8 decoder (13%)
 ;; READ-ATTVAL (10%)
-;; 
+;;
 
 ;;; TODO
 ;;
@@ -153,7 +153,7 @@
 ;;
 ;; o merge node representation with SGML module
 ;;   [???]
-;; 
+;;
 ;; o line/column number recording
 ;;
 ;; o better error messages
@@ -294,7 +294,7 @@
 ;; respectively.  If there are not enough bytes in `input' to decode a
 ;; full character, decoding shold be abandomed; the caller has to
 ;; ensure that the remaining bytes of `input' are passed to the
-;; decoder again with more bytes appended. 
+;; decoder again with more bytes appended.
 ;;
 ;; `eof-p' now in turn indicates, if the given input sequence, is all
 ;; the producer does have and might be used to produce error messages
@@ -319,9 +319,9 @@
 ;; Let us first define fast fixnum arithmetric get rid of type
 ;; checks. (After all we know what we do here).
 
-(defmacro fx-op (op &rest xs) 
+(defmacro fx-op (op &rest xs)
   `(the fixnum (,op ,@(mapcar (lambda (x) `(the fixnum ,x)) xs))))
-(defmacro fx-pred (op &rest xs) 
+(defmacro fx-pred (op &rest xs)
   `(,op ,@(mapcar (lambda (x) `(the fixnum ,x)) xs)))
 
 (defmacro %+   (&rest xs) `(fx-op + ,@xs))
@@ -342,9 +342,9 @@
 
 ;;; XXX Geschwindigkeit dieser Definitionen untersuchen!
 
-(defmacro rune-op (op &rest xs) 
+(defmacro rune-op (op &rest xs)
   `(code-rune (,op ,@(mapcar (lambda (x) `(rune-code ,x)) xs))))
-(defmacro rune-pred (op &rest xs) 
+(defmacro rune-pred (op &rest xs)
   `(,op ,@(mapcar (lambda (x) `(rune-code ,x)) xs)))
 
 (defmacro %rune+   (&rest xs) `(rune-op + ,@xs))
@@ -370,7 +370,7 @@
 ;;; make-rod-hashtable
 ;;; rod-hash-get hashtable rod &optional start end -> value ; successp
 ;;; (setf (rod-hash-get hashtable rod &optional start end) new-value
-;;; 
+;;;
 
 (defstruct (rod-hashtable (:constructor make-rod-hashtable/low))
   size          ;size of table
@@ -554,8 +554,8 @@
            (,i 0)
            (,b ,scratch))
        (declare (type fixnum ,n ,i))
-       (macrolet 
-           ((,collect (x) 
+       (macrolet
+           ((,collect (x)
               `((lambda (x)
                   (locally
                       (declare #.*fast*)
@@ -575,7 +575,7 @@
              `(let ((,rod (make-rod ,i)))
                 (while (not (%= ,i 0))
                        (setf ,i (%- ,i 1))
-                       (setf (%rune ,rod ,i) 
+                       (setf (%rune ,rod ,i)
                          (aref (the (simple-array rune (*)) ,b) ,i)))
                 ,rod))
             (:raw
@@ -590,8 +590,8 @@
     `(let ((,n (length ,scratch))
            (,i 0))
        (declare (type fixnum ,n ,i))
-       (macrolet 
-           ((,collect (x) 
+       (macrolet
+           ((,collect (x)
               `((lambda (x)
                   (locally
                       (declare #.*fast*)
@@ -611,7 +611,7 @@
              `(let ((,rod (make-rod ,i)))
                 (while (%> ,i 0)
                        (setf ,i (%- ,i 1))
-                       (setf (%rune ,rod ,i) 
+                       (setf (%rune ,rod ,i)
                          (aref (the (simple-array rune (*)) ,scratch) ,i)))
                 ,rod))
             (:raw
@@ -670,11 +670,18 @@
 ;;;;  DTD
 ;;;;
 
-(define-condition parser-error (simple-error) ())
-(define-condition validity-error (parser-error) ())
+(define-condition parse-error (simple-error) ())
+(define-condition well-formedness-violation (parse-error) ())
+(define-condition end-of-xstream (well-formedness-violation) ())
+(define-condition validity-error (parse-error) ())
 
 (defun validity-error (x &rest args)
   (error 'validity-error
+         :format-control "Validity constraint violated: ~@?"
+         :format-arguments (list x args)))
+
+(defun wf-error (x &rest args)
+  (error 'well-formedness-violation
          :format-control "Validity constraint violated: ~@?"
          :format-arguments (list x args)))
 
@@ -768,7 +775,7 @@
 
 (defun validate-attribute* (ctx adef value)
   (let ((type (attdef-type adef))
-        (default (attdef-default adef))) 
+        (default (attdef-default adef)))
     (when (and (listp default)
                (eq (car default) :FIXED)
                (not (rod= value (cadr default))))
@@ -921,7 +928,7 @@
   ;; `zstream' is for error messages
   (let ((def (get-entity-definition entity-name kind (dtd *ctx*))))
     (unless def
-      (if zstream 
+      (if zstream
           (perror zstream "Entity '~A' is not defined." (rod-string entity-name))
         (error "Entity '~A' is not defined." (rod-string entity-name))))
     (let (r)
@@ -1145,7 +1152,7 @@
 
 (defun peek-token (input)
   (cond ((zstream-token-category input)
-         (values 
+         (values
           (zstream-token-category input)
           (zstream-token-semantic input)))
         (t
@@ -1224,7 +1231,7 @@
                  (t
                   (error "Unexpected character ~S." c))))
           (:DOC
-           (cond 
+           (cond
             ((rune= c #/&)
              (multiple-value-bind (kind data) (read-entity-ref input)
                (cond ((eq kind :NAMED)
@@ -1450,7 +1457,7 @@
                                    (assert (rune= c #/\;))
                                    (ecase mode
                                      (:ATT
-                                      (recurse-on-entity 
+                                      (recurse-on-entity
                                        zinput name :general
                                        (lambda (zinput)
                                          (muffle (car (zstream-input-stack zinput))
@@ -1471,7 +1478,7 @@
                             (setf c (read-rune input))
                             (assert (rune= c #/\;))
                             (cond (*expand-pe-p*
-                                   (recurse-on-entity 
+                                   (recurse-on-entity
                                     zinput name :parameter
                                     (lambda (zinput)
                                       (muffle (car (zstream-input-stack zinput))
@@ -1560,8 +1567,8 @@
         (unless (data-rune-p d)
           (error "Illegal char: ~S." d))
         (when (rune= d #/>) (return))
-        (when (rune= d #/?) 
-          (collect #/?) 
+        (when (rune= d #/?)
+          (collect #/?)
           (go state-2))
         (collect #/?)
         (collect d)
@@ -1659,7 +1666,7 @@
         (when (rune= d #/\]) (go state-2))
         (collect d)
         (go state-1)
-        
+
        state-2 ;; #/\] seen
         (setf d (peek-rune input))
         (when (or (eq d :eof) (rune= d #/<) (rune= d #/&))
@@ -1672,7 +1679,7 @@
         (collect #/\])
         (collect d)
         (go state-1)
-        
+
        state-3 ;; #/\] #/\] seen
         (setf d (peek-rune input))
         (when (or (eq d :eof) (rune= d #/<) (rune= d #/&))
@@ -1682,7 +1689,7 @@
         (read-rune input)
         (unless (data-rune-p d)
           (error "Illegal char: ~S." d))
-        (when (rune= d #/>) 
+        (when (rune= d #/>)
           (error "For no apparent reason ']]>' in not allowed in a CharData token -- you lost."))
         (when (rune= d #/\])
           (collect #/\])
@@ -1848,14 +1855,14 @@
 (defun p/default-decl (input)
   ;; [60] DefaultDecl ::= '#REQUIRED' | '#IMPLIED'
   ;;                       | (('#FIXED' S)? AttValue) /* VC: Required Attribute */
-  ;;                       
+  ;;
   ;; /* VC: Attribute Default Legal */
   ;; /* WFC: No < in Attribute Values */
   ;; /* VC: Fixed Attribute Default */
   (multiple-value-bind (cat sem) (peek-token input)
-    (cond ((eq cat :|#REQUIRED|) 
+    (cond ((eq cat :|#REQUIRED|)
            (consume-token input) :REQUIRED)
-          ((eq cat :|#IMPLIED|)  
+          ((eq cat :|#IMPLIED|)
            (consume-token input) :IMPLIED)
           ((eq cat :|#FIXED|)
            (consume-token input)
@@ -2173,10 +2180,10 @@
                        ((and (walk (car x))
                              (walk (cdr x)))))))
         (walk cspec))))
-                 
+
 ;; wir fahren besser, wenn wir machen:
 
-;; cspec ::= 'EMPTY' | 'ANY' | '#PCDATA' 
+;; cspec ::= 'EMPTY' | 'ANY' | '#PCDATA'
 ;;         | Name
 ;;         | cs
 ;;    cs ::= '(' S? cspec ( S? '|' S? cspec)* S? ')' ('?' | '*' | '+')?
@@ -2186,8 +2193,8 @@
   (let ((term
          (let ((names nil) op-cat op res stream)
            (multiple-value-bind (cat sem) (peek-token input)
-             (cond ((eq cat :name) 
-                    (consume-token input) 
+             (cond ((eq cat :name)
+                    (consume-token input)
                     (cond ((rod= sem '#.(string-rod "EMPTY"))
                            :EMPTY)
                           ((rod= sem '#.(string-rod "ANY"))
@@ -2247,14 +2254,14 @@
                       (trivialp (cadr cspec)))))
         :PCDATA
         cspec)))
-   
+
 ;; [52] AttlistDecl ::= '<!ATTLIST' S Name AttDef* S? '>'
-    
+
 
 ;; [52] AttlistDecl ::= '<!ATTLIST' S Name AttDefs S? '>'
 ;; [52] AttlistDecl ::= '<!ATTLIST' S Name S? '>'
 ;; [53] AttDefs ::= S Name S AttType S DefaultDecl AttDefs
-;; [53] AttDefs ::= 
+;; [53] AttDefs ::=
 
 (defun p/notation-decl (input)
   (let (name id)
@@ -2381,7 +2388,7 @@
 
 (defun p/markup-decl-unsafe (input)
   ;; markupdecl ::= elementdecl | AttlistDecl       /* VC: Proper Declaration/PE Nesting */
-  ;;              | EntityDecl | NotationDecl 
+  ;;              | EntityDecl | NotationDecl
   ;;              | PI | Comment               /* WFC: PEs in Internal Subset */
   (case (peek-token input)
     (:|<!ELEMENT|  (p/element-decl input))
@@ -2530,7 +2537,7 @@
       (:COMMENT
         (sax:comment (handler *ctx*) (nth-value 1 (peek-token input))))
       (:PI
-        (sax:processing-instruction 
+        (sax:processing-instruction
          (handler *ctx*)
          (car (nth-value 1 (peek-token input)))
          (cdr (nth-value 1 (peek-token input))))))
@@ -2598,10 +2605,10 @@
                    (unless v
                      (validity-error "(11) IDREF: ~S not defined" (rod-string k))))
                  (id-table *ctx*))
-      
-        (dolist (name (referenced-notations *ctx*)) 
+
+        (dolist (name (referenced-notations *ctx*))
           (unless (find-notation name (dtd *ctx*))
-            (validity-error "(23) Notation Declared: ~S" (rod-string name))))) 
+            (validity-error "(23) Notation Declared: ~S" (rod-string name)))))
       (sax:end-document handler))))
 
 (defun p/element (input)
@@ -2698,7 +2705,7 @@
           (p/content input))))
       ((:<!\[)
        (consume-token input)
-       (cons 
+       (cons
         (let ((input (car (zstream-input-stack input))))
           (unless (and (rune= #/C (read-rune input))
                        (rune= #/D (read-rune input))
@@ -2749,7 +2756,7 @@
     (unless (eq (peek-rune i) :eof)
       (error "Garbage at end of XML PI."))
     ;; versioninfo muss da sein
-    ;; dann ? encodingdecl 
+    ;; dann ? encodingdecl
     ;; dann ? sddecl
     ;; dann ende
     (when (and (not (eq (caar atts) (intern-name '#.(string-rod "version"))))
@@ -2793,7 +2800,7 @@
         (error "Hypersensitivity pitfall: ~
                 XML PI's 'standalone' attribute must be exactly \"yes\" or \"no\" and not ~S."
                (rod-string (cdar atts))))
-      (setf (xml-header-standalone-p res) 
+      (setf (xml-header-standalone-p res)
         (if (rod-equal '#.(string-rod "yes") (cdar atts))
             :yes
           :no))
@@ -2802,7 +2809,7 @@
       (error "XML designers decided to disallow future extensions to the set ~
               of allowed XML PI's attributes -- you might have lost big on ~S (~S)"
              (rod-string content) sd-ok-p
-             )) 
+             ))
     res))
 
 ;;;; ---------------------------------------------------------------------------
@@ -2847,7 +2854,7 @@
         (dolist (pair pairs)
           (if first
               (setf first nil)
-              (write-char #\& s)) 
+              (write-char #\& s))
           (write-string (escape (car pair)) s)
           (write-char #\= s)
           (write-string (escape (cdr pair)) s))))))
@@ -2949,7 +2956,7 @@
 
 (defun parse-stream (stream handler &rest args)
   (let ((xstream
-         (make-xstream 
+         (make-xstream
           stream
           :name (make-stream-name
                  :entity-name "main document"
@@ -3062,7 +3069,7 @@
 
 (defparameter *test-files*
     '(;;"jclark:xmltest;not-wf;*;*.xml"
-      "jclark:xmltest;valid;*;*.xml" 
+      "jclark:xmltest;valid;*;*.xml"
       ;;"jclark:xmltest;invalid;*.xml"
       ))
 
@@ -3089,7 +3096,7 @@
       (negative-test-file filename))))
 
 (defun positive-test-file (filename out-filename)
-  (multiple-value-bind (nodes condition) 
+  (multiple-value-bind (nodes condition)
       (ignore-errors (parse-file filename))
     (cond (condition
            (warn "**** Error in ~S: ~A." filename condition)
@@ -3122,7 +3129,7 @@
                     t)))))))
 
 (defun negative-test-file (filename)
-  (multiple-value-bind (nodes condition) 
+  (multiple-value-bind (nodes condition)
       (ignore-errors (parse-file filename))
     (declare (ignore nodes))
     (cond (condition
@@ -3214,17 +3221,17 @@
             (t
             we continue
              (sf rptr (%+ rptr 1))) ))
-    ,@body )) 
+    ,@body ))
 ||#
 
 ;(defun read-data-until (predicate input continuation)
 ;  )
 
 (defmacro read-data-until* ((predicate input res res-start res-end) &body body)
-  "Read data from `input' until `predicate' applied to the read char 
+  "Read data from `input' until `predicate' applied to the read char
    turns true. Then execute `body' with `res', `res-start', `res-end'
    bound to denote a subsequence (of RUNEs) containing the read portion.
-   The rune upon which `predicate' turned true is neither consumed from 
+   The rune upon which `predicate' turned true is neither consumed from
    the stream, nor included in `res'.
 
    Keep the predicate short, this it may be included more than once into
@@ -3234,11 +3241,11 @@
         (collect (gensym))
         (c (gensym)))
     `(LET ((,input-var ,input))
-       (MULTIPLE-VALUE-BIND (,res ,res-start ,res-end) 
+       (MULTIPLE-VALUE-BIND (,res ,res-start ,res-end)
            (WITH-RUNE-COLLECTOR/RAW (,collect)
              (LOOP
                (LET ((,c (PEEK-RUNE ,input-var)))
-                 (COND ((EQ ,c :EOF) 
+                 (COND ((EQ ,c :EOF)
                         ;; xxx error message
                         (RETURN))
                        ((FUNCALL ,predicate ,c)
@@ -3248,11 +3255,11 @@
                         (CONSUME-RUNE ,input-var))))))
          (LOCALLY
            ,@body)))))
-  
+
 (defun read-name-token (input)
   (read-data-until* ((lambda (rune)
                        (declare (type rune rune))
-                       (not (name-rune-p rune))) 
+                       (not (name-rune-p rune)))
                      input
                      r rs re)
                     (intern-name r rs re)))
@@ -3308,7 +3315,7 @@
                                    (let ((name (read-name-token input)))
                                      (setf c (read-rune input))
                                      (assert (rune= c #/\;))
-                                     (recurse-on-entity 
+                                     (recurse-on-entity
                                       zinput name :general
                                       (lambda (zinput)
                                         (muffle (car (zstream-input-stack zinput)))))))))
@@ -3325,7 +3332,7 @@
                            (t
                             (collect c)))))))
         (declare (dynamic-extent #'muffle))
-        (recurse-on-entity 
+        (recurse-on-entity
          zinput name :general
          (lambda (zinput)
            (muffle (car (zstream-input-stack zinput))))) ))))
@@ -3385,7 +3392,7 @@
   '((#"" . nil)
     (#"xmlns" . #"http://www.w3.org/2000/xmlns/")
     (#"xml" . #"http://www.w3.org/XML/1998/namespace")))
-    
+
 ;; We already know that name is part of a valid XML name, so all we
 ;; have to check is that the first rune is a name-start-rune and that
 ;; there is not colon in it.
@@ -3403,7 +3410,7 @@
 	      (values prefix local-name)
 	      (error "~S is not a valid NcName." local-name)))
 	(values () qname))))
-		 
+		
 (defun decode-qname (qname)
   "decode-qname name => namespace-uri, prefix, local-name"
   (declare (type runes:simple-rod qname))
@@ -3509,7 +3516,7 @@
   (let (attributes)
     (dolist (pair attr-alist)
       (push (build-attribute (car pair) (cdr pair) t) attributes))
-    
+
     ;; 5.3 Uniqueness of Attributes
     ;; In XML documents conforming to [the xmlns] specification, no
     ;; tag may contain two attributes which:
@@ -3532,7 +3539,7 @@
 	  (error "Multiple definitions of attribute ~S in namespace ~S."
 		 (mu (sax:attribute-local-name attr-1))
 		 (mu (sax:attribute-namespace-uri attr-1))))))))
-    
+
 (defun build-attribute (name value specified-p)
   (multiple-value-bind (prefix local-name) (split-qname name)
     (declare (ignorable local-name))
@@ -3549,25 +3556,6 @@
                               :namespace-uri uri
                               :local-name local-name
                               :specified-p specified-p)))))
-    
-;;; Faster constructors
-
-;; Since using the general DOM interface to construct the parsed trees
-;; may turn out to be quite expensive (That depends on the underlying
-;; DOM implementation). A particular DOM implementation may choose to
-;; implement an XML:FAST-CONSTRUCTORS method:
-
-;; XML:FAST-CONSTRUCTORS document                               [method]
-;;
-;; Return an alist of constructors suitable for the document `document'.
-;;
-;;  (:MAKE-TEXT document parent data)
-;;  (:MAKE-PROCESSING-INSTRUCTION document parent target content)
-;;  (:MAKE-NODE document parent attributes content)
-;;  [`attributes' now in turn is an alist]
-;;  (:MAKE-CDATA document parent data)
-;;  (:MAKE-COMMENT document parent data)
-;;
 
 ;;;;;;;;;;;;;;;;;
 
@@ -3592,18 +3580,8 @@
 ;; `base' yielding an absolute system identifier suitable for
 ;; OPEN-SYS-ID.
 
-;; xstream Controller Protocol
-;;
-;; 
-
-
-#||
-(defun xml-parse (system-id &key document standalone-p)
-  )
-||#
 
 ;;;;;;;;;;;;;;;;;
-
 ;;; SAX validation handler
 
 (defclass validator ()
