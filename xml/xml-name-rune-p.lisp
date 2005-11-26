@@ -11,7 +11,7 @@
    (compile 
     nil
     '(lambda ()
-      (let ((.max. #xD800))
+      (let ((+max+ #xD800))
         (labels
             ((name-start-rune-p (rune)
                (or (letter-rune-p rune)
@@ -207,7 +207,7 @@
 
 
              (predicate-to-bv (p)
-               (let ((r (make-array .max. :element-type 'bit :initial-element 0)))
+               (let ((r (make-array +max+ :element-type 'bit :initial-element 0)))
                  (dotimes (i #x10000 r)
                    (when (funcall p i)
                      (setf (aref r i) 1))))) )
@@ -215,13 +215,13 @@
           `(progn
              (DEFINLINE NAME-RUNE-P (RUNE)
                (SETF RUNE (RUNE-CODE RUNE))
-               (AND (<= 0 RUNE ,.max.)
+               (AND (<= 0 RUNE ,+max+)
                     (LOCALLY (DECLARE (OPTIMIZE (SAFETY 0) (SPEED 3)))
                              (= 1 (SBIT ',(predicate-to-bv #'name-rune-p)
                                         (THE FIXNUM RUNE))))))
              (DEFINLINE NAME-START-RUNE-P (RUNE)
                (SETF RUNE (RUNE-CODE RUNE))
-               (AND (<= 0 RUNE ,.MAX.)
+               (AND (<= 0 RUNE ,+MAX+)
                     (LOCALLY (DECLARE (OPTIMIZE (SAFETY 0) (SPEED 3)))
                              (= 1 (SBIT ',(predicate-to-bv #'name-start-rune-p)
                                         (THE FIXNUM RUNE)))))))) ))))

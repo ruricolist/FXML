@@ -670,10 +670,10 @@
 ;;;;  DTD
 ;;;;
 
-(define-condition parse-error (simple-error) ())
-(define-condition well-formedness-violation (parse-error) ())
+(define-condition xml-parse-error (simple-error) ())
+(define-condition well-formedness-violation (xml-parse-error) ())
 (define-condition end-of-xstream (well-formedness-violation) ())
-(define-condition validity-error (parse-error) ())
+(define-condition validity-error (xml-parse-error) ())
 
 (defun validity-error (x &rest args)
   (error 'validity-error
@@ -2420,7 +2420,7 @@
 
 (defun p/ext-subset (input)
   (cond ((eq (peek-token input) :xml-pi)
-         (let ((hd (parse-xml-pi (cdr (nth-value 1 (peek-token input))) nil)))
+         (let ((hd (parse-text-decl (cdr (nth-value 1 (peek-token input))))))
            (setup-encoding input hd))
          (consume-token input)))
   (set-full-speed input)
@@ -2569,7 +2569,7 @@
     (let ((*data-behaviour* :DTD))
       ;; optional XMLDecl?
       (cond ((eq (peek-token input) :xml-pi)
-             (let ((hd (parse-xml-pi (cdr (nth-value 1 (peek-token input))) t)))
+             (let ((hd (parse-xml-decl (cdr (nth-value 1 (peek-token input))))))
                (setf (standalone-p *ctx*) (eq (xml-header-standalone-p hd) :yes))
                (setup-encoding input hd))
              (read-token input)))
@@ -2743,41 +2743,37 @@
 (defun p/ext-parsed-ent (input)
   ;; [78] extParsedEnt ::= '<?xml' VersionInfo? EncodingDecl S? '?>' content
   (when (eq (peek-token input) :xml-pi)
-    (let ((hd (parse-xml-pi (cdr (nth-value 1 (peek-token input))) nil)))
+    (let ((hd (parse-text-decl (cdr (nth-value 1 (peek-token input))))))
       (setup-encoding input hd))
-    (consume-token input) )
+    (consume-token input))
   (set-full-speed input)
   (p/content input))
 
-(defun parse-xml-pi (content sd-ok-p)
-  ;; --> xml-header
-  ;;(make-xml-header))
+(defun parse-xml-decl (content)
   (let* ((res (make-xml-header))
          (i (make-rod-xstream content))
          (atts (read-attribute-list 'foo i t))) ;xxx on 'foo
     (unless (eq (peek-rune i) :eof)
-      (error "Garbage at end of XML PI."))
+      (error "Garbage at end of XMLDecl."))
     ;; versioninfo muss da sein
     ;; dann ? encodingdecl
     ;; dann ? sddecl
     ;; dann ende
-    (when (and (not (eq (caar atts) (intern-name '#.(string-rod "version"))))
-               sd-ok-p)
-      (error "XML PI needs version."))
-    (when (eq (caar atts) (intern-name '#.(string-rod "version")))
-      (unless (and (>= (length (cdar atts)) 1)
-                   (every (lambda (x)
-                            (or (rune<= #/a x #/z)
-                                (rune<= #/A x #/Z)
-                                (rune<= #/0 x #/9)
-                                (rune= x #/_)
-                                (rune= x #/.)
-                                (rune= x #/:)
-                                (rune= x #/-)))
-                          (cdar atts)))
-        (error "Bad XML version number: ~S." (rod-string (cdar atts))))
-      (setf (xml-header-version res) (rod-string (cdar atts)))
-      (pop atts))
+    (unless (eq (caar atts) (intern-name '#.(string-rod "version")))
+      (wf-error "XMLDecl needs version."))
+    (unless (and (>= (length (cdar atts)) 1)
+		 (every (lambda (x)
+			  (or (rune<= #/a x #/z)
+			      (rune<= #/A x #/Z)
+			      (rune<= #/0 x #/9)
+			      (rune= x #/_)
+			      (rune= x #/.)
+			      (rune= x #/:)
+			      (rune= x #/-)))
+			(cdar atts)))
+      (wf-error "Bad XML version number: ~S." (rod-string (cdar atts))))
+    (setf (xml-header-version res) (rod-string (cdar atts)))
+    (pop atts)
     (when (eq (caar atts) (intern-name '#.(string-rod "encoding")))
       (unless (and (>= (length (cdar atts)) 1)
                    (every (lambda (x)
@@ -2793,25 +2789,67 @@
                           (rune<= #/A x #/Z)
                           (rune<= #/0 x #/9)))
                     (aref (cdar atts) 0)))
-        (error "Bad XML encoding name: ~S." (rod-string (cdar atts))))
+        (wf-error "Bad XML encoding name: ~S." (rod-string (cdar atts))))
       (setf (xml-header-encoding res) (rod-string (cdar atts)))
       (pop atts))
-    (when (and sd-ok-p (eq (caar atts) (intern-name '#.(string-rod "standalone"))))
+    (when (eq (caar atts) (intern-name '#.(string-rod "standalone")))
       (unless (or (rod= (cdar atts) '#.(string-rod "yes"))
                   (rod= (cdar atts) '#.(string-rod "no")))
-        (error "Hypersensitivity pitfall: ~
-                XML PI's 'standalone' attribute must be exactly \"yes\" or \"no\" and not ~S."
+        (wf-error "XMLDecl's 'standalone' attribute must be exactly \"yes\" or \"no\" and not ~S."
                (rod-string (cdar atts))))
       (setf (xml-header-standalone-p res)
-        (if (rod-equal '#.(string-rod "yes") (cdar atts))
-            :yes
-          :no))
+	    (if (rod-equal '#.(string-rod "yes") (cdar atts))
+		:yes
+		:no))
       (pop atts))
     (when atts
-      (error "XML designers decided to disallow future extensions to the set ~
-              of allowed XML PI's attributes -- you might have lost big on ~S (~S)"
-             (rod-string content) sd-ok-p
-             ))
+      (wf-error "Garbage in XMLDecl: ~A" (rod-string content)))
+    res))
+
+(defun parse-text-decl (content)
+  (let* ((res (make-xml-header))
+         (i (make-rod-xstream content))
+         (atts (read-attribute-list 'foo i t))) ;xxx on 'foo
+    (unless (eq (peek-rune i) :eof)
+      (error "Garbage at end of TextDecl"))
+    ;; versioninfo optional
+    ;; encodingdecl muss da sein
+    ;; dann ende
+    (when (eq (caar atts) (intern-name '#.(string-rod "version")))
+      (unless (and (>= (length (cdar atts)) 1)
+		   (every (lambda (x)
+			    (or (rune<= #/a x #/z)
+				(rune<= #/A x #/Z)
+				(rune<= #/0 x #/9)
+				(rune= x #/_)
+				(rune= x #/.)
+				(rune= x #/:)
+				(rune= x #/-)))
+			  (cdar atts)))
+	(wf-error "Bad XML version number: ~S." (rod-string (cdar atts))))
+      (setf (xml-header-version res) (rod-string (cdar atts)))
+      (pop atts)) 
+    (unless (eq (caar atts) (intern-name '#.(string-rod "encoding")))
+      (wf-error "TextDecl needs encoding."))
+    (unless (and (>= (length (cdar atts)) 1)
+		 (every (lambda (x)
+			  (or (rune<= #/a x #/z)
+			      (rune<= #/A x #/Z)
+			      (rune<= #/0 x #/9)
+			      (rune= x #/_)
+			      (rune= x #/.)
+			      (rune= x #/-)))
+			(cdar atts))
+		 ((lambda (x)
+		    (or (rune<= #/a x #/z)
+			(rune<= #/A x #/Z)
+			(rune<= #/0 x #/9)))
+		  (aref (cdar atts) 0)))
+      (wf-error "Bad XML encoding name: ~S." (rod-string (cdar atts))))
+    (setf (xml-header-encoding res) (rod-string (cdar atts)))
+    (pop atts)
+    (when atts
+      (wf-error "Garbage in TextDecl: ~A" (rod-string content)))
     res))
 
 ;;;; ---------------------------------------------------------------------------
