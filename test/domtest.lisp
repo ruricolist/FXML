@@ -618,6 +618,14 @@
       "hc_nodereplacechildnewchildexists.xml"
       "characterdatadeletedatanomodificationallowederr.xml"))
 
+(defun dribble-tests (directory)
+  (let ((base (slot-value (asdf:find-system :cxml) 'asdf::relative-pathname)))
+    (with-open-file (*standard-output*
+		     (merge-pathnames "DOMTEST" base)
+		     :direction :output
+		     :if-exists :supersede)
+      (run-all-tests directory))))
+
 (defun run-all-tests (*directory* &optional verbose)
   (let* ((cxml::*redefinition-warning* nil)
          (test-directory (merge-pathnames "tests/level1/core/" *directory*))

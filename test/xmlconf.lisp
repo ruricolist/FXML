@@ -36,6 +36,7 @@
       nil)
     ((equal (get-attribute test "TYPE") "valid") :valid)
     ((equal (get-attribute test "TYPE") "invalid") :invalid)
+    ((equal (get-attribute test "TYPE") "not-wf") :not-wf)
     (t nil)))
 
 (defun test-pathnames (directory test)
@@ -63,6 +64,14 @@
       (read-sequence result s )
       result)))
 
+(defun dribble-tests (directory)
+  (let ((base (slot-value (asdf:find-system :cxml) 'asdf::relative-pathname)))
+    (with-open-file (*standard-output*
+		     (merge-pathnames "XMLCONF" base)
+		     :direction :output
+		     :if-exists :supersede)
+      (run-all-tests directory))))
+
 (defun run-all-tests (directory)
   (let* ((pathname (merge-pathnames "xmlconf.xml" directory))
          (builder (dom:make-dom-builder))
@@ -75,7 +84,14 @@
          (puri:*strict-parse* nil))
     (dom:do-node-list (test (dom:get-elements-by-tag-name xmlconf "TEST"))
       (let ((description
-             (rod-string (dom:data (dom:item (dom:child-nodes test) 0))))
+             (apply #'concatenate
+		    'string
+		    (map 'list
+		      (lambda (child)
+			(if (dom:text-node-p child)
+			    (rod-string (dom:data child))
+			    ""))
+		      (dom:child-nodes test))))
             (class (test-class test)))
         (cond
           (class
@@ -149,6 +165,21 @@
          (cxml:validity-error ()
            (format t " invalid")
            t))))
+
+(defmethod run-test
+    ((class (eql :not-wf)) pathname output description &rest args)
+  (assert (null args))
+  (handler-case
+      (progn
+	(format t " [not-wf?]")
+	(cxml:parse-file pathname (dom:make-dom-builder) :validate t)
+	nil)
+    (:no-error (n1l)
+      (error "well-formedness violation not detected")
+      n1l)
+    (serious-condition ()
+      (format t " not-wf")
+      t)))
 
 #+(or)
 (xmlconf::run-all-tests "/mnt/debian/space/xmlconf/")
