@@ -2608,7 +2608,7 @@
   (if sax:*namespace-processing*
       (p/element-ns input)
       (p/element-no-ns input)))
-    
+
 (defun p/element-no-ns (input)
   ;;    [39] element ::= EmptyElemTag | STag content ETag
   (error "sorry, bitrot")
@@ -2660,14 +2660,16 @@
 		 (error "Expecting element, got ~S." cat)))))
       (undeclare-namespaces ns-decls))
     (validate-end-element *ctx* name)))
-      
+
 (defun perror (stream format-string &rest format-args)
   (when (zstream-p stream)
     (setf stream (car (zstream-input-stack stream))))
-  (error "Parse error at line ~D column ~D: ~A" 
-         (xstream-line-number stream)
-         (xstream-column-number stream)
-         (apply #'format nil format-string format-args)))
+  (if stream
+      (error "Parse error at line ~D column ~D: ~?"
+	     (xstream-line-number stream)
+	     (xstream-column-number stream)
+	     format-string format-args)
+      (apply #'error format-string format-args)))
 
 (defun p/content (input)
   ;; [43] content ::= (element | CharData | Reference | CDSect | PI | Comment)*
@@ -2988,7 +2990,8 @@
   ;; XXX encoding is mis-handled by this kind of stream
   (make-rod-xstream (string-rod string)))
 
-(defclass octet-input-stream (fundamental-binary-input-stream)
+(defclass octet-input-stream
+    (trivial-gray-stream fundamental-binary-input-stream)
     ((octets :initarg :octets)
      (pos :initform 0)))
 
@@ -3005,9 +3008,7 @@
           (incf pos)))))
 
 (defmethod stream-read-sequence
-    #-lispworks ((stream octet-input-stream) sequence
-                 &optional (start 0) (end (length sequence)))
-    #+lispworks ((stream octet-input-stream) sequence start end)
+    ((stream octet-input-stream) sequence start end &key &allow-other-keys)
   (with-slots (octets pos) stream
     (let* ((length (min (- end start) (- (length octets) pos)))
            (end1 (+ start length))
@@ -3021,20 +3022,6 @@
 
 (defun parse-octets (octets handler &rest args)
   (apply #'parse-stream (make-octet-input-stream octets) handler args))
-
-;;;;
-
-#+allegro
-(defmacro sp (&body body)
-  `(progn
-     (prof:with-profiling (:type :space) .,body)
-     (prof:show-flat-profile)))
-
-#+allegro
-(defmacro tm (&body body)
-  `(progn
-     (prof:with-profiling (:type :time) .,body)
-     (prof:show-flat-profile)))
 
 ;;;;
 

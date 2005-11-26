@@ -1,6 +1,6 @@
 ;;; -*- Mode: Lisp; Syntax: Common-Lisp; Package: CL-USER; -*-
 ;;; ---------------------------------------------------------------------------
-;;;     Title: CMUCL dependent stuff + fixups
+;;;     Title: definline
 ;;;   Created: 1999-05-25 22:32
 ;;;    Author: Gilbert Baumann <unk6@rz.uni-karlsruhe.de>
 ;;;   License: LLGPL (See file COPYING for details).
@@ -24,7 +24,40 @@
 ;;; superseded by a newer version) or write to the Free Software
 ;;; Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-(defmacro runes::definline (name args &body body)
+(in-package :runes)
+
+#-(or allegro openmcl)
+(defmacro definline (name args &body body)
   `(progn
      (declaim (inline ,name))
      (defun ,name ,args .,body)))
+
+#+openmcl
+(defmacro runes::definline (fun args &body body)
+  (if (consp fun)
+      `(defun ,fun ,args
+         ,@body)
+      `(progn
+         (defun ,fun ,args .,body)
+         (define-compiler-macro ,fun (&rest .args.)
+           (cons '(lambda ,args .,body)
+                 .args.)))))
+
+#+allegro
+(defmacro definline (fun args &body body)
+  (if (and (consp fun) (eq (car fun) 'setf))
+      (let ((fnam (intern (concatenate 'string "(SETF " (symbol-name (cadr fun)) ")")
+                          (symbol-package (cadr fun)))))
+        `(progn
+           (defsetf ,(cadr fun) (&rest ap) (new-value) (list* ',fnam new-value ap))
+           (definline ,fnam ,args .,body)))
+    (labels ((declp (x)
+               (and (consp x) (eq (car x) 'declare))))
+      `(progn
+         (defun ,fun ,args .,body)
+         (define-compiler-macro ,fun (&rest .args.)
+           (cons '(lambda ,args
+                   ,@(remove-if-not #'declp body)
+                   (block ,fun 
+                     ,@(remove-if #'declp body)))
+                 .args.))))))

@@ -1,25 +1,12 @@
-;;; XXX this DOM builder knows too much about the specifics of the DOM
-;;; implementation for my taste.  While document creation is not specified
-;;; by the DOM Level 1 spec, we shouldn't really be manually setting slots
-;;; in other nodes IMHO.
-;;;
-;;; As a follow-up to that, the children list is created in the wrong order
-;;; and then reversed.  Is it really worth the improved speed to do this?
-;;; Calling APPEND-NODE would be portable.
-;;;
-;;; In particular, that design choice has lead to other bugs, for example the
-;;; PARENT slot has to be set manually, too.  A DOM test finally showed
-;;; that this had been forgotten for Text nodes and PIs.
-;;;
-;;; Opinions?
-;;;
-;;;   -- David
-
-;;; Now at least the children list isn't reversed anymore, because I changed
-;;; the representation to be an extensible vector.  Still its not clear to
-;;; me whether the DOM Builder should be affected by such changes at all.
-;;;
-;;;   -- David
+;;;; dom-builder.lisp -- DOM-building SAX handler
+;;;;
+;;;; This file is part of the CXML parser, released under (L)LGPL.
+;;;; See file COPYING for details.
+;;;;
+;;;; Author: Gilbert Baumann <unk6@rz.uni-karlsruhe.de>
+;;;; Author: Henrik Motakef <hmot@henrik-motakef.de>
+;;;; Author: David Lichteblau <david@lichteblau.com>
+;;;; Author: knowledgeTools Int. GmbH
 
 (in-package :dom-impl)
 
@@ -41,12 +28,15 @@
     (push document (element-stack handler))))
 
 (defmethod sax:end-document ((handler dom-builder))
-  (setf (slot-value (document handler) 'entities) xml::*entities*)
+  (setf (slot-value (document handler) 'dtd) (cxml::dtd cxml::*ctx*))
   (let ((doctype (dom:doctype (document handler))))
     (when doctype
       (setf (slot-value (dom:entities doctype) 'read-only-p) t)
       (setf (slot-value (dom:notations doctype) 'read-only-p) t)))
   (document handler))
+
+(defmethod sax:entity-resolver ((handler dom-builder) resolver)
+  (setf (slot-value (document handler) 'entity-resolver) resolver))
 
 (defmethod sax:start-dtd ((handler dom-builder) name publicid systemid)
   (declare (ignore publicid systemid))
@@ -62,17 +52,36 @@
     (setf (slot-value doctype 'dom-impl::owner) document
 	  (slot-value document 'dom-impl::doc-type) doctype)))
 
-(defmethod sax:start-element ((handler dom-builder) namespace-uri local-name qname attributes)
+(defmethod sax:start-element
+    ((handler dom-builder) namespace-uri local-name qname attributes)
+  (declare (ignore namespace-uri local-name))
   (with-slots (document element-stack) handler
-    (let ((element (dom:create-element document qname))
-	  (parent (car element-stack)))
+    (let ((element (make-instance 'element 
+                     :tag-name qname
+                     :owner document))
+	  (parent (car element-stack))
+          (anodes '()))
       (dolist (attr attributes)
-	(dom:set-attribute element (xml::attribute-qname attr) (xml::attribute-value attr)))
+	(let ((anode
+               (dom:create-attribute document (sax:attribute-qname attr)))
+              (text
+               (dom:create-text-node document (sax:attribute-value attr))))
+          (setf (slot-value anode 'dom-impl::specified-p)
+                (sax:attribute-specified-p attr))
+          (dom:append-child anode text)
+          (push anode anodes)))
       (setf (slot-value element 'dom-impl::parent) parent)
       (fast-push element (slot-value parent 'dom-impl::children))
+      (setf (slot-value element 'dom-impl::attributes)
+            (make-instance 'attribute-node-map
+              :items anodes
+              :element-type :attribute
+              :element element
+              :owner document))
       (push element element-stack))))
 
 (defmethod sax:end-element ((handler dom-builder) namespace-uri local-name qname)
+  (declare (ignore namespace-uri local-name qname))
   (pop (element-stack handler)))
 
 (defmethod sax:characters ((handler dom-builder) data)
@@ -121,13 +130,29 @@
 
 (defmethod sax:unparsed-entity-declaration
     ((handler dom-builder) name public-id system-id notation-name)
+  (set-entity handler name public-id system-id notation-name))
+
+(defmethod sax:external-entity-declaration
+    ((handler dom-builder) kind name public-id system-id)
+  (ecase kind
+    (:general (set-entity handler name public-id system-id nil))
+    (:parameter)))
+
+(defmethod sax:internal-entity-declaration
+    ((handler dom-builder) kind name value)
+  (declare (ignore value))
+  (ecase kind
+    (:general (set-entity handler name nil nil nil))
+    (:parameter)))
+
+(defun set-entity (handler name pid sid notation)
   (dom:set-named-item (dom:entities (dom:doctype (document handler)))
                       (make-instance 'dom-impl::entity
                         :owner (document handler)
                         :name name
-                        :public-id public-id
-                        :system-id system-id
-                        :notation-name notation-name)))
+                        :public-id pid
+                        :system-id sid
+                        :notation-name notation)))
 
 (defmethod sax:notation-declaration
     ((handler dom-builder) name public-id system-id)

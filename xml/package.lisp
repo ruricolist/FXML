@@ -6,17 +6,7 @@
 (in-package :cl-user)
 
 (defpackage :cxml
-  (:use :cl :runes :encoding)
-  (:import-from #+sbcl :sb-gray
-                #+allegro :excl
-                #+cmu :ext
-                #+clisp :gray
-                #+openmcl :ccl
-                #+lispworks :stream
-                #-(or sbcl allegro cmu clisp openmcl lispworks) ...
-                #:fundamental-binary-input-stream
-                #-(or clisp openmcl) #:stream-read-sequence
-                stream-read-byte)
+  (:use :cl :runes :encoding :trivial-gray-streams)
   (:export
    ;; xstreams
    #:make-xstream
