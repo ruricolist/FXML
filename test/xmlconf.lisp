@@ -98,7 +98,7 @@
             (incf ntried)
             (multiple-value-bind (pathname output)
                 (test-pathnames directory test)
-              (princ pathname)
+              (princ (enough-namestring pathname directory))
               (unless (probe-file pathname)
                 (error "file not found: ~A" pathname))
               (with-simple-restart (skip-test "Skip this test")
