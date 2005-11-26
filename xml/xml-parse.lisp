@@ -2390,17 +2390,19 @@
   ;; markupdecl ::= elementdecl | AttlistDecl       /* VC: Proper Declaration/PE Nesting */
   ;;              | EntityDecl | NotationDecl
   ;;              | PI | Comment               /* WFC: PEs in Internal Subset */
-  (case (peek-token input)
-    (:|<!ELEMENT|  (p/element-decl input))
-    (:|<!ATTLIST|  (p/attlist-decl input))
-    (:|<!ENTITY|   (p/entity-decl input))
-    (:|<!NOTATION| (p/notation-decl input))
-    (:PI
-      (let ((sem (nth-value 1 (read-token input))))
-        (sax:processing-instruction (handler *ctx*) (car sem) (cdr sem))))
-    (:COMMENT      (consume-token input))
-    (otherwise
-     (error "p/markup-decl ~S" (peek-token input)))))
+  (let ((token (peek-token input))
+	(*expand-pe-p* (and *expand-pe-p* *markup-declaration-external-p*)))
+    (case token
+      (:|<!ELEMENT|  (p/element-decl input))
+      (:|<!ATTLIST|  (p/attlist-decl input))
+      (:|<!ENTITY|   (p/entity-decl input))
+      (:|<!NOTATION| (p/notation-decl input))
+      (:PI
+	(let ((sem (nth-value 1 (read-token input))))
+	  (sax:processing-instruction (handler *ctx*) (car sem) (cdr sem))))
+      (:COMMENT      (consume-token input))
+      (otherwise
+	(error "p/markup-decl ~S" (peek-token input))))))
 
 (defun setup-encoding (input xml-header)
   (when (xml-header-encoding xml-header)
