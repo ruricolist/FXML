@@ -506,10 +506,7 @@ sun/not-wf/encoding04.xml [not-wf?] not-wf
 sun/not-wf/encoding05.xml [not-wf?] not-wf
 sun/not-wf/encoding06.xml [not-wf?] not-wf
 sun/not-wf/encoding07.xml [not-wf?] not-wf
-sun/not-wf/pi.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    No space between PI target name and data]
+sun/not-wf/pi.xml [not-wf?] not-wf
 sun/not-wf/pubid01.xml [not-wf?] not-wf
 sun/not-wf/pubid02.xml [not-wf?] not-wf
 sun/not-wf/pubid03.xml [not-wf?] not-wf
@@ -1064,12 +1061,7 @@ ibm/not-wf/P23/ibm23n04.xml [not-wf?] not-wf
 ibm/not-wf/P23/ibm23n05.xml [not-wf?] not-wf
 ibm/not-wf/P23/ibm23n06.xml [not-wf?] not-wf
 ibm/not-wf/P24/ibm24n01.xml [not-wf?] not-wf
-ibm/not-wf/P24/ibm24n02.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests VersionInfo with a required field missing. The white space is
-    missing between the key word "xml" and the VersionInfo in the XMLDecl.
-  ]
+ibm/not-wf/P24/ibm24n02.xml [not-wf?] not-wf
 ibm/not-wf/P24/ibm24n03.xml [not-wf?] not-wf
 ibm/not-wf/P24/ibm24n04.xml [not-wf?] not-wf
 ibm/not-wf/P24/ibm24n05.xml [not-wf?] not-wf
@@ -1604,630 +1596,110 @@ ibm/not-wf/P86/ibm86n01.xml [not-wf?] not-wf
 ibm/not-wf/P86/ibm86n02.xml [not-wf?] not-wf
 ibm/not-wf/P86/ibm86n03.xml [not-wf?] not-wf
 ibm/not-wf/P86/ibm86n04.xml [not-wf?] not-wf
-ibm/not-wf/P87/ibm87n01.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x02FF    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n02.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0346    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n03.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0362    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n04.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0487    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n05.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x05A2    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n06.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x05BA    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n07.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x05BE    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n08.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x05C0    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n09.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x05C3    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n10.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0653    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n11.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x06B8    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n12.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x06B9    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n13.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x06E9    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n14.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x06EE    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n15.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0904    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n16.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x093B    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n17.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x094E    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n18.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0955    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n19.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0964    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n20.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0984    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n21.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x09C5    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n22.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x09C9    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n23.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x09CE    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n24.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x09D8    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n25.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x09E4    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n26.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0A03    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n27.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0A3D    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n28.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0A46    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n29.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0A49    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n30.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0A4E    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n31.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0A80    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n32.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0A84    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n33.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0ABB    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n34.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0AC6    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n35.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0ACA    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n36.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0ACE    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n37.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0B04    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n38.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0B3B    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n39.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0B44    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n40.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0B4A    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n41.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0B4E    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n42.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0B58    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n43.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0B84    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n44.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0BC3    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n45.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0BC9    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n46.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0BD6    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n47.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0C0D    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n48.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0C45    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n49.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0C49    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n50.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0C54    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n51.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0C81    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n52.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0C84    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n53.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0CC5    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n54.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0CC9    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n55.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0CD4    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n56.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0CD7    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n57.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0D04    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n58.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0D45    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n59.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0D49    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n60.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0D4E    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n61.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0D58    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n62.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0E3F    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n63.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0E3B    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n64.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0E4F    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n66.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0EBA    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n67.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0EBE    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n68.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0ECE    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n69.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0F1A    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n70.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0F36    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n71.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0F38    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n72.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0F3B    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n73.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0F3A    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n74.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0F70    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n75.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0F85    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n76.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0F8C    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n77.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0F96    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n78.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0F98    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n79.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0FB0    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n80.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0FB8    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n81.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x0FBA    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n82.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x20DD    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n83.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x20E2    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n84.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x3030    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P87/ibm87n85.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CombiningChar with an illegal character. The character #x309B    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P88/ibm88n01.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests Digit with an illegal character. The character #x0029    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P88/ibm88n02.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests Digit with an illegal character. The character #x003B    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P88/ibm88n03.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests Digit with an illegal character. The character #x066A    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P88/ibm88n04.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests Digit with an illegal character. The character #x06FA    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P88/ibm88n05.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests Digit with an illegal character. The character #x0970    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P88/ibm88n06.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests Digit with an illegal character. The character #x09F2    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P88/ibm88n08.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests Digit with an illegal character. The character #x0AF0    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P88/ibm88n09.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests Digit with an illegal character. The character #x0B70    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P88/ibm88n10.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests Digit with an illegal character. The character #x0C65    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P88/ibm88n11.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests Digit with an illegal character. The character #x0CE5    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P88/ibm88n12.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests Digit with an illegal character. The character #x0CF0    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P88/ibm88n13.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests Digit with an illegal character. The character #x0D70    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P88/ibm88n14.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests Digit with an illegal character. The character #x0E5A    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P88/ibm88n15.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests Digit with an illegal character. The character #x0EDA    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P88/ibm88n16.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests Digit with an illegal character. The character #x0F2A    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P89/ibm89n01.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests Extender with an illegal character. The character #x00B6    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P89/ibm89n02.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests Extender with an illegal character. The character #x00B8    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P89/ibm89n03.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests Extender with an illegal character. The character #x02D2    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P89/ibm89n04.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests Extender with an illegal character. The character #x03FE    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
-ibm/not-wf/P89/ibm89n05.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests Extender with an illegal character. The character #x065F    
-    occurs as the second character in the PITarget in the PI in the DTD.  
-  ]
+ibm/not-wf/P87/ibm87n01.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n02.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n03.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n04.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n05.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n06.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n07.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n08.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n09.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n10.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n11.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n12.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n13.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n14.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n15.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n16.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n17.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n18.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n19.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n20.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n21.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n22.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n23.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n24.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n25.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n26.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n27.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n28.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n29.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n30.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n31.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n32.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n33.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n34.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n35.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n36.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n37.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n38.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n39.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n40.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n41.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n42.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n43.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n44.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n45.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n46.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n47.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n48.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n49.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n50.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n51.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n52.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n53.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n54.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n55.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n56.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n57.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n58.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n59.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n60.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n61.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n62.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n63.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n64.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n66.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n67.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n68.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n69.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n70.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n71.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n72.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n73.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n74.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n75.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n76.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n77.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n78.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n79.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n80.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n81.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n82.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n83.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n84.xml [not-wf?] not-wf
+ibm/not-wf/P87/ibm87n85.xml [not-wf?] not-wf
+ibm/not-wf/P88/ibm88n01.xml [not-wf?] not-wf
+ibm/not-wf/P88/ibm88n02.xml [not-wf?] not-wf
+ibm/not-wf/P88/ibm88n03.xml [not-wf?] not-wf
+ibm/not-wf/P88/ibm88n04.xml [not-wf?] not-wf
+ibm/not-wf/P88/ibm88n05.xml [not-wf?] not-wf
+ibm/not-wf/P88/ibm88n06.xml [not-wf?] not-wf
+ibm/not-wf/P88/ibm88n08.xml [not-wf?] not-wf
+ibm/not-wf/P88/ibm88n09.xml [not-wf?] not-wf
+ibm/not-wf/P88/ibm88n10.xml [not-wf?] not-wf
+ibm/not-wf/P88/ibm88n11.xml [not-wf?] not-wf
+ibm/not-wf/P88/ibm88n12.xml [not-wf?] not-wf
+ibm/not-wf/P88/ibm88n13.xml [not-wf?] not-wf
+ibm/not-wf/P88/ibm88n14.xml [not-wf?] not-wf
+ibm/not-wf/P88/ibm88n15.xml [not-wf?] not-wf
+ibm/not-wf/P88/ibm88n16.xml [not-wf?] not-wf
+ibm/not-wf/P89/ibm89n01.xml [not-wf?] not-wf
+ibm/not-wf/P89/ibm89n02.xml [not-wf?] not-wf
+ibm/not-wf/P89/ibm89n03.xml [not-wf?] not-wf
+ibm/not-wf/P89/ibm89n04.xml [not-wf?] not-wf
+ibm/not-wf/P89/ibm89n05.xml [not-wf?] not-wf
 ibm/not-wf/P89/ibm89n06.xml [not-wf?] not-wf
 ibm/not-wf/P89/ibm89n07.xml [not-wf?] not-wf
 ibm/not-wf/P89/ibm89n08.xml [not-wf?] not-wf
@@ -2381,4 +1853,4 @@ ibm/valid/P86/ibm86v01.xml [not validating:] input [validating:] input
 ibm/valid/P87/ibm87v01.xml [not validating:] input [validating:] input
 ibm/valid/P88/ibm88v01.xml [not validating:] input [validating:] input
 ibm/valid/P89/ibm89v01.xml [not validating:] input [validating:] input
-120/1786 tests failed; 376 tests were skipped
+14/1786 tests failed; 376 tests were skipped

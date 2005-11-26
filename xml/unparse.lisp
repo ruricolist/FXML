@@ -8,6 +8,8 @@
 ;;;   License: LGPL (See file COPYING for details).
 ;;; ---------------------------------------------------------------------------
 ;;;  © copyright 1999 by Gilbert Baumann
+;;;  © copyright 2004 by knowledgeTools Int. GmbH
+;;;  © copyright 2004 by David Lichteblau (for headcraft.de)
 
 ;;; This library is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU Library General Public
@@ -77,6 +79,7 @@
      (notations :initform (make-buffer :element-type t) :accessor notations)
      (name-for-dtd :accessor name-for-dtd)
      (previous-notation :initform nil :accessor previous-notation)
+     (have-doctype :initform nil :accessor have-doctype)
      (stack :initform nil :accessor stack)))
 
 (defmethod initialize-instance :after ((instance sink) &key)
@@ -154,9 +157,32 @@
 
 ;;;; doctype and notations
 
+(defmethod sax:start-document ((sink sink))
+  (unless (canonical sink)
+    (write-rod #"<?xml version=\"1.0\" encoding=\"UTF-8\"?>" sink)
+    (write-rune #/U+000A sink)))
+
 (defmethod sax:start-dtd ((sink sink) name public-id system-id)
-  (declare (ignore public-id system-id))
-  (setf (name-for-dtd sink) name))
+  (setf (name-for-dtd sink) name)
+  (unless (canonical sink)
+    (ensure-doctype sink public-id system-id)))
+
+(defun ensure-doctype (sink &optional public-id system-id)
+  (unless (have-doctype sink)
+    (setf (have-doctype sink) t)
+    (write-rod #"<!DOCTYPE " sink)
+    (write-rod (name-for-dtd sink) sink)
+    (cond
+      (public-id
+        (write-rod #" PUBLIC \"" sink)
+        (unparse-string public-id sink)
+        (write-rod #"\" \"" sink)
+        (unparse-string system-id sink)
+        (write-rod #"\"" sink))
+      (system-id
+        (write-rod #" SYSTEM \"" sink)
+        (unparse-string public-id sink)
+        (write-rod #"\"" sink)))))
 
 (defmethod sax:notation-declaration ((sink sink) name public-id system-id)
   (when (and (canonical sink) (>= (canonical sink) 2))
@@ -166,9 +192,7 @@
           (unless (rod< prev name)
             (error "misordered notations; cannot unparse canonically")))
         (t
-          ;; need a doctype declaration
-          (write-rod #"<!DOCTYPE " sink)
-          (write-rod (name-for-dtd sink) sink)
+          (ensure-doctype sink)
           (write-rod #" [" sink)
           (write-rune #/U+000A sink)))
       (setf (previous-notation sink) name)) 
@@ -193,24 +217,38 @@
     (write-rune #/U+000A sink)))
 
 (defmethod sax:end-dtd ((sink sink))
-  (when (previous-notation sink)
-    (write-rod #"]>" sink)
+  (when (have-doctype sink)
+    (when (previous-notation sink)
+      (write-rod #"]" sink))
+    (write-rod #">" sink)
     (write-rune #/U+000A sink)))
 
 
 ;;;; elements
+
+(defstruct (tag (:constructor make-tag (name)))
+  name
+  (n-children 0)
+  (have-gt nil))
 
 (defun sink-fresh-line (sink)
   (unless (zerop (column sink))
     (write-rune-0 10 sink)
     (indent sink)))
 
+(defun maybe-close-tag (sink)
+  (let ((tag (car (stack sink))))
+    (when (and (tag-p tag) (not (tag-have-gt tag)))
+      (setf (tag-have-gt tag) t)
+      (write-rune #/> sink))))
+
 (defmethod sax:start-element
     ((sink sink) namespace-uri local-name qname attributes)
   (declare (ignore namespace-uri local-name))
+  (maybe-close-tag sink)
   (when (stack sink)
-    (incf (cdr (first (stack sink)))))
-  (push (cons qname 0) (stack sink))
+    (incf (tag-n-children (first (stack sink)))))
+  (push (make-tag qname) (stack sink))
   (when (indentation sink)
     (sink-fresh-line sink)
     (start-indentation-block sink))
@@ -224,37 +262,46 @@
       (write-rune #/\" sink)
       (map nil (lambda (c) (unparse-datachar c sink)) (sax:attribute-value a))
       (write-rune #/\" sink)))
-  (write-rod '#.(string-rod ">") sink))
+  (when (canonical sink)
+    (maybe-close-tag sink)))
 
 (defmethod sax:end-element
     ((sink sink) namespace-uri local-name qname)
   (declare (ignore namespace-uri local-name))
-  (let ((cons (pop (stack sink))))
-    (unless (consp cons)
+  (let ((tag (pop (stack sink))))
+    (unless (tag-p tag)
       (error "output does not nest: not in an element"))
-    (unless (rod= (car cons) qname)
+    (unless (rod= (tag-name tag) qname)
       (error "output does not nest: expected ~A but got ~A"
-             (rod qname) (rod (car cons))))
+             (rod qname) (rod (tag-name tag))))
     (when (indentation sink)
       (end-indentation-block sink)
-      (unless (zerop (cdr cons))
-        (sink-fresh-line sink))))
-  (write-rod '#.(string-rod "</") sink)
-  (write-rod qname sink)
-  (write-rod '#.(string-rod ">") sink))
+      (unless (zerop (tag-n-children tag))
+        (sink-fresh-line sink)))
+    (cond
+      ((tag-have-gt tag)
+       (write-rod '#.(string-rod "</") sink)
+       (write-rod qname sink)
+       (write-rod '#.(string-rod ">") sink))
+      (t
+       (write-rod #"/>" sink)))))
 
 (defmethod sax:processing-instruction ((sink sink) target data)
+  (maybe-close-tag sink)
   (unless (rod-equal target '#.(string-rod "xml"))
     (write-rod '#.(string-rod "<?") sink)
     (write-rod target sink)
-    (write-rune #/space sink)
-    (write-rod data sink)
+    (when data
+      (write-rune #/space sink)
+      (write-rod data sink))
     (write-rod '#.(string-rod "?>") sink)))
 
 (defmethod sax:start-cdata ((sink sink))
+  (maybe-close-tag sink)
   (push :cdata (stack sink)))
 
 (defmethod sax:characters ((sink sink) data)
+  (maybe-close-tag sink)
   (cond
     ((and (eq (car (stack sink)) :cdata)
           (not (canonical sink))
@@ -311,6 +358,9 @@
               (setf pos next))))
         (t
           (write-rune-0 32 sink))))))
+
+(defun unparse-string (str sink)
+  (map nil (lambda (c) (unparse-datachar c sink)) str))
 
 (defun unparse-datachar (c sink)
   (cond ((rune= c #/&) (write-rod '#.(string-rod "&amp;") sink))
@@ -399,8 +449,8 @@
     (sax:end-document *sink*)))
 
 (defmacro with-element (qname &body body)
-  ;; XXX Statt qname soll man in zukunft auch mal (lname uri) angeben koennen.
-  ;; Hat aber Zeit bis DOM 2.
+  ;; XXX Statt qname soll man in zukunft auch mal (lname prefix) angeben
+  ;; koennen.  Hat aber Zeit bis DOM 2.
   (when (listp qname)
     (destructuring-bind (n) qname
       (setf qname n)))
@@ -414,6 +464,7 @@
     (setf *current-element* nil)))
 
 (defun invoke-with-element (fn qname)
+  (setf qname (rod qname))
   (maybe-emit-start-tag)
   (let ((*current-element* (list qname)))
     (multiple-value-prog1
@@ -422,17 +473,29 @@
       (sax:end-element *sink* nil nil qname))))
 
 (defun attribute (name value)
-  (push (sax:make-attribute :qname name :value value)
+  (push (sax:make-attribute :qname (rod name) :value (rod value))
         (cdr *current-element*))
   value)
 
 (defun cdata (data)
   (sax:start-cdata *sink*)
-  (sax:characters *sink* data)
+  (sax:characters *sink* (rod data))
   (sax:end-cdata *sink*)
   data)
 
 (defun text (data)
   (maybe-emit-start-tag)
-  (sax:characters *sink* data)
+  (sax:characters *sink* (rod data))
   data)
+
+(defun rod-to-utf8-string (rod)
+  (with-output-to-string (s)
+    (write-rod rod (cxml:make-character-stream-sink s))))
+
+(defun utf8-string-to-rod (str)
+  (let* ((bytes (map '(vector (unsigned-byte 8)) #'char-code str))
+         (buffer (make-array (length bytes) :element-type '(unsigned-byte 16)))
+         (n (decode-sequence :utf-8 bytes 0 (length bytes) buffer 0 0 nil))
+         (result (make-array n :element-type 'rod)))
+    (map-into result #'code-rune buffer)
+    result))

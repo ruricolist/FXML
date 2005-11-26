@@ -1079,7 +1079,7 @@
         (setf (elmdef-external-p e) *markup-declaration-external-p*)
         e))))
 
-(defvar *redefinition-warning* t)
+(defvar *redefinition-warning* nil)
 
 (defun define-attribute (dtd element name type default)
   (let ((adef (make-attdef :element element
@@ -1313,6 +1313,11 @@
           (t
            (error "Bad character ~S after \"<!\"" d)))))
 
+(definline read-S? (input)
+  (while (member (peek-rune input) '(#/U+0020 #/U+0009 #/U+000A #/U+000D)
+                 :test #'eql)
+    (consume-rune input)))
+
 (defun read-attribute-list (zinput input imagine-space-p)
   (cond ((or imagine-space-p
              (let ((c (peek-rune input)))
@@ -1347,11 +1352,6 @@
              (unless (rune= c #/\;)
                (perror input "Expected \";\"."))
              (values :NAMED name))))))
-
-(definline read-S? (input)
-  (while (member (peek-rune input) '(#/U+0020 #/U+0009 #/U+000A #/U+000D)
-                 :test #'eq)
-    (consume-rune input)))
 
 (defun read-tag-2 (zinput input kind)
   (let ((name (read-name-token input))
@@ -1547,8 +1547,15 @@
       (unless (name-start-rune-p c)
         (error "Expecting name after '<?'"))
       (setf name (read-name-token input)))
-    (values name
-            (read-pi-content input))))
+    (cond
+      ((member (peek-rune input) '(#/U+0020 #/U+0009 #/U+000A #/U+000D)
+	       :test #'eql)
+	(values name (read-pi-content input)))
+      (t
+	(unless (and (eql (read-rune input) #/?)
+		     (eql (read-rune input) #/>))
+	  (wf-error "malformed processing instruction"))
+	(values name "")))))
 
 (defun read-pi-content (input &aux d)
   (read-S? input)
@@ -1557,6 +1564,8 @@
       (tagbody
        state-1
         (setf d (read-rune input))
+	(unless d
+	  (error 'end-of-xstream))
         (unless (data-rune-p d)
           (error "Illegal char: ~S." d))
         (when (rune= d #/?) (go state-2))
@@ -1564,6 +1573,8 @@
         (go state-1)
        state-2 ;; #/? seen
         (setf d (read-rune input))
+	(unless d
+	  (error 'end-of-xstream))
         (unless (data-rune-p d)
           (error "Illegal char: ~S." d))
         (when (rune= d #/>) (return))
