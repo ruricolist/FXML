@@ -2950,7 +2950,9 @@
 
 (defun safe-stream-sysid (stream)
   (if (and (typep (resolve-synonym-stream stream) 'file-stream)
-           (pathname stream))
+	   ;; ignore-errors, because sb-bsd-sockets creates instances of
+	   ;; FILE-STREAMs that aren't
+           (ignore-errors (pathname stream)))
       (pathname-to-uri (pathname stream))
       nil))
 
@@ -3063,113 +3065,6 @@
        '(consume-token zstream)) )
    name kind))
 
-;;;;
-
-#|
-
-(defparameter *test-files*
-    '(;;"jclark:xmltest;not-wf;*;*.xml"
-      "jclark:xmltest;valid;*;*.xml"
-      ;;"jclark:xmltest;invalid;*.xml"
-      ))
-
-(defun run-all-tests (&optional (test-files *test-files*))
-  (let ((failed nil))
-    (dolist (k test-files)
-      (dolist (j (sort (directory k) #'string< :key #'pathname-name))
-        (unless (test-file j)
-          (push j failed))))
-    (fresh-line)
-    (cond (failed
-           (write-string "**** Test failed on")
-           (dolist (k failed)
-             (format t "~%****  ~S." k))
-           nil)
-          (t
-           (write-string "**** Test passed!")
-           t))))
-
-(defun test-file (filename)
-  (let ((out-filename (merge-pathnames "out/" filename)))
-    (if (probe-file out-filename)
-        (positive-test-file filename out-filename)
-      (negative-test-file filename))))
-
-(defun positive-test-file (filename out-filename)
-  (multiple-value-bind (nodes condition)
-      (ignore-errors (parse-file filename))
-    (cond (condition
-           (warn "**** Error in ~S: ~A." filename condition)
-           nil)
-          (t
-           (let (res equal?)
-             (setf res (with-output-to-string (sink)
-                         (unparse-document nodes sink)))
-             (setf equal?
-               (with-open-file (in out-filename :direction :input :element-type 'character)
-                 (do ((i 0 (+ i 1))
-                      (c (read-char in nil nil) (read-char in nil nil)))
-                     ((or (eq c nil) (= i (length res)))
-                      (and (eq c nil) (= i (length res))))
-                   (unless (eql c (char res i))
-                     (return nil)))))
-             (cond ((not equal?)
-                    (format t "~&**** Test failed on ~S." filename)
-                    (fresh-line)
-                    (format t "** me: ~A" res)
-                    (fresh-line)
-                    (format t "** he: " res)
-                    (finish-output)
-                    (with-open-file (in out-filename :direction :input :element-type 'character)
-                      (do ((c (read-char in nil nil) (read-char in nil nil)))
-                          ((eq c nil))
-                        (write-char c)))
-                    nil)
-                   (t
-                    t)))))))
-
-(defun negative-test-file (filename)
-  (multiple-value-bind (nodes condition)
-      (ignore-errors (parse-file filename))
-    (declare (ignore nodes))
-    (cond (condition
-           t)
-          (t
-           (warn "**** negative test failed on ~S." filename)))))
-
-|#
-
-;;;;
-
-#+(or)                                  ;was ist das?
-(progn
-
-  (defmethod dom:create-processing-instruction ((document null) target data)
-    (declare (ignorable document target data))
-    nil)
-
-  (defmethod dom:append-child ((node null) child)
-    (declare (ignorable node child))
-    nil)
-
-  (defmethod dom:create-element ((document null) name)
-    (declare (ignorable document name))
-    nil)
-
-  (defmethod dom:set-attribute ((document null) name value)
-    (declare (ignorable document name value))
-    nil)
-
-  (defmethod dom:create-text-node ((document null) data)
-    (declare (ignorable document data))
-    nil)
-
-  (defmethod dom:create-cdata-section ((document null) data)
-    (declare (ignorable document data))
-    nil)
-  )
-
-
 #||
 (defmacro read-data-until* ((predicate input res res-start res-end) &body body)
   ;; fast variant -- for now disabled for no apparent reason
@@ -3223,9 +3118,6 @@
              (sf rptr (%+ rptr 1))) ))
     ,@body ))
 ||#
-
-;(defun read-data-until (predicate input continuation)
-;  )
 
 (defmacro read-data-until* ((predicate input res res-start res-end) &body body)
   "Read data from `input' until `predicate' applied to the read char
