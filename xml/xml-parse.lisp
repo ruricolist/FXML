@@ -77,7 +77,7 @@
 
 ;; *data-behaviour* = :DTD
 ;;
-;;    :name <interned-rod>
+;;    :nmtoken <interned-rod>
 ;;    :#required
 ;;    :#implied
 ;;    :#fixed
@@ -652,7 +652,7 @@
 
 (defun wf-error (x &rest args)
   (error 'well-formedness-violation
-         :format-control "Validity constraint violated: ~@?"
+         :format-control "Well-formedness violated: ~@?"
          :format-arguments (list x args)))
 
 (defvar *validate* t)
@@ -1178,7 +1178,7 @@
                  ((rune= #/\+ c) :\+)
                  ((name-rune-p c)
                   (unread-rune c input)
-                  (values :name (read-name-token input)))
+                  (values :nmtoken (read-name-token input)))
                  ((rune= #/# c)
                   (let ((q (read-name-token input)))
                     (cond ((equalp q '#.(string-rod "REQUIRED")) :|#REQUIRED|)
@@ -1728,15 +1728,21 @@
   (while (eq (peek-token input) :S)
     (consume-token input)))
 
+(defun p/nmtoken (input)
+  (nth-value 1 (expect input :nmtoken)))
+
 (defun p/name (input)
-  (nth-value 1 (expect input :name)))
+  (let ((result (p/nmtoken input)))
+    (unless (name-start-rune-p (elt result 0))
+      (wf-error "Expected name."))
+    result))
 
 (defun p/attlist-decl (input)
   ;; [52] AttlistDecl ::= '<!ATTLIST' S Name (S AttDef)* S? '>'
   (let (elm-name)
     (expect input :|<!ATTLIST|)
     (p/S input)
-    (setf elm-name (p/name input))
+    (setf elm-name (p/nmtoken input))
     (loop
       (let ((tok (read-token input)))
         (case tok
@@ -1757,7 +1763,7 @@
 (defun p/attdef (input)
   ;; [53] AttDef ::= Name S AttType S DefaultDecl
   (let (name type default)
-    (setf name (p/name input))
+    (setf name (p/nmtoken input))
     (p/S input)
     (setf type (p/att-type input))
     (p/S input)
@@ -1799,7 +1805,7 @@
   ;; /* VC: Notation Attributes */
   ;; [59] Enumeration ::= '(' S? Nmtoken (S? '|' S? Nmtoken)* S? ')' /* VC: Enumeration */
   (multiple-value-bind (cat sem) (read-token input)
-    (cond ((eq cat :name)
+    (cond ((eq cat :nmtoken)
            (cond ((equalp sem '#.(string-rod "CDATA"))    :CDATA)
                  ((equalp sem '#.(string-rod "ID"))       :ID)
                  ((equalp sem '#.(string-rod "IDREF"))    :IDREFS)
@@ -1812,7 +1818,7 @@
                   (let (names)
                     (p/S input)
                     (expect input :\()
-                    (setf names (p/list input #'p/name :\| ))
+                    (setf names (p/list input #'p/nmtoken :\| ))
                     (expect input :\))
                     (when *validate*
                       (setf (referenced-notations *ctx*)
@@ -1824,7 +1830,7 @@
            ;; XXX Die Nmtoken-Syntax pruefen wir derzeit nur beim Validieren.
            (let (names)
              ;;(expect input :\()
-             (setf names (p/list input #'p/name :\| ))
+             (setf names (p/list input #'p/nmtoken :\| ))
              (expect input :\))
              (cons :ENUMERATION names)))
           (t
@@ -1901,7 +1907,7 @@
   (multiple-value-bind (cat sem) (peek-token input)
     (cond ((member cat '(:\" :\'))
            (make-internal-entdef (p/entity-value input)))
-          ((and (eq cat :name)
+          ((and (eq cat :nmtoken)
                 (or (equalp sem '#.(string-rod "SYSTEM"))
                     (equalp sem '#.(string-rod "PUBLIC"))))
            (let (extid ndata)
@@ -1909,12 +1915,12 @@
              (when (eq kind :general)   ;NDATA allowed at all?
                (cond ((eq (peek-token input) :S)
                       (p/S? input)
-                      (when (and (eq (peek-token input) :name)
+                      (when (and (eq (peek-token input) :nmtoken)
                                  (equalp (nth-value 1 (peek-token input))
                                          '#.(string-rod "NDATA")))
                         (consume-token input)
                         (p/S input)
-                        (setf ndata (p/name input))
+                        (setf ndata (p/nmtoken input))
                         (when *validate*
                           (push ndata (referenced-notations *ctx*)))))))
              (make-external-entdef extid ndata)))
@@ -1940,10 +1946,10 @@
 (defun p/external-id (input &optional (public-only-ok-p nil))
   ;; xxx public-only-ok-p
   (multiple-value-bind (cat sem) (read-token input)
-    (cond ((and (eq cat :name) (equalp sem '#.(string-rod "SYSTEM")))
+    (cond ((and (eq cat :nmtoken) (equalp sem '#.(string-rod "SYSTEM")))
            (p/S input)
            (make-extid nil (p/system-literal input)))
-          ((and (eq cat :name) (equalp sem '#.(string-rod "PUBLIC")))
+          ((and (eq cat :nmtoken) (equalp sem '#.(string-rod "PUBLIC")))
            (let (pub sys)
              (p/S input)
              (setf pub (p/pubid-literal input))
@@ -2015,7 +2021,7 @@
   (let (name content)
     (expect input :|<!ELEMENT|)
     (p/S input)
-    (setf name (p/name input))
+    (setf name (p/nmtoken input))
     (p/S input)
     (setf content (normalize-mixed-cspec (p/cspec input)))
     (unless (legal-content-model-p content *validate*)
@@ -2171,7 +2177,7 @@
   (let ((term
          (let ((names nil) op-cat op res stream)
            (multiple-value-bind (cat sem) (peek-token input)
-             (cond ((eq cat :name)
+             (cond ((eq cat :nmtoken)
                     (consume-token input)
                     (cond ((rod= sem '#.(string-rod "EMPTY"))
                            :EMPTY)
@@ -2245,7 +2251,7 @@
   (let (name id)
     (expect input :|<!NOTATION|)
     (p/S input)
-    (setf name (p/name input))
+    (setf name (p/nmtoken input))
     (p/S input)
     (setf id (p/external-id input t))
     (p/S? input)
@@ -2286,10 +2292,10 @@
   (let ((stream (car (zstream-input-stack input))))
     (p/S? input)
     (multiple-value-bind (cat sem) (read-token input)
-      (cond ((and (eq cat :name)
+      (cond ((and (eq cat :nmtoken)
                   (rod= sem '#.(string-rod "INCLUDE")))
              (p/include-sect input stream))
-            ((and (eq cat :name)
+            ((and (eq cat :nmtoken)
                   (rod= sem '#.(string-rod "IGNORE")))
              (p/ignore-sect input stream))
             (t
@@ -2425,7 +2431,7 @@
           name extid)
       (expect input :|<!DOCTYPE|)
       (p/S input)
-      (setq name (p/name input))
+      (setq name (p/nmtoken input))
       (when *validate*
         (setf (model-stack *ctx*) (list (make-root-model name))))
       (when (eq (peek-token input) :S)

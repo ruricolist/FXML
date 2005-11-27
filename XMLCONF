@@ -847,21 +847,13 @@ oasis/p69fail2.xml [not-wf?] not-wf
 oasis/p69fail3.xml [not-wf?] not-wf
 oasis/p70fail1.xml [not-wf?] not-wf
 oasis/p71fail1.xml [not-wf?] not-wf
-oasis/p71fail2.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-     Entity name is a Name, not an NMToken
-    ]
+oasis/p71fail2.xml [not-wf?] not-wf
 oasis/p71fail3.xml [not-wf?] not-wf
 oasis/p71fail4.xml [not-wf?] not-wf
 oasis/p72fail1.xml [not-wf?] not-wf
 oasis/p72fail2.xml [not-wf?] not-wf
 oasis/p72fail3.xml [not-wf?] not-wf
-oasis/p72fail4.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-     Entity name is a name, not an NMToken
-    ]
+oasis/p72fail4.xml [not-wf?] not-wf
 oasis/p73fail1.xml [not-wf?] not-wf
 oasis/p73fail2.xml [not-wf?] not-wf
 oasis/p73fail3.xml [not-wf?] not-wf
@@ -1845,4 +1837,4 @@ ibm/valid/P86/ibm86v01.xml [not validating:] input [validating:] input
 ibm/valid/P87/ibm87v01.xml [not validating:] input [validating:] input
 ibm/valid/P88/ibm88v01.xml [not validating:] input [validating:] input
 ibm/valid/P89/ibm89v01.xml [not validating:] input [validating:] input
-12/1786 tests failed; 376 tests were skipped
+10/1786 tests failed; 376 tests were skipped
