@@ -647,13 +647,18 @@
 
 (defun validity-error (x &rest args)
   (error 'validity-error
-         :format-control "Validity constraint violated: ~@?"
+         :format-control "Validity constraint violated: ~?"
          :format-arguments (list x args)))
 
 (defun wf-error (x &rest args)
   (error 'well-formedness-violation
-         :format-control "Well-formedness violated: ~@?"
+         :format-control "Well-formedness violated: ~?"
          :format-arguments (list x args)))
+
+(defun eox (stream &optional x &rest args)
+  (error 'end-of-xstream
+	 :format-control "End of file on ~A~@[: ~?~]"
+	 :format-arguments (list stream x args)))
 
 (defvar *validate* t)
 (defvar *markup-declaration-external-p* nil)
@@ -1230,7 +1235,7 @@
 (defun read-token-after-|<| (zinput input)
   (let ((d (read-rune input)))
     (cond ((eq d :eof)
-           (wf-error "EOF after '<'"))
+           (eox input "EOF after '<'"))
           ((rune= #/! d)
            (read-token-after-|<!| input))
           ((rune= #/? d)
@@ -1259,7 +1264,7 @@
 (defun read-token-after-|<!| (input)
   (let ((d (read-rune input)))
     (cond ((eq d :eof)
-           (wf-error "EOF after \"<!\"."))
+           (eox input "EOF after \"<!\"."))
           ((name-start-rune-p d)
            (unread-rune d input)
            (let ((name (read-name-token input)))
@@ -1311,7 +1316,7 @@
    The initial #\\& is considered to be consumed already."
   (let ((c (peek-rune input)))
     (cond ((eq c :eof)
-           (wf-error "EOF after '&'"))
+           (eox input "EOF after '&'"))
           ((rune= c #/#)
            (values :NUMERIC (read-numeric-entity input)))
           (t
@@ -1411,7 +1416,7 @@
                    (cond ((eql delim c)
                           (return))
                          ((eq c :eof)
-                          (wf-error "EOF"))
+                          (eox input "EOF"))
                          ((rune= c #/&)
                           (setf c (peek-rune input))
                           (cond ((rune= c #/#)
@@ -1526,33 +1531,34 @@
 	  (wf-error "malformed processing instruction"))
 	(values name "")))))
 
-(defun read-pi-content (input &aux d)
+(defun read-pi-content (input)
   (read-S? input)
-  (with-rune-collector (collect)
-    (block nil
-      (tagbody
-       state-1
-        (setf d (read-rune input))
-	(unless d
-	  (error 'end-of-xstream))
-        (unless (data-rune-p d)
-          (wf-error "Illegal char: ~S." d))
-        (when (rune= d #/?) (go state-2))
-        (collect d)
-        (go state-1)
-       state-2 ;; #/? seen
-        (setf d (read-rune input))
-	(unless d
-	  (error 'end-of-xstream))
-        (unless (data-rune-p d)
-          (wf-error "Illegal char: ~S." d))
-        (when (rune= d #/>) (return))
-        (when (rune= d #/?)
-          (collect #/?)
-          (go state-2))
-        (collect #/?)
-        (collect d)
-        (go state-1)))))
+  (let (d)
+    (with-rune-collector (collect)
+      (block nil
+	(tagbody
+	 state-1
+	  (setf d (read-rune input))
+	  (when (eq d :eof)
+	    (eox input))
+	  (unless (data-rune-p d)
+	    (wf-error "Illegal char: ~S." d))
+	  (when (rune= d #/?) (go state-2))
+	  (collect d)
+	  (go state-1)
+	 state-2 ;; #/? seen
+	  (setf d (read-rune input))
+	  (when (eq d :eof)
+	    (eox input))
+	  (unless (data-rune-p d)
+	    (wf-error "Illegal char: ~S." d))
+	  (when (rune= d #/>) (return))
+	  (when (rune= d #/?)
+	    (collect #/?)
+	    (go state-2))
+	  (collect #/?)
+	  (collect d)
+	  (go state-1))))))
 
 (defun read-comment-content (input &aux d)
   (with-rune-collector (collect)
@@ -1922,7 +1928,7 @@
                (loop
                  (let ((c (read-rune (car (zstream-input-stack input)))))
                    (cond ((eq c :eof)
-                          (wf-error "EOF in system literal."))
+                          (eox input "EOF in system literal."))
                          ((rune= c delim)
                           (return))
                          (t
@@ -2275,7 +2281,7 @@
           ((= level -1))
         (declare (type fixnum level))
         (cond ((eq c1 :eof)
-               (wf-error "EOF in <![IGNORE ... >")))
+               (eox input "EOF in <![IGNORE ... >")))
         (cond ((and (rune= c3 #/<) (rune= c2 #/!) (rune= c1 #/\[))
                (incf level)))
         (cond ((and (rune= c3 #/\]) (rune= c2 #/\]) (rune= c1 #/>))
@@ -3230,7 +3236,7 @@
       (loop
         (let ((c (read-rune input)))
           (cond ((eq c :eof)
-                 (wf-error "EOF"))
+                 (eox input "EOF"))
                 ((rune= c delim)
                  (return))
                 ((rune= c #/<)

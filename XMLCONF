@@ -1,14 +1,8 @@
 xmltest/not-wf/sa/001.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/002.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/003.xml [not validating:] not-wf [validating:] invalid
-xmltest/not-wf/sa/004.xml [not validating:] FAILED:
-  The value :EOF is not of type NUMBER.
-[
-    SGML-ism:  processing instructions end in '?>' not '>'. ]
-xmltest/not-wf/sa/005.xml [not validating:] FAILED:
-  The value :EOF is not of type NUMBER.
-[
-    Processing instructions end in '?>' not '?'. ]
+xmltest/not-wf/sa/004.xml [not validating:] not-wf [validating:] invalid
+xmltest/not-wf/sa/005.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/006.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/007.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/008.xml [not validating:] not-wf [validating:] invalid
@@ -40,10 +34,7 @@ xmltest/not-wf/sa/027.xml [not validating:] FAILED:
   The value :EOF is not of type NUMBER.
 [
     Comments must be terminated with "-->".]
-xmltest/not-wf/sa/028.xml [not validating:] FAILED:
-  The value :EOF is not of type NUMBER.
-[
-    Processing instructions must end with '?>'. ]
+xmltest/not-wf/sa/028.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/029.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/030.xml [not validating:] FAILED:
   well-formedness violation not detected
@@ -281,10 +272,7 @@ xmltest/not-wf/sa/171.xml [not validating:] FAILED:
   well-formedness violation not detected
 [
     Character FFFF is not legal anywhere in an XML document. ]
-xmltest/not-wf/sa/172.xml [not validating:] FAILED:
-  The value :EOF is not of type NUMBER.
-[
-    Character FFFF is not legal anywhere in an XML document. ]
+xmltest/not-wf/sa/172.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/173.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/174.xml [not validating:] FAILED:
   The value :EOF is not of type NUMBER.
@@ -987,11 +975,7 @@ oasis/p23fail1.xml [not validating:] not-wf [validating:] not-wf
 oasis/p23fail2.xml [not validating:] not-wf [validating:] not-wf
 oasis/p23fail3.xml [not validating:] not-wf [validating:] not-wf
 oasis/p23fail4.xml [not validating:] not-wf [validating:] not-wf
-oasis/p23fail5.xml [not validating:] FAILED:
-  The value :EOF is not of type NUMBER.
-[
-     no SGML-type PIs
-    ]
+oasis/p23fail5.xml [not validating:] not-wf [validating:] not-wf
 oasis/p24fail1.xml [not validating:] not-wf [validating:] not-wf
 oasis/p24fail2.xml [not validating:] not-wf [validating:] not-wf
 oasis/p25fail1.xml [not validating:] FAILED:
@@ -1021,10 +1005,7 @@ oasis/p39fail3.xml [not validating:] FAILED:
     at least 1 expected, but 0 found
 [
     XML documents contain one or more elements]
-oasis/p39fail4.xml [not validating:] FAILED:
-  The value :EOF is not of type NUMBER.
-[
-     XML declarations must be correctly terminated ]
+oasis/p39fail4.xml [not validating:] not-wf [validating:] not-wf
 oasis/p39fail5.xml [not validating:] not-wf [validating:] not-wf
 oasis/p40fail1.xml [not validating:] not-wf [validating:] not-wf
 oasis/p40fail2.xml [not validating:] not-wf [validating:] not-wf
@@ -1350,16 +1331,8 @@ ibm/not-wf/P16/ibm16n01.xml [not validating:] FAILED:
     "(less than)?".
   ]
 ibm/not-wf/P16/ibm16n02.xml [not validating:] not-wf [validating:] not-wf
-ibm/not-wf/P16/ibm16n03.xml [not validating:] FAILED:
-  The value :EOF is not of type NUMBER.
-[
-    Tests PI. The PI has a wrong closing sequence ">".
-  ]
-ibm/not-wf/P16/ibm16n04.xml [not validating:] FAILED:
-  The value :EOF is not of type NUMBER.
-[
-    Tests PI. The closing sequence is missing in the PI.
-  ]
+ibm/not-wf/P16/ibm16n03.xml [not validating:] not-wf [validating:] not-wf
+ibm/not-wf/P16/ibm16n04.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P17/ibm17n01.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P17/ibm17n02.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P17/ibm17n03.xml [not validating:] FAILED:
@@ -1459,11 +1432,7 @@ ibm/not-wf/P23/ibm23n01.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P23/ibm23n02.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P23/ibm23n03.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P23/ibm23n04.xml [not validating:] not-wf [validating:] not-wf
-ibm/not-wf/P23/ibm23n05.xml [not validating:] FAILED:
-  The value :EOF is not of type NUMBER.
-[
-    Tests XMLDecl with a wrong closing sequence ">".
-  ]
+ibm/not-wf/P23/ibm23n05.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P23/ibm23n06.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P24/ibm24n01.xml [not validating:] FAILED:
   Argument X is not a REAL: :EOF
@@ -1504,23 +1473,13 @@ ibm/not-wf/P28/ibm28n04.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P28/ibm28n05.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P28/ibm28n06.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P28/ibm28n07.xml [not validating:] not-wf [validating:] not-wf
-ibm/not-wf/P28/ibm28n08.xml [not validating:] FAILED:
-  The value :EOF is not of type NUMBER.
-[
-    Tests doctypedecl with wrong opening sequence. The opening sequence
-    "(less than)?DOCTYPE" occurs in the DTD.
-  ]
+ibm/not-wf/P28/ibm28n08.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/p28a/ibm28an01.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P29/ibm29n01.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P29/ibm29n02.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P29/ibm29n03.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P29/ibm29n04.xml [not validating:] not-wf [validating:] not-wf
-ibm/not-wf/P29/ibm29n05.xml [not validating:] FAILED:
-  The value :EOF is not of type NUMBER.
-[
-    Tests WFC "PEs in Internal Subset". A PE reference occurs inside a PI in 
-    the DTD. 
-  ]
+ibm/not-wf/P29/ibm29n05.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P29/ibm29n06.xml [not validating:] FAILED:
   The value :EOF is not of type NUMBER.
 [
@@ -1903,19 +1862,8 @@ ibm/not-wf/P76/ibm76n06.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P76/ibm76n07.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P77/ibm77n01.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P77/ibm77n02.xml [not validating:] not-wf [validating:] not-wf
-ibm/not-wf/P77/ibm77n03.xml [not validating:] FAILED:
-  The value :EOF is not of type NUMBER.
-[
-    Tests TextDecl with wrong closing sequence. The character "greater 
-    than" is used as the closing sequence in the TextDecl in the file 
-    "ibm77n03.ent".
-  ]
-ibm/not-wf/P77/ibm77n04.xml [not validating:] FAILED:
-  The value :EOF is not of type NUMBER.
-[
-    Tests TextDecl with a required field missing. The closing sequence 
-    is missing in the TextDecl in the file "ibm77n04.ent".
-  ]
+ibm/not-wf/P77/ibm77n03.xml [not validating:] not-wf [validating:] not-wf
+ibm/not-wf/P77/ibm77n04.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P78/ibm78n01.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P78/ibm78n02.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P79/ibm79n01.xml [not validating:] not-wf [validating:] not-wf
@@ -2424,4 +2372,4 @@ ibm/valid/P86/ibm86v01.xml [not validating:] input [validating:] input
 ibm/valid/P87/ibm87v01.xml [not validating:] input [validating:] input
 ibm/valid/P88/ibm88v01.xml [not validating:] input [validating:] input
 ibm/valid/P89/ibm89v01.xml [not validating:] input [validating:] input
-141/1786 tests failed; 376 tests were skipped
+128/1786 tests failed; 376 tests were skipped
