@@ -124,7 +124,7 @@
 	;; Zeichen abwarten und nachgucken, dass nicht etwa die andere
 	;; Haelfte fehlt!
         (let ((x (logior (ash hi 8) lo)))
-	  (when (or (eql x #xFFFE) (eql x #/U+FFFF))
+	  (when (or (eql x #xFFFE) (eql x #xFFFF))
 	    (xerror "not a valid code point: #x~X" x))
 	  (setf (aref out wptr) x))
         (setf wptr (%+ 1 wptr))))
@@ -147,7 +147,7 @@
 	;; Zeichen abwarten und nachgucken, dass nicht etwa die andere
 	;; Haelfte fehlt!
         (let ((x (logior (ash hi 8) lo)))
-	  (when (or (eql x #xFFFE) (eql x #/U+FFFF))
+	  (when (or (eql x #xFFFE) (eql x #xFFFF))
 	    (xerror "not a valid code point: #x~X" x))
 	  (setf (aref out wptr) x))
         (setf wptr (%+ 1 wptr))))
@@ -169,7 +169,7 @@
 		       (xerror "surrogate encoded in UTF-8: #x~X." x))
                      (cond ((or (%> x #x10FFFF)
 				(eql x #xFFFE)
-				(eql x #/U+FFFF))
+				(eql x #xFFFF))
                             (xerror "not a valid code point: #x~X" x))
 		           ((%> x #xFFFF)
                             (setf (aref out (%+ 0 wptr)) (%+ #xD7C0 (ash x -10))

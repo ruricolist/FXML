@@ -213,6 +213,8 @@
   model-stack
   (referenced-notations '())
   (id-table (%make-rod-hash-table))
+  ;; FIXME: Wofuer ist name-hashtable da?  Will man das wissen?
+  (name-hashtable (make-rod-hashtable :size 2000))
   (standalone-p nil)
   (entity-resolver nil)
   (disallow-internal-subset nil)
@@ -479,14 +481,12 @@
 (defun (setf rod-hash-get) (new-value hashtable rod &optional (start 0) (end (length rod)))
   (rod-hash-set new-value hashtable rod start end))
 
-(defparameter *name-hashtable* (make-rod-hashtable :size 2000))
-
 (defun intern-name (rod &optional (start 0) (end (length rod)))
-  (multiple-value-bind (value successp key) (rod-hash-get *name-hashtable* rod start end)
+  (multiple-value-bind (value successp key) (rod-hash-get (name-hashtable *ctx*) rod start end)
     (declare (ignore value))
     (if successp
         key
-      (nth-value 1 (rod-hash-set t *name-hashtable* rod start end)))))
+      (nth-value 1 (rod-hash-set t (name-hashtable *ctx*) rod start end)))))
 
 ;;;; ---------------------------------------------------------------------------
 ;;;;
