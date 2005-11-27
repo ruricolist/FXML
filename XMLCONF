@@ -469,11 +469,7 @@ sun/invalid/attr16.xml [not validating:] input [validating:] invalid
 sun/invalid/utf16b.xml [not validating:] input [validating:] invalid
 sun/invalid/utf16l.xml [not validating:] input [validating:] invalid
 sun/invalid/empty.xml [not validating:] input [validating:] invalid
-sun/not-wf/not-sa03.xml [not validating:] FAILED:
-  well-formedness violation not detected
-[
-    Tests the Entity Declared WFC, ensuring that
-    a reference to externally defined entity causes a well-formedness error.]
+sun/not-wf/not-sa03.xml [not validating:] not-wf [validating:] invalid
 sun/not-wf/attlist01.xml [not validating:] not-wf [validating:] not-wf
 sun/not-wf/attlist02.xml [not validating:] not-wf [validating:] not-wf
 sun/not-wf/attlist03.xml [not validating:] not-wf [validating:] not-wf
@@ -1100,14 +1096,7 @@ ibm/not-wf/P32/ibm32n08.xml [not validating:] FAILED:
     Tests SDDecl with wrong field ordering. The "=" sign occurs 
     after the key word "yes" in the SDDecl in the XMLDecl.
   ]
-ibm/not-wf/P32/ibm32n09.xml [not validating:] FAILED:
-  well-formedness violation not detected
-[
-    This is test violates WFC: Entity Declared in P68.
-    The standalone document declaration has the value yes, BUT there is an 
-    external markup declaration of an entity (other than amp, lt, gt, apos,
-    quot), and references to this entity appear in the document.
-  ]
+ibm/not-wf/P32/ibm32n09.xml [not validating:] not-wf [validating:] invalid
 ibm/not-wf/P39/ibm39n01.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P39/ibm39n02.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P39/ibm39n03.xml [not validating:] not-wf [validating:] not-wf
@@ -1289,13 +1278,7 @@ ibm/not-wf/P68/ibm68n02.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P68/ibm68n03.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P68/ibm68n04.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P68/ibm68n05.xml [not validating:] not-wf [validating:] not-wf
-ibm/not-wf/P68/ibm68n06.xml [not validating:] FAILED:
-  well-formedness violation not detected
-[
-    Tests EntityRef which is against P68 WFC: Entity Declared. The 
-    entity with the name "aaa" in the EntityRef in the AttValue in the STag of 
-    the element "root" is externally declared, but standalone is "yes".
-  ]
+ibm/not-wf/P68/ibm68n06.xml [not validating:] not-wf [validating:] invalid
 ibm/not-wf/P68/ibm68n07.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P68/ibm68n08.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P68/ibm68n09.xml [not validating:] not-wf [validating:] not-wf
@@ -1853,4 +1836,4 @@ ibm/valid/P86/ibm86v01.xml [not validating:] input [validating:] input
 ibm/valid/P87/ibm87v01.xml [not validating:] input [validating:] input
 ibm/valid/P88/ibm88v01.xml [not validating:] input [validating:] input
 ibm/valid/P89/ibm89v01.xml [not validating:] input [validating:] input
-13/1786 tests failed; 376 tests were skipped
+10/1786 tests failed; 376 tests were skipped

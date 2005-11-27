@@ -62,7 +62,7 @@
 ;; slot of zstreams instead).
 
 ;; Common
-;;    :xml-pi (<target> . <content>)    ;processing-instruction starting with "<?xml"
+;;    :xml-decl (<target> . <content>)    ;processing-instruction starting with "<?xml"
 ;;    :pi (<target> . <content>)        ;processing-instruction
 ;;    :stag (<name> . <atts>)           ;start tag
 ;;    :etag (<name> . <atts>)           ;end tag
@@ -665,7 +665,7 @@
 	 :format-arguments (list stream x args)))
 
 (defvar *validate* t)
-(defvar *markup-declaration-external-p* nil)
+(defvar *external-subset-p* nil)
 
 (defun validate-start-element (ctx name)
   (when *validate*
@@ -816,7 +816,8 @@
             (:constructor make-internal-entdef (value))
             (:conc-name #:entdef-))
   (value (error "missing argument") :type rod)
-  (expansion nil))
+  (expansion nil)
+  (external-subset-p *external-subset-p*))
 
 (defstruct (external-entdef
             (:include entdef)
@@ -889,7 +890,7 @@
         (setf (entdef-extid def)
               (absolute-extid source-stream (entdef-extid def))))
       (setf (gethash name table)
-            (cons *markup-declaration-external-p* def)))))
+            (cons *external-subset-p* def)))))
 
 (defun get-entity-definition (entity-name kind dtd)
   (unless dtd
@@ -913,6 +914,10 @@
     (let (r)
       (etypecase def
         (internal-entdef
+	 (when (and (standalone-p *ctx*)
+		    (entdef-external-subset-p def))
+	   (wf-error
+	    "entity declared in external subset, but document is standalone"))
          (setf r (make-rod-xstream (entdef-value def)))
          (setf (xstream-name r)
            (make-stream-name :entity-name entity-name
@@ -977,7 +982,7 @@
                 ; (:ENUMERATION <name>*)
   default       ;default value of attribute:
                 ; :REQUIRED, :IMPLIED, (:FIXED content) or (:DEFAULT content)
-  (external-p *markup-declaration-external-p*)
+  (external-p *external-subset-p*)
   )
 
 (defstruct elmdef
@@ -986,7 +991,7 @@
   content       ;content model            [*]
   attributes    ;list of defined attributes
   compiled-cspec ;cons of validation function for contentspec
-  (external-p *markup-declaration-external-p*)
+  (external-p *external-subset-p*)
   )
 
 ;; [*] in XML it is possible to define attributes before the element
@@ -1060,7 +1065,7 @@
                                   (rod-string element-name)))))))
         (sax:element-declaration (handler *ctx*) element-name content-model)
         (setf (elmdef-content e) content-model)
-        (setf (elmdef-external-p e) *markup-declaration-external-p*)
+        (setf (elmdef-external-p e) *external-subset-p*)
         e))))
 
 (defvar *redefinition-warning* nil)
@@ -1257,7 +1262,7 @@
           ((rune= #/? d)
            (multiple-value-bind (target content) (read-pi input)
              (cond ((rod= target '#.(string-rod "xml"))
-                    (values :xml-pi (cons target content)))
+                    (values :xml-decl (cons target content)))
                    ((rod-equal target '#.(string-rod "XML"))
                     (wf-error "You lost -- no XML processing instructions."))
 		   ((and sax:*namespace-processing* (position #/: target))
@@ -2348,7 +2353,7 @@
       (:eof   (return))
       ((:|<!ELEMENT| :|<!ATTLIST| :|<!ENTITY| :|<!NOTATION| :PI :COMMENT)
        (let ((*expand-pe-p* t)
-             (*markup-declaration-external-p* t))
+             (*external-subset-p* t))
          (p/markup-decl input)))
       ((:PE-REFERENCE)
        (let ((name (nth-value 1 (read-token input))))
@@ -2377,7 +2382,7 @@
   ;;              | EntityDecl | NotationDecl
   ;;              | PI | Comment               /* WFC: PEs in Internal Subset */
   (let ((token (peek-token input))
-	(*expand-pe-p* (and *expand-pe-p* *markup-declaration-external-p*)))
+	(*expand-pe-p* (and *expand-pe-p* *external-subset-p*)))
     (case token
       (:|<!ELEMENT|  (p/element-decl input))
       (:|<!ATTLIST|  (p/attlist-decl input))
@@ -2405,7 +2410,7 @@
       (set-to-full-speed xstream))))
 
 (defun p/ext-subset (input)
-  (cond ((eq (peek-token input) :xml-pi)
+  (cond ((eq (peek-token input) :xml-decl)
          (let ((hd (parse-text-decl (cdr (nth-value 1 (peek-token input))))))
            (setup-encoding input hd))
          (consume-token input)))
@@ -2554,7 +2559,7 @@
     ;; we will use the attribute-value parser for the xml decl.
     (let ((*data-behaviour* :DTD))
       ;; optional XMLDecl?
-      (cond ((eq (peek-token input) :xml-pi)
+      (cond ((eq (peek-token input) :xml-decl)
              (let ((hd (parse-xml-decl (cdr (nth-value 1 (peek-token input))))))
                (setf (standalone-p *ctx*) (eq (xml-header-standalone-p hd) :yes))
                (setup-encoding input hd))
@@ -2737,7 +2742,7 @@
 
 (defun p/ext-parsed-ent (input)
   ;; [78] extParsedEnt ::= '<?xml' VersionInfo? EncodingDecl S? '?>' content
-  (when (eq (peek-token input) :xml-pi)
+  (when (eq (peek-token input) :xml-decl)
     (let ((hd (parse-text-decl (cdr (nth-value 1 (peek-token input))))))
       (setup-encoding input hd))
     (consume-token input))
