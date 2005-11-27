@@ -3293,9 +3293,11 @@
 
 (defun read-att-value-2 (input)
   (let ((delim (read-rune input)))
+    (when (eql delim :eof)
+      (eox input))
     (unless (member delim '(#/\" #/\') :test #'eql)
       (wf-error "Bad attribute value delimiter ~S, must be either #\\\" or #\\\'."
-             (rune-char delim delim)))
+             (rune-char delim)))
     (with-rune-collector-4 (collect)
       (loop
         (let ((c (read-rune input)))

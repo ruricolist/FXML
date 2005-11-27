@@ -1025,12 +1025,7 @@ ibm/not-wf/P23/ibm23n03.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P23/ibm23n04.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P23/ibm23n05.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P23/ibm23n06.xml [not validating:] not-wf [validating:] not-wf
-ibm/not-wf/P24/ibm24n01.xml [not validating:] FAILED:
-  Argument X is not a REAL: :EOF
-[
-    Tests VersionInfo with a required field missing. The VersionNum is
-    missing in the VersionInfo in the XMLDecl.
-  ]
+ibm/not-wf/P24/ibm24n01.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P24/ibm24n02.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P24/ibm24n03.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P24/ibm24n04.xml [not validating:] not-wf [validating:] not-wf
@@ -1313,12 +1308,7 @@ ibm/not-wf/P79/ibm79n01.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P79/ibm79n02.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P80/ibm80n01.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P80/ibm80n02.xml [not validating:] not-wf [validating:] not-wf
-ibm/not-wf/P80/ibm80n03.xml [not validating:] FAILED:
-  Argument X is not a REAL: :EOF
-[
-    Tests EncodingDecl with a required field missing. The double quoted 
-    EncName are missing in the EncodingDecl in the XMLDecl.
-  ]
+ibm/not-wf/P80/ibm80n03.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P80/ibm80n04.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P80/ibm80n05.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P80/ibm80n06.xml [not validating:] not-wf [validating:] not-wf
@@ -1804,4 +1794,4 @@ ibm/valid/P86/ibm86v01.xml [not validating:] input [validating:] input
 ibm/valid/P87/ibm87v01.xml [not validating:] input [validating:] input
 ibm/valid/P88/ibm88v01.xml [not validating:] input [validating:] input
 ibm/valid/P89/ibm89v01.xml [not validating:] input [validating:] input
-3/1786 tests failed; 376 tests were skipped
+1/1786 tests failed; 376 tests were skipped
