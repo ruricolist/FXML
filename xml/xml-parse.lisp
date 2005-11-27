@@ -2644,7 +2644,9 @@
 		 (multiple-value-bind (cat2 sem2) (read-token input)
 		   (unless (and (eq cat2 :etag)
 				(eq (car sem2) name))
-		     (perror input "Bad nesting. ~S / ~S" (mu name) (mu (cons cat2 sem2)))))
+		     (perror input "Bad nesting. ~S / ~S" (mu name) (mu (cons cat2 sem2))))
+		   (when sem2
+		     (wf-error "no attributes allowed in end tag")))
 		 (sax:end-element (handler *ctx*) ns-uri local-name name))
 		
 		(t

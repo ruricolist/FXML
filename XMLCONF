@@ -1094,12 +1094,7 @@ ibm/not-wf/P42/ibm42n01.xml [not-wf?] not-wf
 ibm/not-wf/P42/ibm42n02.xml [not-wf?] not-wf
 ibm/not-wf/P42/ibm42n03.xml [not-wf?] not-wf
 ibm/not-wf/P42/ibm42n04.xml [not-wf?] not-wf
-ibm/not-wf/P42/ibm42n05.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests ETag with a wrong structure. The ETag of the element "root"
-    contains an Attribute (attr1="any").
-  ]
+ibm/not-wf/P42/ibm42n05.xml [not-wf?] not-wf
 ibm/not-wf/P43/ibm43n01.xml [not-wf?] not-wf
 ibm/not-wf/P43/ibm43n02.xml [not-wf?] not-wf
 ibm/not-wf/P43/ibm43n04.xml [not-wf?] not-wf
@@ -1818,4 +1813,4 @@ ibm/valid/P86/ibm86v01.xml [not validating:] input [validating:] input
 ibm/valid/P87/ibm87v01.xml [not validating:] input [validating:] input
 ibm/valid/P88/ibm88v01.xml [not validating:] input [validating:] input
 ibm/valid/P89/ibm89v01.xml [not validating:] input [validating:] input
-6/1786 tests failed; 376 tests were skipped
+5/1786 tests failed; 376 tests were skipped
