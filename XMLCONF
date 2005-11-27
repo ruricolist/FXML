@@ -1309,12 +1309,7 @@ ibm/not-wf/P80/ibm80n06.xml [not-wf?] not-wf
 ibm/not-wf/P81/ibm81n01.xml [not-wf?] not-wf
 ibm/not-wf/P81/ibm81n02.xml [not-wf?] not-wf
 ibm/not-wf/P81/ibm81n03.xml [not-wf?] not-wf
-ibm/not-wf/P81/ibm81n04.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests EncName with illegal characters. The "8-" is used as the 
-    initial characters in the EncName in the EncodingDecl in the XMLDecl.
-  ]
+ibm/not-wf/P81/ibm81n04.xml [not-wf?] not-wf
 ibm/not-wf/P81/ibm81n05.xml [not-wf?] not-wf
 ibm/not-wf/P81/ibm81n06.xml [not-wf?] not-wf
 ibm/not-wf/P81/ibm81n07.xml [not-wf?] not-wf
@@ -1793,4 +1788,4 @@ ibm/valid/P86/ibm86v01.xml [not validating:] input [validating:] input
 ibm/valid/P87/ibm87v01.xml [not validating:] input [validating:] input
 ibm/valid/P88/ibm88v01.xml [not validating:] input [validating:] input
 ibm/valid/P89/ibm89v01.xml [not validating:] input [validating:] input
-1/1786 tests failed; 376 tests were skipped
+0/1786 tests failed; 376 tests were skipped
