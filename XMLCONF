@@ -27,16 +27,10 @@ xmltest/not-wf/sa/026.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/027.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/028.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/029.xml [not validating:] not-wf [validating:] invalid
-xmltest/not-wf/sa/030.xml [not validating:] FAILED:
-  well-formedness violation not detected
-[
-    A form feed is not a legal XML character. ]
+xmltest/not-wf/sa/030.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/031.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/032.xml [not validating:] not-wf [validating:] invalid
-xmltest/not-wf/sa/033.xml [not validating:] FAILED:
-  well-formedness violation not detected
-[
-    An ESC (octal 033) is not a legal XML character. ]
+xmltest/not-wf/sa/033.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/034.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/035.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/036.xml [not validating:] not-wf [validating:] invalid
@@ -238,10 +232,7 @@ xmltest/not-wf/sa/163.xml [not validating:] FAILED:
 xmltest/not-wf/sa/164.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/165.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/166.xml [not validating:] not-wf [validating:] invalid
-xmltest/not-wf/sa/167.xml [not validating:] FAILED:
-  well-formedness violation not detected
-[
-    Character FFFE is not legal anywhere in an XML document. ]
+xmltest/not-wf/sa/167.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/168.xml [not validating:] FAILED:
   Encoding UTF-16 in UTF-8? : #xD800.
 [
@@ -742,127 +733,37 @@ oasis/p01fail2.xml [not validating:] FAILED:
     ]
 oasis/p01fail3.xml [not validating:] not-wf [validating:] invalid
 oasis/p01fail4.xml [not validating:] not-wf [validating:] invalid
-oasis/p02fail1.xml [not validating:] FAILED:
-  well-formedness violation not detected
-[
-    Use of illegal character within XML document.     ]
-oasis/p02fail10.xml [not validating:] FAILED:
-  well-formedness violation not detected
-[
-    Use of illegal character within XML document.     ]
-oasis/p02fail11.xml [not validating:] FAILED:
-  well-formedness violation not detected
-[
-    Use of illegal character within XML document.     ]
-oasis/p02fail12.xml [not validating:] FAILED:
-  well-formedness violation not detected
-[
-    Use of illegal character within XML document.     ]
-oasis/p02fail13.xml [not validating:] FAILED:
-  well-formedness violation not detected
-[
-    Use of illegal character within XML document.     ]
-oasis/p02fail14.xml [not validating:] FAILED:
-  well-formedness violation not detected
-[
-    Use of illegal character within XML document.     ]
-oasis/p02fail15.xml [not validating:] FAILED:
-  well-formedness violation not detected
-[
-    Use of illegal character within XML document.     ]
-oasis/p02fail16.xml [not validating:] FAILED:
-  well-formedness violation not detected
-[
-    Use of illegal character within XML document.     ]
-oasis/p02fail17.xml [not validating:] FAILED:
-  well-formedness violation not detected
-[
-    Use of illegal character within XML document.     ]
-oasis/p02fail18.xml [not validating:] FAILED:
-  well-formedness violation not detected
-[
-    Use of illegal character within XML document.     ]
-oasis/p02fail19.xml [not validating:] FAILED:
-  well-formedness violation not detected
-[
-    Use of illegal character within XML document.     ]
-oasis/p02fail2.xml [not validating:] FAILED:
-  well-formedness violation not detected
-[
-    Use of illegal character within XML document.     ]
-oasis/p02fail20.xml [not validating:] FAILED:
-  well-formedness violation not detected
-[
-    Use of illegal character within XML document.     ]
-oasis/p02fail21.xml [not validating:] FAILED:
-  well-formedness violation not detected
-[
-    Use of illegal character within XML document.     ]
-oasis/p02fail22.xml [not validating:] FAILED:
-  well-formedness violation not detected
-[
-    Use of illegal character within XML document.     ]
-oasis/p02fail23.xml [not validating:] FAILED:
-  well-formedness violation not detected
-[
-    Use of illegal character within XML document.     ]
-oasis/p02fail24.xml [not validating:] FAILED:
-  well-formedness violation not detected
-[
-    Use of illegal character within XML document.     ]
-oasis/p02fail25.xml [not validating:] FAILED:
-  well-formedness violation not detected
-[
-    Use of illegal character within XML document.     ]
-oasis/p02fail26.xml [not validating:] FAILED:
-  well-formedness violation not detected
-[
-    Use of illegal character within XML document.     ]
-oasis/p02fail27.xml [not validating:] FAILED:
-  well-formedness violation not detected
-[
-    Use of illegal character within XML document.     ]
-oasis/p02fail28.xml [not validating:] FAILED:
-  well-formedness violation not detected
-[
-    Use of illegal character within XML document.     ]
-oasis/p02fail29.xml [not validating:] FAILED:
-  well-formedness violation not detected
-[
-    Use of illegal character within XML document.     ]
-oasis/p02fail3.xml [not validating:] FAILED:
-  well-formedness violation not detected
-[
-    Use of illegal character within XML document.     ]
-oasis/p02fail30.xml [not validating:] FAILED:
-  well-formedness violation not detected
-[
-    Use of illegal character within XML document.     ]
+oasis/p02fail1.xml [not validating:] not-wf [validating:] invalid
+oasis/p02fail10.xml [not validating:] not-wf [validating:] invalid
+oasis/p02fail11.xml [not validating:] not-wf [validating:] invalid
+oasis/p02fail12.xml [not validating:] not-wf [validating:] invalid
+oasis/p02fail13.xml [not validating:] not-wf [validating:] invalid
+oasis/p02fail14.xml [not validating:] not-wf [validating:] invalid
+oasis/p02fail15.xml [not validating:] not-wf [validating:] invalid
+oasis/p02fail16.xml [not validating:] not-wf [validating:] invalid
+oasis/p02fail17.xml [not validating:] not-wf [validating:] invalid
+oasis/p02fail18.xml [not validating:] not-wf [validating:] invalid
+oasis/p02fail19.xml [not validating:] not-wf [validating:] invalid
+oasis/p02fail2.xml [not validating:] not-wf [validating:] invalid
+oasis/p02fail20.xml [not validating:] not-wf [validating:] invalid
+oasis/p02fail21.xml [not validating:] not-wf [validating:] invalid
+oasis/p02fail22.xml [not validating:] not-wf [validating:] invalid
+oasis/p02fail23.xml [not validating:] not-wf [validating:] invalid
+oasis/p02fail24.xml [not validating:] not-wf [validating:] invalid
+oasis/p02fail25.xml [not validating:] not-wf [validating:] invalid
+oasis/p02fail26.xml [not validating:] not-wf [validating:] invalid
+oasis/p02fail27.xml [not validating:] not-wf [validating:] invalid
+oasis/p02fail28.xml [not validating:] not-wf [validating:] invalid
+oasis/p02fail29.xml [not validating:] not-wf [validating:] invalid
+oasis/p02fail3.xml [not validating:] not-wf [validating:] invalid
+oasis/p02fail30.xml [not validating:] not-wf [validating:] invalid
 oasis/p02fail31.xml [not validating:] not-wf [validating:] invalid
-oasis/p02fail4.xml [not validating:] FAILED:
-  well-formedness violation not detected
-[
-    Use of illegal character within XML document.     ]
-oasis/p02fail5.xml [not validating:] FAILED:
-  well-formedness violation not detected
-[
-    Use of illegal character within XML document.     ]
-oasis/p02fail6.xml [not validating:] FAILED:
-  well-formedness violation not detected
-[
-    Use of illegal character within XML document.     ]
-oasis/p02fail7.xml [not validating:] FAILED:
-  well-formedness violation not detected
-[
-    Use of illegal character within XML document.     ]
-oasis/p02fail8.xml [not validating:] FAILED:
-  well-formedness violation not detected
-[
-    Use of illegal character within XML document.     ]
-oasis/p02fail9.xml [not validating:] FAILED:
-  well-formedness violation not detected
-[
-    Use of illegal character within XML document.     ]
+oasis/p02fail4.xml [not validating:] not-wf [validating:] invalid
+oasis/p02fail5.xml [not validating:] not-wf [validating:] invalid
+oasis/p02fail6.xml [not validating:] not-wf [validating:] invalid
+oasis/p02fail7.xml [not validating:] not-wf [validating:] invalid
+oasis/p02fail8.xml [not validating:] not-wf [validating:] invalid
+oasis/p02fail9.xml [not validating:] not-wf [validating:] invalid
 oasis/p03fail1.xml [not validating:] not-wf [validating:] not-wf
 oasis/p03fail10.xml [not validating:] not-wf [validating:] not-wf
 oasis/p03fail11.xml [not validating:] not-wf [validating:] not-wf
@@ -2254,4 +2155,4 @@ ibm/valid/P86/ibm86v01.xml [not validating:] input [validating:] input
 ibm/valid/P87/ibm87v01.xml [not validating:] input [validating:] input
 ibm/valid/P88/ibm88v01.xml [not validating:] input [validating:] input
 ibm/valid/P89/ibm89v01.xml [not validating:] input [validating:] input
-103/1786 tests failed; 376 tests were skipped
+70/1786 tests failed; 376 tests were skipped

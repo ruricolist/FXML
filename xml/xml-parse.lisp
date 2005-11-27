@@ -1217,7 +1217,7 @@
                                 (%put-unicode-char data collect)))))))
             (t
              (unread-rune c input)
-             (values :CDATA (read-cdata input))) ))))))))
+             (values :CDATA (read-cdata input)))))))))))
 
 (defun read-pe-reference (zinput)
   (let* ((input (car (zstream-input-stack zinput)))
@@ -3158,6 +3158,18 @@
 (defun read-cdata (input)
   (read-data-until* ((lambda (rune)
                        (declare (type rune rune))
+		       (when (or (and (%rune< rune #/U+0020)
+				      (not (or (%rune= rune #/U+0009)
+					       (%rune= rune #/U+000a)
+					       (%rune= rune #/U+000d))))
+				 ;; Surrogates nicht ausschliessen, denn wir
+				 ;; haben ja UTF-16 Runen.
+				 #+(or)
+				 (and (%rune<= #/U+D800 rune)
+				      (%rune< rune #/U+E000))
+				 (%rune= rune #/U+FFFE)
+				 (%rune= rune #/U+FFFF))
+			 (wf-error "code point invalid: ~A" rune))
                        (or (%rune= rune #/<) (%rune= rune #/&)))
                      input
                      source start end)
