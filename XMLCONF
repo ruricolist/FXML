@@ -1194,13 +1194,7 @@ ibm/not-wf/P59/ibm59n06.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P60/ibm60n01.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P60/ibm60n02.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P60/ibm60n03.xml [not validating:] not-wf [validating:] not-wf
-ibm/not-wf/P60/ibm60n04.xml [not validating:] FAILED:
-  For no apparent reason #/< is forbidden in attribute values. You lost -- next time choose SEXPR syntax.
-[
-    Tests DefaultDecl with a required field missing. There is no 
-    attribute value specified after the key word "#FIXED" in the DefaultDecl in
-    the AttDef in the AttlistDecl in the DTD.
-  ]
+ibm/not-wf/P60/ibm60n04.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P60/ibm60n05.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P60/ibm60n06.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P60/ibm60n07.xml [not validating:] not-wf [validating:] not-wf
@@ -1794,4 +1788,4 @@ ibm/valid/P86/ibm86v01.xml [not validating:] input [validating:] input
 ibm/valid/P87/ibm87v01.xml [not validating:] input [validating:] input
 ibm/valid/P88/ibm88v01.xml [not validating:] input [validating:] input
 ibm/valid/P89/ibm89v01.xml [not validating:] input [validating:] input
-1/1786 tests failed; 376 tests were skipped
+0/1786 tests failed; 376 tests were skipped

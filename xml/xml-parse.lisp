@@ -1489,11 +1489,7 @@
                                   (t
                                    (wf-error "No PE here.")))))
                          ((and (eq mode :ATT) (rune= c #/<))
-                          ;; xxx fix error message
-                          (cerror "Eat them in spite of this."
-                                  "For no apparent reason #\/< is forbidden in attribute values. ~
-                           You lost -- next time choose SEXPR syntax.")
-                          (collect c))
+			   (wf-error "unexpected #\/<"))
                          ((and canon-space-p (space-rune-p c))
                           (collect #/space))
                          ((not (data-rune-p c))
