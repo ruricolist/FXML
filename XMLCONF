@@ -992,12 +992,7 @@ ibm/not-wf/P12/ibm12n03.xml [not-wf?] not-wf
 ibm/not-wf/P13/ibm13n01.xml [not-wf?] not-wf
 ibm/not-wf/P13/ibm13n02.xml [not-wf?] not-wf
 ibm/not-wf/P13/ibm13n03.xml [not-wf?] not-wf
-ibm/not-wf/P14/ibm14n01.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests CharData. The content of the element "student" contains the 
-    character "[[>".
-  ]
+ibm/not-wf/P14/ibm14n01.xml [not-wf?] not-wf
 ibm/not-wf/P14/ibm14n02.xml [not-wf?] not-wf
 ibm/not-wf/P14/ibm14n03.xml [not-wf?] not-wf
 ibm/not-wf/P15/ibm15n01.xml [not-wf?] not-wf
@@ -1823,4 +1818,4 @@ ibm/valid/P86/ibm86v01.xml [not validating:] input [validating:] input
 ibm/valid/P87/ibm87v01.xml [not validating:] input [validating:] input
 ibm/valid/P88/ibm88v01.xml [not validating:] input [validating:] input
 ibm/valid/P89/ibm89v01.xml [not validating:] input [validating:] input
-7/1786 tests failed; 376 tests were skipped
+6/1786 tests failed; 376 tests were skipped

@@ -2671,6 +2671,8 @@
        (p/content input))
       ((:CDATA)
        (consume-token input)
+       (when (search #"]]>" sem)
+	 (wf-error "']]>' not allowed in CharData"))
        (validate-characters *ctx* sem)
        (sax:characters (handler *ctx*) sem)
        (p/content input))
