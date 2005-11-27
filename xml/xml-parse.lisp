@@ -1368,9 +1368,7 @@
                       (rune= c #/U+000A)
                       (rune= c #/U+000D))))
       (consume-rune input))
-    (cons name (read-att-value-2 input))
-    ;;(cons name (read-att-value zinput input :ATT t))
-    ))
+    (cons name (read-att-value-2 input))))
 
 (defun canon-not-cdata-attval (value)
   ;; | If the declared value is not CDATA, then the XML processor must
@@ -3283,6 +3281,8 @@
                  (error "EOF"))
                 ((rune= c delim)
                  (return))
+                ((rune= c #/<)
+		 (wf-error "'<' not allowed in attribute values"))
                 ((rune= #/& c)
                  (multiple-value-bind (kind sem) (read-entity-ref input)
                    (ecase kind

@@ -974,21 +974,11 @@ ibm/not-wf/P09/ibm09n01.xml [not-wf?] not-wf
 ibm/not-wf/P09/ibm09n02.xml [not-wf?] not-wf
 ibm/not-wf/P09/ibm09n03.xml [not-wf?] not-wf
 ibm/not-wf/P09/ibm09n04.xml [not-wf?] not-wf
-ibm/not-wf/P10/ibm10n01.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests an attribute with an invalid value. The value of the attribute "first"
-    contains the character "less than".
-  ]
+ibm/not-wf/P10/ibm10n01.xml [not-wf?] not-wf
 ibm/not-wf/P10/ibm10n02.xml [not-wf?] not-wf
 ibm/not-wf/P10/ibm10n03.xml [not-wf?] not-wf
 ibm/not-wf/P10/ibm10n04.xml [not-wf?] not-wf
-ibm/not-wf/P10/ibm10n05.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests an attribute with an invalid value. The value of the attribute "first"
-    contains the character "less than".
-  ]
+ibm/not-wf/P10/ibm10n05.xml [not-wf?] not-wf
 ibm/not-wf/P10/ibm10n06.xml [not-wf?] not-wf
 ibm/not-wf/P10/ibm10n07.xml [not-wf?] not-wf
 ibm/not-wf/P10/ibm10n08.xml [not-wf?] not-wf
@@ -1833,4 +1823,4 @@ ibm/valid/P86/ibm86v01.xml [not validating:] input [validating:] input
 ibm/valid/P87/ibm87v01.xml [not validating:] input [validating:] input
 ibm/valid/P88/ibm88v01.xml [not validating:] input [validating:] input
 ibm/valid/P89/ibm89v01.xml [not validating:] input [validating:] input
-9/1786 tests failed; 376 tests were skipped
+7/1786 tests failed; 376 tests were skipped
