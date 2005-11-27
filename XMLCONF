@@ -24,10 +24,7 @@ xmltest/not-wf/sa/023.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/024.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/025.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/026.xml [not validating:] not-wf [validating:] invalid
-xmltest/not-wf/sa/027.xml [not validating:] FAILED:
-  The value :EOF is not of type NUMBER.
-[
-    Comments must be terminated with "-->".]
+xmltest/not-wf/sa/027.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/028.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/029.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/030.xml [not validating:] FAILED:
@@ -276,11 +273,7 @@ xmltest/not-wf/sa/178.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/179.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/180.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/181.xml [not validating:] not-wf [validating:] not-wf
-xmltest/not-wf/sa/182.xml [not validating:] FAILED:
-  The value :EOF is not of type NUMBER.
-[
-    Internal parsed entities must match the 
-    production to be well formed. ]
+xmltest/not-wf/sa/182.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/183.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/184.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/185.xml [not validating:] not-wf [validating:] not-wf
@@ -292,12 +285,7 @@ xmltest/not-wf/not-sa/004.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/not-sa/006.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/not-sa/007.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/not-sa/008.xml [not validating:] not-wf [validating:] not-wf
-xmltest/not-wf/not-sa/009.xml [not validating:] FAILED:
-  The value :EOF is not of type NUMBER.
-[
-    This test violates WFC:PE Between Declarations in Production 28a.  
-    The last character of a markup declaration is not contained in the same 
-    parameter-entity text replacement.]
+xmltest/not-wf/not-sa/009.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/ext-sa/001.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/ext-sa/002.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/ext-sa/003.xml [not validating:] not-wf [validating:] not-wf
@@ -1222,11 +1210,7 @@ ibm/not-wf/P02/ibm02n31.xml [not validating:] FAILED:
     Tests a comment which contains an illegal Char: #xDFFF    
   ]
 ibm/not-wf/P02/ibm02n32.xml [not validating:] not-wf [validating:] not-wf
-ibm/not-wf/P02/ibm02n33.xml [not validating:] FAILED:
-  The value :EOF is not of type NUMBER.
-[
-    Tests a comment which contains an illegal Char: #xFFFF   
-  ]
+ibm/not-wf/P02/ibm02n33.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P03/ibm03n01.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P04/ibm04n01.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P04/ibm04n02.xml [not validating:] not-wf [validating:] not-wf
@@ -1285,19 +1269,9 @@ ibm/not-wf/P14/ibm14n01.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P14/ibm14n02.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P14/ibm14n03.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P15/ibm15n01.xml [not validating:] not-wf [validating:] not-wf
-ibm/not-wf/P15/ibm15n02.xml [not validating:] FAILED:
-  The value :EOF is not of type NUMBER.
-[
-    Tests comment. The second comment has a wrong closing sequence 
-    "-(greater than)".
-  ]
+ibm/not-wf/P15/ibm15n02.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P15/ibm15n03.xml [not validating:] not-wf [validating:] not-wf
-ibm/not-wf/P15/ibm15n04.xml [not validating:] FAILED:
-  The value :EOF is not of type NUMBER.
-[
-    Tests comment. The closing sequence is missing with the second 
-    comment.
-  ]
+ibm/not-wf/P15/ibm15n04.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P16/ibm16n01.xml [not validating:] FAILED:
   error while parsing arguments to DESTRUCTURING-BIND:
     bogus sublist #(97) to satisfy lambda-list (CXML::NAME &REST CXML::ATTRS)
@@ -1450,12 +1424,7 @@ ibm/not-wf/P29/ibm29n02.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P29/ibm29n03.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P29/ibm29n04.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P29/ibm29n05.xml [not validating:] not-wf [validating:] not-wf
-ibm/not-wf/P29/ibm29n06.xml [not validating:] FAILED:
-  The value :EOF is not of type NUMBER.
-[
-    Tests WFC "PEs in Internal Subset". A PE reference occurs inside a comment
-    in the DTD. 
-  ]
+ibm/not-wf/P29/ibm29n06.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P29/ibm29n07.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P30/ibm30n01.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P31/ibm31n01.xml [not validating:] not-wf [validating:] not-wf
@@ -2285,4 +2254,4 @@ ibm/valid/P86/ibm86v01.xml [not validating:] input [validating:] input
 ibm/valid/P87/ibm87v01.xml [not validating:] input [validating:] input
 ibm/valid/P88/ibm88v01.xml [not validating:] input [validating:] input
 ibm/valid/P89/ibm89v01.xml [not validating:] input [validating:] input
-110/1786 tests failed; 376 tests were skipped
+103/1786 tests failed; 376 tests were skipped
