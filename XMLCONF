@@ -73,10 +73,7 @@ xmltest/not-wf/sa/072.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/073.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/074.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/075.xml [not validating:] not-wf [validating:] not-wf
-xmltest/not-wf/sa/076.xml [not validating:] FAILED:
-  The value NIL is not of type CXML::DTD.
-[
-    Undefined ENTITY foo. ]
+xmltest/not-wf/sa/076.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/077.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/078.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/079.xml [not validating:] not-wf [validating:] not-wf
@@ -1937,4 +1934,4 @@ ibm/valid/P86/ibm86v01.xml [not validating:] input [validating:] input
 ibm/valid/P87/ibm87v01.xml [not validating:] input [validating:] input
 ibm/valid/P88/ibm88v01.xml [not validating:] input [validating:] input
 ibm/valid/P89/ibm89v01.xml [not validating:] input [validating:] input
-31/1786 tests failed; 376 tests were skipped
+30/1786 tests failed; 376 tests were skipped

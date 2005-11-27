@@ -888,6 +888,8 @@
             (cons *markup-declaration-external-p* def)))))
 
 (defun get-entity-definition (entity-name kind dtd)
+  (unless dtd
+    (wf-error "entity not defined: ~A" (rod-string entity-name)))
   (destructuring-bind (extp &rest def)
       (gethash entity-name
                (ecase kind
