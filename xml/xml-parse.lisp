@@ -2752,7 +2752,8 @@
 (defun parse-xml-decl (content)
   (let* ((res (make-xml-header))
          (i (make-rod-xstream content))
-         (atts (read-attribute-list 'foo i t))) ;xxx on 'foo
+	 (z (make-zstream :input-stack (list i)))
+         (atts (read-attribute-list z i t)))
     (unless (eq (peek-rune i) :eof)
       (wf-error "Garbage at end of XMLDecl."))
     ;; versioninfo muss da sein
@@ -2808,7 +2809,8 @@
 (defun parse-text-decl (content)
   (let* ((res (make-xml-header))
          (i (make-rod-xstream content))
-         (atts (read-attribute-list 'foo i t))) ;xxx on 'foo
+	 (z (make-zstream :input-stack (list i)))
+         (atts (read-attribute-list z i t)))
     (unless (eq (peek-rune i) :eof)
       (wf-error "Garbage at end of TextDecl"))
     ;; versioninfo optional
