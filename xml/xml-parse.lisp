@@ -1413,15 +1413,18 @@
 
 (definline data-rune-p (rune)
   ;; any Unicode character, excluding the surrogate blocks, FFFE, and FFFF.
+  ;;
+  ;; FIXME: das halte ich fuer verkehrt.  Surrogates als Unicode-Zeichen
+  ;; sind verboten.  Das liegt hier aber nicht vor, denn wir arbeiten
+  ;; ja tatsaechlich mit UTF-16.  Verboten ist es nur, wenn wir ein
+  ;; solches Zeichen beim Dekodieren finden, das wird aber eben
+  ;; in encodings.lisp bereits geprueft.  --david
   (let ((c (rune-code rune)))
     (or (= c #x9) (= c #xA) (= c #xD)
         (<= #x20 c #xD7FF)
         (<= #xE000 c #xFFFD)
-        ;;
         (<= #xD800 c #xDBFF)
-        (<= #xDC00 c #xDFFF)
-        ;;
-        )))
+        (<= #xDC00 c #xDFFF))))
 
 (defun read-att-value (zinput input mode &optional canon-space-p (delim nil))
   (with-rune-collector-2 (collect)
@@ -2686,7 +2689,7 @@
       ((:ENTITY-REF)
        (let ((name sem))
          (consume-token input)
-         (append ;; nil  #+(OR)
+         (append
           (recurse-on-entity input name :general
                              (lambda (input)
                                (prog1
@@ -3190,17 +3193,10 @@
 (defun read-cdata (input)
   (read-data-until* ((lambda (rune)
                        (declare (type rune rune))
-		       (when (or (and (%rune< rune #/U+0020)
-				      (not (or (%rune= rune #/U+0009)
-					       (%rune= rune #/U+000a)
-					       (%rune= rune #/U+000d))))
-				 ;; Surrogates nicht ausschliessen, denn wir
-				 ;; haben ja UTF-16 Runen.
-				 #+(or)
-				 (and (%rune<= #/U+D800 rune)
-				      (%rune< rune #/U+E000))
-				 (%rune= rune #/U+FFFE)
-				 (%rune= rune #/U+FFFF))
+		       (when (and (%rune< rune #/U+0020)
+				  (not (or (%rune= rune #/U+0009)
+					   (%rune= rune #/U+000a)
+					   (%rune= rune #/U+000d))))
 			 (wf-error "code point invalid: ~A" rune))
                        (or (%rune= rune #/<) (%rune= rune #/&)))
                      input

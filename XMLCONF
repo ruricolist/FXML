@@ -168,10 +168,7 @@ xmltest/not-wf/sa/167.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/168.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/169.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/170.xml [not validating:] not-wf [validating:] invalid
-xmltest/not-wf/sa/171.xml [not validating:] FAILED:
-  well-formedness violation not detected
-[
-    Character FFFF is not legal anywhere in an XML document. ]
+xmltest/not-wf/sa/171.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/172.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/173.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/174.xml [not validating:] not-wf [validating:] invalid
@@ -1856,4 +1853,4 @@ ibm/valid/P86/ibm86v01.xml [not validating:] input [validating:] input
 ibm/valid/P87/ibm87v01.xml [not validating:] input [validating:] input
 ibm/valid/P88/ibm88v01.xml [not validating:] input [validating:] input
 ibm/valid/P89/ibm89v01.xml [not validating:] input [validating:] input
-14/1786 tests failed; 376 tests were skipped
+13/1786 tests failed; 376 tests were skipped

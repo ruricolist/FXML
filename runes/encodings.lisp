@@ -123,7 +123,10 @@
 	;; FIXME: Wenn wir hier ein Surrogate sehen, muessen wir das naechste
 	;; Zeichen abwarten und nachgucken, dass nicht etwa die andere
 	;; Haelfte fehlt!
-        (setf (aref out wptr) (logior (ash hi 8) lo))
+        (let ((x (logior (ash hi 8) lo)))
+	  (when (or (eql x #xFFFE) (eql x #/U+FFFF))
+	    (xerror "not a valid code point: #x~X" x))
+	  (setf (aref out wptr) x))
         (setf wptr (%+ 1 wptr))))
     (values wptr rptr)))
 
@@ -143,7 +146,10 @@
 	;; FIXME: Wenn wir hier ein Surrogate sehen, muessen wir das naechste
 	;; Zeichen abwarten und nachgucken, dass nicht etwa die andere
 	;; Haelfte fehlt!
-        (setf (aref out wptr) (logior (ash hi 8) lo))
+        (let ((x (logior (ash hi 8) lo)))
+	  (when (or (eql x #xFFFE) (eql x #/U+FFFF))
+	    (xerror "not a valid code point: #x~X" x))
+	  (setf (aref out wptr) x))
         (setf wptr (%+ 1 wptr))))
     (values wptr rptr)))
 
@@ -161,7 +167,9 @@
                      (when (or (<= #xD800 x #xDBFF)
 			       (<= #xDC00 x #xDFFF))
 		       (xerror "surrogate encoded in UTF-8: #x~X." x))
-                     (cond ((%> x #x10FFFF)
+                     (cond ((or (%> x #x10FFFF)
+				(eql x #xFFFE)
+				(eql x #/U+FFFF))
                             (xerror "not a valid code point: #x~X" x))
 		           ((%> x #xFFFF)
                             (setf (aref out (%+ 0 wptr)) (%+ #xD7C0 (ash x -10))
