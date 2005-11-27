@@ -47,24 +47,8 @@ xmltest/not-wf/sa/046.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/047.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/048.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/049.xml [not validating:] not-wf [validating:] invalid
-xmltest/not-wf/sa/050.xml [not validating:] FAILED:
-  error while parsing arguments to DESTRUCTURING-BIND:
-    invalid number of elements in
-      ()
-    to satisfy lambda list
-      (CXML::NAME &REST CXML::ATTRS):
-    at least 1 expected, but 0 found
-[
-    Empty document, with no root element. ]
-xmltest/not-wf/sa/051.xml [not validating:] FAILED:
-  error while parsing arguments to DESTRUCTURING-BIND:
-    invalid number of elements in
-      ()
-    to satisfy lambda list
-      (CXML::NAME &REST CXML::ATTRS):
-    at least 1 expected, but 0 found
-[
-     CDATA is invalid at top level of document.]
+xmltest/not-wf/sa/050.xml [not validating:] not-wf [validating:] invalid
+xmltest/not-wf/sa/051.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/052.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/053.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/054.xml [not validating:] not-wf [validating:] not-wf
@@ -134,15 +118,7 @@ xmltest/not-wf/sa/101.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/102.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/103.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/104.xml [not validating:] not-wf [validating:] invalid
-xmltest/not-wf/sa/105.xml [not validating:] FAILED:
-  error while parsing arguments to DESTRUCTURING-BIND:
-    invalid number of elements in
-      ()
-    to satisfy lambda list
-      (CXML::NAME &REST CXML::ATTRS):
-    at least 1 expected, but 0 found
-[
-    Invalid placement of CDATA section. ]
+xmltest/not-wf/sa/105.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/106.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/107.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/108.xml [not validating:] not-wf [validating:] invalid
@@ -194,14 +170,8 @@ xmltest/not-wf/sa/143.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/144.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/145.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/146.xml [not validating:] not-wf [validating:] not-wf
-xmltest/not-wf/sa/147.xml [not validating:] FAILED:
-  The value 118 is not of type LIST.
-[
-    XML Declaration may not be preceded by whitespace.]
-xmltest/not-wf/sa/148.xml [not validating:] FAILED:
-  The value 118 is not of type LIST.
-[
-    XML Declaration may not be preceded by comments or whitespace.]
+xmltest/not-wf/sa/147.xml [not validating:] not-wf [validating:] invalid
+xmltest/not-wf/sa/148.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/149.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/150.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/151.xml [not validating:] not-wf [validating:] invalid
@@ -593,11 +563,7 @@ sun/not-wf/pubid03.xml [not validating:] not-wf [validating:] not-wf
 sun/not-wf/pubid04.xml [not validating:] not-wf [validating:] not-wf
 sun/not-wf/pubid05.xml [not validating:] not-wf [validating:] not-wf
 sun/not-wf/sgml01.xml [not validating:] not-wf [validating:] invalid
-sun/not-wf/sgml02.xml [not validating:] FAILED:
-  The value 118 is not of type LIST.
-[
-    XML declaration must be at the very beginning of a document;
-  it"s not a processing instruction]
+sun/not-wf/sgml02.xml [not validating:] not-wf [validating:] invalid
 sun/not-wf/sgml03.xml [not validating:] not-wf [validating:] not-wf
 sun/not-wf/sgml04.xml [not validating:] not-wf [validating:] not-wf
 sun/not-wf/sgml05.xml [not validating:] not-wf [validating:] not-wf
@@ -709,16 +675,8 @@ oasis/p66pass1.xml [not validating:] input [validating:] invalid
 oasis/p74pass1.xml [not validating:] input [validating:] invalid
 oasis/p75pass1.xml [not validating:] input [validating:] invalid
 oasis/e2.xml [not validating:] input [validating:] invalid
-oasis/p01fail1.xml [not validating:] FAILED:
-  The value 118 is not of type LIST.
-[
-     S cannot occur before the prolog
-    ]
-oasis/p01fail2.xml [not validating:] FAILED:
-  The value 118 is not of type LIST.
-[
-     comments cannot occur before the prolog
-    ]
+oasis/p01fail1.xml [not validating:] not-wf [validating:] invalid
+oasis/p01fail2.xml [not validating:] not-wf [validating:] invalid
 oasis/p01fail3.xml [not validating:] not-wf [validating:] invalid
 oasis/p01fail4.xml [not validating:] not-wf [validating:] invalid
 oasis/p02fail1.xml [not validating:] not-wf [validating:] invalid
@@ -811,26 +769,14 @@ oasis/p14fail3.xml [not validating:] not-wf [validating:] invalid
 oasis/p15fail1.xml [not validating:] not-wf [validating:] not-wf
 oasis/p15fail2.xml [not validating:] not-wf [validating:] not-wf
 oasis/p15fail3.xml [not validating:] not-wf [validating:] not-wf
-oasis/p16fail1.xml [not validating:] FAILED:
-  The value "" is not of type LIST.
-[
-     "xml" is an invalid PITarget
-    ]
+oasis/p16fail1.xml [not validating:] not-wf [validating:] invalid
 oasis/p16fail2.xml [not validating:] not-wf [validating:] not-wf
 oasis/p16fail3.xml [not validating:] not-wf [validating:] not-wf
 oasis/p18fail1.xml [not validating:] not-wf [validating:] invalid
 oasis/p18fail2.xml [not validating:] not-wf [validating:] invalid
 oasis/p18fail3.xml [not validating:] not-wf [validating:] invalid
-oasis/p22fail1.xml [not validating:] FAILED:
-  The value 118 is not of type LIST.
-[
-     prolog must start with XML decl
-    ]
-oasis/p22fail2.xml [not validating:] FAILED:
-  The value 118 is not of type LIST.
-[
-     prolog must start with XML decl
-    ]
+oasis/p22fail1.xml [not validating:] not-wf [validating:] invalid
+oasis/p22fail2.xml [not validating:] not-wf [validating:] not-wf
 oasis/p23fail1.xml [not validating:] not-wf [validating:] not-wf
 oasis/p23fail2.xml [not validating:] not-wf [validating:] not-wf
 oasis/p23fail3.xml [not validating:] not-wf [validating:] not-wf
@@ -856,15 +802,7 @@ oasis/p32fail4.xml [not validating:] not-wf [validating:] not-wf
 oasis/p32fail5.xml [not validating:] not-wf [validating:] not-wf
 oasis/p39fail1.xml [not validating:] not-wf [validating:] invalid
 oasis/p39fail2.xml [not validating:] not-wf [validating:] invalid
-oasis/p39fail3.xml [not validating:] FAILED:
-  error while parsing arguments to DESTRUCTURING-BIND:
-    invalid number of elements in
-      ()
-    to satisfy lambda list
-      (CXML::NAME &REST CXML::ATTRS):
-    at least 1 expected, but 0 found
-[
-    XML documents contain one or more elements]
+oasis/p39fail3.xml [not validating:] not-wf [validating:] invalid
 oasis/p39fail4.xml [not validating:] not-wf [validating:] not-wf
 oasis/p39fail5.xml [not validating:] not-wf [validating:] not-wf
 oasis/p40fail1.xml [not validating:] not-wf [validating:] not-wf
@@ -1027,17 +965,7 @@ ibm/invalid/P60/ibm60i02.xml [not validating:] input/output [validating:] invali
 ibm/invalid/P60/ibm60i03.xml [not validating:] input/output [validating:] invalid
 ibm/invalid/P60/ibm60i04.xml [not validating:] input/output [validating:] invalid
 ibm/invalid/P76/ibm76i01.xml [not validating:] input/output [validating:] invalid
-ibm/not-wf/P01/ibm01n01.xml [not validating:] FAILED:
-  error while parsing arguments to DESTRUCTURING-BIND:
-    invalid number of elements in
-      ()
-    to satisfy lambda list
-      (CXML::NAME &REST CXML::ATTRS):
-    at least 1 expected, but 0 found
-[
-    Tests a document with no element. A well-formed document should have at lease
-    one elements.
-  ]
+ibm/not-wf/P01/ibm01n01.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P01/ibm01n02.xml [not validating:] not-wf [validating:] invalid
 ibm/not-wf/P01/ibm01n03.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P02/ibm02n01.xml [not validating:] not-wf [validating:] not-wf
@@ -1132,106 +1060,26 @@ ibm/not-wf/P15/ibm15n01.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P15/ibm15n02.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P15/ibm15n03.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P15/ibm15n04.xml [not validating:] not-wf [validating:] not-wf
-ibm/not-wf/P16/ibm16n01.xml [not validating:] FAILED:
-  error while parsing arguments to DESTRUCTURING-BIND:
-    bogus sublist #(97) to satisfy lambda-list (CXML::NAME &REST CXML::ATTRS)
-[
-    Tests PI. The content of the PI includes the sequence 
-    "(less than)?".
-  ]
+ibm/not-wf/P16/ibm16n01.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P16/ibm16n02.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P16/ibm16n03.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P16/ibm16n04.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P17/ibm17n01.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P17/ibm17n02.xml [not validating:] not-wf [validating:] not-wf
-ibm/not-wf/P17/ibm17n03.xml [not validating:] FAILED:
-  The value 84 is not of type LIST.
-[
-    Tests PITarget. The PITarget contains the string "xml".
-  ]
+ibm/not-wf/P17/ibm17n03.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P17/ibm17n04.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P18/ibm18n01.xml [not validating:] not-wf [validating:] invalid
 ibm/not-wf/P18/ibm18n02.xml [not validating:] not-wf [validating:] not-wf
-ibm/not-wf/P19/ibm19n01.xml [not validating:] FAILED:
-  error while parsing arguments to DESTRUCTURING-BIND:
-    invalid number of elements in
-      ()
-    to satisfy lambda list
-      (CXML::NAME &REST CXML::ATTRS):
-    at least 1 expected, but 0 found
-[
-    Tests CDStart. The CDStart contains a lower case string "cdata".
-  ]
-ibm/not-wf/P19/ibm19n02.xml [not validating:] FAILED:
-  error while parsing arguments to DESTRUCTURING-BIND:
-    invalid number of elements in
-      ()
-    to satisfy lambda list
-      (CXML::NAME &REST CXML::ATTRS):
-    at least 1 expected, but 0 found
-[
-    Tests CDStart. The CDStart contains an extra character "[".
-  ]
+ibm/not-wf/P19/ibm19n01.xml [not validating:] not-wf [validating:] not-wf
+ibm/not-wf/P19/ibm19n02.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P19/ibm19n03.xml [not validating:] not-wf [validating:] not-wf
-ibm/not-wf/P20/ibm20n01.xml [not validating:] FAILED:
-  error while parsing arguments to DESTRUCTURING-BIND:
-    invalid number of elements in
-      ()
-    to satisfy lambda list
-      (CXML::NAME &REST CXML::ATTRS):
-    at least 1 expected, but 0 found
-[
-    Tests CDATA with an illegal sequence. The CDATA contains the string
-    "[[>".
-  ]
-ibm/not-wf/P21/ibm21n01.xml [not validating:] FAILED:
-  error while parsing arguments to DESTRUCTURING-BIND:
-    invalid number of elements in
-      ()
-    to satisfy lambda list
-      (CXML::NAME &REST CXML::ATTRS):
-    at least 1 expected, but 0 found
-[
-    Tests CDEnd. One "]" is missing in the CDEnd. 
-  ]
-ibm/not-wf/P21/ibm21n02.xml [not validating:] FAILED:
-  error while parsing arguments to DESTRUCTURING-BIND:
-    invalid number of elements in
-      ()
-    to satisfy lambda list
-      (CXML::NAME &REST CXML::ATTRS):
-    at least 1 expected, but 0 found
-[
-    Tests CDEnd. An extra "]" is placed in the CDEnd. 
-  ]
-ibm/not-wf/P21/ibm21n03.xml [not validating:] FAILED:
-  error while parsing arguments to DESTRUCTURING-BIND:
-    invalid number of elements in
-      ()
-    to satisfy lambda list
-      (CXML::NAME &REST CXML::ATTRS):
-    at least 1 expected, but 0 found
-[
-    Tests CDEnd. A wrong character ")" is placed in the CDEnd. 
-  ]
-ibm/not-wf/P22/ibm22n01.xml [not validating:] FAILED:
-  The value 118 is not of type LIST.
-[ 
-    Tests prolog with wrong field ordering. The XMLDecl occurs
-    after the DTD. 
-  ]
-ibm/not-wf/P22/ibm22n02.xml [not validating:] FAILED:
-  The value 118 is not of type LIST.
-[
-    Tests prolog with wrong field ordering. The Misc (comment)
-    occurs before the XMLDecl.
-  ]
-ibm/not-wf/P22/ibm22n03.xml [not validating:] FAILED:
-  The value 118 is not of type LIST.
-[
-   Tests prolog with wrong field ordering. The XMLDecl occurs
-   after the DTD and a comment. The other comment occurs before the DTD.
-  ]
+ibm/not-wf/P20/ibm20n01.xml [not validating:] not-wf [validating:] not-wf
+ibm/not-wf/P21/ibm21n01.xml [not validating:] not-wf [validating:] not-wf
+ibm/not-wf/P21/ibm21n02.xml [not validating:] not-wf [validating:] not-wf
+ibm/not-wf/P21/ibm21n03.xml [not validating:] not-wf [validating:] not-wf
+ibm/not-wf/P22/ibm22n01.xml [not validating:] not-wf [validating:] not-wf
+ibm/not-wf/P22/ibm22n02.xml [not validating:] not-wf [validating:] invalid
+ibm/not-wf/P22/ibm22n03.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P23/ibm23n01.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P23/ibm23n02.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P23/ibm23n03.xml [not validating:] not-wf [validating:] not-wf
@@ -1315,16 +1163,7 @@ ibm/not-wf/P32/ibm32n09.xml [not validating:] FAILED:
     quot), and references to this entity appear in the document.
   ]
 ibm/not-wf/P39/ibm39n01.xml [not validating:] not-wf [validating:] not-wf
-ibm/not-wf/P39/ibm39n02.xml [not validating:] FAILED:
-  error while parsing arguments to DESTRUCTURING-BIND:
-    bogus sublist
-      #(109 105 115 115 105 110 103)
-    to satisfy lambda-list
-      (CXML::NAME &REST CXML::ATTRS)
-[
-    Tests element with a required field missing. The STag is missing 
-    for the element "root".
-  ]
+ibm/not-wf/P39/ibm39n02.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P39/ibm39n03.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P39/ibm39n04.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P39/ibm39n05.xml [not validating:] not-wf [validating:] not-wf
@@ -1634,13 +1473,7 @@ ibm/not-wf/P82/ibm82n06.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P82/ibm82n07.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P82/ibm82n08.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P83/ibm83n01.xml [not validating:] not-wf [validating:] not-wf
-ibm/not-wf/P83/ibm83n02.xml [not validating:] FAILED:
-  error while parsing arguments to DESTRUCTURING-BIND:
-    bogus sublist #(114) to satisfy lambda-list (CXML::NAME &REST CXML::ATTRS)
-[
-    Tests PublicID with wrong key word. The string "Public" is used as 
-    the key word in the PublicID in the NotationDcl in the DTD. 
-  ]
+ibm/not-wf/P83/ibm83n02.xml [not validating:] not-wf [validating:] invalid
 ibm/not-wf/P83/ibm83n03.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P83/ibm83n04.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P83/ibm83n05.xml [not validating:] not-wf [validating:] not-wf
@@ -2104,4 +1937,4 @@ ibm/valid/P86/ibm86v01.xml [not validating:] input [validating:] input
 ibm/valid/P87/ibm87v01.xml [not validating:] input [validating:] input
 ibm/valid/P88/ibm88v01.xml [not validating:] input [validating:] input
 ibm/valid/P89/ibm89v01.xml [not validating:] input [validating:] input
-57/1786 tests failed; 376 tests were skipped
+31/1786 tests failed; 376 tests were skipped

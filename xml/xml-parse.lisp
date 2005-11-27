@@ -2596,37 +2596,41 @@
 
 
 (defun p/element-ns (input)
-  (destructuring-bind (cat (name &rest attrs))
-      (multiple-value-list (read-token input))
-    (validate-start-element *ctx* name)
-    (let ((ns-decls (declare-namespaces name attrs)))
-      (multiple-value-bind (ns-uri prefix local-name) (decode-qname name)
-	(declare (ignore prefix))
-	(let* ((raw-attlist (build-attribute-list-ns attrs))
-               (attlist
-                (remove-if-not (lambda (a)
-                                 (or sax:*include-xmlns-attributes*
-                                     (not (xmlns-attr-p (sax:attribute-qname a)))))
-                               (process-attributes *ctx* name raw-attlist))))
-          (cond ((eq cat :ztag)
-		 (sax:start-element (handler *ctx*) ns-uri local-name name attlist)
-		 (sax:end-element (handler *ctx*) ns-uri local-name name))
+  (multiple-value-bind (cat sem) (read-token input)
+    (case cat
+      ((:stag :ztag))
+      (:eof (eox input))
+      (t (wf-error "element expected")))
+    (destructuring-bind (&optional name &rest attrs) sem
+      (validate-start-element *ctx* name)
+      (let ((ns-decls (declare-namespaces name attrs)))
+	(multiple-value-bind (ns-uri prefix local-name) (decode-qname name)
+	  (declare (ignore prefix))
+	  (let* ((raw-attlist (build-attribute-list-ns attrs))
+		 (attlist
+		  (remove-if-not (lambda (a)
+				   (or sax:*include-xmlns-attributes*
+				       (not (xmlns-attr-p (sax:attribute-qname a)))))
+				 (process-attributes *ctx* name raw-attlist))))
+	    (cond ((eq cat :ztag)
+		    (sax:start-element (handler *ctx*) ns-uri local-name name attlist)
+		    (sax:end-element (handler *ctx*) ns-uri local-name name))
 		
-		((eq cat :stag)
-		 (sax:start-element (handler *ctx*) ns-uri local-name name attlist)
-		 (p/content input)
-		 (multiple-value-bind (cat2 sem2) (read-token input)
-		   (unless (and (eq cat2 :etag)
-				(eq (car sem2) name))
-		     (perror input "Bad nesting. ~S / ~S" (mu name) (mu (cons cat2 sem2))))
-		   (when (cdr sem2)
-		     (wf-error "no attributes allowed in end tag")))
-		 (sax:end-element (handler *ctx*) ns-uri local-name name))
+	      ((eq cat :stag)
+		(sax:start-element (handler *ctx*) ns-uri local-name name attlist)
+		(p/content input)
+		(multiple-value-bind (cat2 sem2) (read-token input)
+		  (unless (and (eq cat2 :etag)
+			       (eq (car sem2) name))
+		    (perror input "Bad nesting. ~S / ~S" (mu name) (mu (cons cat2 sem2))))
+		  (when (cdr sem2)
+		    (wf-error "no attributes allowed in end tag")))
+		(sax:end-element (handler *ctx*) ns-uri local-name name))
 		
-		(t
-		 (wf-error "Expecting element, got ~S." cat)))))
-      (undeclare-namespaces ns-decls))
-    (validate-end-element *ctx* name)))
+	      (t
+		(wf-error "Expecting element, got ~S." cat)))))
+	(undeclare-namespaces ns-decls))
+      (validate-end-element *ctx* name))))
 
 (defun perror (stream format-string &rest format-args)
   (when (zstream-p stream)
