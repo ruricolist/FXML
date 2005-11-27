@@ -113,12 +113,7 @@ xmltest/not-wf/sa/112.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/113.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/114.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/115.xml [not validating:] not-wf [validating:] not-wf
-xmltest/not-wf/sa/116.xml [not validating:] FAILED:
-  Argument Y is not a REAL: :EOF
-[
-    Internal general parsed entities are only well formed if
-    they match the "content" production.  This is a partial
-    character reference, not a full one. ]
+xmltest/not-wf/sa/116.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/117.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/118.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/119.xml [not validating:] not-wf [validating:] invalid
@@ -1886,4 +1881,4 @@ ibm/valid/P86/ibm86v01.xml [not validating:] input [validating:] input
 ibm/valid/P87/ibm87v01.xml [not validating:] input [validating:] input
 ibm/valid/P88/ibm88v01.xml [not validating:] input [validating:] input
 ibm/valid/P89/ibm89v01.xml [not validating:] input [validating:] input
-21/1786 tests failed; 376 tests were skipped
+20/1786 tests failed; 376 tests were skipped

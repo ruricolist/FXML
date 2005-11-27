@@ -1506,16 +1506,24 @@
          (let ((c (read-rune input)))
            (check-rune input c #/#)
            (setq c (read-rune input))
-           (cond ((eql c #/x)
+           (cond ((eql c :eof)
+		  (eox input))
+	         ((eql c #/x)
                   ;; hexadecimal
                   (setq c (read-rune input))
+		  (when (eql c :eof)
+		    (eox input))
                   (unless (digit-rune-p c 16)
 		    (wf-error "garbage in character reference"))
                   (prog1
                       (parse-integer
                        (with-output-to-string (sink)
                          (write-char (rune-char c) sink)
-                         (while (digit-rune-p (setq c (read-rune input)) 16)
+                         (while (progn
+				  (setq c (read-rune input))
+				  (when (eql c :eof)
+				    (eox input))
+				  (digit-rune-p c 16))
                            (write-char (rune-char c) sink)))
                        :radix 16)
                     (check-rune input c #/\;)))
@@ -1525,7 +1533,11 @@
                       (parse-integer
                        (with-output-to-string (sink)
                          (write-char (rune-char c) sink)
-                         (while (rune<= #/0 (setq c (read-rune input)) #/9)
+                         (while (progn
+				  (setq c (read-rune input))
+				  (when (eql c :eof)
+				    (eox input))
+				  (rune<= #/0 c #/9))
                            (write-char (rune-char c) sink)))
                        :radix 10)
                     (check-rune input c #/\;)))
