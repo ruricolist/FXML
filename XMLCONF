@@ -1788,4 +1788,84 @@ ibm/valid/P86/ibm86v01.xml [not validating:] input [validating:] input
 ibm/valid/P87/ibm87v01.xml [not validating:] input [validating:] input
 ibm/valid/P88/ibm88v01.xml [not validating:] input [validating:] input
 ibm/valid/P89/ibm89v01.xml [not validating:] input [validating:] input
-0/1786 tests failed; 376 tests were skipped
+eduni/namespaces/1.0/001.xml [not validating:] input [validating:] input
+eduni/namespaces/1.0/002.xml [not validating:] input [validating:] input
+eduni/namespaces/1.0/003.xml [not validating:] input [validating:] input
+eduni/namespaces/1.0/007.xml [not validating:] input [validating:] input
+eduni/namespaces/1.0/008.xml [not validating:] input [validating:] input
+eduni/namespaces/1.0/009.xml [not validating:] not-wf [validating:] not-wf
+eduni/namespaces/1.0/010.xml [not validating:] not-wf [validating:] not-wf
+eduni/namespaces/1.0/011.xml [not validating:] not-wf [validating:] not-wf
+eduni/namespaces/1.0/012.xml [not validating:] FAILED:
+  well-formedness violation not detected
+[
+Namespace inequality test: equal after attribute value normalization
+]
+eduni/namespaces/1.0/013.xml [not validating:] FAILED:
+  #(98 58 97 116 116 114) fell through ETYPECASE expression.
+  Wanted one of (STRING SIMPLE-STRING).
+[
+Bad QName syntax: multiple colons
+]
+eduni/namespaces/1.0/014.xml [not validating:] FAILED:
+  invalid array index 0 for #() (should be nonnegative and <0)
+[
+Bad QName syntax: colon at end
+]
+eduni/namespaces/1.0/015.xml [not validating:] FAILED:
+  well-formedness violation not detected
+[
+Bad QName syntax: colon at start
+]
+eduni/namespaces/1.0/016.xml [not validating:] FAILED:
+  invalid array index 0 for #() (should be nonnegative and <0)
+[
+Bad QName syntax: xmlns:
+]
+eduni/namespaces/1.0/017.xml [not validating:] input [validating:] invalid
+eduni/namespaces/1.0/018.xml [not validating:] input [validating:] invalid
+eduni/namespaces/1.0/019.xml [not validating:] input [validating:] invalid
+eduni/namespaces/1.0/020.xml [not validating:] input [validating:] invalid
+eduni/namespaces/1.0/021.xml [not validating:] input [validating:] invalid
+eduni/namespaces/1.0/022.xml [not validating:] input [validating:] invalid
+eduni/namespaces/1.0/023.xml [not validating:] not-wf [validating:] invalid
+eduni/namespaces/1.0/024.xml [not validating:] input [validating:] invalid
+eduni/namespaces/1.0/025.xml [not validating:] not-wf [validating:] invalid
+eduni/namespaces/1.0/026.xml [not validating:] not-wf [validating:] invalid
+eduni/namespaces/1.0/027.xml [not validating:] input [validating:] invalid
+eduni/namespaces/1.0/028.xml [not validating:] input [validating:] invalid
+eduni/namespaces/1.0/029.xml [not validating:] not-wf [validating:] invalid
+eduni/namespaces/1.0/030.xml [not validating:] not-wf [validating:] invalid
+eduni/namespaces/1.0/031.xml [not validating:] not-wf [validating:] invalid
+eduni/namespaces/1.0/032.xml [not validating:] not-wf [validating:] invalid
+eduni/namespaces/1.0/033.xml [not validating:] not-wf [validating:] invalid
+eduni/namespaces/1.0/034.xml [not validating:] input [validating:] invalid
+eduni/namespaces/1.0/035.xml [not validating:] not-wf [validating:] invalid
+eduni/namespaces/1.0/036.xml [not validating:] not-wf [validating:] invalid
+eduni/namespaces/1.0/037.xml [not validating:] input [validating:] invalid
+eduni/namespaces/1.0/038.xml [not validating:] input [validating:] invalid
+eduni/namespaces/1.0/039.xml [not validating:] input [validating:] invalid
+eduni/namespaces/1.0/040.xml [not validating:] input [validating:] invalid
+eduni/namespaces/1.0/041.xml [not validating:] input [validating:] invalid
+eduni/namespaces/1.0/042.xml [not validating:] not-wf [validating:] not-wf
+eduni/namespaces/1.0/043.xml [not validating:] FAILED:
+  well-formedness violation not detected
+[
+Colon in entity name
+]
+eduni/namespaces/1.0/044.xml [not validating:] FAILED:
+  well-formedness violation not detected
+[
+Colon in entity name
+]
+eduni/namespaces/1.0/045.xml [not validating:] input [validating:] FAILED:
+  validity error not detected
+[
+Colon in ID attribute name
+]
+eduni/namespaces/1.0/046.xml [not validating:] input [validating:] FAILED:
+  validity error not detected
+[
+Colon in ID attribute name
+]
+9/1829 tests failed; 333 tests were skipped

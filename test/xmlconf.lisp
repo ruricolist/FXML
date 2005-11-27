@@ -18,7 +18,8 @@
     ((not (and (let ((version (get-attribute test "RECOMMENDATION")))
                  (cond
                    ((or (equal version "") ;XXX
-                        (equal version "XML1.0"))
+                        (equal version "XML1.0")
+                        (equal version "NS1.0"))
                      (cond
                        ((equal (get-attribute test "NAMESPACE") "no")
                          (format t "~A: test applies to parsers without namespace support, skipping~%"
