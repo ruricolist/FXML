@@ -19,10 +19,7 @@ xmltest/not-wf/sa/018.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/019.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/020.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/021.xml [not validating:] not-wf [validating:] not-wf
-xmltest/not-wf/sa/022.xml [not validating:] FAILED:
-  The assertion (RUNES:RUNE= CXML::C 59) failed.
-[
-    Character references end with semicolons, always!]
+xmltest/not-wf/sa/022.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/023.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/024.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/025.xml [not validating:] not-wf [validating:] invalid
@@ -916,11 +913,7 @@ oasis/p05fail4.xml [not validating:] not-wf [validating:] not-wf
 oasis/p05fail5.xml [not validating:] not-wf [validating:] not-wf
 oasis/p09fail1.xml [not validating:] not-wf [validating:] not-wf
 oasis/p09fail2.xml [not validating:] not-wf [validating:] not-wf
-oasis/p09fail3.xml [not validating:] FAILED:
-  The assertion (RUNES:RUNE= CXML::C 59) failed.
-[
-     incomplete character reference
-    ]
+oasis/p09fail3.xml [not validating:] not-wf [validating:] not-wf
 oasis/p09fail4.xml [not validating:] not-wf [validating:] not-wf
 oasis/p09fail5.xml [not validating:] not-wf [validating:] not-wf
 oasis/p10fail1.xml [not validating:] not-wf [validating:] not-wf
@@ -1085,18 +1078,10 @@ oasis/p63fail1.xml [not validating:] not-wf [validating:] not-wf
 oasis/p63fail2.xml [not validating:] not-wf [validating:] not-wf
 oasis/p64fail1.xml [not validating:] not-wf [validating:] not-wf
 oasis/p64fail2.xml [not validating:] not-wf [validating:] not-wf
-oasis/p66fail1.xml [not validating:] FAILED:
-  The assertion (RUNES:RUNE= CXML::C 59) failed.
-[
-     terminating ';' is required
-    ]
+oasis/p66fail1.xml [not validating:] not-wf [validating:] invalid
 oasis/p66fail2.xml [not validating:] not-wf [validating:] invalid
 oasis/p66fail3.xml [not validating:] not-wf [validating:] invalid
-oasis/p66fail4.xml [not validating:] FAILED:
-  The assertion (RUNES:RUNE= CXML::C 59) failed.
-[
-     only hex digits in hex references
-    ]
+oasis/p66fail4.xml [not validating:] not-wf [validating:] invalid
 oasis/p66fail5.xml [not validating:] not-wf [validating:] invalid
 oasis/p66fail6.xml [not validating:] not-wf [validating:] invalid
 oasis/p68fail1.xml [not validating:] not-wf [validating:] not-wf
@@ -1694,74 +1679,17 @@ ibm/not-wf/P64/ibm64n02.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P64/ibm64n03.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P65/ibm65n01.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P65/ibm65n02.xml [not validating:] not-wf [validating:] not-wf
-ibm/not-wf/P66/ibm66n01.xml [not validating:] FAILED:
-  The assertion (RUNES:RUNE= CXML::C 59) failed.
-[
-    Tests CharRef with an illegal character referred to. The "#002f" is 
-    used as the referred character in the CharRef in the EntityDecl in the DTD.
-  ]
-ibm/not-wf/P66/ibm66n02.xml [not validating:] FAILED:
-  The assertion (RUNES:RUNE= CXML::C 59) failed.
-[
-    Tests CharRef with the semicolon character missing. The semicolon 
-    character is missing at the end of the CharRef in the attribute value in
-    the STag of element "root".
-  ]
+ibm/not-wf/P66/ibm66n01.xml [not validating:] not-wf [validating:] not-wf
+ibm/not-wf/P66/ibm66n02.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P66/ibm66n03.xml [not validating:] not-wf [validating:] not-wf
-ibm/not-wf/P66/ibm66n04.xml [not validating:] FAILED:
-  The assertion (RUNES:RUNE= CXML::C 59) failed.
-[
-    Tests CharRef with an illegal character referred to. The "#5~0" is 
-    used as the referred character in the attribute value in the EmptyElemTag
-    of the element "root".
-  ]
-ibm/not-wf/P66/ibm66n05.xml [not validating:] FAILED:
-  The assertion (RUNES:RUNE= CXML::C 59) failed.
-[
-    Tests CharRef with an illegal character referred to. The "#x002g" is
-    used as the referred character in the CharRef in the EntityDecl in the DTD.
-  ]
-ibm/not-wf/P66/ibm66n06.xml [not validating:] FAILED:
-  The assertion (RUNES:RUNE= CXML::C 59) failed.
-[
-    Tests CharRef with an illegal character referred to. The "#x006G" is
-    used as the referred character in the attribute value in the EmptyElemTag 
-    of the element "root".
-  ]
-ibm/not-wf/P66/ibm66n07.xml [not validating:] FAILED:
-  The assertion (RUNES:RUNE= CXML::C 59) failed.
-[
-    Tests CharRef with an illegal character referred to. The "#0=2f" is 
-    used as the referred character in the CharRef in the EntityDecl in the DTD.
-  ]
-ibm/not-wf/P66/ibm66n08.xml [not validating:] FAILED:
-  The assertion (RUNES:RUNE= CXML::C 59) failed.
-[
-    Tests CharRef with an illegal character referred to. The "#56.0" is 
-    used as the referred character in the attribute value in the EmptyElemTag 
-    of the element "root".
-  ]
-ibm/not-wf/P66/ibm66n09.xml [not validating:] FAILED:
-  The assertion (RUNES:RUNE= CXML::C 59) failed.
-[
-    Tests CharRef with an illegal character referred to. The "#x00/2f" 
-    is used as the referred character in the CharRef in the EntityDecl in the 
-    DTD.
-  ]
-ibm/not-wf/P66/ibm66n10.xml [not validating:] FAILED:
-  The assertion (RUNES:RUNE= CXML::C 59) failed.
-[
-    Tests CharRef with an illegal character referred to. The "#51)" is 
-    used as the referred character in the attribute value in the EmptyElemTag 
-    of the element "root".
-  ]
-ibm/not-wf/P66/ibm66n11.xml [not validating:] FAILED:
-  The assertion (RUNES:RUNE= CXML::C 59) failed.
-[
-    Tests CharRef with an illegal character referred to. The "#00 2f"
-    is used as the referred character in the CharRef in the EntityDecl in the 
-    DTD.
-  ]
+ibm/not-wf/P66/ibm66n04.xml [not validating:] not-wf [validating:] not-wf
+ibm/not-wf/P66/ibm66n05.xml [not validating:] not-wf [validating:] not-wf
+ibm/not-wf/P66/ibm66n06.xml [not validating:] not-wf [validating:] not-wf
+ibm/not-wf/P66/ibm66n07.xml [not validating:] not-wf [validating:] not-wf
+ibm/not-wf/P66/ibm66n08.xml [not validating:] not-wf [validating:] not-wf
+ibm/not-wf/P66/ibm66n09.xml [not validating:] not-wf [validating:] not-wf
+ibm/not-wf/P66/ibm66n10.xml [not validating:] not-wf [validating:] not-wf
+ibm/not-wf/P66/ibm66n11.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P66/ibm66n12.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P66/ibm66n13.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P66/ibm66n14.xml [not validating:] not-wf [validating:] not-wf
@@ -2357,4 +2285,4 @@ ibm/valid/P86/ibm86v01.xml [not validating:] input [validating:] input
 ibm/valid/P87/ibm87v01.xml [not validating:] input [validating:] input
 ibm/valid/P88/ibm88v01.xml [not validating:] input [validating:] input
 ibm/valid/P89/ibm89v01.xml [not validating:] input [validating:] input
-124/1786 tests failed; 376 tests were skipped
+110/1786 tests failed; 376 tests were skipped

@@ -647,12 +647,12 @@
 
 (defun validity-error (x &rest args)
   (error 'validity-error
-         :format-control "Validity constraint violated: ~?"
+         :format-control "Document not valid: ~?"
          :format-arguments (list x args)))
 
 (defun wf-error (x &rest args)
   (error 'well-formedness-violation
-         :format-control "Well-formedness violated: ~?"
+         :format-control "Document not well-formed: ~?"
          :format-arguments (list x args)))
 
 (defun eox (stream &optional x &rest args)
@@ -1208,10 +1208,10 @@
           (:DOC
            (cond
             ((rune= c #/&)
-             (multiple-value-bind (kind data) (read-entity-ref input)
-               (cond ((eq kind :NAMED)
-                      (values :ENTITY-REF data) )
-                     ((eq kind :NUMERIC)
+             (multiple-value-bind (kind data) (read-entity-like input)
+               (cond ((eq kind :ENTITY-REFERENCE)
+                      (values :ENTITY-REF data))
+                     ((eq kind :CHARACTER-REFERENCE)
                       (values :CDATA
                               (with-rune-collector (collect)
                                 (%put-unicode-char data collect)))))))
@@ -1309,16 +1309,16 @@
         (t
          nil)))
 
-(defun read-entity-ref (input)
+(defun read-entity-like (input)
   "Read an entity reference off the xstream `input'. Returns two values:
-   either :NAMED <interned-rod> in case of a named entity
-   or     :NUMERIC <integer> in case of numeric entities.
+   either :ENTITY-REFERENCE <interned-rod> in case of a named entity
+   or     :CHARACTER-REFERENCE <integer> in case of character references.
    The initial #\\& is considered to be consumed already."
   (let ((c (peek-rune input)))
     (cond ((eq c :eof)
            (eox input "EOF after '&'"))
           ((rune= c #/#)
-           (values :NUMERIC (read-numeric-entity input)))
+           (values :CHARACTER-REFERENCE (read-character-reference input)))
           (t
            (unless (name-start-rune-p (peek-rune input))
              (wf-error "Expecting name after &."))
@@ -1326,7 +1326,7 @@
              (setf c (read-rune input))
              (unless (rune= c #/\;)
                (perror input "Expected \";\"."))
-             (values :NAMED name))))))
+             (values :ENTITY-REFERENCE name))))))
 
 (defun read-tag-2 (zinput input kind)
   (let ((name (read-name-token input))
@@ -1420,7 +1420,7 @@
                          ((rune= c #/&)
                           (setf c (peek-rune input))
                           (cond ((rune= c #/#)
-                                 (let ((c (read-numeric-entity input)))
+                                 (let ((c (read-character-reference input)))
                                    (%put-unicode-char c collect)))
                                 (t
                                  (unless (name-start-rune-p (peek-rune input))
@@ -1476,17 +1476,25 @@
                           (assert (member delim '(#/\" #/\')))
                           delim))))))
 
-(defun read-numeric-entity (input)
+(defun check-rune (input actual expected)
+  (declare (ignore input))
+  (unless (eql actual expected)
+    (wf-error "expected #/~A but found #/~A"
+	      (rune-char expected)
+	      (rune-char actual))))
+
+(defun read-character-reference (input)
   ;; xxx eof handling
   ;; The #/& is already read
   (let ((res
          (let ((c (read-rune input)))
-           (assert (rune= c #/#))
+           (check-rune input c #/#)
            (setq c (read-rune input))
-           (cond ((rune= c #/x)
+           (cond ((eql c #/x)
                   ;; hexadecimal
                   (setq c (read-rune input))
-                  (assert (digit-rune-p c 16))
+                  (unless (digit-rune-p c 16)
+		    (wf-error "garbage in character reference"))
                   (prog1
                       (parse-integer
                        (with-output-to-string (sink)
@@ -1494,8 +1502,7 @@
                          (while (digit-rune-p (setq c (read-rune input)) 16)
                            (write-char (rune-char c) sink)))
                        :radix 16)
-                    (assert (rune= c #/\;)))
-                  )
+                    (check-rune input c #/\;)))
                  ((rune<= #/0 c #/9)
                   ;; decimal
                   (prog1
@@ -1505,7 +1512,7 @@
                          (while (rune<= #/0 (setq c (read-rune input)) #/9)
                            (write-char (rune-char c) sink)))
                        :radix 10)
-                    (assert (rune= c #/\;))) )
+                    (check-rune input c #/\;)))
                  (t
                   (wf-error "Bad char in numeric character entity.") )))))
     (unless (code-data-char-p res)
@@ -3185,7 +3192,7 @@
                            ((rune= c #/&)
                             (setf c (peek-rune input))
                             (cond ((rune= c #/#)
-                                   (let ((c (read-numeric-entity input)))
+                                   (let ((c (read-character-reference input)))
                                      (%put-unicode-char c collect)))
                                   (t
                                    (unless (name-start-rune-p (peek-rune input))
@@ -3248,11 +3255,11 @@
                 ((rune= c #/<)
 		 (wf-error "'<' not allowed in attribute values"))
                 ((rune= #/& c)
-                 (multiple-value-bind (kind sem) (read-entity-ref input)
+                 (multiple-value-bind (kind sem) (read-entity-like input)
                    (ecase kind
-                     (:NUMERIC
+                     (:CHARACTER-REFERENCE
                       (%put-unicode-char sem collect))
-                     (:NAMED
+                     (:ENTITY-REFERENCE
                       (let* ((exp (internal-entity-expansion sem))
                              (n (length exp)))
                         (declare (type (simple-array rune (*)) exp))
