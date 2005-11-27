@@ -921,6 +921,9 @@
         (external-entdef
          (when internalp
 	   (wf-error "entity not internal: ~A" (rod-string entity-name)))
+         (when (entdef-ndata def)
+	   (wf-error "reference to unparsed entity: ~A"
+		     (rod-string entity-name)))
          (setf r (xstream-open-extid (extid-using-catalog (entdef-extid def))))
          (setf (stream-name-entity-name (xstream-name r)) entity-name
                (stream-name-entity-kind (xstream-name r)) kind)))

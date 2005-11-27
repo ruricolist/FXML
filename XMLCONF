@@ -80,10 +80,7 @@ xmltest/not-wf/sa/079.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/080.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/081.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/082.xml [not validating:] not-wf [validating:] not-wf
-xmltest/not-wf/sa/083.xml [not validating:] FAILED:
-  Error opening #P"/home/david/2001/XML-Test-Suite/xmlconf/xmltest/not-wf/sa/nul", No such file or directory.
-[
-    Undefined NOTATION n. ]
+xmltest/not-wf/sa/083.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/084.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/085.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/086.xml [not validating:] not-wf [validating:] not-wf
@@ -1362,13 +1359,7 @@ ibm/not-wf/P68/ibm68n06.xml [not validating:] FAILED:
     the element "root" is externally declared, but standalone is "yes".
   ]
 ibm/not-wf/P68/ibm68n07.xml [not validating:] not-wf [validating:] not-wf
-ibm/not-wf/P68/ibm68n08.xml [not validating:] FAILED:
-  Error opening #P"/home/david/2001/XML-Test-Suite/xmlconf/ibm/not-wf/P68/image.jpg", No such file or directory.
-[
-    Tests EntityRef which is against P68 WFC: Parsed Entity. The 
-    EntityRef in the AttValue in the STag of the element "root" contains the 
-    name "aImage" of an unparsed entity.
-  ]
+ibm/not-wf/P68/ibm68n08.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P68/ibm68n09.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P68/ibm68n10.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P69/ibm69n01.xml [not validating:] not-wf [validating:] not-wf
@@ -1924,4 +1915,4 @@ ibm/valid/P86/ibm86v01.xml [not validating:] input [validating:] input
 ibm/valid/P87/ibm87v01.xml [not validating:] input [validating:] input
 ibm/valid/P88/ibm88v01.xml [not validating:] input [validating:] input
 ibm/valid/P89/ibm89v01.xml [not validating:] input [validating:] input
-28/1786 tests failed; 376 tests were skipped
+26/1786 tests failed; 376 tests were skipped
