@@ -79,22 +79,12 @@ xmltest/not-wf/sa/078.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/079.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/080.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/081.xml [not validating:] not-wf [validating:] not-wf
-xmltest/not-wf/sa/082.xml [not validating:] FAILED:
-  Error opening #P"/home/david/2001/XML-Test-Suite/xmlconf/xmltest/not-wf/sa/nul", No such file or directory.
-[
-    This tests the  WFC,
-    since the entity is referred to within an attribute.  ]
+xmltest/not-wf/sa/082.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/083.xml [not validating:] FAILED:
   Error opening #P"/home/david/2001/XML-Test-Suite/xmlconf/xmltest/not-wf/sa/nul", No such file or directory.
 [
     Undefined NOTATION n. ]
-xmltest/not-wf/sa/084.xml [not validating:] FAILED:
-  Error opening #P"/home/david/2001/XML-Test-Suite/xmlconf/xmltest/not-wf/sa/nul", No such file or directory.
-[
-    Tests the  WFC by referring to an
-    unparsed entity.  (This precedes the error of not declaring
-    that entity's notation, which may be detected any time before
-    the DTD parsing is completed.) ]
+xmltest/not-wf/sa/084.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/085.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/086.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/087.xml [not validating:] not-wf [validating:] not-wf
@@ -1934,4 +1924,4 @@ ibm/valid/P86/ibm86v01.xml [not validating:] input [validating:] input
 ibm/valid/P87/ibm87v01.xml [not validating:] input [validating:] input
 ibm/valid/P88/ibm88v01.xml [not validating:] input [validating:] input
 ibm/valid/P89/ibm89v01.xml [not validating:] input [validating:] input
-30/1786 tests failed; 376 tests were skipped
+28/1786 tests failed; 376 tests were skipped

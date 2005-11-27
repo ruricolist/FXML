@@ -642,8 +642,12 @@
 
 (define-condition xml-parse-error (simple-error) ())
 (define-condition well-formedness-violation (xml-parse-error) ())
-(define-condition end-of-xstream (well-formedness-violation) ())
 (define-condition validity-error (xml-parse-error) ())
+
+;; We make some effort to signal end of file as a special condition, but we
+;; don't actually try very hard.  Not sure whether we should.  Right now I
+;; would prefer not to document this class.
+(define-condition end-of-xstream (well-formedness-violation) ())
 
 (defun validity-error (x &rest args)
   (error 'validity-error
@@ -901,13 +905,11 @@
                       (rod-string entity-name)))
     def))
 
-(defun entity->xstream (entity-name kind &optional zstream)
+(defun entity->xstream (zstream entity-name kind &optional internalp)
   ;; `zstream' is for error messages
   (let ((def (get-entity-definition entity-name kind (dtd *ctx*))))
     (unless def
-      (if zstream
-          (perror zstream "Entity '~A' is not defined." (rod-string entity-name))
-        (wf-error "Entity '~A' is not defined." (rod-string entity-name))))
+      (perror zstream "Entity '~A' is not defined." (rod-string entity-name)))
     (let (r)
       (etypecase def
         (internal-entdef
@@ -917,6 +919,8 @@
                              :entity-kind kind
                              :uri nil)))
         (external-entdef
+         (when internalp
+	   (wf-error "entity not internal: ~A" (rod-string entity-name)))
          (setf r (xstream-open-extid (extid-using-catalog (entdef-extid def))))
          (setf (stream-name-entity-name (xstream-name r)) entity-name
                (stream-name-entity-kind (xstream-name r)) kind)))
@@ -941,9 +945,9 @@
                   :name (make-stream-name :uri sysid)
                   :initial-speed 1)))
 
-(defun call-with-entity-expansion-as-stream (zstream cont name kind)
-  ;; `zstream' is for error messages -- we need something better!
-  (let ((in (entity->xstream name kind zstream)))
+(defun call-with-entity-expansion-as-stream (zstream cont name kind internalp)
+  ;; `zstream' is for error messages
+  (let ((in (entity->xstream zstream name kind internalp)))
     (unwind-protect
         (funcall cont in)
       (close-xstream in))))
@@ -1234,7 +1238,7 @@
     (check-rune input #/\; (read-rune input))
     (cond (*expand-pe-p*
            ;; no external entities here!
-           (let ((i2 (entity->xstream nam :parameter)))
+           (let ((i2 (entity->xstream  zinput nam :parameter)))
              (zstream-push i2 zinput))
            (values :S nil) ;space before inserted PE expansion.
            )
@@ -1443,7 +1447,8 @@
                                        zinput name :general
                                        (lambda (zinput)
                                          (muffle (car (zstream-input-stack zinput))
-                                                 :eof))))
+                                                 :eof))
+				       t))
                                      (:ENT
                                       ;; bypass, but never the less we
                                       ;; need to check for legal
@@ -3052,10 +3057,8 @@
   (push new-xstream (zstream-input-stack zstream))
   zstream)
 
-(defun recurse-on-entity (zstream name kind continuation)
+(defun recurse-on-entity (zstream name kind continuation &optional internalp)
   (assert (not (zstream-token-category zstream)))
-  ;;(sleep .2)
-  ;;(warn "~S / ~S[~S]." (zstream-input-stack zstream) (mu name) kind)
   (call-with-entity-expansion-as-stream
    zstream
    (lambda (new-xstream)
@@ -3069,7 +3072,9 @@
        (assert (eq (pop (zstream-input-stack zstream)) :stop))
        (setf (zstream-token-category zstream) nil)
        '(consume-token zstream)) )
-   name kind))
+   name
+   kind
+   internalp))
 
 #||
 (defmacro read-data-until* ((predicate input res res-start res-end) &body body)
