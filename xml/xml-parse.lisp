@@ -217,7 +217,7 @@
   (entity-resolver nil)
   (disallow-internal-subset nil))
 
-(defvar *expand-pe-p*)
+(defvar *expand-pe-p* nil)
 
 ;;;; ---------------------------------------------------------------------------
 ;;;; xstreams

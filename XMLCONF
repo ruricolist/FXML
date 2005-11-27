@@ -160,10 +160,7 @@ xmltest/not-wf/sa/159.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/160.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/161.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/162.xml [not validating:] not-wf [validating:] not-wf
-xmltest/not-wf/sa/163.xml [not validating:] FAILED:
-  The variable CXML::*EXPAND-PE-P* is unbound.
-[
-    Invalid placement of Parameter entity reference. ]
+xmltest/not-wf/sa/163.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/164.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/165.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/166.xml [not validating:] not-wf [validating:] invalid
@@ -1881,4 +1878,4 @@ ibm/valid/P86/ibm86v01.xml [not validating:] input [validating:] input
 ibm/valid/P87/ibm87v01.xml [not validating:] input [validating:] input
 ibm/valid/P88/ibm88v01.xml [not validating:] input [validating:] input
 ibm/valid/P89/ibm89v01.xml [not validating:] input [validating:] input
-20/1786 tests failed; 376 tests were skipped
+19/1786 tests failed; 376 tests were skipped
