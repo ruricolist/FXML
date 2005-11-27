@@ -1219,10 +1219,17 @@
              (unread-rune c input)
              (values :CDATA (read-cdata input)))))))))))
 
+(definline check-rune (input actual expected)
+  (declare (ignore input))
+  (unless (eql actual expected)
+    (wf-error "expected #/~A but found #/~A"
+	      (rune-char expected)
+	      (rune-char actual))))
+
 (defun read-pe-reference (zinput)
   (let* ((input (car (zstream-input-stack zinput)))
          (nam (read-name-token input)))
-    (assert (rune= #/\; (read-rune input)))
+    (check-rune input #/\; (read-rune input))
     (cond (*expand-pe-p*
            ;; no external entities here!
            (let ((i2 (entity->xstream nam :parameter)))
@@ -1346,7 +1353,7 @@
            (values kind (cons name atts)))
           ((eq (peek-rune input) #//)
            (consume-rune input)
-           (assert (rune= #/> (read-rune input)))
+           (check-rune input #/> (read-rune input))
            (values :ztag (cons name atts)))
           (t
            (wf-error "syntax error in read-tag-2.")) )))
@@ -1427,7 +1434,7 @@
                                    (wf-error "Expecting name after &."))
                                  (let ((name (read-name-token input)))
                                    (setf c (read-rune input))
-                                   (assert (rune= c #/\;))
+                                   (check-rune input c #/\;)
                                    (ecase mode
                                      (:ATT
                                       (recurse-on-entity
@@ -1449,7 +1456,7 @@
                             (wf-error "Expecting name after %."))
                           (let ((name (read-name-token input)))
                             (setf c (read-rune input))
-                            (assert (rune= c #/\;))
+                            (check-rune input c #/\;)
                             (cond (*expand-pe-p*
                                    (recurse-on-entity
                                     zinput name :parameter
@@ -1473,15 +1480,9 @@
       (declare (dynamic-extent #'muffle))
       (muffle input (or delim
                         (let ((delim (read-rune input)))
-                          (assert (member delim '(#/\" #/\')))
+                          (unless (member delim '(#/\" #/\'))
+			    (wf-error "invalid attribute delimiter"))
                           delim))))))
-
-(defun check-rune (input actual expected)
-  (declare (ignore input))
-  (unless (eql actual expected)
-    (wf-error "expected #/~A but found #/~A"
-	      (rune-char expected)
-	      (rune-char actual))))
 
 (defun read-character-reference (input)
   ;; xxx eof handling
@@ -3217,7 +3218,7 @@
                                      (wf-error "Expecting name after &."))
                                    (let ((name (read-name-token input)))
                                      (setf c (read-rune input))
-                                     (assert (rune= c #/\;))
+                                     (check-rune input c #/\;)
                                      (recurse-on-entity
                                       zinput name :general
                                       (lambda (zinput)

@@ -42,18 +42,9 @@ xmltest/not-wf/sa/041.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/042.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/043.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/044.xml [not validating:] not-wf [validating:] invalid
-xmltest/not-wf/sa/045.xml [not validating:] FAILED:
-  The assertion (RUNES:RUNE= 62 (RUNES:READ-RUNE CXML::INPUT)) failed.
-[
-    Invalid Empty Element Tag ]
-xmltest/not-wf/sa/046.xml [not validating:] FAILED:
-  The assertion (RUNES:RUNE= 62 (RUNES:READ-RUNE CXML::INPUT)) failed.
-[
-    This start (or empty element) tag was not terminated correctly. ]
-xmltest/not-wf/sa/047.xml [not validating:] FAILED:
-  The assertion (RUNES:RUNE= 62 (RUNES:READ-RUNE CXML::INPUT)) failed.
-[
-    Invalid empty element tag invalid whitespace ]
+xmltest/not-wf/sa/045.xml [not validating:] not-wf [validating:] invalid
+xmltest/not-wf/sa/046.xml [not validating:] not-wf [validating:] invalid
+xmltest/not-wf/sa/047.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/048.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/049.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/050.xml [not validating:] FAILED:
@@ -579,10 +570,7 @@ sun/not-wf/decl01.xml [not validating:] not-wf [validating:] not-wf
 sun/not-wf/dtd00.xml [not validating:] not-wf [validating:] not-wf
 sun/not-wf/dtd01.xml [not validating:] not-wf [validating:] not-wf
 sun/not-wf/dtd02.xml [not validating:] not-wf [validating:] not-wf
-sun/not-wf/dtd03.xml [not validating:] FAILED:
-  The assertion (RUNES:RUNE= 59 (RUNES:READ-RUNE CXML::INPUT)) failed.
-[
-    PE name immediately followed by ";"]
+sun/not-wf/dtd03.xml [not validating:] not-wf [validating:] not-wf
 sun/not-wf/dtd04.xml [not validating:] not-wf [validating:] not-wf
 sun/not-wf/dtd05.xml [not validating:] not-wf [validating:] not-wf
 sun/not-wf/dtd07.xml [not validating:] not-wf [validating:] not-wf
@@ -888,19 +876,12 @@ oasis/p41fail2.xml [not validating:] not-wf [validating:] not-wf
 oasis/p41fail3.xml [not validating:] not-wf [validating:] not-wf
 oasis/p42fail1.xml [not validating:] not-wf [validating:] invalid
 oasis/p42fail2.xml [not validating:] not-wf [validating:] invalid
-oasis/p42fail3.xml [not validating:] FAILED:
-  The assertion (RUNES:RUNE= 62 (RUNES:READ-RUNE CXML::INPUT)) failed.
-[
-     no NET (contrast with SGML)
-    ]
+oasis/p42fail3.xml [not validating:] not-wf [validating:] not-wf
 oasis/p43fail1.xml [not validating:] not-wf [validating:] not-wf
 oasis/p43fail2.xml [not validating:] not-wf [validating:] not-wf
 oasis/p43fail3.xml [not validating:] not-wf [validating:] not-wf
 oasis/p44fail1.xml [not validating:] not-wf [validating:] not-wf
-oasis/p44fail2.xml [not validating:] FAILED:
-  The assertion (RUNES:RUNE= 62 (RUNES:READ-RUNE CXML::INPUT)) failed.
-[
-    Illegal space after Empty element tag.    ]
+oasis/p44fail2.xml [not validating:] not-wf [validating:] not-wf
 oasis/p44fail3.xml [not validating:] not-wf [validating:] not-wf
 oasis/p44fail4.xml [not validating:] not-wf [validating:] not-wf
 oasis/p44fail5.xml [not validating:] not-wf [validating:] not-wf
@@ -976,28 +957,16 @@ oasis/p66fail6.xml [not validating:] not-wf [validating:] invalid
 oasis/p68fail1.xml [not validating:] not-wf [validating:] not-wf
 oasis/p68fail2.xml [not validating:] not-wf [validating:] not-wf
 oasis/p68fail3.xml [not validating:] not-wf [validating:] not-wf
-oasis/p69fail1.xml [not validating:] FAILED:
-  The assertion (RUNES:RUNE= 59 (RUNES:READ-RUNE CXML::INPUT)) failed.
-[
-     terminating ';' is required
-    ]
+oasis/p69fail1.xml [not validating:] not-wf [validating:] not-wf
 oasis/p69fail2.xml [not validating:] not-wf [validating:] not-wf
-oasis/p69fail3.xml [not validating:] FAILED:
-  The assertion (RUNES:RUNE= 59 (RUNES:READ-RUNE CXML::INPUT)) failed.
-[
-     no S before ';'
-    ]
+oasis/p69fail3.xml [not validating:] not-wf [validating:] not-wf
 oasis/p70fail1.xml [not validating:] not-wf [validating:] not-wf
 oasis/p71fail1.xml [not validating:] not-wf [validating:] not-wf
 oasis/p71fail2.xml [not validating:] not-wf [validating:] not-wf
 oasis/p71fail3.xml [not validating:] not-wf [validating:] not-wf
 oasis/p71fail4.xml [not validating:] not-wf [validating:] not-wf
 oasis/p72fail1.xml [not validating:] not-wf [validating:] not-wf
-oasis/p72fail2.xml [not validating:] FAILED:
-  The assertion (RUNES:RUNE= 59 (RUNES:READ-RUNE CXML::INPUT)) failed.
-[
-     S is required after '%'
-    ]
+oasis/p72fail2.xml [not validating:] not-wf [validating:] not-wf
 oasis/p72fail3.xml [not validating:] not-wf [validating:] not-wf
 oasis/p72fail4.xml [not validating:] not-wf [validating:] not-wf
 oasis/p73fail1.xml [not validating:] not-wf [validating:] not-wf
@@ -1134,18 +1103,8 @@ ibm/not-wf/P04/ibm04n18.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P05/ibm05n01.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P05/ibm05n02.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P05/ibm05n03.xml [not validating:] not-wf [validating:] not-wf
-ibm/not-wf/P09/ibm09n01.xml [not validating:] FAILED:
-  The assertion (RUNES:RUNE= CXML::C 59) failed.
-[
-    Tests an internal general entity with an invalid value. The entity 
-    "Fullname" contains "%". 
-  ]
-ibm/not-wf/P09/ibm09n02.xml [not validating:] FAILED:
-  The assertion (RUNES:RUNE= CXML::C 59) failed.
-[
-    Tests an internal general entity with an invalid value. The entity 
-    "Fullname" contains the ampersand character. 
-  ]
+ibm/not-wf/P09/ibm09n01.xml [not validating:] not-wf [validating:] not-wf
+ibm/not-wf/P09/ibm09n02.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P09/ibm09n03.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P09/ibm09n04.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P10/ibm10n01.xml [not validating:] not-wf [validating:] not-wf
@@ -1587,18 +1546,8 @@ ibm/not-wf/P68/ibm68n08.xml [not validating:] FAILED:
 ibm/not-wf/P68/ibm68n09.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P68/ibm68n10.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P69/ibm69n01.xml [not validating:] not-wf [validating:] not-wf
-ibm/not-wf/P69/ibm69n02.xml [not validating:] FAILED:
-  The assertion (RUNES:RUNE= 59 (RUNES:READ-RUNE CXML::INPUT)) failed.
-[
-    Tests PEReference with a required field missing. The semicolon is 
-    missing in the PEReference "%paaa" in the DTD.
-  ]
-ibm/not-wf/P69/ibm69n03.xml [not validating:] FAILED:
-  The assertion (RUNES:RUNE= 59 (RUNES:READ-RUNE CXML::INPUT)) failed.
-[
-    Tests PEReference with an extra white space. There is an extra 
-    white space occurs before ";" in the PEReference in the DTD.  
-  ]
+ibm/not-wf/P69/ibm69n02.xml [not validating:] not-wf [validating:] not-wf
+ibm/not-wf/P69/ibm69n03.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P69/ibm69n04.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P69/ibm69n06.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P69/ibm69n07.xml [not validating:] not-wf [validating:] not-wf
@@ -2155,4 +2104,4 @@ ibm/valid/P86/ibm86v01.xml [not validating:] input [validating:] input
 ibm/valid/P87/ibm87v01.xml [not validating:] input [validating:] input
 ibm/valid/P88/ibm88v01.xml [not validating:] input [validating:] input
 ibm/valid/P89/ibm89v01.xml [not validating:] input [validating:] input
-70/1786 tests failed; 376 tests were skipped
+57/1786 tests failed; 376 tests were skipped
