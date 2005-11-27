@@ -131,11 +131,14 @@ $ cd 2001/DOM-Test-Suite && ant dom1-dtd</pre>
       with cxml yet.  The <tt>ant</tt> step is necessary to run the DOM
       tests.
     </p>
-    <p>Usage and expected output:</p>
+    <p>Usage:</p>
     <pre>* (xmlconf:run-all-tests "/path/to/2001/XML-Test-Suite/xmlconf/")
-0/556 tests failed; 1606 tests were skipped
 * (domtest:run-all-tests "/path/to/2001/DOM-Test-Suite/")
-0/449 tests failed; 71 tests were skipped</pre>
+</pre>
+    <p>
+      To compare your results with known output, refer to the files
+      <tt>XMLCONF</tt> and <tt>DOMTEST</tt> in the cxml distribution.
+    </p>
 
     <p>
       <i>fixme</i>: Add an explanation of xml/sax-tests here.

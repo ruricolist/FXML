@@ -161,6 +161,23 @@
     </p>
     <pre>(cxml:parse-file "test.xml" (dom:make-dom-builder))</pre>
 
+    <p>
+      <div class="def">Condition class CXML:XML-PARSE-ERROR ()</div>
+      Superclass of all conditions signalled by the CXML parser.
+    </p>
+    <p>
+      <div class="def">Condition class CXML:WELL-FORMEDNESS-VIOLATION (cxml:xml-parse-error)</div>
+      This condition is signalled for all well-formedness violations.
+      (Note that, when parsing document that is not well-formed in validating
+      mode, the parser might encounter validity errors before detecting
+      well-formedness problems, so also be prepared for <tt>validity-error</tt>
+      in that situation.)
+    </p>
+    <p>
+      <div class="def">Condition class CXML:VALIDITY-ERROR (cxml:xml-parse-error)</div>
+      Reports the violation of a validity constraint.
+    </p>
+
     <a name="serialization"/>
     <h3>Serialization</h3>
     <p>
