@@ -2251,7 +2251,7 @@
   (let (name id)
     (expect input :|<!NOTATION|)
     (p/S input)
-    (setf name (p/nmtoken input))
+    (setf name (p/name input))
     (p/S input)
     (setf id (p/external-id input t))
     (p/S? input)
