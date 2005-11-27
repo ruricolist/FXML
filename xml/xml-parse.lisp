@@ -132,11 +132,7 @@
 ;;
 ;; o max depth together with circle detection
 ;;   (or proof, that our circle detection is enough).
-;;
-;; o element definitions (with att definitions in the elements)
-;;   [das haben wir doch, oder?]
-;;
-;; o store entities in the DTD
+;;   [was fuer circle detection?--david]
 ;;
 ;; o better extensibility wrt character representation, one may want to
 ;;   have
@@ -151,38 +147,12 @@
 ;;   [ausgelagert sind sie; dokumentiert "so la la"; die Reintegration
 ;;   in Closure ist ein ganz anderes Thema]
 ;;
-;; o merge node representation with SGML module
-;;   [???]
-;;
-;; o line/column number recording
-;;
-;; o better error messages
-;;
 ;; o recording of source locations for nodes.
-;;
-;; o make the *scratch-pad* hack safe
 ;;
 ;; o based on the DTD and xml:space attribute implement HTML white
 ;;   space rules.
 ;;
 ;; o on a parser option, do not expand external entities.
-;;
-;; o does the user need the distinction between "&#20;" and " " ?
-;;   That is literal and 'quoted' white space.
-;;   [verstehe ich nicht --david]
-;;
-;; o on an option merge CDATA section;
-;;
-;; o data in parse tree? extra nodes like in SGML?!
-;;
-;; o what to store in the node-gi field? Some name object or the
-;;   string used?
-;;
-
-;; Test that fail:
-;;
-;; not-wf/sa/128        is false a alarm
-;;
 
 ;;;; Validity constraints:
 ;;;; (00) Root Element Type                     like (03), c.f. MAKE-ROOT-MODEL
@@ -1586,40 +1556,37 @@
         (go state-1)))))
 
 (defun read-comment-content (input &aux d)
-  (let ((warnedp nil))
-    (with-rune-collector (collect)
-      (block nil
-        (tagbody
-         state-1
-          (setf d (read-rune input))
-          (unless (data-rune-p d)
-            (error "Illegal char: ~S." d))
-          (when (rune= d #/-) (go state-2))
-          (collect d)
-          (go state-1)
-         state-2 ;; #/- seen
-          (setf d (read-rune input))
-          (unless (data-rune-p d)
-            (error "Illegal char: ~S." d))
-          (when (rune= d #/-) (go state-3))
-          (collect #/-)
-          (collect d)
-          (go state-1)
-         state-3 ;; #/- #/- seen
-          (setf d (read-rune input))
-          (unless (data-rune-p d)
-            (error "Illegal char: ~S." d))
-          (when (rune= d #/>) (return))
-          (unless warnedp
-            (warn "WFC: no '--' in comments please.")
-            (setf warnedp t))
-          (when (rune= d #/-)
-            (collect #/-)
-            (go state-3))
-          (collect #/-)
-          (collect #/-)
-          (collect d)
-          (go state-1))))))
+  (with-rune-collector (collect)
+    (block nil
+      (tagbody
+       state-1
+	(setf d (read-rune input))
+	(unless (data-rune-p d)
+	  (wf-error "Illegal char: ~S." d))
+	(when (rune= d #/-) (go state-2))
+	(collect d)
+	(go state-1)
+       state-2 ;; #/- seen
+	(setf d (read-rune input))
+	(unless (data-rune-p d)
+	  (wf-error "Illegal char: ~S." d))
+	(when (rune= d #/-) (go state-3))
+	(collect #/-)
+	(collect d)
+	(go state-1)
+       state-3 ;; #/- #/- seen
+	(setf d (read-rune input))
+	(unless (data-rune-p d)
+	  (wf-error "Illegal char: ~S." d))
+	(when (rune= d #/>) (return))
+	(wf-error "'--' not allowed in a comment")
+	(when (rune= d #/-)
+	  (collect #/-)
+	  (go state-3))
+	(collect #/-)
+	(collect #/-)
+	(collect d)
+	(go state-1)))))
 
 (defun read-cdata-sect (input &aux d)
   ;; <![CDATA[ is already read

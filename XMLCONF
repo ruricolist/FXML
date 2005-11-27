@@ -514,10 +514,7 @@ sun/not-wf/pubid04.xml [not-wf?] not-wf
 sun/not-wf/pubid05.xml [not-wf?] not-wf
 sun/not-wf/sgml01.xml [not-wf?] not-wf
 sun/not-wf/sgml02.xml [not-wf?] not-wf
-sun/not-wf/sgml03.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Comments may not contain "--"]
+sun/not-wf/sgml03.xml [not-wf?] not-wf
 sun/not-wf/sgml04.xml [not-wf?] not-wf
 sun/not-wf/sgml05.xml [not-wf?] not-wf
 sun/not-wf/sgml06.xml [not-wf?] not-wf
@@ -1025,12 +1022,7 @@ ibm/not-wf/P14/ibm14n01.xml [not-wf?] FAILED:
   ]
 ibm/not-wf/P14/ibm14n02.xml [not-wf?] not-wf
 ibm/not-wf/P14/ibm14n03.xml [not-wf?] not-wf
-ibm/not-wf/P15/ibm15n01.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests comment. The text of the second comment contains the character 
-    "-".
-  ]
+ibm/not-wf/P15/ibm15n01.xml [not-wf?] not-wf
 ibm/not-wf/P15/ibm15n02.xml [not-wf?] not-wf
 ibm/not-wf/P15/ibm15n03.xml [not-wf?] not-wf
 ibm/not-wf/P15/ibm15n04.xml [not-wf?] not-wf
@@ -1853,4 +1845,4 @@ ibm/valid/P86/ibm86v01.xml [not validating:] input [validating:] input
 ibm/valid/P87/ibm87v01.xml [not validating:] input [validating:] input
 ibm/valid/P88/ibm88v01.xml [not validating:] input [validating:] input
 ibm/valid/P89/ibm89v01.xml [not validating:] input [validating:] input
-14/1786 tests failed; 376 tests were skipped
+12/1786 tests failed; 376 tests were skipped
