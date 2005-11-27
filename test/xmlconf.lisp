@@ -172,12 +172,25 @@
   (assert (null args))
   (handler-case
       (progn
-	(format t " [not-wf?]")
+         (format t " [not validating:]")
+	(cxml:parse-file pathname (dom:make-dom-builder) :validate nil)
+	(error "well-formedness violation not detected")
+      nil)
+    (cxml:well-formedness-violation ()
+      (format t " not-wf")
+      t))
+  (handler-case
+      (progn
+	(format t " [validating:]")
 	(cxml:parse-file pathname (dom:make-dom-builder) :validate t)
 	(error "well-formedness violation not detected")
       nil)
     (cxml:well-formedness-violation ()
       (format t " not-wf")
+      t)
+    (cxml:validity-error ()
+      ;; das erlauben wir mal auch, denn valide => wf
+      (format t " invalid")
       t)))
 
 #+(or)
