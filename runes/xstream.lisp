@@ -1,4 +1,4 @@
-;;; -*- Mode: Lisp; Syntax: Common-Lisp; Package: runes; readtable: runes; Encoding: utf-8; -*-
+;;; -*- Mode: Lisp; Syntax: Common-Lisp; readtable: runes; Encoding: utf-8; -*-
 ;;; ---------------------------------------------------------------------------
 ;;;     Title: Fast streams
 ;;;   Created: 1999-07-17
@@ -66,9 +66,7 @@
 ;;
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (defparameter *fast* '(optimize (speed 3) (safety 0)))
-  ;;(defparameter *fast* '(optimize (speed 2) (safety 3)))
-  )
+  (defparameter *fast* '(optimize (speed 3) (safety 0))))
 
 ;; Let us first define fast fixnum arithmetric get rid of type
 ;; checks. (After all we know what we do here).
@@ -277,10 +275,14 @@
                :end2 (xstream-os-left-end input))
       ;; then we take care that the buffer is large enough to carry at
       ;; least 100 bytes (a random number)
+      ;;
+      ;; david: was heisst da random?  ich nehme an, dass 100 einfach
+      ;; ausreichend sein soll, um die laengste utf-8 bytesequenz oder die
+      ;; beiden utf-16 surrogates zu halten?  dann ist 100 ja wohl dicke
+      ;; ausreichend und koennte in make-xstream ordentlich geprueft werden.
+      ;; oder was geht hier vor?
       (unless (>= (length (xstream-os-buffer input)) 100)
-        (error "You lost")
-        ;; todo: enlarge buffer
-        ))
+        (error "You lost")))
     (setf n
       (read-octets (xstream-os-buffer input) (xstream-os-stream input)
                    m (min (1- (length (xstream-os-buffer input)))
@@ -292,7 +294,7 @@
            :eof)
           (t
            (multiple-value-bind (fnw fnr) 
-               (encoding:decode-sequence
+               (runes-encoding:decode-sequence
                 (xstream-encoding input) 
                 (xstream-os-buffer input) 0 n
                 (xstream-buffer input) 0 (1- (length (xstream-buffer input)))

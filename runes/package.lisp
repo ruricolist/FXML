@@ -61,8 +61,9 @@
            #:set-to-full-speed
            #:xstream-name))
 
-(defpackage :encoding
+(defpackage :runes-encoding
   (:use :cl :runes)
   (:export
+   #:encoding-error
    #:find-encoding
    #:decode-sequence))

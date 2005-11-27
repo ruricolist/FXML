@@ -2960,10 +2960,13 @@
                            :type type))))))
 
 (defun parse-xstream (xstream handler &rest args)
-  (let ((zstream (make-zstream :input-stack (list xstream))))
-    (peek-rune xstream)
-    (with-scratch-pads ()
-      (apply #'p/document zstream handler args))))
+  (handler-case
+      (let ((zstream (make-zstream :input-stack (list xstream))))
+	(peek-rune xstream)
+	(with-scratch-pads ()
+	  (apply #'p/document zstream handler args)))
+    (runes-encoding:encoding-error (c)
+      (wf-error "~A" c))))
 
 (defun parse-file (filename handler &rest args)
   (with-open-xfile (input filename)
@@ -3021,10 +3024,7 @@
 
 (defun parse-string (string handler)
   ;; XXX this function mis-handles encoding
-  (with-scratch-pads ()
-    (let* ((x (string->xstream string))
-           (z (make-zstream :input-stack (list x))))
-      (p/document z handler))))
+  (parse-xstream (string->xstream string) handler))
 
 (defun string->xstream (string)
   ;; XXX encoding is mis-handled by this kind of stream

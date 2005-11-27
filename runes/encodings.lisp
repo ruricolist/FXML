@@ -1,4 +1,9 @@
-(in-package :encoding)
+(in-package :runes-encoding)
+
+(define-condition encoding-error (simple-error) ())
+
+(defun xerror (fmt &rest args)
+  (error 'encoding-error :format-control fmt :format-arguments args))
 
 ;;;; ---------------------------------------------------------------------------
 ;;;; Encoding names
@@ -115,6 +120,9 @@
       (let ((hi (aref in rptr))
             (lo (aref in (%+ 1 rptr))))
         (setf rptr (%+ 2 rptr))
+	;; FIXME: Wenn wir hier ein Surrogate sehen, muessen wir das naechste
+	;; Zeichen abwarten und nachgucken, dass nicht etwa die andere
+	;; Haelfte fehlt!
         (setf (aref out wptr) (logior (ash hi 8) lo))
         (setf wptr (%+ 1 wptr))))
     (values wptr rptr)))
@@ -132,6 +140,9 @@
       (let ((lo (aref in (%+ 0 rptr)))
             (hi (aref in (%+ 1 rptr))))
         (setf rptr (%+ 2 rptr))
+	;; FIXME: Wenn wir hier ein Surrogate sehen, muessen wir das naechste
+	;; Zeichen abwarten und nachgucken, dass nicht etwa die andere
+	;; Haelfte fehlt!
         (setf (aref out wptr) (logior (ash hi 8) lo))
         (setf wptr (%+ 1 wptr))))
     (values wptr rptr)))
@@ -147,13 +158,9 @@
         byte0)
     (macrolet ((put (x)
                  `((lambda (x)
-                     (cond ((or (<= #xD800 x #xDBFF)
-                                (<= #xDC00 x #xDFFF))
-                            (error "Encoding UTF-16 in UTF-8? : #x~x." x)))
-                     '(unless (data-char-p x)
-                       (error "#x~x is not a data character." x))
-                     ;;(fresh-line)
-                     ;;(prin1 x) (princ "-> ")
+                     (when (or (<= #xD800 x #xDBFF)
+			       (<= #xDC00 x #xDFFF))
+		       (xerror "surrogate encoded in UTF-8: #x~x." x))
                      (cond ((%> x #xFFFF)
                             (setf (aref out (%+ 0 wptr)) (%+ #xD7C0 (ash x -10))
                                   (aref out (%+ 1 wptr)) (%ior #xDC00 (%and x #x3FF)))
@@ -196,7 +203,7 @@
                (setf rptr (%+ rptr 1)))
             
               ((%<= #|#b10000000|# byte0 #b10111111)
-               (error "Corrupted UTF-8 input (initial byte was #b~8,'0B)" byte0)
+               (xerror "Corrupted UTF-8 input (initial byte was #b~8,'0B)" byte0)
                (setf rptr (%+ rptr 1)))
             
               ((%<= #|#b11000000|# byte0 #b11011111)
@@ -260,7 +267,7 @@
                       (return))))
             
               (t
-               (error "Corrupted UTF-8 input (initial byte was #b~8,'0B)" byte0)) ) )) 
+               (xerror "Corrupted UTF-8 input (initial byte was #b~8,'0B)" byte0)) ) )) 
     (values wptr rptr))  )
 
 (defmethod encoding-p ((object (eql :utf-16-little-endian))) t)
@@ -343,5 +350,4 @@
 
 (defun find-charset (name)
   (or (gethash name *charsets*)
-      (error "There is no character set named ~S." name)))
-
+      (xerror "There is no character set named ~S." name)))
