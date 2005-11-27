@@ -132,7 +132,7 @@
 ;;
 ;; o max depth together with circle detection
 ;;   (or proof, that our circle detection is enough).
-;;   [was fuer circle detection?--david]
+;;   [gemeint ist wohl zstream-push--david]
 ;;
 ;; o better extensibility wrt character representation, one may want to
 ;;   have
@@ -900,7 +900,7 @@
     (unless def
       (if zstream
           (perror zstream "Entity '~A' is not defined." (rod-string entity-name))
-        (error "Entity '~A' is not defined." (rod-string entity-name))))
+        (wf-error "Entity '~A' is not defined." (rod-string entity-name))))
     (let (r)
       (etypecase def
         (internal-entdef
@@ -918,7 +918,7 @@
 (defun checked-get-entdef (name type)
   (let ((def (get-entity-definition name type (dtd *ctx*))))
     (unless def
-      (error "Entity '~A' is not defined." (rod-string name)))
+      (wf-error "Entity '~A' is not defined." (rod-string name)))
     def))
 
 (defun xstream-open-extid (extid)
@@ -1186,7 +1186,7 @@
                           ((equalp q '#.(string-rod "FIXED"))   :|#FIXED|)
                           ((equalp q '#.(string-rod "PCDATA"))  :|#PCDATA|)
                           (t
-                           (error "Unknown token: ~S." q)))))
+                           (wf-error "Unknown token: ~S." q)))))
                  ((or (rune= c #/U+0020)
                       (rune= c #/U+0009)
                       (rune= c #/U+000D)
@@ -1199,7 +1199,7 @@
                         (t
                          (values :%))))
                  (t
-                  (error "Unexpected character ~S." c))))
+                  (wf-error "Unexpected character ~S." c))))
           (:DOC
            (cond
             ((rune= c #/&)
@@ -1230,7 +1230,7 @@
 (defun read-token-after-|<| (zinput input)
   (let ((d (read-rune input)))
     (cond ((eq d :eof)
-           (error "EOF after '<'"))
+           (wf-error "EOF after '<'"))
           ((rune= #/! d)
            (read-token-after-|<!| input))
           ((rune= #/? d)
@@ -1238,10 +1238,10 @@
              (cond ((rod= target '#.(string-rod "xml"))
                     (values :xml-pi (cons target content)))
                    ((rod-equal target '#.(string-rod "XML"))
-                    (error "You lost -- no XML processing instructions."))
+                    (wf-error "You lost -- no XML processing instructions."))
 		   ((and sax:*namespace-processing* (position #/: target))
-		    (error "Processing instruction target ~S is not a valid NcName."
-			   (mu target)))
+		    (wf-error "Processing instruction target ~S is not a valid NcName."
+			      (mu target)))
                    (t
                     (values :PI (cons target content))))))
           ((rune= #// d)
@@ -1249,17 +1249,17 @@
              (cond ((name-start-rune-p c)
                     (read-tag-2 zinput input :etag))
                    (t
-                    (error "Expecting name start rune after \"</\".")))))
+                    (wf-error "Expecting name start rune after \"</\".")))))
           ((name-start-rune-p d)
            (unread-rune d input)
            (read-tag-2 zinput input :stag))
           (t
-           (error "Expected '!' or '?' after '<' in DTD.")))))
+           (wf-error "Expected '!' or '?' after '<' in DTD.")))))
 
 (defun read-token-after-|<!| (input)
   (let ((d (read-rune input)))
     (cond ((eq d :eof)
-           (error "EOF after \"<!\"."))
+           (wf-error "EOF after \"<!\"."))
           ((name-start-rune-p d)
            (unread-rune d input)
            (let ((name (read-name-token input)))
@@ -1269,7 +1269,7 @@
                    ((rod= name '#.(string-rod "NOTATION")) :|<!NOTATION|)
                    ((rod= name '#.(string-rod "DOCTYPE")) :|<!DOCTYPE|)
                    (t
-                    (error "`<!~A' unknown." (rod-string name))))))
+                    (wf-error "`<!~A' unknown." (rod-string name))))))
           ((rune= #/\[ d)
            (values :|<![| nil))
           ((rune= #/- d)
@@ -1279,9 +1279,9 @@
                    :COMMENT
                    (read-comment-content input)))
                  (t
-                  (error "Bad character ~S after \"<!-\"" d))))
+                  (wf-error "Bad character ~S after \"<!-\"" d))))
           (t
-           (error "Bad character ~S after \"<!\"" d)))))
+           (wf-error "Bad character ~S after \"<!\"" d)))))
 
 (definline read-S? (input)
   (while (member (peek-rune input) '(#/U+0020 #/U+0009 #/U+000A #/U+000D)
@@ -1311,12 +1311,12 @@
    The initial #\\& is considered to be consumed already."
   (let ((c (peek-rune input)))
     (cond ((eq c :eof)
-           (error "EOF after '&'"))
+           (wf-error "EOF after '&'"))
           ((rune= c #/#)
            (values :NUMERIC (read-numeric-entity input)))
           (t
            (unless (name-start-rune-p (peek-rune input))
-             (error "Expecting name after &."))
+             (wf-error "Expecting name after &."))
            (let ((name (read-name-token input)))
              (setf c (read-rune input))
              (unless (rune= c #/\;)
@@ -1332,9 +1332,9 @@
     (do ((q atts (cdr q)))
         ((null q))
       (cond ((find (caar q) (cdr q) :key #'car)
-             (error "Attribute ~S has two definitions in element ~S."
-                    (rod-string (caar q))
-                    (rod-string name)))))
+             (wf-error "Attribute ~S has two definitions in element ~S."
+		       (rod-string (caar q))
+		       (rod-string name)))))
 
     (cond ((eq (peek-rune input) #/>)
            (consume-rune input)
@@ -1344,11 +1344,11 @@
            (assert (rune= #/> (read-rune input)))
            (values :ztag (cons name atts)))
           (t
-           (error "syntax error in read-tag-2.")) )))
+           (wf-error "syntax error in read-tag-2.")) )))
 
 (defun read-attribute (zinput input)
   (unless (name-start-rune-p (peek-rune input))
-    (error "Expected name."))
+    (wf-error "Expected name."))
   ;; arg thanks to the post mortem nature of name space declarations,
   ;; we could only process the attribute values post mortem.
   (let ((name (read-name-token input)))
@@ -1411,7 +1411,7 @@
                    (cond ((eql delim c)
                           (return))
                          ((eq c :eof)
-                          (error "EOF"))
+                          (wf-error "EOF"))
                          ((rune= c #/&)
                           (setf c (peek-rune input))
                           (cond ((rune= c #/#)
@@ -1419,7 +1419,7 @@
                                    (%put-unicode-char c collect)))
                                 (t
                                  (unless (name-start-rune-p (peek-rune input))
-                                   (error "Expecting name after &."))
+                                   (wf-error "Expecting name after &."))
                                  (let ((name (read-name-token input)))
                                    (setf c (read-rune input))
                                    (assert (rune= c #/\;))
@@ -1441,7 +1441,7 @@
                                       (collect #/\; )))))))
                          ((and (eq mode :ENT) (rune= c #/%))
                           (unless (name-start-rune-p (peek-rune input))
-                            (error "Expecting name after %."))
+                            (wf-error "Expecting name after %."))
                           (let ((name (read-name-token input)))
                             (setf c (read-rune input))
                             (assert (rune= c #/\;))
@@ -1452,7 +1452,7 @@
                                       (muffle (car (zstream-input-stack zinput))
                                               :eof))))
                                   (t
-                                   (error "No PE here.")))))
+                                   (wf-error "No PE here.")))))
                          ((and (eq mode :ATT) (rune= c #/<))
                           ;; xxx fix error message
                           (cerror "Eat them in spite of this."
@@ -1462,7 +1462,7 @@
                          ((and canon-space-p (space-rune-p c))
                           (collect #/space))
                          ((not (data-rune-p c))
-                          (error "illegal char: ~S." c))
+                          (wf-error "illegal char: ~S." c))
                          (t
                           (collect c)))))))
       (declare (dynamic-extent #'muffle))
@@ -1502,10 +1502,11 @@
                        :radix 10)
                     (assert (rune= c #/\;))) )
                  (t
-                  (error "Bad char in numeric character entity.") )))))
+                  (wf-error "Bad char in numeric character entity.") )))))
     (unless (code-data-char-p res)
-      (error "expansion of numeric character reference (#x~X) is no data char."
-             res))
+      (wf-error
+       "expansion of numeric character reference (#x~X) is no data char."
+       res))
     res))
 
 (defun read-pi (input)
@@ -1513,7 +1514,7 @@
   (let (name)
     (let ((c (peek-rune input)))
       (unless (name-start-rune-p c)
-        (error "Expecting name after '<?'"))
+        (wf-error "Expecting name after '<?'"))
       (setf name (read-name-token input)))
     (cond
       ((member (peek-rune input) '(#/U+0020 #/U+0009 #/U+000A #/U+000D)
@@ -1535,7 +1536,7 @@
 	(unless d
 	  (error 'end-of-xstream))
         (unless (data-rune-p d)
-          (error "Illegal char: ~S." d))
+          (wf-error "Illegal char: ~S." d))
         (when (rune= d #/?) (go state-2))
         (collect d)
         (go state-1)
@@ -1544,7 +1545,7 @@
 	(unless d
 	  (error 'end-of-xstream))
         (unless (data-rune-p d)
-          (error "Illegal char: ~S." d))
+          (wf-error "Illegal char: ~S." d))
         (when (rune= d #/>) (return))
         (when (rune= d #/?)
           (collect #/?)
@@ -1595,14 +1596,14 @@
        state-1
         (setf d (read-rune input))
         (unless (data-rune-p d)
-          (error "Illegal char: ~S." d))
+          (wf-error "Illegal char: ~S." d))
         (when (rune= d #/\]) (go state-2))
         (collect d)
         (go state-1)
        state-2 ;; #/] seen
         (setf d (read-rune input))
         (unless (data-rune-p d)
-          (error "Illegal char: ~S." d))
+          (wf-error "Illegal char: ~S." d))
         (when (rune= d #/\]) (go state-3))
         (collect #/\])
         (collect d)
@@ -1610,7 +1611,7 @@
        state-3 ;; #/\] #/\] seen
         (setf d (read-rune input))
         (unless (data-rune-p d)
-          (error "Illegal char: ~S." d))
+          (wf-error "Illegal char: ~S." d))
         (when (rune= d #/>)
           (return))
         (when (rune= d #/\])
@@ -1620,61 +1621,6 @@
         (collect #/\])
         (collect d)
         (go state-1)))))
-
-#+(or) ;; FIXME: There is another definition below that looks more reasonable.
-(defun read-cdata (input initial-char &aux d)
-  (cond ((not (data-rune-p initial-char))
-         (error "Illegal char: ~S." initial-char)))
-  (with-rune-collector (collect)
-    (block nil
-      (tagbody
-        (cond ((rune= initial-char #/\])
-               (go state-2))
-              (t
-               (collect initial-char)))
-       state-1
-        (setf d (peek-rune input))
-        (when (or (eq d :eof) (rune= d #/<) (rune= d #/&))
-          (return))
-        (read-rune input)
-        (unless (data-rune-p d)
-          (error "Illegal char: ~S." d))
-        (when (rune= d #/\]) (go state-2))
-        (collect d)
-        (go state-1)
-
-       state-2 ;; #/\] seen
-        (setf d (peek-rune input))
-        (when (or (eq d :eof) (rune= d #/<) (rune= d #/&))
-          (collect #/\])
-          (return))
-        (read-rune input)
-        (unless (data-rune-p d)
-          (error "Illegal char: ~S." d))
-        (when (rune= d #/\]) (go state-3))
-        (collect #/\])
-        (collect d)
-        (go state-1)
-
-       state-3 ;; #/\] #/\] seen
-        (setf d (peek-rune input))
-        (when (or (eq d :eof) (rune= d #/<) (rune= d #/&))
-          (collect #/\])
-          (collect #/\])
-          (return))
-        (read-rune input)
-        (unless (data-rune-p d)
-          (error "Illegal char: ~S." d))
-        (when (rune= d #/>)
-          (error "For no apparent reason ']]>' in not allowed in a CharData token -- you lost."))
-        (when (rune= d #/\])
-          (collect #/\])
-          (go state-3))
-        (collect #/\])
-        (collect #/\])
-        (collect d)
-        (go state-1)))))
-
 
 ;; some character categories
 
@@ -1705,7 +1651,7 @@
 (defun expect (input category)
   (multiple-value-bind (cat sem) (read-token input)
     (unless (eq cat category)
-      (error "Expected ~S saw ~S [~S]" category cat sem))
+      (wf-error "Expected ~S saw ~S [~S]" category cat sem))
     (values cat sem)))
 
 (defun consume-token (input)
@@ -1755,8 +1701,8 @@
           (:>
            (return))
           (otherwise
-           (error "Expected either another AttDef or end of \"<!ATTLIST\". -- saw ~S."
-                  tok)) )) )))
+           (wf-error "Expected either another AttDef or end of \"<!ATTLIST\". -- saw ~S."
+		     tok)))))))
 
 (defun p/attdef (input)
   ;; [53] AttDef ::= Name S AttType S DefaultDecl
@@ -1823,7 +1769,7 @@
                             (append names (referenced-notations *ctx*))))
                     (cons :NOTATION names)))
                  (t
-                  (error "In p/att-type: ~S ~S." cat sem))))
+                  (wf-error "In p/att-type: ~S ~S." cat sem))))
           ((eq cat :\()
            ;; XXX Die Nmtoken-Syntax pruefen wir derzeit nur beim Validieren.
            (let (names)
@@ -1832,7 +1778,7 @@
              (expect input :\))
              (cons :ENUMERATION names)))
           (t
-           (error "In p/att-type: ~S ~S." cat sem)) )))
+           (wf-error "In p/att-type: ~S ~S." cat sem)) )))
 
 (defun p/default-decl (input)
   ;; [60] DefaultDecl ::= '#REQUIRED' | '#IMPLIED'
@@ -1853,7 +1799,7 @@
           ((or (eq cat :\') (eq cat :\"))
            (list :DEFAULT (p/att-value input)))
           (t
-           (error "p/default-decl: ~S ~S." cat sem)) )))
+           (wf-error "p/default-decl: ~S ~S." cat sem)) )))
 ;;;;
 
 ;;  [70] EntityDecl ::= GEDecl | PEDecl
@@ -1923,7 +1869,7 @@
                           (push ndata (referenced-notations *ctx*)))))))
              (make-external-entdef extid ndata)))
           (t
-           (error "p/entity-def: ~S / ~S." cat sem)) )))
+           (wf-error "p/entity-def: ~S / ~S." cat sem)) )))
 
 (defun p/entity-value (input)
   (let ((delim (if (eq (read-token input) :\") #/\" #/\')))
@@ -1957,10 +1903,10 @@
                  (setf sys (p/system-literal input))))
              (when (and (not public-only-ok-p)
                         (null sys))
-               (error "System identifier needed for this PUBLIC external identifier."))
+               (wf-error "System identifier needed for this PUBLIC external identifier."))
              (make-extid pub sys)))
           (t
-           (error "Expected external-id: ~S / ~S." cat sem)))))
+           (wf-error "Expected external-id: ~S / ~S." cat sem)))))
 
 
 ;;  [11] SystemLiteral ::= ('"' [^"]* '"') | ("'" [^']* "'")
@@ -1976,13 +1922,13 @@
                (loop
                  (let ((c (read-rune (car (zstream-input-stack input)))))
                    (cond ((eq c :eof)
-                          (error "EOF in system literal."))
+                          (wf-error "EOF in system literal."))
                          ((rune= c delim)
                           (return))
                          (t
                           (collect c))))))))
           (t
-           (error "Expect either \" or \'.")))))
+           (wf-error "Expect either \" or \'.")))))
 
 ;; it is important to cache the orginal URI rod, since the re-serialized
 ;; uri-string can be different from the one parsed originally.
@@ -2009,7 +1955,7 @@
 (defun p/pubid-literal (input)
   (let ((result (p/id input)))
     (unless (every #'pubid-char-p result)
-      (error "Illegal pubid: ~S." (rod-string result)))
+      (wf-error "Illegal pubid: ~S." (rod-string result)))
     result))
 
 
@@ -2023,7 +1969,7 @@
     (p/S input)
     (setf content (normalize-mixed-cspec (p/cspec input)))
     (unless (legal-content-model-p content *validate*)
-      (error "Malformed or invalid content model: ~S." (mu content)))
+      (wf-error "Malformed or invalid content model: ~S." (mu content)))
     (p/S? input)
     (expect input :\>)
     (when *validate*
@@ -2212,7 +2158,7 @@
                         (validity-error "(06) Proper Group/PE Nesting")))
                     res)
                    (t
-                    (error "p/cspec - ~s / ~s" cat sem)))))))
+                    (wf-error "p/cspec - ~s / ~s" cat sem)))))))
     (cond ((eq (peek-token input) :?) (consume-token input) (list '? term))
           ((eq (peek-token input) :+) (consume-token input) (list '+ term))
           ((eq (peek-token input) :*) (consume-token input) (list '* term))
@@ -2299,7 +2245,7 @@
                   (rod= sem '#.(string-rod "IGNORE")))
              (p/ignore-sect input stream))
             (t
-             (error "Expected INCLUDE or IGNORE after \"<![\"."))))))
+             (wf-error "Expected INCLUDE or IGNORE after \"<![\"."))))))
 
 (defun p/cond-expect (input cat initial-stream)
   (expect input cat)
@@ -2329,7 +2275,7 @@
           ((= level -1))
         (declare (type fixnum level))
         (cond ((eq c1 :eof)
-               (error "EOF in <![IGNORE ... >")))
+               (wf-error "EOF in <![IGNORE ... >")))
         (cond ((and (rune= c3 #/<) (rune= c2 #/!) (rune= c1 #/\[))
                (incf level)))
         (cond ((and (rune= c3 #/\]) (rune= c2 #/\]) (rune= c1 #/>))
@@ -2358,7 +2304,7 @@
                                 (internal-entdef
                                  (p/ext-subset-decl input)))
                               (unless (eq :eof (peek-token input))
-                                (error "Trailing garbage."))))))
+                                (wf-error "Trailing garbage."))))))
       (otherwise (return)))) )
 
 (defun p/markup-decl (input)
@@ -2386,7 +2332,7 @@
 	  (sax:processing-instruction (handler *ctx*) (car sem) (cdr sem))))
       (:COMMENT      (consume-token input))
       (otherwise
-	(error "p/markup-decl ~S" (peek-token input))))))
+	(wf-error "p/markup-decl ~S" (peek-token input))))))
 
 (defun setup-encoding (input xml-header)
   (when (xml-header-encoding xml-header)
@@ -2410,7 +2356,7 @@
   (set-full-speed input)
   (p/ext-subset-decl input)
   (unless (eq (peek-token input) :eof)
-    (error "Trailing garbage - ~S." (peek-token input))))
+    (wf-error "Trailing garbage - ~S." (peek-token input))))
 
 (defvar *catalog* nil)
 
@@ -2448,7 +2394,7 @@
                      (and extid (uri-rod (extid-system extid))))
       (when (eq (peek-token input) :\[ )
         (when (disallow-internal-subset *ctx*)
-          (error "document includes an internal subset"))
+          (wf-error "document includes an internal subset"))
         (ensure-dtd)
         (consume-token input)
         (while (progn (p/S? input)
@@ -2463,7 +2409,7 @@
                                        (internal-entdef
                                         (p/ext-subset-decl input)))
                                      (unless (eq :eof (peek-token input))
-                                       (error "Trailing garbage.")))))
+                                       (wf-error "Trailing garbage.")))))
               (let ((*expand-pe-p* t))
                 (p/markup-decl input))))
         (consume-token input)
@@ -2585,7 +2531,7 @@
       ;; optional Misc*
       (p/misc*-2 input)
       (unless (eq (peek-token input) :eof)
-        (error "Garbage at end of document."))
+        (wf-error "Garbage at end of document."))
       (when *validate*
         (maphash (lambda (k v)
                    (unless v
@@ -2620,7 +2566,7 @@
 	   (sax:end-element (handler *ctx*) nil nil (car sem)))
 
           (t
-           (error "Expecting element.")))))
+           (wf-error "Expecting element.")))))
 
 
 (defun p/element-ns (input)
@@ -2652,7 +2598,7 @@
 		 (sax:end-element (handler *ctx*) ns-uri local-name name))
 		
 		(t
-		 (error "Expecting element, got ~S." cat)))))
+		 (wf-error "Expecting element, got ~S." cat)))))
       (undeclare-namespaces ns-decls))
     (validate-end-element *ctx* name)))
 
@@ -2660,11 +2606,11 @@
   (when (zstream-p stream)
     (setf stream (car (zstream-input-stack stream))))
   (if stream
-      (error "Parse error at line ~D column ~D: ~?"
-	     (xstream-line-number stream)
-	     (xstream-column-number stream)
-	     format-string format-args)
-      (apply #'error format-string format-args)))
+      (wf-error "Parse error at line ~D column ~D: ~?"
+		(xstream-line-number stream)
+		(xstream-column-number stream)
+		format-string format-args)
+      (apply #'wf-error format-string format-args)))
 
 (defun p/content (input)
   ;; [43] content ::= (element | CharData | Reference | CDSect | PI | Comment)*
@@ -2691,7 +2637,8 @@
                                      (internal-entdef (p/content input))
                                      (external-entdef (p/ext-parsed-ent input)))
                                  (unless (eq (peek-token input) :eof)
-                                   (error "Trailing garbage. - ~S" (peek-token input))))))
+                                   (wf-error "Trailing garbage. - ~S"
+					     (peek-token input))))))
           (p/content input))))
       ((:<!\[)
        (consume-token input)
@@ -2703,7 +2650,7 @@
                        (rune= #/T (read-rune input))
                        (rune= #/A (read-rune input))
                        (rune= #/\[ (read-rune input)))
-            (error "After '<![', 'CDATA[' is expected."))
+            (wf-error "After '<![', 'CDATA[' is expected."))
 	  (validate-characters *ctx* #"hack") ;anything other than whitespace
 	  (sax:start-cdata (handler *ctx*))
 	  (sax:characters (handler *ctx*) (read-cdata-sect input))
@@ -2742,7 +2689,7 @@
          (i (make-rod-xstream content))
          (atts (read-attribute-list 'foo i t))) ;xxx on 'foo
     (unless (eq (peek-rune i) :eof)
-      (error "Garbage at end of XMLDecl."))
+      (wf-error "Garbage at end of XMLDecl."))
     ;; versioninfo muss da sein
     ;; dann ? encodingdecl
     ;; dann ? sddecl
@@ -2798,7 +2745,7 @@
          (i (make-rod-xstream content))
          (atts (read-attribute-list 'foo i t))) ;xxx on 'foo
     (unless (eq (peek-rune i) :eof)
-      (error "Garbage at end of TextDecl"))
+      (wf-error "Garbage at end of TextDecl"))
     ;; versioninfo optional
     ;; encodingdecl muss da sein
     ;; dann ende
@@ -2935,7 +2882,7 @@
   (let ((scheme (puri:uri-scheme uri))
         (path (puri:uri-parsed-path uri)))
     (unless (member scheme '(nil :file))
-      (error 'parser-error
+      (error 'xml-parse-error
              :format-control "URI scheme ~S not supported"
              :format-arguments (list scheme)))
     (if (eq (car path) :relative)
@@ -3069,7 +3016,7 @@
                          (eql (stream-name-entity-kind (xstream-name x))
                               (stream-name-entity-kind (xstream-name new-xstream)))))
                   (zstream-input-stack zstream))
-         (error "Infinite recursion.")))
+         (wf-error "Infinite recursion.")))
   (push new-xstream (zstream-input-stack zstream))
   zstream)
 
@@ -3208,9 +3155,9 @@
 (defun internal-entity-expansion (name)
   (let ((def (get-entity-definition name :general (dtd *ctx*))))
     (unless def
-      (error "Entity '~A' is not defined." (rod-string name)))
+      (wf-error "Entity '~A' is not defined." (rod-string name)))
     (unless (typep def 'internal-entdef)
-      (error "Entity '~A' is not an internal entity." name))
+      (wf-error "Entity '~A' is not an internal entity." name))
     (or (entdef-expansion def)
         (setf (entdef-expansion def) (find-internal-entity-expansion name)))))
 
@@ -3230,7 +3177,7 @@
                                      (%put-unicode-char c collect)))
                                   (t
                                    (unless (name-start-rune-p (peek-rune input))
-                                     (error "Expecting name after &."))
+                                     (wf-error "Expecting name after &."))
                                    (let ((name (read-name-token input)))
                                      (setf c (read-rune input))
                                      (assert (rune= c #/\;))
@@ -3247,7 +3194,7 @@
                            ((space-rune-p c)
                             (collect #/space))
                            ((not (data-rune-p c))
-                            (error "illegal char: ~S." c))
+                            (wf-error "illegal char: ~S." c))
                            (t
                             (collect c)))))))
         (declare (dynamic-extent #'muffle))
@@ -3271,19 +3218,19 @@
                      (internal-entdef (p/content input))
                      (external-entdef (p/ext-parsed-ent input)))
                  (unless (eq (peek-token input) :eof)
-                   (error "Trailing garbage. - ~S" (peek-token input))))))))
+                   (wf-error "Trailing garbage. - ~S" (peek-token input))))))))
         nil)))
 
 (defun read-att-value-2 (input)
   (let ((delim (read-rune input)))
     (unless (member delim '(#/\" #/\') :test #'eql)
-      (error "Bad attribute value delimiter ~S, must be either #\\\" or #\\\'."
+      (wf-error "Bad attribute value delimiter ~S, must be either #\\\" or #\\\'."
              (rune-char delim delim)))
     (with-rune-collector-4 (collect)
       (loop
         (let ((c (read-rune input)))
           (cond ((eq c :eof)
-                 (error "EOF"))
+                 (wf-error "EOF"))
                 ((rune= c delim)
                  (return))
                 ((rune= c #/<)
@@ -3329,7 +3276,7 @@
 	      (local-name (subseq qname (1+ pos))))
 	  (if (nc-name-p local-name)
 	      (values prefix local-name)
-	      (error "~S is not a valid NcName." local-name)))
+	      (wf-error "~S is not a valid NcName." local-name)))
 	(values () qname))))
 		
 (defun decode-qname (qname)
@@ -3344,7 +3291,7 @@
 
 (defun find-namespace-binding (prefix)
   (cdr (or (assoc (or prefix #"") (namespace-bindings *ctx*) :test #'rod=)
-	   (error "Undeclared namespace prefix: ~A" (rod-string prefix)))))
+	   (wf-error "Undeclared namespace prefix: ~A" (rod-string prefix)))))
 
 ;; FIXME: Should probably be refactored by adding :start and :end to rod=/rod-equal
 (defun rod-starts-with (prefix rod)
@@ -3395,29 +3342,33 @@
 	(cond
 	  ((and (rod= prefix #"xml")
 		(not (rod= uri #"http://www.w3.org/XML/1998/namespace")))
-	   (error "Attempt to rebind the prefix \"xml\" to ~S." (mu uri)))
+	   (wf-error "Attempt to rebind the prefix \"xml\" to ~S." (mu uri)))
 	  ((and (rod= uri #"http://www.w3.org/XML/1998/namespace")
 		(not (rod= prefix #"xml")))
-	   (error "The namespace URI \"http://www.w3.org/XML/1998/namespace\" ~
-                   may not be bound to the prefix ~S, only \"xml\" is legal."
-		  (mu prefix)))
+	   (wf-error "The namespace ~
+                      URI \"http://www.w3.org/XML/1998/namespace\" may not ~
+                      be bound to the prefix ~S, only \"xml\" is legal."
+		     (mu prefix)))
 	  ((and (rod= prefix #"xmlns")
 		(rod= uri #"http://www.w3.org/2000/xmlns/"))
-	   (error "Attempt to bind the prefix \"xmlns\" to its predefined ~
-                   URI \"http://www.w3.org/2000/xmlns/\", which is ~
-                   forbidden for no good reason."))
+	   (wf-error "Attempt to bind the prefix \"xmlns\" to its predefined ~
+                      URI \"http://www.w3.org/2000/xmlns/\", which is ~
+                      forbidden for no good reason."))
 	  ((rod= prefix #"xmlns")
-	   (error "Attempt to bind the prefix \"xmlns\" to the URI ~S, ~
-                   but it may not be declared." (mu uri)))
+	   (wf-error "Attempt to bind the prefix \"xmlns\" to the URI ~S, ~
+                      but it may not be declared." (mu uri)))
 	  ((rod= uri #"http://www.w3.org/2000/xmlns/")
-	   (error "The namespace URI \"http://www.w3.org/2000/xmlns/\" may ~
-                   not be bound to prefix ~S (or any other)." (mu prefix)))
+	   (wf-error "The namespace URI \"http://www.w3.org/2000/xmlns/\" may ~
+                      not be bound to prefix ~S (or any other)." (mu prefix)))
 	  ((and (rod= uri #"") prefix)
-	   (error "Only the default namespace (the one without a prefix) may ~
-                   be bound to an empty namespace URI, thus undeclaring it."))
+	   (wf-error "Only the default namespace (the one without a prefix) ~
+                      may be bound to an empty namespace URI, thus ~
+                      undeclaring it."))
 	  (t
 	   (push (cons prefix uri) (namespace-bindings *ctx*))
-	   (sax:start-prefix-mapping (handler *ctx*) (car ns-decl) (cdr ns-decl))))))
+	   (sax:start-prefix-mapping (handler *ctx*)
+				     (car ns-decl)
+				     (cdr ns-decl))))))
     ns-decls))
 
 (defun undeclare-namespaces (ns-decls)
@@ -3457,9 +3408,9 @@
 				     (rod= (sax:attribute-local-name attr-1)
 					   (sax:attribute-local-name attr-2))))
 		       (cdr sublist)))
-	  (error "Multiple definitions of attribute ~S in namespace ~S."
-		 (mu (sax:attribute-local-name attr-1))
-		 (mu (sax:attribute-namespace-uri attr-1))))))))
+	  (wf-error "Multiple definitions of attribute ~S in namespace ~S."
+		    (mu (sax:attribute-local-name attr-1))
+		    (mu (sax:attribute-namespace-uri attr-1))))))))
 
 (defun build-attribute (name value specified-p)
   (multiple-value-bind (prefix local-name) (split-qname name)
