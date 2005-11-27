@@ -1435,7 +1435,9 @@
                           (eox input "EOF"))
                          ((rune= c #/&)
                           (setf c (peek-rune input))
-                          (cond ((rune= c #/#)
+                          (cond ((eql c :eof)
+			         (eox input))
+			        ((rune= c #/#)
                                  (let ((c (read-character-reference input)))
                                    (%put-unicode-char c collect)))
                                 (t
@@ -1462,8 +1464,11 @@
                                       (map nil (lambda (x) (collect x)) name)
                                       (collect #/\; )))))))
                          ((and (eq mode :ENT) (rune= c #/%))
-                          (unless (name-start-rune-p (peek-rune input))
-                            (wf-error "Expecting name after %."))
+                          (let ((d (peek-rune input)))
+			    (when (eq d :eof)
+			      (eox input))
+			    (unless (name-start-rune-p d)
+			      (wf-error "Expecting name after %.")))
                           (let ((name (read-name-token input)))
                             (setf c (read-rune input))
                             (check-rune input c #/\;)
@@ -1490,7 +1495,7 @@
       (declare (dynamic-extent #'muffle))
       (muffle input (or delim
                         (let ((delim (read-rune input)))
-                          (unless (member delim '(#/\" #/\'))
+                          (unless (member delim '(#/\" #/\') :test #'eql)
 			    (wf-error "invalid attribute delimiter"))
                           delim))))))
 
@@ -3224,11 +3229,13 @@
                             (return))
                            ((rune= c #/&)
                             (setf c (peek-rune input))
-                            (cond ((rune= c #/#)
+                            (cond ((eql c :eof)
+				   (eox input))
+			          ((rune= c #/#)
                                    (let ((c (read-character-reference input)))
                                      (%put-unicode-char c collect)))
                                   (t
-                                   (unless (name-start-rune-p (peek-rune input))
+                                   (unless (name-start-rune-p c)
                                      (wf-error "Expecting name after &."))
                                    (let ((name (read-name-token input)))
                                      (setf c (read-rune input))
@@ -3237,12 +3244,8 @@
                                       zinput name :general
                                       (lambda (zinput)
                                         (muffle (car (zstream-input-stack zinput)))))))))
-                           ((and (rune= c #/<))
-                            ;; xxx fix error message
-                            (cerror "Eat them in spite of this."
-                                    "For no apparent reason #\/< is forbidden in attribute values. ~
-                                     You lost -- next time choose SEXPR syntax.")
-                            (collect c))
+                           ((rune= c #/<)
+			    (wf-error "unexpected #\/<"))
                            ((space-rune-p c)
                             (collect #/space))
                            ((not (data-rune-p c))
