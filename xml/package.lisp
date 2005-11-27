@@ -50,9 +50,12 @@
    #:cdata
    #:text
 
+   #:xml-parse-error
+   #:well-formedness-violation
+   #:validity-error
+
    #:parse-dtd-file
    #:parse-dtd-stream
-   #:validity-error
    #:make-validator
 
    #:*cache-all-dtds*

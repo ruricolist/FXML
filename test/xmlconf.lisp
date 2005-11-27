@@ -69,6 +69,7 @@
     (with-open-file (*standard-output*
 		     (merge-pathnames "XMLCONF" base)
 		     :direction :output
+		     :external-format :iso-8859-1
 		     :if-exists :supersede)
       (run-all-tests directory))))
 
@@ -173,11 +174,9 @@
       (progn
 	(format t " [not-wf?]")
 	(cxml:parse-file pathname (dom:make-dom-builder) :validate t)
-	nil)
-    (:no-error (n1l)
-      (error "well-formedness violation not detected")
-      n1l)
-    (serious-condition ()
+	(error "well-formedness violation not detected")
+      nil)
+    (cxml:well-formedness-violation ()
       (format t " not-wf")
       t)))
 
