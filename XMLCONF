@@ -14,10 +14,7 @@ xmltest/not-wf/sa/013.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/014.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/015.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/016.xml [not validating:] not-wf [validating:] not-wf
-xmltest/not-wf/sa/017.xml [not validating:] FAILED:
-  The value :EOF is not of type NUMBER.
-[
-    CDATA sections need a terminating ']]>'. ]
+xmltest/not-wf/sa/017.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/018.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/019.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/020.xml [not validating:] not-wf [validating:] not-wf
@@ -274,21 +271,14 @@ xmltest/not-wf/sa/171.xml [not validating:] FAILED:
     Character FFFF is not legal anywhere in an XML document. ]
 xmltest/not-wf/sa/172.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/173.xml [not validating:] not-wf [validating:] not-wf
-xmltest/not-wf/sa/174.xml [not validating:] FAILED:
-  The value :EOF is not of type NUMBER.
-[
-    Character FFFF is not legal anywhere in an XML document. ]
+xmltest/not-wf/sa/174.xml [not validating:] not-wf [validating:] invalid
 xmltest/not-wf/sa/175.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/176.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/177.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/178.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/179.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/180.xml [not validating:] not-wf [validating:] not-wf
-xmltest/not-wf/sa/181.xml [not validating:] FAILED:
-  The value :EOF is not of type NUMBER.
-[
-    Internal parsed entities must match the 
-    production to be well formed. ]
+xmltest/not-wf/sa/181.xml [not validating:] not-wf [validating:] not-wf
 xmltest/not-wf/sa/182.xml [not validating:] FAILED:
   The value :EOF is not of type NUMBER.
 [
@@ -1342,12 +1332,7 @@ ibm/not-wf/P17/ibm17n03.xml [not validating:] FAILED:
   ]
 ibm/not-wf/P17/ibm17n04.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P18/ibm18n01.xml [not validating:] not-wf [validating:] invalid
-ibm/not-wf/P18/ibm18n02.xml [not validating:] FAILED:
-  The value :EOF is not of type NUMBER.
-[
-    Tests CDSect. The CDEnd is missing in the CDSect in the content of
-    element "student".
-  ]
+ibm/not-wf/P18/ibm18n02.xml [not validating:] not-wf [validating:] not-wf
 ibm/not-wf/P19/ibm19n01.xml [not validating:] FAILED:
   error while parsing arguments to DESTRUCTURING-BIND:
     invalid number of elements in
@@ -2372,4 +2357,4 @@ ibm/valid/P86/ibm86v01.xml [not validating:] input [validating:] input
 ibm/valid/P87/ibm87v01.xml [not validating:] input [validating:] input
 ibm/valid/P88/ibm88v01.xml [not validating:] input [validating:] input
 ibm/valid/P89/ibm89v01.xml [not validating:] input [validating:] input
-128/1786 tests failed; 376 tests were skipped
+124/1786 tests failed; 376 tests were skipped

@@ -1601,6 +1601,8 @@
       (tagbody
        state-1
         (setf d (read-rune input))
+	(when (eq d :eof)
+	  (eox input))
         (unless (data-rune-p d)
           (wf-error "Illegal char: ~S." d))
         (when (rune= d #/\]) (go state-2))
@@ -1608,6 +1610,8 @@
         (go state-1)
        state-2 ;; #/] seen
         (setf d (read-rune input))
+	(when (eq d :eof)
+	  (eox input))
         (unless (data-rune-p d)
           (wf-error "Illegal char: ~S." d))
         (when (rune= d #/\]) (go state-3))
@@ -1616,6 +1620,8 @@
         (go state-1)
        state-3 ;; #/\] #/\] seen
         (setf d (read-rune input))
+	(when (eq d :eof)
+	  (eox input))
         (unless (data-rune-p d)
           (wf-error "Illegal char: ~S." d))
         (when (rune= d #/>)
