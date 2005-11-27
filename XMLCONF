@@ -1112,30 +1112,10 @@ ibm/not-wf/P45/ibm45n06.xml [not-wf?] not-wf
 ibm/not-wf/P45/ibm45n07.xml [not-wf?] not-wf
 ibm/not-wf/P45/ibm45n08.xml [not-wf?] not-wf
 ibm/not-wf/P45/ibm45n09.xml [not-wf?] not-wf
-ibm/not-wf/P46/ibm46n01.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests contentspec with wrong key word. the string "empty" is used as 
-    the key word in the contentspec of the second elementdecl in the DTD.
-  ]
-ibm/not-wf/P46/ibm46n02.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests contentspec with wrong key word. the string "Empty" is used as 
-    the key word in the contentspec of the second elementdecl in the DTD.
-  ]
-ibm/not-wf/P46/ibm46n03.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests contentspec with wrong key word. the string "Any" is used as 
-    the key word in the contentspec of the second elementdecl in the DTD.
-  ]
-ibm/not-wf/P46/ibm46n04.xml [not-wf?] FAILED:
-  well-formedness violation not detected
-[
-    Tests contentspec with wrong key word. the string "any" is used as 
-    the key word in the contentspec of the second elementdecl in the DTD.
-  ]
+ibm/not-wf/P46/ibm46n01.xml [not-wf?] not-wf
+ibm/not-wf/P46/ibm46n02.xml [not-wf?] not-wf
+ibm/not-wf/P46/ibm46n03.xml [not-wf?] not-wf
+ibm/not-wf/P46/ibm46n04.xml [not-wf?] not-wf
 ibm/not-wf/P46/ibm46n05.xml [not-wf?] not-wf
 ibm/not-wf/P47/ibm47n01.xml [not-wf?] not-wf
 ibm/not-wf/P47/ibm47n02.xml [not-wf?] not-wf
@@ -1813,4 +1793,4 @@ ibm/valid/P86/ibm86v01.xml [not validating:] input [validating:] input
 ibm/valid/P87/ibm87v01.xml [not validating:] input [validating:] input
 ibm/valid/P88/ibm88v01.xml [not validating:] input [validating:] input
 ibm/valid/P89/ibm89v01.xml [not validating:] input [validating:] input
-5/1786 tests failed; 376 tests were skipped
+1/1786 tests failed; 376 tests were skipped

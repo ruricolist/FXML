@@ -2169,9 +2169,9 @@
 ;;         | Name
 ;;         | cs
 ;;    cs ::= '(' S? cspec ( S? '|' S? cspec)* S? ')' ('?' | '*' | '+')?
-;; und eine post mortem analyse
+;; und eine post factum analyse
 
-(defun p/cspec (input)
+(defun p/cspec (input &optional recursivep)
   (let ((term
          (let ((names nil) op-cat op res stream)
            (multiple-value-bind (cat sem) (peek-token input)
@@ -2181,8 +2181,10 @@
                            :EMPTY)
                           ((rod= sem '#.(string-rod "ANY"))
                            :ANY)
-                          (t
-                           sem)))
+                          ((not recursivep)
+			   (wf-error "invalid content spec"))
+		          (t
+			   sem)))
                    ((eq cat :\#PCDATA)
                     (consume-token input)
                     :PCDATA)
@@ -2190,7 +2192,7 @@
                     (setf stream (car (zstream-input-stack input)))
                     (consume-token input)
                     (p/S? input)
-                    (setq names (list (p/cspec input)))
+                    (setq names (list (p/cspec input t)))
                     (p/S? input)
                     (cond ((member (peek-token input) '(:\| :\,))
                             (setf op-cat (peek-token input))
@@ -2198,7 +2200,7 @@
                             (while (eq (peek-token input) op-cat)
                               (consume-token input)
                               (p/S? input)
-                              (push (p/cspec input) names)
+                              (push (p/cspec input t) names)
                               (p/S? input))
                             (setf res (cons op (reverse names))))
                       (t
@@ -2645,7 +2647,7 @@
 		   (unless (and (eq cat2 :etag)
 				(eq (car sem2) name))
 		     (perror input "Bad nesting. ~S / ~S" (mu name) (mu (cons cat2 sem2))))
-		   (when sem2
+		   (when (cdr sem2)
 		     (wf-error "no attributes allowed in end tag")))
 		 (sax:end-element (handler *ctx*) ns-uri local-name name))
 		
