@@ -11,6 +11,7 @@
 ;;;  © copyright 2003 by Henrik Motakef
 ;;;  © copyright 2004 knowledgeTools Int. GmbH
 ;;;  © copyright 2004 David Lichteblau
+;;;  © copyright 2005 David Lichteblau
 
 ;;; This library is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU Library General Public
@@ -91,28 +92,7 @@
 ;;    :cdata <rod>
 
 
-
-
-;;; NOTES
-;;
-;; Stream buffers as well as RODs are supposed to be encoded in
-;; UTF-16.
-
-;; where does the time go?
-;; DATA-RUNE-P
-;; CANON-NOT-CDATA-ATTVAL
-;; READ-ATTVAL (MUFFLE)
-;; CLOSy DOM
-;; UTF-8 decoder (13%)
-;; READ-ATTVAL (10%)
-;;
-
 ;;; TODO
-;;
-;; o Improve error messages:
-;;    - line and column number counters
-;;    - better texts
-;;    - better handling of errors (no crash'n burn behaviour)
 ;;
 ;; o provide for a faster DOM
 ;;
@@ -132,7 +112,7 @@
 ;;
 ;; o max depth together with circle detection
 ;;   (or proof, that our circle detection is enough).
-;;   [gemeint ist wohl zstream-push--david]
+;;   [gemeint ist zstream-push--david]
 ;;
 ;; o better extensibility wrt character representation, one may want to
 ;;   have
@@ -259,39 +239,6 @@
 
 (defmacro with-open-xfile ((stream &rest open-args) &body body)
   `(call-with-open-xfile (lambda (,stream) .,body) .,open-args))
-
-;;; Decoders
-
-;; The decoders share a common signature:
-;;
-;; DECODE input input-start input-end
-;;        output output-start output-end
-;;        eof-p
-;; -> first-not-written ; first-not-read
-;;
-;; These decode functions should decode as much characters off `input'
-;; into the `output' as possible and return the indexes to the first
-;; not read and first not written element of `input' and `output'
-;; respectively.  If there are not enough bytes in `input' to decode a
-;; full character, decoding shold be abandomed; the caller has to
-;; ensure that the remaining bytes of `input' are passed to the
-;; decoder again with more bytes appended.
-;;
-;; `eof-p' now in turn indicates, if the given input sequence, is all
-;; the producer does have and might be used to produce error messages
-;; in case of incomplete codes or decided what to do.
-;;
-;; Decoders are expected to handle the various CR/NL conventions and
-;; canonicalize each end of line into a single NL rune (#xA) in good
-;; old Lisp tradition.
-;;
-
-;; TODO: change this to an encoding class, which then might carry
-;; additional state. Stateless encodings could been represented by
-;; keywords. e.g.
-;;
-;;  defmethod DECODE-SEQUENCE ((encoding (eql :utf-8)) ...)
-;;
 
 ;;;; -------------------------------------------------------------------
 ;;;; Rechnen mit Runen

@@ -107,6 +107,39 @@
 (defmacro %<  (&rest xs)  `(fx-pred < ,@xs))
 (defmacro %>  (&rest xs)  `(fx-pred > ,@xs))
 
+;;; Decoders
+
+;; The decoders share a common signature:
+;;
+;; DECODE input input-start input-end
+;;        output output-start output-end
+;;        eof-p
+;; -> first-not-written ; first-not-read
+;;
+;; These decode functions should decode as much characters off `input'
+;; into the `output' as possible and return the indexes to the first
+;; not read and first not written element of `input' and `output'
+;; respectively.  If there are not enough bytes in `input' to decode a
+;; full character, decoding shold be abandomed; the caller has to
+;; ensure that the remaining bytes of `input' are passed to the
+;; decoder again with more bytes appended.
+;;
+;; `eof-p' now in turn indicates, if the given input sequence, is all
+;; the producer does have and might be used to produce error messages
+;; in case of incomplete codes or decided what to do.
+;;
+;; Decoders are expected to handle the various CR/NL conventions and
+;; canonicalize each end of line into a single NL rune (#xA) in good
+;; old Lisp tradition.
+;;
+
+;; TODO: change this to an encoding class, which then might carry
+;; additional state. Stateless encodings could been represented by
+;; keywords. e.g.
+;;
+;;  defmethod DECODE-SEQUENCE ((encoding (eql :utf-8)) ...)
+;;
+
 (defmethod decode-sequence ((encoding (eql :utf-16-big-endian))
                             in in-start in-end out out-start out-end eof?)
   ;; -> new wptr, new rptr
