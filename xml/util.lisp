@@ -3,7 +3,7 @@
 ;;;     Title: Some common utilities for the Closure browser
 ;;;   Created: 1997-12-27
 ;;;    Author: Gilbert Baumann <unk6@rz.uni-karlsruhe.de>
-;;;   License: LLGPL (See file COPYING for details).
+;;;   License: Lisp-LGPL (See file COPYING for details).
 ;;; ---------------------------------------------------------------------------
 ;;;  (c) copyright 1997-1999 by Gilbert Baumann
 

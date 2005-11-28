@@ -5,7 +5,7 @@
 ;;;   Created: 1999-09-09
 ;;;    Author: Gilbert Baumann <unk6@rz.uni-karlsruhe.de>
 ;;;    Author: David Lichteblau <david@lichteblau.com>
-;;;   License: LGPL (See file COPYING for details).
+;;;   License: Lisp-LGPL (See file COPYING for details).
 ;;; ---------------------------------------------------------------------------
 ;;;  © copyright 1999 by Gilbert Baumann
 ;;;  © copyright 2004 by knowledgeTools Int. GmbH

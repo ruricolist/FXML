@@ -1,37 +1,20 @@
-;;; XXX wird derzeit in DOM:CREATE-ATTRIBUTE verwendet.  Muesste aber wohl vom
-;;; Parser auch schon geprueft werden.  Vorher sollte man allerdings die
-;;; Geschwindigkeit der Sache mal untersuchen.
+;;;; characters.lisp -- character class definitions
+;;;;
+;;;; This file is part of the CXML parser, released under Lisp-LGPL.
+;;;; See file COPYING for details.
+;;;;
+;;;; Author: David Lichteblau
+;;;; Copyright (C) 2004 knowledgeTools Int. GmbH
 
-(in-package :xml)
+;;; XXX xml-name-rune-p.lisp habe ich erst nach dem Schreiben dieses
+;;; Files gefunden...
 
-(defun valid-name-p (rod)
-  (and (not (zerop (length rod)))
-       (let ((initial (elt rod 0)))
-         (or (rune-in-range-p initial *base-char-ranges*)
-             (rune-in-range-p initial *ideographic-ranges*)
-             (eql initial #.(char-code #\_))
-             (eql initial #.(char-code #\:))))
-       (every #'rune-name-char-p rod)))
+;;; XXX wird derzeit in DOM:CREATE-ATTRIBUTE verwendet.  Muesste aber
+;;; wohl vom Parser auch schon geprueft werden (oder tut der das
+;;; schon?).  Vorher sollte man allerdings die Geschwindigkeit der Sache
+;;; mal untersuchen.
 
-(defun rune-name-char-p (rune)
-  (or (rune-in-range-p rune *base-char-ranges*)
-      (rune-in-range-p rune *ideographic-ranges*)
-      (eql rune #.(char-code #\.))
-      (eql rune #.(char-code #\-))
-      (eql rune #.(char-code #\_))
-      (eql rune #.(char-code #\:))
-      (rune-in-range-p rune *combining-char-ranges*)
-      (rune-in-range-p rune *extender-ranges*)))
-
-(defun rune-in-range-p (rune range)
-  ;; XXX FIXME, das geht doch besser
-  (block nil
-    (map nil (lambda (range)
-               (when (< rune (car range))
-                 (return nil))
-               (when (<= rune (cadr range))
-                 (return t)))
-         range)))
+(in-package :cxml)
 
 (defparameter *base-char-ranges*
     #((#x0041 #x005A) (#x0061 #x007A) (#x00C0 #x00D6) (#x00D8 #x00F6)
@@ -87,7 +70,7 @@
       (#x3105 #x312C) (#xAC00 #xD7A3)))
 
 (defparameter *ideographic-ranges*
-    #((#x4E00 #x9FA5) (#x3007 #x3007) (#x3021 #x3029)))
+    #((#x3007 #x3007) (#x3021 #x3029)(#x4E00 #x9FA5)))
 
 (defparameter *combining-char-ranges*
   #((#x0300 #x0345) (#x0360 #x0361) (#x0483 #x0486) (#x0591 #x05A1)
@@ -125,3 +108,38 @@
     #((#x00B7 #x00B7) (#x02D0 #x02D0) (#x02D1 #x02D1) (#x0387 #x0387)
       (#x0640 #x0640) (#x0E46 #x0E46) (#x0EC6 #x0EC6) (#x3005 #x3005)
       (#x3031 #x3035) (#x309D #x309E) (#x30FC #x30FE)))
+
+(defun valid-name-p (rod)
+  (and (not (zerop (length rod)))
+       (let ((initial (elt rod 0)))
+         (or (rune-in-range-p initial *base-char-ranges*)
+             (rune-in-range-p initial *ideographic-ranges*)
+             (rune= initial #/_)
+             (eql initial #/:)))
+       (every #'rune-name-char-p rod)))
+
+(defun valid-nmtoken-p (rod)
+  (and (not (zerop (length rod)))
+       (every #'rune-name-char-p rod)))
+
+(defun rune-name-char-p (rune)
+  (or (rune-in-range-p rune *base-char-ranges*)
+      (rune-in-range-p rune *ideographic-ranges*)
+      (rune-in-range-p rune *digit-ranges*)
+      (eql rune #/.)
+      (eql rune #/-)
+      (eql rune #/_)
+      (eql rune #/:)
+      (rune-in-range-p rune *combining-char-ranges*)
+      (rune-in-range-p rune *extender-ranges*)))
+
+(defun rune-in-range-p (rune range)
+  ;; XXX FIXME, das geht doch besser
+  (let ((code (rune-code rune)))
+    (block nil
+      (map nil (lambda (range)
+                 (when (< code (car range))
+                   (return nil))
+                 (when (<= code (cadr range))
+                   (return t)))
+           range))))

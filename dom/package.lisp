@@ -1,3 +1,8 @@
+;;;; package.lisp -- Paketdefinition
+;;;;
+;;;; This file is part of the CXML parser, released under Lisp-LGPL.
+;;;; See file COPYING for details.
+
 (in-package :cl-user)
 
 (defpackage :dom
@@ -108,4 +113,6 @@
    #:named-node-map-p
 
    #:map-node-list
-   #:do-node-list))
+   #:do-node-list
+   #:create-document
+   #:map-document))

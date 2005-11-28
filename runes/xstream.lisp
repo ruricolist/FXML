@@ -3,7 +3,7 @@
 ;;;     Title: Fast streams
 ;;;   Created: 1999-07-17
 ;;;    Author: Gilbert Baumann <unk6@rz.uni-karlsruhe.de>
-;;;   License: LGPL (See file COPYING for details).
+;;;   License: Lisp-LGPL (See file COPYING for details).
 ;;; ---------------------------------------------------------------------------
 ;;;  © copyright 1999 by Gilbert Baumann
 

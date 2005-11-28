@@ -5,7 +5,7 @@
 ;;;    Author: Gilbert Baumann <unk6@rz.uni-karlsruhe.de>
 ;;;    Author: Henrik Motakef <hmot@henrik-motakef.de>
 ;;;    Author: David Lichteblau <david@lichteblau.com>
-;;;   License: LGPL (See file COPYING for details).
+;;;   License: Lisp-LGPL (See file COPYING for details).
 ;;; ---------------------------------------------------------------------------
 ;;;  © copyright 1999 by Gilbert Baumann
 ;;;  © copyright 2003 by Henrik Motakef

@@ -1,14 +1,17 @@
 ;;;; xml-compat.lisp -- XMLS-compatible data structures
 ;;;;
-;;;; This file is part of the CXML parser, released under (L)LGPL.
+;;;; This file is part of the CXML parser, released under Lisp-LGPL.
 ;;;; See file COPYING for details.
 ;;;;
-;;;; Copyright (c) 2004 headcraft GmbH
-;;;; Author: David Lichteblau
+;;;; Developed 2004 for headcraft - http://headcraft.de/
+;;;; Copyright: David Lichteblau
+
+;;;; XXX Der namespace-Support in xmls kommt mir zweifelhaft vor.
+;;;; Wir immitieren das soweit es gebraucht wurde bisher.
 
 (defpackage cxml-xmls
-  (:use :cl)
-  (:export #:make-node #:node-name #:node-attrs #:node-children
+  (:use :cl :runes)
+  (:export #:make-node #:node-name #:node-ns #:node-attrs #:node-children
            #:make-xmls-builder #:map-node))
 
 (in-package :cxml-xmls)
@@ -16,16 +19,35 @@
 
 ;;;; Knoten
 
-;; XXX Wie namespaces in xmls funktionieren nsollen verstehe ich noch nicht so
-;; ganz.  Daher verzichte ich vorerst auf NODE-NS und verwende durchweg QNAMEs.
-(defun make-node (&key name attrs children)
-  `(,name ,attrs ,@children))
+(defun make-node (&key name ns attrs children)
+  `(,(if ns (cons name ns) name)
+       ,attrs
+       ,@children))
 
 (defun node-name (node)
-  (car node))
+  (let ((car (car node)))
+    (if (consp car)
+        (car car)
+        car)))
 
 (defun (setf node-name) (newval node)
-  (setf (car node) newval))
+  (let ((car (car node)))
+    (if (consp car)
+        (setf (car car) newval)
+        (setf (car node) newval))))
+
+(defun node-ns (node)
+  (let ((car (car node)))
+    (if (consp car)
+        (cdr car)
+        nil)))
+
+(defun (setf node-ns) (newval node)
+  (let ((car (car node)))
+    (if (consp car)
+        (setf (cdr car) newval)
+        (setf (car node) (cons car newval)))
+    newval))
 
 (defun node-attrs (node)
   (cadr node))
@@ -44,23 +66,36 @@
 
 (defclass xmls-builder ()
     ((element-stack :initform nil :accessor element-stack)
-     (root :initform nil :accessor root)))
+     (root :initform nil :accessor root)
+     (include-default-values :initform t
+                             :initarg :include-default-values
+                             :accessor include-default-values)))
 
-(defun make-xmls-builder ()
-  (make-instance 'xmls-builder))
+(defun make-xmls-builder (&key (include-default-values t))
+  (make-instance 'xmls-builder :include-default-values include-default-values))
 
 (defmethod sax:end-document ((handler xmls-builder))
   (root handler))
 
 (defmethod sax:start-element
     ((handler xmls-builder) namespace-uri local-name qname attributes)
-  (declare (ignore namespace-uri local-name))
+  (declare (ignore namespace-uri))
+  (setf local-name (or local-name qname))
   (let* ((attributes
-          (mapcar (lambda (attr)
-                    (list (sax:attribute-qname attr)
-                          (sax:attribute-value attr)))
-                  attributes))
-         (node (make-node :name qname :attrs attributes))
+          (loop
+              for attr in attributes
+              when (or (sax:attribute-specified-p attr)
+                       (include-default-values handler))
+              collect
+                (list (sax:attribute-qname attr)
+                      (sax:attribute-value attr))))
+         (node (make-node :name local-name
+                          :ns (let ((lq (length qname))
+                                    (ll (length local-name)))
+                                (if (eql lq ll)
+                                    nil
+                                    (subseq qname 0 (- lq ll 1))))
+                          :attrs attributes))
          (parent (car (element-stack handler))))
     (if parent
         (push node (node-children parent))
@@ -76,13 +111,17 @@
 (defmethod sax:characters ((handler xmls-builder) data)
   (let* ((parent (car (element-stack handler)))
          (prev (car (node-children parent))))
-    (if (stringp prev)
+    ;; Be careful to accept both rods and strings here, so that xmls can be
+    ;; used with strings even if cxml is configured to use octet string rods.
+    (if (typep prev '(or rod string))
         ;; um entities herum wird SAX:CHARACTERS mehrfach aufgerufen fuer
         ;; den gleichen Textknoten.  Hier muessen wir den bestehenden Knoten
         ;; erweitern, sonst ist das Dokument nicht normalisiert.
         ;; (XXX Oder sollte man besser den Parser entsprechend aendern?)
         (setf (car (node-children parent))
-              (concatenate 'runes:rod prev data))
+              (concatenate `(vector ,(array-element-type prev))
+                           prev
+                           data))
         (push data (node-children parent)))))
 
 
@@ -93,16 +132,18 @@
      &key (include-xmlns-attributes sax:*include-xmlns-attributes*))
   (sax:start-document handler)
   (labels ((walk (node)
-             (let ((attlist
-                    (compute-attributes node include-xmlns-attributes))
-                   (qname (node-name node)))
+             (let* ((attlist
+                     (compute-attributes node include-xmlns-attributes))
+                    (lname (rod (node-name node)))
+                    (ns (rod (node-ns node)))
+                    (qname (concatenate 'rod ns (rod ":") lname)))
                ;; fixme: namespaces
-               (sax:start-element handler nil nil qname attlist)
+               (sax:start-element handler nil lname qname attlist)
                (dolist (child (node-children node))
                  (typecase child
                    (list (walk child))
-                   (string (sax:characters handler child))))
-               (sax:end-element handler nil nil qname))))
+                   ((or string rod) (sax:characters handler (rod child)))))
+               (sax:end-element handler nil lname qname))))
     (walk node))
   (sax:end-document handler))
 
@@ -110,9 +151,9 @@
   (remove nil
           (mapcar (lambda (a)
                     (destructuring-bind (name value) a
-                      (if (or xmlnsp (not (cxml::xmlns-attr-p name)))
-                          (sax:make-attribute :qname name
-                                              :value value
+                      (if (or xmlnsp (not (cxml::xmlns-attr-p (rod name))))
+                          (sax:make-attribute :qname (rod name)
+                                              :value (rod value)
                                               :specified-p t)
                           nil)))
                   (node-attrs node))))

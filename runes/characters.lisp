@@ -3,7 +3,7 @@
 ;;;
 ;;; derived from runes.lisp, (c) copyright 1998,1999 by Gilbert Baumann
 ;;;
-;;; License: LLGPL (See file COPYING for details).
+;;; License: Lisp-LGPL (See file COPYING for details).
 ;;;
 ;;; This code is free software; you can redistribute it and/or modify it
 ;;; under the terms of the version 2.1 of the GNU Lesser General Public

@@ -3,7 +3,7 @@
 ;;;     Title: Unicode strings (called RODs)
 ;;;   Created: 1999-05-25 22:29
 ;;;    Author: Gilbert Baumann <unk6@rz.uni-karlsruhe.de>
-;;;   License: LLGPL (See file COPYING for details).
+;;;   License: Lisp-LGPL (See file COPYING for details).
 ;;; ---------------------------------------------------------------------------
 ;;;  (c) copyright 1998,1999 by Gilbert Baumann
 
@@ -178,19 +178,4 @@
                (format stream "\\u~4,'0X" x))))
   (princ #\" stream))
 
-#-rune-is-character
-(set-pprint-dispatch '(satisfies really-rod-p) #'rod-printer)
-
 (set-dispatch-macro-character #\# #\" 'rod-reader)
-
-#||
-(defun longish-array-p (arr)
-  (and (arrayp arr)
-       (> (array-total-size arr) 10)))
-
-(set-pprint-dispatch '(satisfies longish-array-p)
-                     #'(lambda (stream object)
-                         (let ((*print-array* nil)
-                               (*print-pretty* nil))
-                           (prin1 object stream))))
-||#

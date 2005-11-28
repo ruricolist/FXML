@@ -3,7 +3,7 @@
 ;;;     Title: definline
 ;;;   Created: 1999-05-25 22:32
 ;;;    Author: Gilbert Baumann <unk6@rz.uni-karlsruhe.de>
-;;;   License: LLGPL (See file COPYING for details).
+;;;   License: Lisp-LGPL (See file COPYING for details).
 ;;; ---------------------------------------------------------------------------
 ;;;  (c) copyright 1999 by Gilbert Baumann
 
