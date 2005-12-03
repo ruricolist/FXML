@@ -70,7 +70,7 @@
     (with-open-file (*standard-output*
 		     (merge-pathnames "XMLCONF" base)
 		     :direction :output
-;;;		     :external-format :iso-8859-1
+		     :external-format :iso-8859-1
 		     :if-exists :supersede)
       (run-all-tests directory))))
 

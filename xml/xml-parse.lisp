@@ -3327,7 +3327,8 @@
 	      (local-name (subseq qname (1+ pos))))
 	  (if (nc-name-p local-name)
 	      (values prefix local-name)
-	      (wf-error "~S is not a valid NcName." local-name)))
+	      (wf-error nil "~S is not a valid NcName."
+			(rod-string local-name))))
 	(values () qname))))
 		
 (defun decode-qname (qname)

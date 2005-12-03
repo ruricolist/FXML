@@ -1797,12 +1797,7 @@ eduni/namespaces/1.0/009.xml [not validating:] not-wf [validating:] not-wf
 eduni/namespaces/1.0/010.xml [not validating:] not-wf [validating:] not-wf
 eduni/namespaces/1.0/011.xml [not validating:] not-wf [validating:] not-wf
 eduni/namespaces/1.0/012.xml [not validating:] not-wf [validating:] not-wf
-eduni/namespaces/1.0/013.xml [not validating:] FAILED:
-  #(98 58 97 116 116 114) fell through ETYPECASE expression.
-  Wanted one of (STRING SIMPLE-STRING).
-[
-Bad QName syntax: multiple colons
-]
+eduni/namespaces/1.0/013.xml [not validating:] not-wf [validating:] invalid
 eduni/namespaces/1.0/014.xml [not validating:] FAILED:
   invalid array index 0 for #() (should be nonnegative and <0)
 [
@@ -1864,4 +1859,4 @@ eduni/namespaces/1.0/046.xml [not validating:] input [validating:] FAILED:
 [
 Colon in ID attribute name
 ]
-8/1829 tests failed; 333 tests were skipped
+7/1829 tests failed; 333 tests were skipped
