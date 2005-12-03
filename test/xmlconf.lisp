@@ -70,7 +70,7 @@
     (with-open-file (*standard-output*
 		     (merge-pathnames "XMLCONF" base)
 		     :direction :output
-		     :external-format :iso-8859-1
+;;;		     :external-format :iso-8859-1
 		     :if-exists :supersede)
       (run-all-tests directory))))
 
@@ -195,9 +195,4 @@
       t)))
 
 #+(or)
-(xmlconf::run-all-tests "/mnt/debian/space/xmlconf/")
-
-#+(or)
-(progn
-  (#+allegro mp:with-timeout #+allegro (60) #-allegro progn
-             ))
+(xmlconf::dribble-tests "/home/david/2001/XML-Test-Suite/xmlconf/")

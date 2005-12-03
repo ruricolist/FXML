@@ -183,12 +183,8 @@
 
 (defvar *ctx*)
 
-;; forward declaration for DEFVAR
-(declaim (special *default-namespace-bindings*))
-
 (defstruct (context (:conc-name nil))
   handler
-  (namespace-bindings *default-namespace-bindings*)
   (dtd nil)
   model-stack
   (referenced-notations '())
@@ -201,6 +197,11 @@
   main-zstream)
 
 (defvar *expand-pe-p* nil)
+
+(defparameter *namespace-bindings*
+  '((#"" . nil)
+    (#"xmlns" . #"http://www.w3.org/2000/xmlns/")
+    (#"xml" . #"http://www.w3.org/XML/1998/namespace")))
 
 ;;;; ---------------------------------------------------------------------------
 ;;;; xstreams
@@ -701,6 +702,8 @@
          (elmdef (elmdef-external-p def))
          (attdef (attdef-external-p def)))))
 
+;; attribute validation, defaulting, and normalization -- except for for
+;; uniqueness checks, which are done after namespaces have been declared
 (defun process-attributes (ctx name attlist)
   (let ((e (find-element name (dtd ctx))))
     (cond
@@ -716,11 +719,11 @@
               (t
                 (when (standalone-check-necessary-p ad)
                   (validity-error "(02) Standalone Document Declaration: missing attribute value"))
-                (push (build-attribute (attdef-name ad)
-                                       (cadr (attdef-default ad))
-                                       nil)
+                (push (sax:make-attribute :qname (attdef-name ad)
+					  :value (cadr (attdef-default ad))
+					  :specified-p nil)
                       attlist)))))
-        (dolist (a attlist)             ;normalize non-CDATA values
+        (dolist (a attlist)		;normalize non-CDATA values
           (let* ((qname (sax:attribute-qname a))
                  (adef (find-attribute e qname)))
             (when (and adef (not (eq (attdef-type adef) :CDATA)))
@@ -729,7 +732,7 @@
                            (not (rod= (sax:attribute-value a) canon)))
                   (validity-error "(02) Standalone Document Declaration: attribute value not normalized"))
                 (setf (sax:attribute-value a) canon)))))
-        (when *validate*                ;maybe validate attribute values
+        (when *validate*		;maybe validate attribute values
           (dolist (a attlist)
             (validate-attribute ctx e a))))
       ((and *validate* attlist)
@@ -2607,66 +2610,52 @@
       (sax:end-document handler))))
 
 (defun p/element (input)
-  (if sax:*namespace-processing*
-      (p/element-ns input)
-      (p/element-no-ns input)))
-
-(defun p/element-no-ns (input)
-  ;;    [39] element ::= EmptyElemTag | STag content ETag
-  (error "sorry, bitrot")
-  (multiple-value-bind (cat sem) (read-token input)
-    (cond ((eq cat :ztag)
-	   (sax:start-element (handler *ctx*) nil nil (car sem) (build-attribute-list-no-ns (cdr sem)))
-	   (sax:end-element (handler *ctx*) nil nil (car sem)))
-
-          ((eq cat :stag)
-	   (sax:start-element (handler *ctx*) nil nil (car sem) (build-attribute-list-no-ns (cdr sem)))
-	   (p/content input)
-	   (multiple-value-bind (cat2 sem2) (read-token input)
-               (unless (and (eq cat2 :etag)
-                            (eq (car sem2) (car sem)))
-                 (wf-error input "Bad nesting. ~S / ~S" (mu sem) (mu (cons cat2 sem2)))))
-	   (sax:end-element (handler *ctx*) nil nil (car sem)))
-
-          (t
-           (wf-error input "Expecting element.")))))
-
-
-(defun p/element-ns (input)
   (multiple-value-bind (cat sem) (read-token input)
     (case cat
       ((:stag :ztag))
       (:eof (eox input))
       (t (wf-error input "element expected")))
-    (destructuring-bind (&optional name &rest attrs) sem
+    (destructuring-bind (&optional name &rest raw-attrs) sem
       (validate-start-element *ctx* name)
-      (let ((ns-decls (declare-namespaces name attrs)))
-	(multiple-value-bind (ns-uri prefix local-name) (decode-qname name)
+      (let* ((attrs
+	      (process-attributes *ctx* name (build-attribute-list raw-attrs)))
+	     (*namespace-bindings* *namespace-bindings*)
+	     new-namespaces)
+	(when sax:*namespace-processing*
+	  (setf new-namespaces (declare-namespaces attrs))
+	  (mapc #'set-attribute-namespace attrs))
+	(multiple-value-bind (uri prefix local-name)
+	    (if sax:*namespace-processing*
+		(decode-qname name)
+		(values nil nil nil))
 	  (declare (ignore prefix))
-	  (let* ((raw-attlist (build-attribute-list-ns attrs))
-		 (attlist
-		  (remove-if-not (lambda (a)
-				   (or sax:*include-xmlns-attributes*
-				       (not (xmlns-attr-p (sax:attribute-qname a)))))
-				 (process-attributes *ctx* name raw-attlist))))
-	    (cond ((eq cat :ztag)
-		    (sax:start-element (handler *ctx*) ns-uri local-name name attlist)
-		    (sax:end-element (handler *ctx*) ns-uri local-name name))
+	  (check-attribute-uniqueness attrs)
+	  (unless (or sax:*include-xmlns-attributes*
+		      (null sax:*namespace-processing*))
+	    (setf attrs
+		  (remove-if (compose #'xmlns-attr-p #'sax:attribute-qname)
+			     attrs))) 
+	  (cond
+	    ((eq cat :ztag)
+	      (sax:start-element (handler *ctx*) uri local-name name attrs)
+	      (sax:end-element (handler *ctx*) uri local-name name))
 		
-	      ((eq cat :stag)
-		(sax:start-element (handler *ctx*) ns-uri local-name name attlist)
-		(p/content input)
-		(multiple-value-bind (cat2 sem2) (read-token input)
-		  (unless (and (eq cat2 :etag)
-			       (eq (car sem2) name))
-		    (wf-error input "Bad nesting. ~S / ~S" (mu name) (mu (cons cat2 sem2))))
-		  (when (cdr sem2)
-		    (wf-error input "no attributes allowed in end tag")))
-		(sax:end-element (handler *ctx*) ns-uri local-name name))
+	    ((eq cat :stag)
+	      (sax:start-element (handler *ctx*) uri local-name name attrs)
+	      (p/content input)
+	      (multiple-value-bind (cat2 sem2) (read-token input)
+		(unless (and (eq cat2 :etag)
+			     (eq (car sem2) name))
+		  (wf-error input "Bad nesting. ~S / ~S"
+			    (mu name)
+			    (mu (cons cat2 sem2))))
+		(when (cdr sem2)
+		  (wf-error input "no attributes allowed in end tag")))
+	      (sax:end-element (handler *ctx*) uri local-name name))
 		
-	      (t
-		(wf-error input "Expecting element, got ~S." cat)))))
-	(undeclare-namespaces ns-decls))
+	    (t
+	      (wf-error input "Expecting element, got ~S." cat))))
+	(undeclare-namespaces new-namespaces))
       (validate-end-element *ctx* name))))
 
 (defun p/content (input)
@@ -3323,11 +3312,6 @@
 
 ;;; Namespace stuff
 
-(defvar *default-namespace-bindings*
-  '((#"" . nil)
-    (#"xmlns" . #"http://www.w3.org/2000/xmlns/")
-    (#"xml" . #"http://www.w3.org/XML/1998/namespace")))
-
 ;; We already know that name is part of a valid XML name, so all we
 ;; have to check is that the first rune is a name-start-rune and that
 ;; there is not colon in it.
@@ -3357,7 +3341,7 @@
 
 
 (defun find-namespace-binding (prefix)
-  (cdr (or (assoc (or prefix #"") (namespace-bindings *ctx*) :test #'rod=)
+  (cdr (or (assoc (or prefix #"") *namespace-bindings* :test #'rod=)
 	   (wf-error nil "Undeclared namespace prefix: ~A" (rod-string prefix)))))
 
 ;; FIXME: Should probably be refactored by adding :start and :end to rod=/rod-equal
@@ -3375,33 +3359,17 @@
       (subseq attrname 6)
       nil))
 
-(defun find-namespace-declarations (element attr-alist)
-  (let ((result
-         (mapcar #'(lambda (attr)
-                     (cons (attrname->prefix (car attr)) (cdr attr)))
-                 (remove-if-not #'xmlns-attr-p attr-alist :key #'car))))
-    ;; Argh!  PROCESS-ATTRIBUTES needs to know the attributes' namespaces
-    ;; already.  But namespace declarations can be done using default values
-    ;; in the DTD.  So we need to handle defaulting of attribute values twice,
-    ;; once for xmlns attributes, then for all others.  (I really hope I'm
-    ;; wrong on this one, but I don't see how.)
-    (let ((e (find-element element (dtd *ctx*))))
-      (when e
-        (dolist (ad (elmdef-attributes e)) ;handle default values
-          (let* ((name (attdef-name ad))
-                 (prefix (attrname->prefix name)))
-            (when (and (xmlns-attr-p name)
-                       (not (member prefix result :key #'car :test #'rod=))
-                       (listp (attdef-default ad)) ;:DEFAULT or :FIXED
-                       )
-              (push (cons prefix (cadr (attdef-default ad))) result))))))
-    result))
+(defun find-namespace-declarations (attributes)
+  (loop
+      for attribute in attributes
+      for qname = (sax:attribute-qname attribute)
+      when (xmlns-attr-p qname)
+      collect (cons (attrname->prefix qname) (sax:attribute-value attribute))))
 
-(defun declare-namespaces (element attr-alist)
-  (let ((ns-decls (find-namespace-declarations element attr-alist)))
-    (dolist (ns-decl ns-decls )
+(defun declare-namespaces (attributes)
+  (let ((ns-decls (find-namespace-declarations attributes)))
+    (dolist (ns-decl ns-decls)
       ;; check some namespace validity constraints
-      ;; FIXME: Would be nice to add "this is insane, go ahead" restarts
       (let ((prefix (car ns-decl))
 	    (uri (if (rod= #"" (cdr ns-decl))
 		     nil
@@ -3438,7 +3406,7 @@
                       may be bound to an empty namespace URI, thus ~
                       undeclaring it."))
 	  (t
-	   (push (cons prefix uri) (namespace-bindings *ctx*))
+	   (push (cons prefix uri) *namespace-bindings*)
 	   (sax:start-prefix-mapping (handler *ctx*)
 				     (car ns-decl)
 				     (cdr ns-decl))))))
@@ -3446,62 +3414,53 @@
 
 (defun undeclare-namespaces (ns-decls)
   (dolist (ns-decl ns-decls)
-    (setf (namespace-bindings *ctx*) (delete ns-decl (namespace-bindings *ctx*)))
     (sax:end-prefix-mapping (handler *ctx*) (car ns-decl))))
 
-(defun build-attribute-list-no-ns (attr-alist)
-  (mapcar #'(lambda (pair)
-              (sax:make-attribute :qname (car pair)
-                                  :value (cdr pair)
-                                  :specified-p t))
-	  attr-alist))
-
-;; FIXME: Use a non-braindead way to enforce attribute uniqueness
-(defun build-attribute-list-ns (attr-alist)
+(defun build-attribute-list (attr-alist)
+  ;; fixme: if there is a reason this function reverses attribute order,
+  ;; it should be documented.
   (let (attributes)
     (dolist (pair attr-alist)
-      (push (build-attribute (car pair) (cdr pair) t) attributes))
+      (push (sax:make-attribute :qname (car pair)
+				:value (cdr pair)
+				:specified-p t)
+	    attributes))
+    attributes))
 
-    ;; 5.3 Uniqueness of Attributes
-    ;; In XML documents conforming to [the xmlns] specification, no
-    ;; tag may contain two attributes which:
-    ;; 1. have identical names, or
-    ;; 2. have qualified names with the same local part and with
-    ;; prefixes which have been bound to namespace names that are
-    ;; identical.
-    ;;
-    ;; 1. is checked by read-tag-2, so we only deal with 2 here
-    (do ((sublist attributes (cdr sublist)))
-	((null sublist) attributes)
-      (let ((attr-1 (car sublist)))
+(defun check-attribute-uniqueness (attributes)
+  ;; 5.3 Uniqueness of Attributes
+  ;; In XML documents conforming to [the xmlns] specification, no
+  ;; tag may contain two attributes which:
+  ;; 1. have identical names, or
+  ;; 2. have qualified names with the same local part and with
+  ;; prefixes which have been bound to namespace names that are
+  ;; identical.
+  ;;
+  ;; 1. is checked by read-tag-2, so we only deal with 2 here
+  (loop for (attr-1 . rest) on attributes do
 	(when (and (sax:attribute-namespace-uri attr-1)
-		   (find-if #'(lambda (attr-2)
-				(and (rod= (sax:attribute-namespace-uri attr-1)
-					   (sax:attribute-namespace-uri attr-2))
-				     (rod= (sax:attribute-local-name attr-1)
-					   (sax:attribute-local-name attr-2))))
-		       (cdr sublist)))
+		   (find-if (lambda (attr-2)
+			      (and (rod= (sax:attribute-namespace-uri attr-1)
+					 (sax:attribute-namespace-uri attr-2))
+				   (rod= (sax:attribute-local-name attr-1)
+					 (sax:attribute-local-name attr-2))))
+			    rest))
 	  (wf-error nil
 		    "Multiple definitions of attribute ~S in namespace ~S."
 		    (mu (sax:attribute-local-name attr-1))
-		    (mu (sax:attribute-namespace-uri attr-1))))))))
+		    (mu (sax:attribute-namespace-uri attr-1))))))
 
-(defun build-attribute (name value specified-p)
-  (multiple-value-bind (prefix local-name) (split-qname name)
-    (declare (ignorable local-name))
-    (if (or (not prefix) ;; default namespace doesn't apply to attributes
-	    (and (rod= #"xmlns" prefix) (not sax:*use-xmlns-namespace*)))
-	(sax:make-attribute :qname name
-                            :value value
-                            :specified-p specified-p)
+(defun set-attribute-namespace (attribute)
+  (let ((qname (sax:attribute-qname attribute)))
+    (multiple-value-bind (prefix local-name) (split-qname qname)
+      (declare (ignorable local-name))
+      (when (and prefix ;; default namespace doesn't apply to attributes
+		 (or (not (rod= #"xmlns" prefix)) sax:*use-xmlns-namespace*))
 	(multiple-value-bind (uri prefix local-name)
-	    (decode-qname name)
+	    (decode-qname qname)
 	  (declare (ignore prefix))
-	  (sax:make-attribute :qname name
-                              :value value
-                              :namespace-uri uri
-                              :local-name local-name
-                              :specified-p specified-p)))))
+	  (setf (sax:attribute-namespace-uri attribute) uri)
+	  (setf (sax:attribute-local-name attribute) local-name))))))
 
 ;;;;;;;;;;;;;;;;;
 
