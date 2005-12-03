@@ -3316,7 +3316,8 @@
 ;; have to check is that the first rune is a name-start-rune and that
 ;; there is not colon in it.
 (defun nc-name-p (name)
-  (and (name-start-rune-p (rune name 0))
+  (and (plusp (length name))
+       (name-start-rune-p (rune name 0))
        (notany #'(lambda (rune) (rune= #/: rune)) name)))
 
 (defun split-qname (qname)
