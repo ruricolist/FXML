@@ -1827,24 +1827,8 @@ eduni/namespaces/1.0/039.xml [not validating:] input [validating:] invalid
 eduni/namespaces/1.0/040.xml [not validating:] input [validating:] invalid
 eduni/namespaces/1.0/041.xml [not validating:] input [validating:] invalid
 eduni/namespaces/1.0/042.xml [not validating:] not-wf [validating:] not-wf
-eduni/namespaces/1.0/043.xml [not validating:] FAILED:
-  well-formedness violation not detected
-[
-Colon in entity name
-]
-eduni/namespaces/1.0/044.xml [not validating:] FAILED:
-  well-formedness violation not detected
-[
-Colon in entity name
-]
-eduni/namespaces/1.0/045.xml [not validating:] input [validating:] FAILED:
-  validity error not detected
-[
-Colon in ID attribute name
-]
-eduni/namespaces/1.0/046.xml [not validating:] input [validating:] FAILED:
-  validity error not detected
-[
-Colon in ID attribute name
-]
-4/1829 tests failed; 333 tests were skipped
+eduni/namespaces/1.0/043.xml [not validating:] not-wf [validating:] not-wf
+eduni/namespaces/1.0/044.xml [not validating:] not-wf [validating:] not-wf
+eduni/namespaces/1.0/045.xml [not validating:] input [validating:] invalid
+eduni/namespaces/1.0/046.xml [not validating:] input [validating:] invalid
+0/1829 tests failed; 333 tests were skipped

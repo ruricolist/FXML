@@ -624,7 +624,6 @@
 	 (zstream (if (zstream-p stream) stream zmain))
 	 (xstream (if (xstream-p stream) stream nil))
 	 (s (make-string-output-stream)))
-    (write-string "Parse error: " s)
     (write-line message s)
     (when xstream
       (write-line "Location:" s)
@@ -726,12 +725,18 @@
         (dolist (a attlist)		;normalize non-CDATA values
           (let* ((qname (sax:attribute-qname a))
                  (adef (find-attribute e qname)))
-            (when (and adef (not (eq (attdef-type adef) :CDATA)))
-              (let ((canon (canon-not-cdata-attval (sax:attribute-value a))))
-                (when (and (standalone-check-necessary-p adef)
-                           (not (rod= (sax:attribute-value a) canon)))
-                  (validity-error "(02) Standalone Document Declaration: attribute value not normalized"))
-                (setf (sax:attribute-value a) canon)))))
+	    (when adef
+	      (when (and *validate*
+			 sax:*namespace-processing*
+			 (eq (attdef-type adef) :ID)
+			 (find #/: (sax:attribute-value a)))
+		(validity-error "colon in ID attribute"))
+	      (unless (eq (attdef-type adef) :CDATA)
+		(let ((canon (canon-not-cdata-attval (sax:attribute-value a))))
+		  (when (and (standalone-check-necessary-p adef)
+			     (not (rod= (sax:attribute-value a) canon)))
+		    (validity-error "(02) Standalone Document Declaration: attribute value not normalized"))
+		  (setf (sax:attribute-value a) canon))))))
         (when *validate*		;maybe validate attribute values
           (dolist (a attlist)
             (validate-attribute ctx e a))))
@@ -879,6 +884,8 @@
 
 (defun define-entity (source-stream name kind def)
   (setf name (intern-name name))
+  (when (and sax:*namespace-processing* (find #/: name))
+    (wf-error source-stream "colon in entity name"))
   (let ((table
          (ecase kind
            (:general (dtd-gentities (dtd *ctx*)))
@@ -2273,6 +2280,8 @@
                                   (normalize-public-id (extid-public id))
                                   nil)
                               (uri-rod (extid-system id)))
+    (when (and sax:*namespace-processing* (find #/: name))
+      (wf-error input "colon in notation name"))
     (when *validate*
       (define-notation (dtd *ctx*) name id))
     (list :notation-decl name id)))
