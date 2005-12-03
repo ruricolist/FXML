@@ -1799,11 +1799,7 @@ eduni/namespaces/1.0/011.xml [not validating:] not-wf [validating:] not-wf
 eduni/namespaces/1.0/012.xml [not validating:] not-wf [validating:] not-wf
 eduni/namespaces/1.0/013.xml [not validating:] not-wf [validating:] invalid
 eduni/namespaces/1.0/014.xml [not validating:] not-wf [validating:] invalid
-eduni/namespaces/1.0/015.xml [not validating:] FAILED:
-  well-formedness violation not detected
-[
-Bad QName syntax: colon at start
-]
+eduni/namespaces/1.0/015.xml [not validating:] not-wf [validating:] invalid
 eduni/namespaces/1.0/016.xml [not validating:] not-wf [validating:] invalid
 eduni/namespaces/1.0/017.xml [not validating:] input [validating:] invalid
 eduni/namespaces/1.0/018.xml [not validating:] input [validating:] invalid
@@ -1851,4 +1847,4 @@ eduni/namespaces/1.0/046.xml [not validating:] input [validating:] FAILED:
 [
 Colon in ID attribute name
 ]
-5/1829 tests failed; 333 tests were skipped
+4/1829 tests failed; 333 tests were skipped

@@ -3326,6 +3326,8 @@
     (if pos
 	(let ((prefix (subseq qname 0 pos))
 	      (local-name (subseq qname (1+ pos))))
+	  (when (zerop pos)
+	    (wf-error nil "empty namespace prefix"))
 	  (if (nc-name-p local-name)
 	      (values prefix local-name)
 	      (wf-error nil "~S is not a valid NcName."
