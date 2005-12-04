@@ -555,7 +555,6 @@ implementationAttribute signed not supported, skipping test
 525/808 attrgetownerelement02.xml
 526/808 attrgetownerelement03.xml
 527/808 attrgetownerelement04.xml
-TEST FAILED: The slot DOM-IMPL::OWNER-ELEMENT is unbound in the object #<DOM-IMPL::ATTRIBUTE emp:zone="CANADA" {xxxxxxxx}>.
 528/808 attrgetownerelement05.xml
 TEST FAILED: The assertion (DOMTEST::EQUALSP DOMTEST-TESTS::|ownerElementName|
                                              #(97 100 100 114 101 115 115)
@@ -960,4 +959,4 @@ TEST FAILED: expected exception INUSE_ATTRIBUTE_ERR
 803/808 setNamedItemNS04.xml
 804/808 setNamedItemNS05.xml
 805/808 systemId01.xml
-63/763 tests failed; 45 tests were skipped
+62/763 tests failed; 45 tests were skipped

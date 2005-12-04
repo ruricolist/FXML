@@ -1238,7 +1238,11 @@
 
 (defmethod dom:import-node ((document document) (node attribute) deep)
   (declare (ignore deep))
-  (import-node-internal 'attribute document node t :name (dom:name node)))
+  (import-node-internal 'attribute
+			document node
+			t
+			:name (dom:name node)
+			:owner-element nil))
 
 (defmethod dom:import-node ((document document) (node document-fragment) deep)
   (import-node-internal 'document-fragment document node deep))
