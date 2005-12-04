@@ -615,7 +615,8 @@
           (t
             (push (translate-statement e) code))))
       `(lambda ()
-         (let (,@bindings)
+         (let ((*files-directory* ,*files-directory*) ;fuer copy&paste:
+	       ,@bindings)
            (declare (ignorable ,@(mapcar #'car bindings)))
            ,@(reverse code))))))
 
@@ -699,8 +700,8 @@
 	  (ecase level
 	    (1 (merge-pathnames "tests/level1/core/" *directory*))
 	    (2 (merge-pathnames "tests/level2/core/" *directory*))))
-	 (lisp (slurp-test (merge-pathnames href test-directory)))
 	 (*files-directory* (merge-pathnames "files/" test-directory))
+	 (lisp (slurp-test (merge-pathnames href test-directory)))
          (cxml::*validate* nil))
     (print lisp)
     (when lisp

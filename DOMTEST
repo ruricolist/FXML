@@ -556,9 +556,6 @@ implementationAttribute signed not supported, skipping test
 526/808 attrgetownerelement03.xml
 527/808 attrgetownerelement04.xml
 528/808 attrgetownerelement05.xml
-TEST FAILED: The assertion (DOMTEST::EQUALSP DOMTEST-TESTS::|ownerElementName|
-                                             #(97 100 100 114 101 115 115)
-                                             'DOMTEST::%EQUAL) failed.
 529/808 createAttributeNS01.xml
 530/808 createAttributeNS02.xml
 TEST FAILED: expected exception NAMESPACE_ERR
@@ -614,7 +611,6 @@ TEST FAILED: expected exception NAMESPACE_ERR
 563/808 documentgetelementbyid01.xml
 564/808 documentgetelementsbytagnameNS01.xml
 565/808 documentgetelementsbytagnameNS02.xml
-TEST FAILED: The assertion (EQL (LENGTH DOMTEST::COLLECTION) 6) failed.
 566/808 documentgetelementsbytagnameNS03.xml
 567/808 documentgetelementsbytagnameNS04.xml
 568/808 documentgetelementsbytagnameNS05.xml
@@ -623,25 +619,25 @@ TEST FAILED: The assertion (EQL (LENGTH DOMTEST::COLLECTION) 6) failed.
 571/808 documentimportnode03.xml
 572/808 documentimportnode04.xml
 573/808 documentimportnode05.xml
-TEST FAILED: The slot DOM-IMPL::NAMESPACE-URI is unbound in the object #<DOM-IMPL::ATTRIBUTE a_:b0="" {xxxxxxxx}>.
+TEST FAILED: The slot DOM-IMPL::NAMESPACE-URI is unbound in the object #<DOM-IMPL::ATTRIBUTE a_:b0="" {52D57899}>.
 574/808 documentimportnode06.xml
 TEST FAILED: There is no applicable method for the generic function
                #<STANDARD-GENERIC-FUNCTION DOM:IMPORT-NODE (8)>
              when called with arguments
-               (#<DOM-IMPL::DOCUMENT {xxxxxxxx}>
-                #<DOM-IMPL::DOCUMENT {xxxxxxxx}> NIL).
+               (#<DOM-IMPL::DOCUMENT {51AFD949}>
+                #<DOM-IMPL::DOCUMENT {51AFD949}> NIL).
 575/808 documentimportnode07.xml
 TEST FAILED: There is no applicable method for the generic function
                #<STANDARD-GENERIC-FUNCTION DOM:IMPORT-NODE (8)>
              when called with arguments
-               (#<DOM-IMPL::DOCUMENT {xxxxxxxx}>
-                #<DOM-IMPL::DOCUMENT-TYPE {xxxxxxxx}> T).
+               (#<DOM-IMPL::DOCUMENT {51E0F1B1}>
+                #<DOM-IMPL::DOCUMENT-TYPE {51E0FAB1}> T).
 576/808 documentimportnode08.xml
 TEST FAILED: There is no applicable method for the generic function
                #<STANDARD-GENERIC-FUNCTION DOM:IMPORT-NODE (8)>
              when called with arguments
-               (#<DOM-IMPL::DOCUMENT {xxxxxxxx}>
-                #<DOM-IMPL::DOCUMENT-TYPE {xxxxxxxx}> T).
+               (#<DOM-IMPL::DOCUMENT {51F8A1B1}>
+                #<DOM-IMPL::DOCUMENT-TYPE {51FA2FA1}> T).
 577/808 documentimportnode09.xml
 578/808 documentimportnode10.xml
 579/808 documentimportnode11.xml
@@ -656,7 +652,7 @@ TEST FAILED: There is no applicable method for the generic function
 584/808 documentimportnode17.xml
 585/808 documentimportnode18.xml
 586/808 documentimportnode19.xml
-TEST FAILED: The slot DOM-IMPL::NAME is unbound in the object #<DOM-IMPL::ENTITY {xxxxxxxx}>.
+TEST FAILED: The slot DOM-IMPL::NAME is unbound in the object #<DOM-IMPL::ENTITY {52051579}>.
 587/808 documentimportnode20.xml
 implementationAttribute expandEntityReferences not supported, skipping test
 588/808 documentimportnode21.xml
@@ -699,7 +695,7 @@ TEST FAILED: The assertion DOMTEST-TESTS::|state| failed.
 618/808 elementremoveattributens01.xml
 619/808 elementsetattributenodens01.xml
 620/808 elementsetattributenodens02.xml
-TEST FAILED: The slot DOM-IMPL::NAMESPACE-URI is unbound in the object #<DOM-IMPL::ATTRIBUTE street="Yes" {xxxxxxxx}>.
+TEST FAILED: The slot DOM-IMPL::NAMESPACE-URI is unbound in the object #<DOM-IMPL::ATTRIBUTE street="Yes" {52C329D1}>.
 621/808 elementsetattributenodens03.xml
 TEST FAILED: expected exception INUSE_ATTRIBUTE_ERR
 622/808 elementsetattributenodens04.xml
@@ -708,15 +704,6 @@ TEST FAILED: expected exception INUSE_ATTRIBUTE_ERR
 implementationAttribute expandEntityReferences not supported, skipping test
 625/808 elementsetattributens01.xml
 626/808 elementsetattributens02.xml
-TEST FAILED: There is no applicable method for the generic function
-               #<STANDARD-GENERIC-FUNCTION DOM:SET-ATTRIBUTE-NS (1)>
-             when called with arguments
-               (NIL
-                #(104 116 116 112 58 47 47 119 119 119 46 119 51 46 111 114 103
-                  47 68 79 77 47 84 101 115 116 47 115 101 116 65 116 116 114
-                  105 98 117 116 101 78 83)
-                #(116 104 105 115 58 115 116 114 101 101 116)
-                #(83 105 108 118 101 114 32 83 116 114 101 101 116)).
 627/808 elementsetattributens03.xml
 628/808 elementsetattributens04.xml
 629/808 elementsetattributens05.xml
@@ -740,7 +727,6 @@ TEST FAILED: There is no applicable method for the generic function
 640/808 getElementById02.xml
 641/808 getElementsByTagNameNS01.xml
 642/808 getElementsByTagNameNS02.xml
-TEST FAILED: The assertion (EQL (LENGTH DOMTEST::COLLECTION) 5) failed.
 643/808 getElementsByTagNameNS03.xml
 644/808 getElementsByTagNameNS04.xml
 645/808 getElementsByTagNameNS05.xml
@@ -748,7 +734,6 @@ TEST FAILED: The assertion (EQL (LENGTH DOMTEST::COLLECTION) 5) failed.
 647/808 getElementsByTagNameNS07.xml
 648/808 getElementsByTagNameNS08.xml
 649/808 getElementsByTagNameNS09.xml
-TEST FAILED: The assertion (EQL (LENGTH DOMTEST::COLLECTION) 5) failed.
 650/808 getElementsByTagNameNS10.xml
 651/808 getElementsByTagNameNS11.xml
 652/808 getElementsByTagNameNS12.xml
@@ -799,14 +784,14 @@ not implemented
 TEST FAILED: There is no applicable method for the generic function
                #<STANDARD-GENERIC-FUNCTION DOM:IMPORT-NODE (8)>
              when called with arguments
-               (#<DOM-IMPL::DOCUMENT {xxxxxxxx}>
-                #<DOM-IMPL::DOCUMENT-TYPE {xxxxxxxx}> NIL).
+               (#<DOM-IMPL::DOCUMENT {52C10309}>
+                #<DOM-IMPL::DOCUMENT-TYPE {5174B8A9}> NIL).
 693/808 importNode17.xml
 TEST FAILED: There is no applicable method for the generic function
                #<STANDARD-GENERIC-FUNCTION DOM:IMPORT-NODE (8)>
              when called with arguments
-               (#<DOM-IMPL::DOCUMENT {xxxxxxxx}>
-                #<DOM-IMPL::DOCUMENT {xxxxxxxx}> NIL).
+               (#<DOM-IMPL::DOCUMENT {519843A1}>
+                #<DOM-IMPL::DOCUMENT {519A9DE1}> NIL).
 694/808 internalSubset01.xml
 TEST FAILED: The assertion (NULL DOMTEST-TESTS::|internal|) failed.
 695/808 isSupported01.xml
@@ -843,7 +828,7 @@ TEST FAILED: There is no applicable method for the generic function
 719/808 namednodemapremovenameditemns03.xml
 720/808 namednodemapremovenameditemns04.xml
 TEST FAILED: NOT_FOUND_ERR (8):
-#(120 109 108 110 115) not found in #<ATTRIBUTE-NODE-MAP {xxxxxxxx}>
+#(120 109 108 110 115) not found in #<ATTRIBUTE-NODE-MAP {5289D969}>
 721/808 namednodemapremovenameditemns05.xml
 722/808 namednodemapremovenameditemns06.xml
 723/808 namednodemapremovenameditemns07.xml
@@ -877,7 +862,7 @@ TEST FAILED: expected exception INUSE_ATTRIBUTE_ERR
 TEST FAILED: There is no applicable method for the generic function
                #<STANDARD-GENERIC-FUNCTION DOM:HAS-ATTRIBUTES (1)>
              when called with arguments
-               (#<DOM-IMPL::DOCUMENT-TYPE {xxxxxxxx}>).
+               (#<DOM-IMPL::DOCUMENT-TYPE {524EFAB1}>).
 748/808 nodehasattributes03.xml
 749/808 nodehasattributes04.xml
 750/808 nodeissupported01.xml
@@ -959,4 +944,4 @@ TEST FAILED: expected exception INUSE_ATTRIBUTE_ERR
 803/808 setNamedItemNS04.xml
 804/808 setNamedItemNS05.xml
 805/808 systemId01.xml
-62/763 tests failed; 45 tests were skipped
+57/763 tests failed; 45 tests were skipped

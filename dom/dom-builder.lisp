@@ -80,19 +80,22 @@
 (defmethod sax:start-element
     ((handler dom-builder) namespace-uri local-name qname attributes)
   (with-slots (document element-stack) handler
-    (let ((element (make-instance 'element 
+    (let* ((nsp sax:*namespace-processing*)
+	   (element (make-instance 'element 
                      :tag-name qname
                      :owner document
-		     :namespace-uri namespace-uri
-		     :local-name local-name
-		     :prefix (cxml::split-qname (cxml::rod qname))))
+		     :namespace-uri (when nsp namespace-uri)
+		     :local-name (when nsp local-name)
+		     :prefix (when nsp (cxml::split-qname (cxml::rod qname)))))
 	  (parent (car element-stack))
           (anodes '()))
       (dolist (attr attributes)
 	(let ((anode
-               (dom:create-attribute-ns document
-					(sax:attribute-namespace-uri attr)
-					(sax:attribute-qname attr)))
+               (if nsp
+		   (dom:create-attribute-ns document
+					    (sax:attribute-namespace-uri attr)
+					    (sax:attribute-qname attr))
+		   (dom:create-attribute document (sax:attribute-qname attr))))
               (text
                (dom:create-text-node document (sax:attribute-value attr))))
           (setf (slot-value anode 'dom-impl::specified-p)

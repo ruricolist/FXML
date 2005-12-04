@@ -3351,7 +3351,7 @@
     (let ((uri (find-namespace-binding prefix)))
       (if uri
 	  (values uri prefix local-name)
-	  (values nil nil nil)))))
+	  (values nil nil qname)))))
 
 
 (defun find-namespace-binding (prefix)

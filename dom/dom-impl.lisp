@@ -132,7 +132,8 @@
   (etypecase x
     (null x)
     (rod x)
-    (string (string-rod x))))
+    (string (string-rod x))
+    (vector x)))
 
 (defun assert-writeable (node)
   (when (read-only-p node)
