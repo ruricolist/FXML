@@ -181,7 +181,7 @@
 
 ;;; parser context
 
-(defvar *ctx*)
+(defvar *ctx* nil)
 
 (defstruct (context (:conc-name nil))
   handler

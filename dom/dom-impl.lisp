@@ -45,7 +45,9 @@
 
 (defmethod (setf dom:prefix) (newval (node namespace-mixin))
   (assert-writeable node)
-  (safe-split-qname (concatenate 'rod newval #":foo") (dom:namespace-uri node))
+  (when newval
+    (safe-split-qname (concatenate 'rod newval #":foo")
+		      (dom:namespace-uri node)))
   (setf (slot-value node 'prefix) newval))
 
 (defclass document (node)
@@ -193,7 +195,12 @@
     (:NO_MODIFICATION_ALLOWED_ERR       7)
     (:NOT_FOUND_ERR                     8)
     (:NOT_SUPPORTED_ERR                 9)
-    (:INUSE_ATTRIBUTE_ERR               10)))
+    (:INUSE_ATTRIBUTE_ERR               10)
+    (:INVALID_STATE_ERR                 11)
+    (:SYNTAX_ERR                        12)
+    (:INVALID_MODIFICATION_ERR          13)
+    (:NAMESPACE_ERR                     14)
+    (:INVALID_ACCESS_ERR                15)))
 
 ;; dom-implementation protocol
 
@@ -220,11 +227,7 @@
     ((factory (eql 'implementation)) uri qname doctype)
   (let ((document (make-instance 'dom-impl::document)))
     (setf (slot-value document 'owner) nil
-	  (slot-value document 'doc-type) doctype
-	  (slot-value document 'namespace-uri) uri)
-    (setf (values (slot-value document 'prefix)
-		  (slot-value document 'local-name))
-	  (safe-split-qname qname uri))
+	  (slot-value document 'doc-type) doctype)
     (when doctype
       (unless (typep doctype 'document-type)
 	(dom-error :WRONG_DOCUMENT_ERR
@@ -232,6 +235,8 @@
       (setf (slot-value doctype 'dom-impl::owner) document
 	    (slot-value (dom:notations doctype) 'dom-impl::owner) document
 	    (slot-value (dom:entities doctype) 'dom-impl::owner) document))
+    (when (or uri qname)
+      (dom:append-child document (dom:create-element-ns document uri qname)))
     document))
 
 ;; document-fragment protocol

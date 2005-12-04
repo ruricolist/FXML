@@ -595,6 +595,11 @@
                           (("byte" "short" "int" "long") 0)
                           (t nil)))
                   bindings)
+	    (let ((value (dom:get-attribute e "value")))
+	      (when value
+		(push `(setf ,(%intern (dom:get-attribute e "name"))
+			     ,(parse-java-literal value))
+		      code)))
             (do-child-elements (member e :name "member") e
               (push `(setf ,(%intern (dom:get-attribute e "name"))
                            (append ,(%intern (dom:get-attribute e "name"))
