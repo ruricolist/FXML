@@ -284,6 +284,8 @@
 	(cxml:well-formedness-violation (c)
 	  (dom-error :NAMESPACE_ERR "~A" c)))
     (when prefix
+      (unless uri
+	(dom-error :NAMESPACE_ERR "prefix specified but no namespace URI"))
       (when (and (rod= prefix #"xml")
 		 (not (rod= uri #"http://www.w3.org/XML/1998/namespace")))
 	(dom-error :NAMESPACE_ERR "invalid uri for prefix `xml'"))
