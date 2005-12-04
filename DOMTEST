@@ -601,7 +601,6 @@ implementationAttribute signed not supported, skipping test
 571/808 documentimportnode03.xml
 572/808 documentimportnode04.xml
 573/808 documentimportnode05.xml
-TEST FAILED: The slot DOM-IMPL::NAMESPACE-URI is unbound in the object #<DOM-IMPL::ATTRIBUTE a_:b0="" {xxxxxxxx}>.
 574/808 documentimportnode06.xml
 TEST FAILED: There is no applicable method for the generic function
                #<STANDARD-GENERIC-FUNCTION DOM:IMPORT-NODE (8)>
@@ -675,7 +674,6 @@ TEST FAILED: The assertion DOMTEST-TESTS::|success| failed.
 618/808 elementremoveattributens01.xml
 619/808 elementsetattributenodens01.xml
 620/808 elementsetattributenodens02.xml
-TEST FAILED: The slot DOM-IMPL::NAMESPACE-URI is unbound in the object #<DOM-IMPL::ATTRIBUTE street="Yes" {xxxxxxxx}>.
 621/808 elementsetattributenodens03.xml
 TEST FAILED: expected exception INUSE_ATTRIBUTE_ERR
 622/808 elementsetattributenodens04.xml
@@ -915,4 +913,4 @@ TEST FAILED: expected exception INUSE_ATTRIBUTE_ERR
 803/808 setNamedItemNS04.xml
 804/808 setNamedItemNS05.xml
 805/808 systemId01.xml
-34/763 tests failed; 45 tests were skipped
+32/763 tests failed; 45 tests were skipped

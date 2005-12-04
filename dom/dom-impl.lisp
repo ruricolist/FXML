@@ -1254,6 +1254,9 @@
 			document node
 			t
 			:name (dom:name node)
+			:namespace-uri (dom:namespace-uri node)
+			:local-name (dom:local-name node)
+			:prefix (dom:prefix node)
 			:owner-element nil))
 
 (defmethod dom:import-node ((document document) (node document-fragment) deep)
