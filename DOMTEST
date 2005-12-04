@@ -552,127 +552,359 @@ implementationAttribute signed not supported, skipping test
 
 #P"/home/david/2001/DOM-Test-Suite/tests/level2/core/" 
 524/808 attrgetownerelement01.xml
+TEST FAILED: There is no applicable method for the generic function
+               #<STANDARD-GENERIC-FUNCTION DOM:OWNER-ELEMENT (1)>
+             when called with arguments
+               (NIL).
 525/808 attrgetownerelement02.xml
+TEST FAILED: The slot DOM-IMPL::OWNER-ELEMENT is unbound in the object #<DOM-IMPL::ATTRIBUTE L1:att="" {53109709}>.
 526/808 attrgetownerelement03.xml
+TEST FAILED: Argument Y is not a NUMBER: #\x
 527/808 attrgetownerelement04.xml
+TEST FAILED: There is no applicable method for the generic function
+               #<STANDARD-GENERIC-FUNCTION DOM:IMPORT-NODE (8)>
+             when called with arguments
+               (#<DOM-IMPL::DOCUMENT {539F31B1}> NIL T).
 528/808 attrgetownerelement05.xml
+TEST FAILED: There is no applicable method for the generic function
+               #<STANDARD-GENERIC-FUNCTION DOM:OWNER-ELEMENT (1)>
+             when called with arguments
+               (NIL).
 529/808 createAttributeNS01.xml
+TEST FAILED: expected exception NAMESPACE_ERR
 530/808 createAttributeNS02.xml
+TEST FAILED: expected exception NAMESPACE_ERR
 531/808 createAttributeNS03.xml
 532/808 createAttributeNS04.xml
+TEST FAILED: expected exception NAMESPACE_ERR
 533/808 createAttributeNS05.xml
+TEST FAILED: The assertion (DOMTEST::EQUALSP DOMTEST-TESTS::|attrName|
+                                             DOMTEST-TESTS::|qualifiedName|
+                                             'DOMTEST::%EQUAL) failed.
 534/808 createAttributeNS06.xml
 535/808 createDocument01.xml
+TEST FAILED: When attempting to
+             set the slot's value to NIL (SETF of SLOT-VALUE), the slot
+             DOM-IMPL::NAMESPACE-URI is missing from the object
+             #<DOM-IMPL::DOCUMENT {531CC0C9}>.
 536/808 createDocument02.xml
+TEST FAILED: When attempting to
+             set the slot's value to NIL (SETF of SLOT-VALUE), the slot
+             DOM-IMPL::NAMESPACE-URI is missing from the object
+             #<DOM-IMPL::DOCUMENT {538DA9C1}>.
 537/808 createDocument03.xml
+TEST FAILED: When attempting to
+             set the slot's value to NIL (SETF of SLOT-VALUE), the slot
+             DOM-IMPL::NAMESPACE-URI is missing from the object
+             #<DOM-IMPL::DOCUMENT {53A4E701}>.
 538/808 createDocument04.xml
+TEST FAILED: When attempting to
+             set the slot's value to NIL (SETF of SLOT-VALUE), the slot
+             DOM-IMPL::NAMESPACE-URI is missing from the object
+             #<DOM-IMPL::DOCUMENT {53BFF001}>.
 539/808 createDocument05.xml
+TEST FAILED: When attempting to
+             set the slot's value to NIL (SETF of SLOT-VALUE), the slot
+             DOM-IMPL::NAMESPACE-URI is missing from the object
+             #<DOM-IMPL::DOCUMENT {53DC8AE1}>.
 540/808 createDocument06.xml
+TEST FAILED: When attempting to
+             set the slot's value to NIL (SETF of SLOT-VALUE), the slot
+             DOM-IMPL::NAMESPACE-URI is missing from the object
+             #<DOM-IMPL::DOCUMENT {53EF8E99}>.
 541/808 createDocument07.xml
+TEST FAILED: When attempting to
+             set the slot's value to NIL (SETF of SLOT-VALUE), the slot
+             DOM-IMPL::NAMESPACE-URI is missing from the object
+             #<DOM-IMPL::DOCUMENT {540325C9}>.
 542/808 createDocument08.xml
+TEST FAILED: There is no applicable method for the generic function
+               #<STANDARD-GENERIC-FUNCTION DOM:IMPLEMENTATION (1)>
+             when called with arguments
+               (NIL).
 543/808 createDocumentType01.xml
+TEST FAILED: expected exception NAMESPACE_ERR
 544/808 createDocumentType02.xml
+TEST FAILED: expected exception INVALID_CHARACTER_ERR
 545/808 createDocumentType03.xml
+TEST FAILED: The assertion (DOMTEST::EQUALSP DOMTEST-TESTS::|nodeName|
+                                             #(112 114 101 102 105 120 58 109
+                                               121 68 111 99)
+                                             'DOMTEST::%EQUAL) failed.
 546/808 createDocumentType04.xml
+TEST FAILED: There is no applicable method for the generic function
+               #<STANDARD-GENERIC-FUNCTION DOM:IMPLEMENTATION (1)>
+             when called with arguments
+               (NIL).
 547/808 createElementNS01.xml
+TEST FAILED: expected exception NAMESPACE_ERR
 548/808 createElementNS02.xml
+TEST FAILED: expected exception NAMESPACE_ERR
 549/808 createElementNS03.xml
 550/808 createElementNS04.xml
+TEST FAILED: expected exception NAMESPACE_ERR
 551/808 createElementNS05.xml
+TEST FAILED: The assertion (DOMTEST::EQUALSP DOMTEST-TESTS::|elementName|
+                                             DOMTEST-TESTS::|qualifiedName|
+                                             'DOMTEST::%EQUAL) failed.
 552/808 documentcreateattributeNS01.xml
+TEST FAILED: The assertion (DOMTEST::EQUALSP DOMTEST-TESTS::|nodeName|
+                                             #(116 101 115 116)
+                                             'DOMTEST::%EQUAL) failed.
 553/808 documentcreateattributeNS02.xml
+TEST FAILED: Argument Y is not a NUMBER: #\x
 554/808 documentcreateattributeNS03.xml
 555/808 documentcreateattributeNS04.xml
+TEST FAILED: The variable CXML::*CTX* is unbound.
 556/808 documentcreateattributeNS05.xml
+TEST FAILED: When attempting to
+             set the slot's value to #(104 116 116 112 58 47 47 119 119 119 46 119 51 46 111
+                          114 103 47 68 79 77 47 84 101 115 116) (SETF of SLOT-VALUE),
+             the slot DOM-IMPL::NAMESPACE-URI is missing from the object
+             #<DOM-IMPL::DOCUMENT {53B785C9}>.
 557/808 documentcreateattributeNS06.xml
+TEST FAILED: When attempting to
+             set the slot's value to #(104 116 116 112 58 47 47 119 119 119 46 119 51 46 111
+                          114 103 47 68 79 77 47 84 101 115 116) (SETF of SLOT-VALUE),
+             the slot DOM-IMPL::NAMESPACE-URI is missing from the object
+             #<DOM-IMPL::DOCUMENT {53CB6D11}>.
 558/808 documentcreateattributeNS07.xml
+TEST FAILED: expected exception NAMESPACE_ERR
 559/808 documentcreateelementNS01.xml
+TEST FAILED: The assertion (DOMTEST::EQUALSP DOMTEST-TESTS::|nodeName|
+                                             #(88 77 76 58 88 77 76)
+                                             'DOMTEST::%EQUAL) failed.
 560/808 documentcreateelementNS02.xml
+TEST FAILED: expected exception INVALID_CHARACTER_ERR
 561/808 documentcreateelementNS05.xml
+TEST FAILED: expected exception NAMESPACE_ERR
 562/808 documentcreateelementNS06.xml
+TEST FAILED: When attempting to
+             set the slot's value to #(104 116 116 112 58 47 47 119 119 119 46 119 51 46 111
+                          114 103 47 68 79 77 47 84 101 115 116) (SETF of SLOT-VALUE),
+             the slot DOM-IMPL::NAMESPACE-URI is missing from the object
+             #<DOM-IMPL::DOCUMENT {526F54C9}>.
 563/808 documentgetelementbyid01.xml
 564/808 documentgetelementsbytagnameNS01.xml
+TEST FAILED: When attempting to
+             set the slot's value to NIL (SETF of SLOT-VALUE), the slot
+             DOM-IMPL::NAMESPACE-URI is missing from the object
+             #<DOM-IMPL::DOCUMENT {53794409}>.
 565/808 documentgetelementsbytagnameNS02.xml
+TEST FAILED: The assertion (EQL (LENGTH DOMTEST::COLLECTION) 6) failed.
 566/808 documentgetelementsbytagnameNS03.xml
 567/808 documentgetelementsbytagnameNS04.xml
 568/808 documentgetelementsbytagnameNS05.xml
 569/808 documentimportnode01.xml
 570/808 documentimportnode02.xml
+TEST FAILED: There is no applicable method for the generic function
+               #<STANDARD-GENERIC-FUNCTION DOM:IMPORT-NODE (8)>
+             when called with arguments
+               (#<DOM-IMPL::DOCUMENT {541961B1}> NIL NIL).
 571/808 documentimportnode03.xml
 572/808 documentimportnode04.xml
+TEST FAILED: When attempting to
+             set the slot's value to #(104 116 116 112 58 47 47 119 119 119 46 119 51 46 111
+                          114 103 47 68 79 77 47 84 101 115 116) (SETF of SLOT-VALUE),
+             the slot DOM-IMPL::NAMESPACE-URI is missing from the object
+             #<DOM-IMPL::DOCUMENT {52E83991}>.
 573/808 documentimportnode05.xml
+TEST FAILED: The slot DOM-IMPL::NAMESPACE-URI is unbound in the object #<DOM-IMPL::ATTRIBUTE a_:b0="" {538E9D39}>.
 574/808 documentimportnode06.xml
+TEST FAILED: There is no applicable method for the generic function
+               #<STANDARD-GENERIC-FUNCTION DOM:IMPORT-NODE (8)>
+             when called with arguments
+               (#<DOM-IMPL::DOCUMENT {53A36719}>
+                #<DOM-IMPL::DOCUMENT {53A36719}> NIL).
 575/808 documentimportnode07.xml
+TEST FAILED: There is no applicable method for the generic function
+               #<STANDARD-GENERIC-FUNCTION DOM:IMPORT-NODE (8)>
+             when called with arguments
+               (#<DOM-IMPL::DOCUMENT {53BB2BD9}>
+                #<DOM-IMPL::DOCUMENT-TYPE {53BB3509}> T).
 576/808 documentimportnode08.xml
+TEST FAILED: There is no applicable method for the generic function
+               #<STANDARD-GENERIC-FUNCTION DOM:IMPORT-NODE (8)>
+             when called with arguments
+               (#<DOM-IMPL::DOCUMENT {53CEEF99}>
+                #<DOM-IMPL::DOCUMENT-TYPE {53D06431}> T).
 577/808 documentimportnode09.xml
 578/808 documentimportnode10.xml
 579/808 documentimportnode11.xml
 580/808 documentimportnode12.xml
 581/808 documentimportnode13.xml
 582/808 documentimportnode14.xml
+TEST FAILED: There is no applicable method for the generic function
+               #<STANDARD-GENERIC-FUNCTION DOM:IMPLEMENTATION (1)>
+             when called with arguments
+               (NIL).
 583/808 documentimportnode15.xml
 584/808 documentimportnode17.xml
 585/808 documentimportnode18.xml
 586/808 documentimportnode19.xml
+TEST FAILED: When attempting to
+             set the slot's value to #(104 116 116 112 58 47 47 119 119 119 46 119 51 46 111
+                          114 103 47 68 79 77 47 84 101 115 116) (SETF of SLOT-VALUE),
+             the slot DOM-IMPL::NAMESPACE-URI is missing from the object
+             #<DOM-IMPL::DOCUMENT {53DB25C9}>.
 587/808 documentimportnode20.xml
 implementationAttribute expandEntityReferences not supported, skipping test
 588/808 documentimportnode21.xml
 implementationAttribute expandEntityReferences not supported, skipping test
 589/808 documentimportnode22.xml
+TEST FAILED: When attempting to
+             set the slot's value to #(104 116 116 112 58 47 47 119 119 119 46 119 51 46 111
+                          114 103 47 68 79 77 47 84 101 115 116) (SETF of SLOT-VALUE),
+             the slot DOM-IMPL::NAMESPACE-URI is missing from the object
+             #<DOM-IMPL::DOCUMENT {541F0FA9}>.
 590/808 documenttypeinternalSubset01.xml
 591/808 documenttypepublicid01.xml
 592/808 documenttypesystemid01.xml
 593/808 domimplementationcreatedocument03.xml
+TEST FAILED: When attempting to
+             set the slot's value to NIL (SETF of SLOT-VALUE), the slot
+             DOM-IMPL::NAMESPACE-URI is missing from the object
+             #<DOM-IMPL::DOCUMENT {5395B5E1}>.
 594/808 domimplementationcreatedocument04.xml
+TEST FAILED: When attempting to
+             set the slot's value to NIL (SETF of SLOT-VALUE), the slot
+             DOM-IMPL::NAMESPACE-URI is missing from the object
+             #<DOM-IMPL::DOCUMENT {53ABC5F9}>.
 595/808 domimplementationcreatedocument05.xml
+TEST FAILED: When attempting to
+             set the slot's value to NIL (SETF of SLOT-VALUE), the slot
+             DOM-IMPL::NAMESPACE-URI is missing from the object
+             #<DOM-IMPL::DOCUMENT {53C2C3C1}>.
 596/808 domimplementationcreatedocument07.xml
+TEST FAILED: When attempting to
+             set the slot's value to NIL (SETF of SLOT-VALUE), the slot
+             DOM-IMPL::NAMESPACE-URI is missing from the object
+             #<DOM-IMPL::DOCUMENT {53D6DDA1}>.
 597/808 domimplementationcreatedocumenttype01.xml
 598/808 domimplementationcreatedocumenttype02.xml
 599/808 domimplementationcreatedocumenttype04.xml
+TEST FAILED: expected exception INVALID_CHARACTER_ERR
 600/808 domimplementationfeaturecore.xml
+TEST FAILED: The assertion DOMTEST-TESTS::|state| failed.
 601/808 domimplementationfeaturexmlversion2.xml
+TEST FAILED: The assertion DOMTEST-TESTS::|state| failed.
 602/808 domimplementationhasfeature01.xml
+TEST FAILED: The assertion DOMTEST-TESTS::|success| failed.
 603/808 domimplementationhasfeature02.xml
 604/808 elementgetattributenodens01.xml
+TEST FAILED: There is no applicable method for the generic function
+               #<STANDARD-GENERIC-FUNCTION DOM:NODE-VALUE (10)>
+             when called with arguments
+               (NIL).
 605/808 elementgetattributenodens02.xml
+TEST FAILED: There is no applicable method for the generic function
+               #<STANDARD-GENERIC-FUNCTION DOM:NODE-VALUE (10)>
+             when called with arguments
+               (NIL).
 606/808 elementgetattributenodens03.xml
+TEST FAILED: There is no applicable method for the generic function
+               #<STANDARD-GENERIC-FUNCTION DOM:NODE-VALUE (10)>
+             when called with arguments
+               (NIL).
 607/808 elementgetattributens02.xml
+TEST FAILED: The assertion (DOMTEST::EQUALSP DOMTEST-TESTS::|attrValue|
+                                             #(100 101 102 97 117 108 116 86 97
+                                               108)
+                                             'DOMTEST::%EQUAL) failed.
 608/808 elementgetelementsbytagnamens02.xml
 609/808 elementgetelementsbytagnamens04.xml
+TEST FAILED: Argument Y is not a NUMBER: #\x
 610/808 elementgetelementsbytagnamens05.xml
 611/808 elementhasattribute01.xml
 612/808 elementhasattribute02.xml
 613/808 elementhasattribute03.xml
 614/808 elementhasattribute04.xml
 615/808 elementhasattributens01.xml
+TEST FAILED: The assertion DOMTEST-TESTS::|state| failed.
 616/808 elementhasattributens02.xml
+TEST FAILED: The assertion DOMTEST-TESTS::|state| failed.
 617/808 elementhasattributens03.xml
+TEST FAILED: The assertion DOMTEST-TESTS::|state| failed.
 618/808 elementremoveattributens01.xml
+TEST FAILED: There is no applicable method for the generic function
+               #<STANDARD-GENERIC-FUNCTION DOM:REMOVE-ATTRIBUTE-NODE (1)>
+             when called with arguments
+               (#<DOM-IMPL::ELEMENT elem {54226FC9}> NIL).
 619/808 elementsetattributenodens01.xml
+TEST FAILED: Argument Y is not a NUMBER: #\x
 620/808 elementsetattributenodens02.xml
+TEST FAILED: There is no applicable method for the generic function
+               #<STANDARD-GENERIC-FUNCTION DOM:CLONE-NODE (1)>
+             when called with arguments
+               (NIL T).
 621/808 elementsetattributenodens03.xml
+TEST FAILED: There is no applicable method for the generic function
+               #<STANDARD-GENERIC-FUNCTION DOM:SET-ATTRIBUTE-NODE-NS (1)>
+             when called with arguments
+               (#<DOM-IMPL::ELEMENT address {53896FE9}> NIL).
 622/808 elementsetattributenodens04.xml
 623/808 elementsetattributenodens05.xml
 624/808 elementsetattributenodens06.xml
 implementationAttribute expandEntityReferences not supported, skipping test
 625/808 elementsetattributens01.xml
+TEST FAILED: Argument Y is not a NUMBER: #\x
 626/808 elementsetattributens02.xml
+TEST FAILED: There is no applicable method for the generic function
+               #<STANDARD-GENERIC-FUNCTION DOM:SET-ATTRIBUTE-NS (1)>
+             when called with arguments
+               (NIL
+                #(104 116 116 112 58 47 47 119 119 119 46 119 51 46 111 114 103
+                  47 68 79 77 47 84 101 115 116 47 115 101 116 65 116 116 114
+                  105 98 117 116 101 78 83)
+                #(116 104 105 115 58 115 116 114 101 101 116)
+                #(83 105 108 118 101 114 32 83 116 114 101 101 116)).
 627/808 elementsetattributens03.xml
+TEST FAILED: There is no applicable method for the generic function
+               #<STANDARD-GENERIC-FUNCTION DOM:NODE-NAME (12)>
+             when called with arguments
+               (NIL).
 628/808 elementsetattributens04.xml
+TEST FAILED: Argument Y is not a NUMBER: #\x
 629/808 elementsetattributens05.xml
+TEST FAILED: Argument Y is not a NUMBER: #\x
 630/808 elementsetattributens08.xml
+TEST FAILED: Argument Y is not a NUMBER: #\x
 631/808 elementsetattributensurinull.xml
+TEST FAILED: expected exception NAMESPACE_ERR
 632/808 getAttributeNS01.xml
+TEST FAILED: The assertion (DOMTEST::EQUALSP DOMTEST-TESTS::|attrValue|
+                                             #(68 73 83 84 82 73 67 84)
+                                             'DOMTEST::%EQUAL) failed.
 633/808 getAttributeNS02.xml
 634/808 getAttributeNS03.xml
+TEST FAILED: There is no applicable method for the generic function
+               #<STANDARD-GENERIC-FUNCTION DOM:REMOVE-ATTRIBUTE-NODE (1)>
+             when called with arguments
+               (#<DOM-IMPL::ELEMENT emp:address {53CAE8C1}> NIL).
 635/808 getAttributeNS04.xml
+TEST FAILED: The assertion (DOMTEST::EQUALSP DOMTEST-TESTS::|attrValue|
+                                             #(78 101 119 86 97 108 117 101)
+                                             'DOMTEST::%EQUAL) failed.
 636/808 getAttributeNS05.xml
+TEST FAILED: The assertion (DOMTEST::EQUALSP DOMTEST-TESTS::|attrValue|
+                                             #(89 101 115)
+                                             'DOMTEST::%EQUAL) failed.
 637/808 getAttributeNodeNS01.xml
 638/808 getAttributeNodeNS02.xml
+TEST FAILED: There is no applicable method for the generic function
+               #<STANDARD-GENERIC-FUNCTION DOM:NODE-NAME (12)>
+             when called with arguments
+               (NIL).
 639/808 getElementById01.xml
+TEST FAILED: There is no applicable method for the generic function
+               #<STANDARD-GENERIC-FUNCTION DOM:TAG-NAME (1)>
+             when called with arguments
+               (NIL).
 640/808 getElementById02.xml
 641/808 getElementsByTagNameNS01.xml
+TEST FAILED: The assertion (EQL (LENGTH DOMTEST::COLLECTION) 37) failed.
 642/808 getElementsByTagNameNS02.xml
+TEST FAILED: The assertion (EQL (LENGTH DOMTEST::COLLECTION) 5) failed.
 643/808 getElementsByTagNameNS03.xml
 644/808 getElementsByTagNameNS04.xml
 645/808 getElementsByTagNameNS05.xml
@@ -680,12 +912,17 @@ implementationAttribute expandEntityReferences not supported, skipping test
 647/808 getElementsByTagNameNS07.xml
 648/808 getElementsByTagNameNS08.xml
 649/808 getElementsByTagNameNS09.xml
+TEST FAILED: The assertion (EQL (LENGTH DOMTEST::COLLECTION) 5) failed.
 650/808 getElementsByTagNameNS10.xml
 651/808 getElementsByTagNameNS11.xml
 652/808 getElementsByTagNameNS12.xml
 653/808 getElementsByTagNameNS13.xml
 654/808 getElementsByTagNameNS14.xml
 655/808 getNamedItemNS01.xml
+TEST FAILED: There is no applicable method for the generic function
+               #<STANDARD-GENERIC-FUNCTION DOM:NODE-NAME (12)>
+             when called with arguments
+               (NIL).
 656/808 getNamedItemNS02.xml
 657/808 getNamedItemNS03.xml
 658/808 getNamedItemNS04.xml
@@ -697,7 +934,9 @@ implementationAttribute expandEntityReferences not supported, skipping test
 664/808 hasAttributeNS02.xml
 665/808 hasAttributeNS03.xml
 666/808 hasAttributeNS04.xml
+TEST FAILED: The assertion DOMTEST-TESTS::|state| failed.
 667/808 hasAttributeNS05.xml
+TEST FAILED: The assertion DOMTEST-TESTS::|state| failed.
 668/808 hasAttributes01.xml
 669/808 hasAttributes02.xml
 670/808 hc_entitiesremovenameditemns1.xml
@@ -705,6 +944,7 @@ implementationAttribute expandEntityReferences not supported, skipping test
 672/808 hc_namednodemapinvalidtype1.xml
 673/808 hc_nodedocumentfragmentnormalize1.xml
 674/808 hc_nodedocumentfragmentnormalize2.xml
+TEST FAILED: The assertion (NULL DOMTEST-TESTS::|txtNode|) failed.
 675/808 hc_notationsremovenameditemns1.xml
 676/808 hc_notationssetnameditemns1.xml
 677/808 importNode01.xml
@@ -714,127 +954,292 @@ implementationAttribute expandEntityReferences not supported, skipping test
 681/808 importNode05.xml
 682/808 importNode06.xml
 683/808 importNode07.xml
+TEST FAILED: The assertion (EQL (LENGTH DOMTEST::COLLECTION) 1) failed.
 684/808 importNode08.xml
 685/808 importNode09.xml
 686/808 importNode10.xml
 687/808 importNode11.xml
+TEST FAILED: NOT_SUPPORTED_ERR (9):
+not implemented
 688/808 importNode12.xml
 689/808 importNode13.xml
 690/808 importNode14.xml
 691/808 importNode15.xml
 692/808 importNode16.xml
+TEST FAILED: There is no applicable method for the generic function
+               #<STANDARD-GENERIC-FUNCTION DOM:IMPORT-NODE (8)>
+             when called with arguments
+               (#<DOM-IMPL::DOCUMENT {5196FF99}>
+                #<DOM-IMPL::DOCUMENT-TYPE {51999959}> NIL).
 693/808 importNode17.xml
+TEST FAILED: There is no applicable method for the generic function
+               #<STANDARD-GENERIC-FUNCTION DOM:IMPORT-NODE (8)>
+             when called with arguments
+               (#<DOM-IMPL::DOCUMENT {51B22F99}>
+                #<DOM-IMPL::DOCUMENT {51B68F99}> NIL).
 694/808 internalSubset01.xml
+TEST FAILED: The assertion (NULL DOMTEST-TESTS::|internal|) failed.
 695/808 isSupported01.xml
 696/808 isSupported02.xml
 697/808 isSupported04.xml
 698/808 isSupported05.xml
 699/808 isSupported06.xml
 700/808 isSupported07.xml
+TEST FAILED: The assertion DOMTEST-TESTS::|state| failed.
 701/808 isSupported09.xml
 702/808 isSupported10.xml
 703/808 isSupported11.xml
 704/808 isSupported12.xml
 705/808 isSupported13.xml
+TEST FAILED: The assertion DOMTEST-TESTS::|state| failed.
 706/808 isSupported14.xml
+TEST FAILED: The assertion DOMTEST-TESTS::|state| failed.
 707/808 localName01.xml
+TEST FAILED: The assertion (DOMTEST::EQUALSP DOMTEST-TESTS::|localName|
+                                             #(100 111 109 101 115 116 105 99)
+                                             'DOMTEST::%EQUAL) failed.
 708/808 localName02.xml
 709/808 localName03.xml
 710/808 localName04.xml
 711/808 namednodemapgetnameditemns01.xml
 712/808 namednodemapgetnameditemns02.xml
+TEST FAILED: There is no applicable method for the generic function
+               #<STANDARD-GENERIC-FUNCTION DOM:NODE-NAME (12)>
+             when called with arguments
+               (NIL).
 713/808 namednodemapgetnameditemns03.xml
+TEST FAILED: There is no applicable method for the generic function
+               #<STANDARD-GENERIC-FUNCTION DOM:NODE-NAME (12)>
+             when called with arguments
+               (NIL).
 714/808 namednodemapgetnameditemns04.xml
+TEST FAILED: There is no applicable method for the generic function
+               #<STANDARD-GENERIC-FUNCTION DOM:NODE-NAME (12)>
+             when called with arguments
+               (NIL).
 715/808 namednodemapgetnameditemns05.xml
 716/808 namednodemapgetnameditemns06.xml
+TEST FAILED: There is no applicable method for the generic function
+               #<STANDARD-GENERIC-FUNCTION DOM:NODE-NAME (12)>
+             when called with arguments
+               (NIL).
 717/808 namednodemapremovenameditemns01.xml
+TEST FAILED: NOT_FOUND_ERR (8):
+#(100 111 109 101 115 116 105 99) not found in #<ATTRIBUTE-NODE-MAP {521C36B9}>
 718/808 namednodemapremovenameditemns02.xml
+TEST FAILED: NOT_FOUND_ERR (8):
+#(100 101 102 97 117 108 116 65 116 116
+  114) not found in #<ATTRIBUTE-NODE-MAP {52720F49}>
 719/808 namednodemapremovenameditemns03.xml
+TEST FAILED: There is no applicable method for the generic function
+               #<STANDARD-GENERIC-FUNCTION DOM:NODE-NAME (12)>
+             when called with arguments
+               (NIL).
 720/808 namednodemapremovenameditemns04.xml
+TEST FAILED: NOT_FOUND_ERR (8):
+#(120 109 108 110 115) not found in #<ATTRIBUTE-NODE-MAP {52A22B59}>
 721/808 namednodemapremovenameditemns05.xml
 722/808 namednodemapremovenameditemns06.xml
 723/808 namednodemapremovenameditemns07.xml
 724/808 namednodemapremovenameditemns08.xml
+TEST FAILED: There is no applicable method for the generic function
+               #<STANDARD-GENERIC-FUNCTION DOM:REMOVE-ATTRIBUTE-NODE (1)>
+             when called with arguments
+               (#<DOM-IMPL::ELEMENT emp:address {51B0FEC1}> NIL).
 725/808 namednodemapremovenameditemns09.xml
+TEST FAILED: NOT_FOUND_ERR (8):
+#(100 111 109 101 115 116 105 99) not found in #<ATTRIBUTE-NODE-MAP {51E00841}>
 726/808 namednodemapsetnameditemns01.xml
+TEST FAILED: There is no applicable method for the generic function
+               #<STANDARD-GENERIC-FUNCTION DOM:NODE-NAME (12)>
+             when called with arguments
+               (NIL).
 727/808 namednodemapsetnameditemns02.xml
+TEST FAILED: There is no applicable method for the generic function
+               #<STANDARD-GENERIC-FUNCTION DOM:NODE-NAME (12)>
+             when called with arguments
+               (NIL).
 728/808 namednodemapsetnameditemns03.xml
+TEST FAILED: NOT_FOUND_ERR (8):
+#(115 116 114 101 101 116) not found in #<ATTRIBUTE-NODE-MAP {52779EC1}>
 729/808 namednodemapsetnameditemns04.xml
+TEST FAILED: When attempting to
+             set the slot's value to NIL (SETF of SLOT-VALUE), the slot
+             DOM-IMPL::NAMESPACE-URI is missing from the object
+             #<DOM-IMPL::DOCUMENT {52958B99}>.
 730/808 namednodemapsetnameditemns05.xml
 731/808 namednodemapsetnameditemns06.xml
+TEST FAILED: There is no applicable method for the generic function
+               #<STANDARD-GENERIC-FUNCTION DOM:NAMESPACE-URI (2)>
+             when called with arguments
+               (NIL).
 732/808 namednodemapsetnameditemns07.xml
+TEST FAILED: There is no applicable method for the generic function
+               #<STANDARD-GENERIC-FUNCTION DOM:NAMESPACE-URI (2)>
+             when called with arguments
+               (NIL).
 733/808 namednodemapsetnameditemns08.xml
+TEST FAILED: There is no applicable method for the generic function
+               #<STANDARD-GENERIC-FUNCTION DOM:NAMESPACE-URI (2)>
+             when called with arguments
+               (NIL).
 734/808 namednodemapsetnameditemns09.xml
 735/808 namednodemapsetnameditemns10.xml
 736/808 namednodemapsetnameditemns11.xml
 737/808 namespaceURI01.xml
+TEST FAILED: There is no applicable method for the generic function
+               #<STANDARD-GENERIC-FUNCTION DOM:NAMESPACE-URI (2)>
+             when called with arguments
+               (NIL).
 738/808 namespaceURI02.xml
+TEST FAILED: There is no applicable method for the generic function
+               #<STANDARD-GENERIC-FUNCTION DOM:NAMESPACE-URI (2)>
+             when called with arguments
+               (NIL).
 739/808 namespaceURI03.xml
 740/808 namespaceURI04.xml
 741/808 nodegetlocalname03.xml
 742/808 nodegetnamespaceuri03.xml
+TEST FAILED: The assertion (NULL DOMTEST-TESTS::|attrNSURINull|) failed.
 743/808 nodegetownerdocument01.xml
 744/808 nodegetownerdocument02.xml
+TEST FAILED: When attempting to
+             set the slot's value to #(104 116 116 112 58 47 47 119 119 119 46 119 51 46 111
+                          114 103 47 68 79 77 47 84 101 115 116) (SETF of SLOT-VALUE),
+             the slot DOM-IMPL::NAMESPACE-URI is missing from the object
+             #<DOM-IMPL::DOCUMENT {51C7BA61}>.
 745/808 nodegetprefix03.xml
 746/808 nodehasattributes01.xml
 747/808 nodehasattributes02.xml
+TEST FAILED: There is no applicable method for the generic function
+               #<STANDARD-GENERIC-FUNCTION DOM:HAS-ATTRIBUTES (1)>
+             when called with arguments
+               (#<DOM-IMPL::DOCUMENT-TYPE {522E1CB1}>).
 748/808 nodehasattributes03.xml
 749/808 nodehasattributes04.xml
+TEST FAILED: When attempting to
+             set the slot's value to #(104 116 116 112 58 47 47 119 119 119 46 119 51 46 111
+                          114 103 47 68 79 77 47 84 101 115 116) (SETF of SLOT-VALUE),
+             the slot DOM-IMPL::NAMESPACE-URI is missing from the object
+             #<DOM-IMPL::DOCUMENT {5291D5C9}>.
 750/808 nodeissupported01.xml
+TEST FAILED: The assertion DOMTEST-TESTS::|success| failed.
 751/808 nodeissupported02.xml
+TEST FAILED: The assertion DOMTEST-TESTS::|success| failed.
 752/808 nodeissupported03.xml
 753/808 nodeissupported04.xml
 754/808 nodeissupported05.xml
 755/808 nodenormalize01.xml
+TEST FAILED: When attempting to
+             set the slot's value to #(104 116 116 112 58 47 47 119 119 119 46 119 51 46 111
+                          114 103 47 68 79 77 47 84 101 115 116) (SETF of SLOT-VALUE),
+             the slot DOM-IMPL::NAMESPACE-URI is missing from the object
+             #<DOM-IMPL::DOCUMENT {527AB001}>.
 756/808 nodesetprefix01.xml
+TEST FAILED: Argument Y is not a NUMBER: #\x
 757/808 nodesetprefix02.xml
+TEST FAILED: The function (SETF DOM:PREFIX) is undefined.
 758/808 nodesetprefix03.xml
+TEST FAILED: The function (SETF DOM:PREFIX) is undefined.
 759/808 nodesetprefix04.xml
+TEST FAILED: The function (SETF DOM:PREFIX) is undefined.
 760/808 nodesetprefix05.xml
+TEST FAILED: Argument Y is not a NUMBER: #\x
 761/808 nodesetprefix06.xml
+TEST FAILED: Argument Y is not a NUMBER: #\x
 762/808 nodesetprefix07.xml
+TEST FAILED: Argument Y is not a NUMBER: #\x
 763/808 nodesetprefix08.xml
+TEST FAILED: The function (SETF DOM:PREFIX) is undefined.
 764/808 nodesetprefix09.xml
+TEST FAILED: Argument Y is not a NUMBER: #\x
 765/808 normalize01.xml
 766/808 ownerDocument01.xml
 767/808 ownerElement01.xml
 768/808 ownerElement02.xml
+TEST FAILED: The slot DOM-IMPL::OWNER-ELEMENT is unbound in the object #<DOM-IMPL::ATTRIBUTE newAttribute="" {52D293F9}>.
 769/808 prefix01.xml
 770/808 prefix02.xml
 771/808 prefix03.xml
 772/808 prefix04.xml
 773/808 prefix05.xml
+TEST FAILED: The function (SETF DOM:PREFIX) is undefined.
 774/808 prefix06.xml
+TEST FAILED: The function (SETF DOM:PREFIX) is undefined.
 775/808 prefix07.xml
+TEST FAILED: The function (SETF DOM:PREFIX) is undefined.
 776/808 prefix08.xml
+TEST FAILED: The function (SETF DOM:PREFIX) is undefined.
 777/808 prefix09.xml
+TEST FAILED: The function (SETF DOM:PREFIX) is undefined.
 778/808 prefix10.xml
+TEST FAILED: The function (SETF DOM:PREFIX) is undefined.
 779/808 prefix11.xml
+TEST FAILED: The function (SETF DOM:PREFIX) is undefined.
 780/808 publicId01.xml
 781/808 removeAttributeNS01.xml
 782/808 removeAttributeNS02.xml
+TEST FAILED: There is no applicable method for the generic function
+               #<STANDARD-GENERIC-FUNCTION DOM:REMOVE-ATTRIBUTE-NODE (1)>
+             when called with arguments
+               (#<DOM-IMPL::ELEMENT emp:address {520D35E1}> NIL).
 783/808 removeNamedItemNS01.xml
+TEST FAILED: NOT_FOUND_ERR (8):
+#(100 111 109 101 115 116 105 99) not found in #<ATTRIBUTE-NODE-MAP {522F4FF1}>
 784/808 removeNamedItemNS02.xml
 785/808 removeNamedItemNS03.xml
+TEST FAILED: NOT_FOUND_ERR (8):
+#(78 73 76) not found in #<ATTRIBUTE-NODE-MAP {529C3E21}>
 786/808 setAttributeNS01.xml
+TEST FAILED: expected exception INVALID_CHARACTER_ERR
 787/808 setAttributeNS02.xml
+TEST FAILED: expected exception NAMESPACE_ERR
 788/808 setAttributeNS03.xml
 789/808 setAttributeNS04.xml
+TEST FAILED: The assertion (DOMTEST::EQUALSP DOMTEST-TESTS::|resultAttr|
+                                             #(110 101 119 86 97 108 117 101)
+                                             'DOMTEST::%EQUAL) failed.
 790/808 setAttributeNS05.xml
+TEST FAILED: The assertion (DOMTEST::EQUALSP DOMTEST-TESTS::|resultAttr|
+                                             #(60 110 101 119 86 97 108 117 101
+                                               62)
+                                             'DOMTEST::%EQUAL) failed.
 791/808 setAttributeNS06.xml
+TEST FAILED: expected exception NAMESPACE_ERR
 792/808 setAttributeNS07.xml
+TEST FAILED: expected exception NAMESPACE_ERR
 793/808 setAttributeNS09.xml
+TEST FAILED: The assertion (DOMTEST::EQUALSP DOMTEST-TESTS::|resultAttr|
+                                             #(110 101 119 86 97 108 117 101)
+                                             'DOMTEST::%EQUAL) failed.
 794/808 setAttributeNS10.xml
 795/808 setAttributeNodeNS01.xml
 796/808 setAttributeNodeNS02.xml
 implementationAttribute expandEntityReferences not supported, skipping test
 797/808 setAttributeNodeNS03.xml
 798/808 setAttributeNodeNS04.xml
+TEST FAILED: Argument Y is not a NUMBER: #\x
 799/808 setAttributeNodeNS05.xml
 800/808 setNamedItemNS01.xml
+TEST FAILED: There is no applicable method for the generic function
+               #<STANDARD-GENERIC-FUNCTION DOM:NAMESPACE-URI (2)>
+             when called with arguments
+               (NIL).
 801/808 setNamedItemNS02.xml
 802/808 setNamedItemNS03.xml
+TEST FAILED: There is no applicable method for the generic function
+               #<STANDARD-GENERIC-FUNCTION DOM:NODE-VALUE (10)>
+             when called with arguments
+               (NIL).
 803/808 setNamedItemNS04.xml
+TEST FAILED: There is no applicable method for the generic function
+               #<STANDARD-GENERIC-FUNCTION DOM:NAMESPACE-URI (2)>
+             when called with arguments
+               (NIL).
 804/808 setNamedItemNS05.xml
+TEST FAILED: There is no applicable method for the generic function
+               #<STANDARD-GENERIC-FUNCTION DOM:NODE-VALUE (10)>
+             when called with arguments
+               (NIL).
 805/808 systemId01.xml
 153/763 tests failed; 45 tests were skipped

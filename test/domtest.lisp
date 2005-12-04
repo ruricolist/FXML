@@ -678,7 +678,7 @@
 				 (funcall (compile nil lisp)))
 			     (serious-condition (c)
 			       (incf nfailed)
-			       (warn "test failed: ~A" c))))))
+			       (format t "~&TEST FAILED: ~A~&" c))))))
 		     (incf i)))))))
       (let* ((d1 (merge-pathnames "tests/level1/core/" *directory*))
 	     (d2 (merge-pathnames "tests/level2/core/" *directory*))
