@@ -3466,15 +3466,19 @@
 
 (defun set-attribute-namespace (attribute)
   (let ((qname (sax:attribute-qname attribute)))
-    (multiple-value-bind (prefix local-name) (split-qname qname)
-      (declare (ignorable local-name))
-      (when (and prefix ;; default namespace doesn't apply to attributes
-		 (or (not (rod= #"xmlns" prefix)) sax:*use-xmlns-namespace*))
-	(multiple-value-bind (uri prefix local-name)
-	    (decode-qname qname)
-	  (declare (ignore prefix))
-	  (setf (sax:attribute-namespace-uri attribute) uri)
-	  (setf (sax:attribute-local-name attribute) local-name))))))
+    (if (and sax:*use-xmlns-namespace* (rod= qname #"xmlns"))
+	(setf (sax:attribute-namespace-uri attribute)
+	      #"http://www.w3.org/2000/xmlns/")
+	(multiple-value-bind (prefix local-name) (split-qname qname)
+	  (declare (ignorable local-name))
+	  (when (and prefix ;; default namespace doesn't apply to attributes
+		     (or (not (rod= #"xmlns" prefix))
+			 sax:*use-xmlns-namespace*))
+	    (multiple-value-bind (uri prefix local-name)
+		(decode-qname qname)
+	      (declare (ignore prefix))
+	      (setf (sax:attribute-namespace-uri attribute) uri)
+	      (setf (sax:attribute-local-name attribute) local-name)))))))
 
 ;;;;;;;;;;;;;;;;;
 

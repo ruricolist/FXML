@@ -217,9 +217,7 @@
        (or (string-equal (rod-string version) "1.0")
 	   (string-equal (rod-string version) "2.0"))))
 
-(defmethod dom:create-document-type
-    ((factory (eql 'implementation)) name publicid systemid)
-  (safe-split-qname name #"")
+(defun %create-document-type (name publicid systemid)
   (make-instance 'dom-impl::document-type
     :name name
     :notations (make-instance 'dom-impl::named-node-map
@@ -230,6 +228,11 @@
 		:owner nil)
     :public-id publicid
     :system-id systemid))
+
+(defmethod dom:create-document-type
+    ((factory (eql 'implementation)) name publicid systemid)
+  (safe-split-qname name #"")
+  (%create-document-type name publicid systemid))
 
 (defmethod dom:create-document
     ((factory (eql 'implementation)) uri qname doctype)
@@ -363,6 +366,9 @@
 (defmethod dom:create-attribute-ns ((document document) uri qname)
   (setf uri (%rod uri))
   (setf qname (%rod qname))
+  (when (and (rod= qname #"xmlns")
+	     (not (rod= uri #"http://www.w3.org/2000/xmlns/")))
+    (dom-error :NAMESPACE_ERR "invalid uri for qname `xmlns'"))
   (multiple-value-bind (prefix local-name)
       (safe-split-qname qname uri)
     (make-instance 'attribute

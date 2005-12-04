@@ -586,7 +586,6 @@ implementationAttribute signed not supported, skipping test
 556/808 documentcreateattributeNS05.xml
 557/808 documentcreateattributeNS06.xml
 558/808 documentcreateattributeNS07.xml
-TEST FAILED: expected exception NAMESPACE_ERR
 559/808 documentcreateelementNS01.xml
 560/808 documentcreateelementNS02.xml
 561/808 documentcreateelementNS05.xml
@@ -671,7 +670,6 @@ TEST FAILED: The assertion DOMTEST-TESTS::|success| failed.
 613/808 elementhasattribute03.xml
 614/808 elementhasattribute04.xml
 615/808 elementhasattributens01.xml
-TEST FAILED: The assertion DOMTEST-TESTS::|state| failed.
 616/808 elementhasattributens02.xml
 617/808 elementhasattributens03.xml
 618/808 elementremoveattributens01.xml
@@ -690,7 +688,6 @@ implementationAttribute expandEntityReferences not supported, skipping test
 628/808 elementsetattributens04.xml
 629/808 elementsetattributens05.xml
 630/808 elementsetattributens08.xml
-TEST FAILED: expected exception NAMESPACE_ERR
 631/808 elementsetattributensurinull.xml
 632/808 getAttributeNS01.xml
 633/808 getAttributeNS02.xml
@@ -807,8 +804,6 @@ TEST FAILED: There is no applicable method for the generic function
                (NIL).
 719/808 namednodemapremovenameditemns03.xml
 720/808 namednodemapremovenameditemns04.xml
-TEST FAILED: NOT_FOUND_ERR (8):
-#(120 109 108 110 115) not found in #<ATTRIBUTE-NODE-MAP {xxxxxxxx}>
 721/808 namednodemapremovenameditemns05.xml
 722/808 namednodemapremovenameditemns06.xml
 723/808 namednodemapremovenameditemns07.xml
@@ -885,6 +880,7 @@ TEST FAILED: The assertion (DOMTEST::EQUALSP DOMTEST-TESTS::|newAttrName|
 775/808 prefix07.xml
 776/808 prefix08.xml
 777/808 prefix09.xml
+TEST FAILED: expected exception NAMESPACE_ERR
 778/808 prefix10.xml
 779/808 prefix11.xml
 780/808 publicId01.xml
@@ -904,7 +900,6 @@ TEST FAILED: There is no applicable method for the generic function
 790/808 setAttributeNS05.xml
 791/808 setAttributeNS06.xml
 792/808 setAttributeNS07.xml
-TEST FAILED: expected exception NAMESPACE_ERR
 793/808 setAttributeNS09.xml
 794/808 setAttributeNS10.xml
 795/808 setAttributeNodeNS01.xml
@@ -920,4 +915,4 @@ TEST FAILED: expected exception INUSE_ATTRIBUTE_ERR
 803/808 setNamedItemNS04.xml
 804/808 setNamedItemNS05.xml
 805/808 systemId01.xml
-38/763 tests failed; 45 tests were skipped
+34/763 tests failed; 45 tests were skipped

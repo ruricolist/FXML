@@ -45,8 +45,7 @@
 
 (defmethod sax:start-dtd ((handler dom-builder) name publicid systemid)
   (let* ((document (document handler))
-         (doctype
-	  (dom:create-document-type 'implementation name publicid systemid)))
+         (doctype (%create-document-type name publicid systemid)))
     (setf (slot-value doctype 'dom-impl::owner) document
 	  (slot-value (dom:notations doctype) 'dom-impl::owner) document
 	  (slot-value (dom:entities doctype) 'dom-impl::owner) document
