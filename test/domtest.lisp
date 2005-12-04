@@ -685,7 +685,6 @@
 	     (suite1 (parse d1))
 	     (suite2 (parse d2)))
 	(run d1 suite1)
-	#+(or)
 	(run d2 suite2)))
     (format t "~&~D/~D tests failed; ~D test~:P were skipped"
             nfailed ntried (- n ntried))))
