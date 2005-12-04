@@ -565,9 +565,7 @@ implementationAttribute signed not supported, skipping test
 535/808 createDocument01.xml
 536/808 createDocument02.xml
 537/808 createDocument03.xml
-TEST FAILED: expected exception WRONG_DOCUMENT_ERR
 538/808 createDocument04.xml
-TEST FAILED: expected exception WRONG_DOCUMENT_ERR
 539/808 createDocument05.xml
 540/808 createDocument06.xml
 541/808 createDocument07.xml
@@ -932,4 +930,4 @@ TEST FAILED: expected exception INUSE_ATTRIBUTE_ERR
 803/808 setNamedItemNS04.xml
 804/808 setNamedItemNS05.xml
 805/808 systemId01.xml
-45/763 tests failed; 45 tests were skipped
+43/763 tests failed; 45 tests were skipped

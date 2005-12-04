@@ -239,6 +239,8 @@
       (unless (typep doctype 'document-type)
 	(dom-error :WRONG_DOCUMENT_ERR
 		   "doctype was created by a different dom implementation"))
+      (when (dom:owner-document doctype)
+	(dom-error :WRONG_DOCUMENT_ERR "doctype already in use"))
       (setf (slot-value doctype 'dom-impl::owner) document
 	    (slot-value (dom:notations doctype) 'dom-impl::owner) document
 	    (slot-value (dom:entities doctype) 'dom-impl::owner) document))
