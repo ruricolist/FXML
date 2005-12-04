@@ -1,6 +1,11 @@
-Preamble to the Gnu Lesser General Public License
+Closure XML -- a Common Lisp XML parser
 
-Copyright (c) 2000 Franz Incorporated, Berkeley, CA 94704
+Copyright (c) 1999 by Gilbert Baumann
+Copyright (c) 2003 by Henrik Motakef
+Copyright (c) 2004 knowledgeTools Int. GmbH
+Copyright (c) 2004,2005 David Lichteblau
+
+Preamble to the Gnu Lesser General Public License
 
 The concept of the GNU Lesser General Public License version 2.1
 ("LGPL") has been adopted to govern the use and distribution of
