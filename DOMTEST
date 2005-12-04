@@ -1151,15 +1151,12 @@ TEST FAILED: There is no applicable method for the generic function
              when called with arguments
                (#(116 101 115 116) NIL).
 760/808 nodesetprefix05.xml
-TEST FAILED: expected exception NAMESPACE_ERR
+TEST FAILED: The variable CXML::*CTX* is unbound.
 761/808 nodesetprefix06.xml
-TEST FAILED: expected exception NAMESPACE_ERR
 762/808 nodesetprefix07.xml
-TEST FAILED: expected exception NAMESPACE_ERR
 763/808 nodesetprefix08.xml
-TEST FAILED: expected exception NAMESPACE_ERR
 764/808 nodesetprefix09.xml
-TEST FAILED: expected exception INVALID_CHARACTER_ERR
+TEST FAILED: The variable CXML::*CTX* is unbound.
 765/808 normalize01.xml
 766/808 ownerDocument01.xml
 767/808 ownerElement01.xml
@@ -1169,17 +1166,13 @@ TEST FAILED: expected exception INVALID_CHARACTER_ERR
 771/808 prefix03.xml
 772/808 prefix04.xml
 773/808 prefix05.xml
-TEST FAILED: expected exception NAMESPACE_ERR
 774/808 prefix06.xml
-TEST FAILED: expected exception INVALID_CHARACTER_ERR
 775/808 prefix07.xml
-TEST FAILED: expected exception NAMESPACE_ERR
+TEST FAILED: The variable CXML::*CTX* is unbound.
 776/808 prefix08.xml
-TEST FAILED: expected exception NO_MODIFICATION_ALLOWED_ERR
 777/808 prefix09.xml
 TEST FAILED: expected exception NAMESPACE_ERR
 778/808 prefix10.xml
-TEST FAILED: expected exception NAMESPACE_ERR
 779/808 prefix11.xml
 TEST FAILED: expected exception NAMESPACE_ERR
 780/808 publicId01.xml
@@ -1245,4 +1238,4 @@ TEST FAILED: There is no applicable method for the generic function
              when called with arguments
                (NIL).
 805/808 systemId01.xml
-143/763 tests failed; 45 tests were skipped
+136/763 tests failed; 45 tests were skipped

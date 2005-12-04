@@ -39,9 +39,14 @@
 (defmethod dom:namespace-uri ((node node)) nil)
 
 (defclass namespace-mixin ()
-  ((prefix        :initarg :prefix        :accessor dom:prefix)
+  ((prefix        :initarg :prefix        :reader dom:prefix)
    (local-name    :initarg :local-name    :reader dom:local-name)
    (namespace-uri :initarg :namespace-uri :reader dom:namespace-uri)))
+
+(defmethod (setf dom:prefix) (newval (node namespace-mixin))
+  (assert-writeable node)
+  (safe-split-qname (concatenate 'rod newval #":foo") (dom:namespace-uri node))
+  (setf (slot-value node 'prefix) newval))
 
 (defclass document (node)
   ((doc-type    :initarg :doc-type     :reader dom:doctype)
