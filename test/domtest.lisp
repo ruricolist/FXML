@@ -336,6 +336,7 @@
     ("fail"		(translate-fail element))
     ("hasFeature" (translate-has-feature element))
     ("if"		(translate-if element))
+    ("implementation"	(translate-implementation element))
     ("increment"	(translate-unary-assignment '+ element))
     ("decrement"	(translate-unary-assignment '- element))
     ("length"		(translate-length element))
@@ -365,6 +366,10 @@
   (with-attributes (|var| |href| |willBeModified|) load
     (maybe-setf (%intern |var|)
                 `(load-file ,|href| ,(parse-java-literal |willBeModified|)))))
+
+(defun translate-implementation (elt)
+  (with-attributes (|var|) elt
+    (maybe-setf (%intern |var|) `'dom-impl::implementation)))
 
 (defun translate-length (load)
   ;; XXX Soweit ich sehe unterscheiden die Tests nicht zwischen

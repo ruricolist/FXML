@@ -219,6 +219,7 @@
 
 (defmethod dom:create-document-type
     ((factory (eql 'implementation)) name publicid systemid)
+  (safe-split-qname name #"")
   (make-instance 'dom-impl::document-type
     :name name
     :notations (make-instance 'dom-impl::named-node-map
