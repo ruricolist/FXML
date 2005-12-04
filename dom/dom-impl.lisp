@@ -128,6 +128,12 @@
 
 ;;; Implementation
 
+(defun %rod (x)
+  (etypecase x
+    (null x)
+    (rod x)
+    (string (string-rod x))))
+
 (defun assert-writeable (node)
   (when (read-only-p node)
     (dom-error :NO_MODIFICATION_ALLOWED_ERR "~S is marked read-only." node)))
@@ -251,7 +257,7 @@
            (return k)))))
 
 (defmethod dom:create-element ((document document) tag-name)
-  (setf tag-name (rod tag-name))
+  (setf tag-name (%rod tag-name))
   (unless (cxml::valid-name-p tag-name)
     (dom-error :INVALID_CHARACTER_ERR "not a name: ~A" (rod-string tag-name)))
   (let ((result (make-instance 'element
@@ -286,7 +292,7 @@
     (values prefix local-name)))
 
 (defmethod dom:create-element-ns ((document document) uri qname)
-  (setf qname (rod qname))
+  (setf qname (%rod qname))
   (multiple-value-bind (prefix local-name)
       (safe-split-qname qname uri)
     (let ((result (make-instance 'element
@@ -308,26 +314,26 @@
     :owner document))
 
 (defmethod dom:create-text-node ((document document) data)
-  (setf data (rod data))
+  (setf data (%rod data))
   (make-instance 'text
     :data data
     :owner document))
 
 (defmethod dom:create-comment ((document document) data)
-  (setf data (rod data))
+  (setf data (%rod data))
   (make-instance 'comment
     :data data
     :owner document))
 
 (defmethod dom:create-cdata-section ((document document) data)
-  (setf data (rod data))
+  (setf data (%rod data))
   (make-instance 'cdata-section
     :data data
     :owner document))
 
 (defmethod dom:create-processing-instruction ((document document) target data)
-  (setf target (rod target))
-  (setf data (rod data))
+  (setf target (%rod target))
+  (setf data (%rod data))
   (unless (cxml::valid-name-p target)
     (dom-error :INVALID_CHARACTER_ERR "not a name: ~A" (rod-string target)))
   (make-instance 'processing-instruction
@@ -336,7 +342,7 @@
     :data data))
 
 (defmethod dom:create-attribute ((document document) name)
-  (setf name (rod name))
+  (setf name (%rod name))
   (unless (cxml::valid-name-p name)
     (dom-error :INVALID_CHARACTER_ERR "not a name: ~A" (rod-string name)))
   (make-instance 'attribute
@@ -349,8 +355,8 @@
     :owner document))
 
 (defmethod dom:create-attribute-ns ((document document) uri qname)
-  (setf uri (rod uri))
-  (setf qname (rod qname))
+  (setf uri (%rod uri))
+  (setf qname (%rod qname))
   (multiple-value-bind (prefix local-name)
       (safe-split-qname qname uri)
     (make-instance 'attribute
@@ -363,7 +369,7 @@
       :owner document)))
 
 (defmethod dom:create-entity-reference ((document document) name)
-  (setf name (rod name))
+  (setf name (%rod name))
   (unless (cxml::valid-name-p name)
     (dom-error :INVALID_CHARACTER_ERR "not a name: ~A" (rod-string name)))
   (make-instance 'entity-reference
@@ -371,7 +377,7 @@
     :owner document))
 
 (defmethod get-elements-by-tag-name-internal (node tag-name)
-  (setf tag-name (rod tag-name))
+  (setf tag-name (%rod tag-name))
   (let ((result (make-node-list))
 	(wild-p (rod= tag-name #"*")))
     (labels ((walk (n)
@@ -384,8 +390,8 @@
     result))
 
 (defmethod get-elements-by-tag-name-internal-ns (node uri lname)
-  (setf uri (rod uri))
-  (setf lname (rod lname))
+  (setf uri (%rod uri))
+  (setf lname (%rod lname))
   (let ((result (make-node-list))
 	(wild-uri-p (rod= uri #"*"))
 	(wild-lname-p (rod= lname #"*")))
@@ -409,7 +415,7 @@
   (block nil
     (unless (dtd document)
       (return nil))
-    (setf id (rod id))
+    (setf id (%rod id))
     (labels ((walk (n)
 	       (dovector (c (dom:child-nodes n))
 		 (when (dom:element-p c)
@@ -703,19 +709,19 @@
 ;;; NAMED-NODE-MAP
 
 (defmethod dom:get-named-item ((self named-node-map) name)
-  (setf name (rod name))
+  (setf name (%rod name))
   (with-slots (items) self
     (dolist (k items nil)
       (when (rod= name (dom:node-name k))
 	(return k)))))
 
 (defmethod dom:get-named-item-ns ((self named-node-map) uri lname)
-  (setf uri (rod uri))
-  (setf lname (rod lname))
+  (setf uri (%rod uri))
+  (setf lname (%rod lname))
   (with-slots (items) self
     (dolist (k items nil)
-      (when (and (equal uri (dom:namespace-uri k))
-		 (equal lname (dom:local-name k)))
+      (when (and (rod= uri (dom:namespace-uri k))
+		 (rod= lname (dom:local-name k)))
 	(return k)))))
 
 (defun %set-named-item (map arg test)
@@ -753,7 +759,7 @@
 
 (defmethod dom:remove-named-item ((self named-node-map) name)
   (assert-writeable self)
-  (setf name (rod name))
+  (setf name (%rod name))
   (with-slots (items) self
     (dolist (k items (dom-error :NOT_FOUND_ERR "~A not found in ~A" name self))
       (cond ((rod= name (dom:node-name k))
@@ -762,8 +768,8 @@
 
 (defmethod dom:remove-named-item-ns ((self named-node-map) uri lname)
   (assert-writeable self)
-  (setf uri (rod uri))
-  (setf lname (rod lname))
+  (setf uri (%rod uri))
+  (setf lname (%rod lname))
   (with-slots (items) self
     (dolist (k items
 	      (dom-error :NOT_FOUND_ERR "~A not found in ~A" lname self))
@@ -786,7 +792,7 @@
 
 (defmethod (setf dom:data) (newval (self character-data))
   (assert-writeable self)
-  (setf newval (rod newval))
+  (setf newval (%rod newval))
   (setf (slot-value self 'value) newval))
 
 (defmethod dom:length ((node character-data))
@@ -801,7 +807,7 @@
 
 (defmethod dom:append-data ((node character-data) arg)
   (assert-writeable node)
-  (setq arg (rod arg))
+  (setq arg (%rod arg))
   (with-slots (value) node
     (setf value (concatenate 'rod value arg)))
   (values))
@@ -829,7 +835,7 @@
   ;; Although we could implement this by calling DELETE-DATA, then INSERT-DATA,
   ;; we implement this function directly to avoid creating temporary garbage.
   (assert-writeable node)
-  (setf arg (rod arg))
+  (setf arg (%rod arg))
   (with-slots (value) node
     (unless (<= 0 offset (length value))
       (dom-error :INDEX_SIZE_ERR "offset is invalid"))
@@ -852,7 +858,7 @@
 
 (defmethod dom:insert-data ((node character-data) offset arg)
   (assert-writeable node)
-  (setf arg (rod arg))
+  (setf arg (%rod arg))
   (with-slots (value) node
     (unless (<= 0 offset (length value))
       (dom-error :INDEX_SIZE_ERR "offset is invalid"))
@@ -889,7 +895,7 @@
 
 (defmethod (setf dom:value) (new-value (node attribute))
   (assert-writeable node)
-  (let ((rod (rod new-value)))
+  (let ((rod (%rod new-value)))
     (with-slots (children owner) node
       ;; remove children, add new TEXT-NODE child
       ;; (alas, we must not reuse an old TEXT-NODE)
@@ -1147,7 +1153,7 @@
 
 (defmethod (setf dom:data) (newval (self processing-instruction))
   (assert-writeable self)
-  (setf newval (rod newval))
+  (setf newval (%rod newval))
   (setf (slot-value self 'data) newval))
 
 ;; das koennte man auch mit einer GF machen
