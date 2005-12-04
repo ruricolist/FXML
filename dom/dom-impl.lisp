@@ -1248,6 +1248,10 @@
         (dom:append-child result (dom:import-node document child t))))
     result))
 
+(defmethod dom:import-node ((document document) (node t) deep)
+  (declare (ignore deep))
+  (dom-error :NOT_SUPPORTED_ERR "not implemented"))
+
 (defmethod dom:import-node ((document document) (node attribute) deep)
   (declare (ignore deep))
   (import-node-internal 'attribute

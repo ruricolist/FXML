@@ -602,23 +602,8 @@ implementationAttribute signed not supported, skipping test
 572/808 documentimportnode04.xml
 573/808 documentimportnode05.xml
 574/808 documentimportnode06.xml
-TEST FAILED: There is no applicable method for the generic function
-               #<STANDARD-GENERIC-FUNCTION DOM:IMPORT-NODE (8)>
-             when called with arguments
-               (#<DOM-IMPL::DOCUMENT {xxxxxxxx}>
-                #<DOM-IMPL::DOCUMENT {xxxxxxxx}> NIL).
 575/808 documentimportnode07.xml
-TEST FAILED: There is no applicable method for the generic function
-               #<STANDARD-GENERIC-FUNCTION DOM:IMPORT-NODE (8)>
-             when called with arguments
-               (#<DOM-IMPL::DOCUMENT {xxxxxxxx}>
-                #<DOM-IMPL::DOCUMENT-TYPE {xxxxxxxx}> T).
 576/808 documentimportnode08.xml
-TEST FAILED: There is no applicable method for the generic function
-               #<STANDARD-GENERIC-FUNCTION DOM:IMPORT-NODE (8)>
-             when called with arguments
-               (#<DOM-IMPL::DOCUMENT {xxxxxxxx}>
-                #<DOM-IMPL::DOCUMENT-TYPE {xxxxxxxx}> T).
 577/808 documentimportnode09.xml
 578/808 documentimportnode10.xml
 579/808 documentimportnode11.xml
@@ -756,17 +741,7 @@ not implemented
 690/808 importNode14.xml
 691/808 importNode15.xml
 692/808 importNode16.xml
-TEST FAILED: There is no applicable method for the generic function
-               #<STANDARD-GENERIC-FUNCTION DOM:IMPORT-NODE (8)>
-             when called with arguments
-               (#<DOM-IMPL::DOCUMENT {xxxxxxxx}>
-                #<DOM-IMPL::DOCUMENT-TYPE {xxxxxxxx}> NIL).
 693/808 importNode17.xml
-TEST FAILED: There is no applicable method for the generic function
-               #<STANDARD-GENERIC-FUNCTION DOM:IMPORT-NODE (8)>
-             when called with arguments
-               (#<DOM-IMPL::DOCUMENT {xxxxxxxx}>
-                #<DOM-IMPL::DOCUMENT {xxxxxxxx}> NIL).
 694/808 internalSubset01.xml
 TEST FAILED: The assertion (NULL DOMTEST-TESTS::|internal|) failed.
 695/808 isSupported01.xml
@@ -913,4 +888,4 @@ TEST FAILED: expected exception INUSE_ATTRIBUTE_ERR
 803/808 setNamedItemNS04.xml
 804/808 setNamedItemNS05.xml
 805/808 systemId01.xml
-32/763 tests failed; 45 tests were skipped
+27/763 tests failed; 45 tests were skipped
