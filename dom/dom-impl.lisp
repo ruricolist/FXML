@@ -1138,6 +1138,7 @@
   (labels ((walk (n)
              (setf (slot-value n 'read-only-p) t)
              (when (dom:element-p n)
+	       (setf (slot-value (dom:attributes n) 'read-only-p) t)
                (map nil #'walk (dom:items (dom:attributes n))))
              (map nil #'walk (dom:child-nodes n))))
     (walk instance)))
