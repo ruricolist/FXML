@@ -142,11 +142,14 @@
                (c = (elt str i))
                :until (runes:rune= c #.(runes:char-rune #\")))
             (if (runes:rune= c #.(runes:char-rune #\\))
-                (ecase (progn
+                (let ((frob
+		       (progn
                          (incf i)
-                         (elt str i))
-                  ;; ...
-                  (#/n (vector-push-extend #/newline v (length v))))
+                         (elt str i))))
+		  (ecase frob
+		    ;; ...
+		    (#/n (vector-push-extend #/newline v (length v)))
+		    ((#/\\ #/\") (vector-push-extend #/\\ v (length v)))))
                 (vector-push-extend c v (length v))))
         (coerce v 'runes::simple-rod)))
     (t
@@ -163,13 +166,14 @@
 
 ;;;; dom1-interfaces.xml auslesen
 
-(defvar *methods* '())
-(defvar *fields* '())
+(defparameter *methods* '())
+(defparameter *fields* '())
 
 (declaim (special *directory*))
+(declaim (special *files-directory*))
 
-(defun read-members ()
-  (let* ((pathname (merge-pathnames "patches/dom1-interfaces.xml" *directory*))
+(defun read-members (&optional (directory *directory*))
+  (let* ((pathname (merge-pathnames "build/dom2-interfaces.xml" directory))
          (builder (dom:make-dom-builder))
          (library (dom:document-element (cxml:parse-file pathname builder)))
          (methods '())
@@ -554,8 +558,15 @@
 (defun assert-have-implementation-attribute (element)
   (let ((attribute (runes:rod-string (dom:get-attribute element "name"))))
     (string-case attribute
+      ;; fixme: expandEntityReferences sollten wir auch mal anschalten, wo
+      ;; wir uns schon die muehe machen...
       ("validating"
         (setf cxml::*validate* t))
+      ("namespaceAware"
+	;; ???  dom 2 ohne namespace-support gibt's doch gar nicht,
+	;; ausser vielleicht in html-only implementationen, und dann sollen
+	;; sie halt auf hasFeature "XML" testen.
+        )
       (t
         (format t "~&implementationAttribute ~A not supported, skipping test~%"
                 attribute)
@@ -606,12 +617,9 @@
 (defun load-file (name &optional will-be-modified-p)
   (declare (ignore will-be-modified-p))
   (setf name (runes:rod-string name))
-  (let* ((directory (merge-pathnames "tests/level1/core/files/" *directory*))
-         (document
-          (cxml:parse-file
-           (make-pathname :name name :type "xml" :defaults directory)
-           (dom:make-dom-builder))))
-    document))
+  (cxml:parse-file
+   (make-pathname :name name :type "xml" :defaults *files-directory*)
+   (dom:make-dom-builder)))
 
 (defparameter *bad-tests*
     '("hc_elementnormalize2.xml"
@@ -628,39 +636,57 @@
 
 (defun run-all-tests (*directory* &optional verbose)
   (let* ((cxml::*redefinition-warning* nil)
-         (test-directory (merge-pathnames "tests/level1/core/" *directory*))
-         (all-tests (merge-pathnames "alltests.xml" test-directory))
-         (builder (dom:make-dom-builder))
-         (suite (dom:document-element (cxml:parse-file all-tests builder)))
          (n 0)
          (i 0)
          (ntried 0)
          (nfailed 0))
-    (do-child-elements (member suite)
-      (unless
-          (or (equal (dom:tag-name member) "metadata")
-              (member (runes:rod-string (dom:get-attribute member "href"))
-                      *bad-tests*
-                      :test 'equal))
-        (incf n)))
-    (do-child-elements (member suite)
-      (let ((href (runes:rod-string (dom:get-attribute member "href"))))
-        (unless (or (runes:rod= (dom:tag-name member) #"metadata")
-                    (member href *bad-tests* :test 'equal))
-          (format t "~&~D/~D ~A~%" i n href)
-          (let ((lisp (slurp-test (merge-pathnames href test-directory))))
-            (when verbose
-              (print lisp))
-            (when lisp
-              (incf ntried)
-              (with-simple-restart (skip-test "Skip this test")
-                (handler-case
-                    (let ((cxml::*validate* nil))
-                      (funcall (compile nil lisp)))
-                  (serious-condition (c)
-                    (incf nfailed)
-                    (warn "test failed: ~A" c))))))
-          (incf i))))
+    (flet ((parse (test-directory)
+	     (let* ((all-tests (merge-pathnames "alltests.xml" test-directory))
+		    (builder (dom:make-dom-builder))
+		    (suite (dom:document-element
+			    (cxml:parse-file all-tests builder)))
+		    (*files-directory*
+		     (merge-pathnames "files/" test-directory)))
+	       (do-child-elements (member suite)
+		 (unless
+		     (or (equal (dom:tag-name member) "metadata")
+			 (member (runes:rod-string
+				  (dom:get-attribute member "href"))
+				 *bad-tests*
+				 :test 'equal))
+		   (incf n)))
+	       suite))
+	   (run (test-directory suite)
+	     (print test-directory)
+	     (let ((*files-directory*
+		    (merge-pathnames "files/" test-directory)))
+	       (do-child-elements (member suite)
+		 (let ((href (runes:rod-string
+			      (dom:get-attribute member "href"))))
+		   (unless (or (runes:rod= (dom:tag-name member) #"metadata")
+			       (member href *bad-tests* :test 'equal))
+		     (format t "~&~D/~D ~A~%" i n href)
+		     (let ((lisp (slurp-test
+				  (merge-pathnames href test-directory))))
+		       (when verbose
+			 (print lisp))
+		       (when lisp
+			 (incf ntried)
+			 (with-simple-restart (skip-test "Skip this test")
+			   (handler-case
+			       (let ((cxml::*validate* nil))
+				 (funcall (compile nil lisp)))
+			     (serious-condition (c)
+			       (incf nfailed)
+			       (warn "test failed: ~A" c))))))
+		     (incf i)))))))
+      (let* ((d1 (merge-pathnames "tests/level1/core/" *directory*))
+	     (d2 (merge-pathnames "tests/level2/core/" *directory*))
+	     (suite1 (parse d1))
+	     (suite2 (parse d2)))
+	(run d1 suite1)
+	#+(or)
+	(run d2 suite2)))
     (format t "~&~D/~D tests failed; ~D test~:P were skipped"
             nfailed ntried (- n ntried))))
 

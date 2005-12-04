@@ -8,7 +8,8 @@
 ;;;; Author: knowledgeTools Int. GmbH
 
 (defpackage :dom-impl
-  (:use :cl :runes))
+  (:use :cl :runes)
+  (:export #:create-document))
 
 (in-package :dom-impl)
 
@@ -33,6 +34,15 @@
    (read-only-p :initform nil           :reader read-only-p)
    (map         :initform nil)))
 
+(defmethod dom:prefix ((node node)) nil)
+(defmethod dom:local-name ((node node)) nil)
+(defmethod dom:namespace-uri ((node node)) nil)
+
+(defclass namespace-mixin ()
+  ((prefix        :initarg :prefix        :reader dom:prefix)
+   (local-name    :initarg :local-name    :reader dom:local-name)
+   (namespace-uri :initarg :namespace-uri :reader dom:namespace-uri)))
+
 (defclass document (node)
   ((doc-type    :initarg :doc-type     :reader dom:doctype)
    (dtd         :initform nil          :reader dtd)
@@ -44,8 +54,9 @@
 (defclass character-data (node)
   ((value       :initarg :data          :reader dom:data)))
 
-(defclass attribute (node)
+(defclass attribute (namespace-mixin node)
   ((name        :initarg :name          :reader dom:name)
+   (owner-element :initarg :owner-element :reader dom:owner-element)
    (specified-p :initarg :specified-p   :reader dom:specified)))
 
 (defmethod print-object ((object attribute) stream)
@@ -54,7 +65,7 @@
             (rod-string (dom:name object))
             (rod-string (dom:value object)))))
 
-(defclass element (node)
+(defclass element (namespace-mixin node)
   ((tag-name    :initarg :tag-name      :reader dom:tag-name)
    (attributes  :initarg :attributes    :reader dom:attributes)))
 
@@ -73,8 +84,11 @@
 
 (defclass document-type (node)
   ((name          :initarg :name          :reader dom:name)
+   (public-id     :initarg :public-id     :reader dom:public-id)
+   (system-id     :initarg :system-id     :reader dom:system-id)
    (entities      :initarg :entities      :reader dom:entities)
-   (notations     :initarg :notations     :reader dom:notations)))
+   (notations     :initarg :notations     :reader dom:notations)
+   (internal-subset                       :accessor internal-subset)))
 
 (defclass notation (node)
   ((name          :initarg :name          :reader dom:name)
@@ -176,6 +190,45 @@
     (:NOT_SUPPORTED_ERR                 9)
     (:INUSE_ATTRIBUTE_ERR               10)))
 
+;; dom-implementation protocol
+
+(defmethod dom:has-feature ((factory (eql 'implementation)) feature version)
+  (and (or (string-equal (rod-string feature) "xml")
+	   (string-equal (rod-string feature) "core"))
+       (or (string-equal (rod-string version) "1.0")
+	   (string-equal (rod-string version) "2.0"))))
+
+(defmethod dom:create-document-type
+    ((factory (eql 'implementation)) name publicid systemid)
+  (make-instance 'dom-impl::document-type
+    :name name
+    :notations (make-instance 'dom-impl::named-node-map
+		 :element-type :notation
+		 :owner nil)
+    :entities (make-instance 'dom-impl::named-node-map
+		:element-type :entity
+		:owner nil)
+    :public-id publicid
+    :system-id systemid))
+
+(defmethod dom:create-document
+    ((factory (eql 'implementation)) uri qname doctype)
+  (let ((document (make-instance 'dom-impl::document)))
+    (setf (slot-value document 'owner) nil
+	  (slot-value document 'doc-type) doctype
+	  (slot-value document 'namespace-uri) uri)
+    (setf (values (slot-value document 'prefix)
+		  (slot-value document 'local-name))
+	  (safe-split-qname qname uri))
+    (when doctype
+      (unless (typep doctype 'document-type)
+	(dom-error :WRONG_DOCUMENT_ERR
+		   "doctype was created by a different dom implementation"))
+      (setf (slot-value doctype 'dom-impl::owner) document
+	    (slot-value (dom:notations doctype) 'dom-impl::owner) document
+	    (slot-value (dom:entities doctype) 'dom-impl::owner) document))
+    document))
+
 ;; document-fragment protocol
 ;; document protocol
 
@@ -191,8 +244,11 @@
   (setf tag-name (rod tag-name))
   (unless (cxml::valid-name-p tag-name)
     (dom-error :INVALID_CHARACTER_ERR "not a name: ~A" (rod-string tag-name)))
-  (let ((result (make-instance 'element 
+  (let ((result (make-instance 'element
                   :tag-name tag-name
+		  :namespace-uri nil
+		  :local-name nil
+		  :prefix nil
                   :owner document)))
     (setf (slot-value result 'attributes)
           (make-instance 'attribute-node-map
@@ -201,6 +257,41 @@
             :element result))
     (add-default-attributes result)
     result))
+
+(defun safe-split-qname (qname uri)
+  (unless (cxml::valid-name-p qname)
+    (dom-error :INVALID_CHARACTER_ERR "not a name: ~A" (rod-string qname)))
+  (multiple-value-bind (prefix local-name)
+      (handler-case
+	  (cxml::split-qname qname)
+	(cxml:well-formedness-violation (c)
+	  (dom-error :NAMESPACE_ERR "~A" c)))
+    (when prefix
+      (when (and (rod= prefix "xml")
+		 (not (rod= uri "http://www.w3.org/XML/1998/namespace")))
+	(dom-error :NAMESPACE_ERR "invalid uri for prefix `xml'"))
+      (when (and (rod= prefix "xmlns")
+		 (not (rod= uri "http://www.w3.org/2000/xmlns/")))
+	(dom-error :NAMESPACE_ERR "invalid uri for prefix `xmlns'")))
+    (values prefix local-name)))
+
+(defmethod dom:create-element-ns ((document document) uri qname)
+  (setf qname (rod qname))
+  (multiple-value-bind (prefix local-name)
+      (safe-split-qname qname uri)
+    (let ((result (make-instance 'element
+		    :tag-name qname
+		    :namespace-uri uri
+		    :local-name local-name
+		    :prefix prefix
+		    :owner document)))
+      (setf (slot-value result 'attributes)
+	    (make-instance 'attribute-node-map
+	      :element-type :attribute
+	      :owner document
+	      :element result))
+      (add-default-attributes result)
+      result)))
 
 (defmethod dom:create-document-fragment ((document document))
   (make-instance 'document-fragment
@@ -240,8 +331,24 @@
     (dom-error :INVALID_CHARACTER_ERR "not a name: ~A" (rod-string name)))
   (make-instance 'attribute
     :name name
+    :local-name nil
+    :prefix nil
+    :namespace-uri nil
     :specified-p t
     :owner document))
+
+(defmethod dom:create-attribute-ns ((document document) uri qname)
+  (setf uri (rod uri))
+  (setf qname (rod qname))
+  (multiple-value-bind (prefix local-name)
+      (safe-split-qname qname uri)
+    (make-instance 'attribute
+      :name qname
+      :namespace-uri uri
+      :local-name local-name
+      :prefix prefix
+      :specified-p t
+      :owner document)))
 
 (defmethod dom:create-entity-reference ((document document) name)
   (setf name (rod name))
@@ -253,22 +360,65 @@
 
 (defmethod get-elements-by-tag-name-internal (node tag-name)
   (setf tag-name (rod tag-name))
-  (let ((result (make-node-list)))
-    (setf tag-name (rod tag-name))
-    (let ((wild-p (rod= tag-name '#.(string-rod "*"))))
-      (labels ((walk (n)
-                 (dovector (c (dom:child-nodes n))
-                   (when (dom:element-p c)
-                     (when (or wild-p (rod= tag-name (dom:node-name c)))
-                       (vector-push-extend c result (extension result)))
-                     (walk c)))))
-        (walk node)))
+  (let ((result (make-node-list))
+	(wild-p (rod= tag-name '#.(string-rod "*"))))
+    (labels ((walk (n)
+	       (dovector (c (dom:child-nodes n))
+		 (when (dom:element-p c)
+		   (when (or wild-p (rod= tag-name (dom:node-name c)))
+		     (vector-push-extend c result (extension result)))
+		   (walk c)))))
+      (walk node))
+    result))
+
+(defmethod get-elements-by-tag-name-internal-ns (node uri lname)
+  (setf uri (rod uri))
+  (setf lname (rod lname))
+  (let ((result (make-node-list))
+	(wild-uri-p (rod= uri '#.(string-rod "*")))
+	(wild-lname-p (rod= lname '#.(string-rod "*"))))
+    (labels ((walk (n)
+	       (dovector (c (dom:child-nodes n))
+		 (when (dom:element-p c)
+		   (when (and (or wild-lname-p (rod= lname (dom:local-name c)))
+			      (or wild-uri-p (rod= uri (dom:namespace-uri c))))
+		     (vector-push-extend c result (extension result)))
+		   (walk c)))))
+      (walk node))
     result))
 
 (defmethod dom:get-elements-by-tag-name ((document document) tag-name)
   (get-elements-by-tag-name-internal document tag-name))
 
+(defmethod dom:get-elements-by-tag-name-ns ((document document) uri lname)
+  (get-elements-by-tag-name-internal-ns document uri lname))
+
+(defmethod dom:get-element-by-id ((document document) id)
+  (block nil
+    (unless (dtd document)
+      (return nil))
+    (setf id (rod id))
+    (labels ((walk (n)
+	       (dovector (c (dom:child-nodes n))
+		 (when (dom:element-p c)
+		   (let ((e (cxml::find-element
+			     (cxml::rod (dom:tag-name c))
+			     (dtd document))))
+		     (when e
+		       (dolist (a (cxml::elmdef-attributes e))
+			 (when (eq :ID (cxml::attdef-type a))
+			   (let* ((name (rod (cxml::attdef-name a)))
+				  (value (dom:get-attribute c name)))
+			     (when (and value (rod= value id))
+			       (return c)))))))
+		   (walk c)))))
+      (walk document))))
+
+
 ;;; Node
+
+(defmethod dom:is-supported ((node node) feature version)
+  (dom:has-feature 'implementation feature version))
 
 (defmethod dom:parent-node ((node node))
   (slot-value node 'parent))
@@ -544,29 +694,50 @@
   (setf name (rod name))
   (with-slots (items) self
     (dolist (k items nil)
-      (cond ((rod= name (dom:node-name k))
-             (return k))))))
+      (when (rod= name (dom:node-name k))
+	(return k)))))
 
-(defmethod dom:set-named-item ((self named-node-map) arg)
-  (assert-writeable self)
-  (unless (eq (dom:node-type arg) (slot-value self 'element-type))
+(defmethod dom:get-named-item-ns ((self named-node-map) uri lname)
+  (setf uri (rod uri))
+  (setf lname (rod lname))
+  (with-slots (items) self
+    (dolist (k items nil)
+      (when (and (equal uri (dom:namespace-uri k))
+		 (equal lname (dom:local-name k)))
+	(return k)))))
+
+(defun %set-named-item (map arg test)
+  (assert-writeable map)
+  (unless (eq (dom:node-type arg) (slot-value map 'element-type))
     (dom-error :HIERARCHY_REQUEST_ERR
                "~S cannot adopt ~S, since it is not of type ~S."
-               self arg (slot-value self 'element-type)))
-  (unless (eq (dom:owner-document self) (dom:owner-document arg))
+               map arg (slot-value map 'element-type)))
+  (unless (eq (dom:owner-document map) (dom:owner-document arg))
     (dom-error :WRONG_DOCUMENT_ERR
                "~S cannot adopt ~S, since it was created by a different document."
-               self arg))
+               map arg))
   (let ((old-map (slot-value arg 'map)))
-    (when (and old-map (not (eq old-map self)))
+    (when (and old-map (not (eq old-map map)))
       (dom-error :INUSE_ATTRIBUTE_ERR "Attribute node already mapped" arg)))
-  (setf (slot-value arg 'map) self)
+  (setf (slot-value arg 'map) map)
+  (with-slots (items) map
+    (dolist (k items (progn (setf items (cons arg items)) nil))
+      (when (funcall test k)
+	(setf items (cons arg (delete k items)))
+	(return k)))))
+
+(defmethod dom:set-named-item ((self named-node-map) arg)
   (let ((name (dom:node-name arg)))
-    (with-slots (items) self
-      (dolist (k items (progn (setf items (cons arg items))nil))
-        (cond ((rod= name (dom:node-name k))
-               (setf items (cons arg (delete k items)))
-               (return k)))))))
+    (%set-named-item self arg (lambda (k) (rod= name (dom:node-name k))))))
+
+(defmethod dom:set-named-item-ns ((self named-node-map) arg)
+  (let ((uri (dom:namespace-uri arg))
+	(lname (dom:local-name arg)))
+    (%set-named-item self
+		     arg
+		     (lambda (k)
+		       (and (rod= lname (dom:local-name k))
+			    (rod= uri (dom:namespace-uri k)))))))
 
 (defmethod dom:remove-named-item ((self named-node-map) name)
   (assert-writeable self)
@@ -576,6 +747,18 @@
       (cond ((rod= name (dom:node-name k))
              (setf items (delete k items))
              (return k))))))
+
+(defmethod dom:remove-named-item-ns ((self named-node-map) uri lname)
+  (assert-writeable self)
+  (setf uri (rod uri))
+  (setf lname (rod lname))
+  (with-slots (items) self
+    (dolist (k items
+	      (dom-error :NOT_FOUND_ERR "~A not found in ~A" lname self))
+      (when (and (rod= lname (dom:local-name k))
+		 (rod= uri (dom:namespace-uri k)))
+	(setf items (delete k items))
+	(return k)))))
 
 (defmethod dom:length ((self named-node-map))
   (with-slots (items) self
@@ -743,6 +926,15 @@
 
 ;;; ELEMENT
 
+(defmethod dom:has-attributes ((element element))
+  (plusp (length (dom:items (dom:attributes element)))))
+
+(defmethod dom:has-attribute ((element element) name)
+  (and (dom:get-named-item (dom:attributes element) name) t))
+
+(defmethod dom:has-attribute-ns ((element element) uri lname)
+  (and (dom:get-named-item-ns (dom:attributes element) uri lname) t))
+
 (defmethod dom:get-attribute-node ((element element) name)
   (dom:get-named-item (dom:attributes element) name))
 
@@ -750,8 +942,21 @@
   (assert-writeable element)
   (dom:set-named-item (dom:attributes element) new-attr))
 
+(defmethod dom:get-attribute-node-ns ((element element) uri lname)
+  (dom:get-named-item-ns (dom:attributes element) uri lname))
+
+(defmethod dom:set-attribute-node-ns ((element element) (new-attr attribute))
+  (assert-writeable element)
+  (dom:set-named-item-ns (dom:attributes element) new-attr))
+
 (defmethod dom:get-attribute ((element element) name)
   (let ((a (dom:get-attribute-node element name)))
+    (if a
+        (dom:value a)
+        #.(string-rod ""))))
+
+(defmethod dom:get-attribute-ns ((element element) uri lname)
+  (let ((a (dom:get-attribute-node-ns element uri lname)))
     (if a
         (dom:value a)
         #.(string-rod ""))))
@@ -760,13 +965,27 @@
   (assert-writeable element)
   (with-slots (owner) element
     (let ((attr (dom:create-attribute owner name)))
+      (setf (slot-value attr 'owner-element) element)
       (setf (dom:value attr) value)
       (dom:set-attribute-node element attr))
+    (values)))
+
+(defmethod dom:set-attribute-ns ((element element) uri lname value)
+  (assert-writeable element)
+  (with-slots (owner) element
+    (let ((attr (dom:create-attribute-ns owner uri lname)))
+      (setf (slot-value attr 'owner-element) element)
+      (setf (dom:value attr) value)
+      (dom:set-attribute-node-ns element attr))
     (values)))
 
 (defmethod dom:remove-attribute ((element element) name)
   (assert-writeable element)
   (dom:remove-attribute-node element (dom:get-attribute-node element name)))
+
+(defmethod dom:remove-attribute-ns ((elt element) uri lname)
+  (assert-writeable elt)
+  (dom:remove-attribute-node elt (dom:get-attribute-node-ns elt uri lname)))
 
 (defmethod dom:remove-attribute-node ((element element) (old-attr attribute))
   (assert-writeable element)
@@ -781,14 +1000,18 @@
 
 (defun maybe-add-default-attribute (element name)
   (let* ((dtd (dtd (slot-value element 'owner)))
-         (e (when dtd (cxml::find-element (dom:tag-name element) dtd)))
+         (e (when dtd (cxml::find-element
+		       (cxml::rod (dom:tag-name element))
+		       dtd)))
          (a (when e (cxml::find-attribute e name))))
     (when (and a (listp (cxml::attdef-default a)))
       (add-default-attribute element a))))
 
 (defun add-default-attributes (element)
   (let* ((dtd (dtd (slot-value element 'owner)))
-         (e (when dtd (cxml::find-element (dom:tag-name element) dtd))))
+         (e (when dtd (cxml::find-element
+		       (cxml::rod (dom:tag-name element))
+		       dtd))))
     (when e
       (dolist (a (cxml::elmdef-attributes e))
         (when (and a (listp (cxml::attdef-default a)))
@@ -799,7 +1022,8 @@
          (owner (slot-value element 'owner))
          (anode (dom:create-attribute owner (cxml::attdef-name adef)))
          (text (dom:create-text-node owner value)))
-    (setf (slot-value anode 'dom-impl::specified-p) nil)
+    (setf (slot-value anode 'specified-p) nil)
+    (setf (slot-value anode 'owner-element) element)
     (dom:append-child anode text)
     (push anode (slot-value (dom:attributes element) 'items))))
 
@@ -810,8 +1034,16 @@
   (assert-writeable element)
   (get-elements-by-tag-name-internal element name))
 
-(defmethod dom:normalize ((element element))
+(defmethod dom:get-elements-by-tag-name-ns ((element element) uri lname)
   (assert-writeable element)
+  (get-elements-by-tag-name-internal-ns element uri lname))
+
+(defmethod dom:set-named-item :after ((self attribute-node-map) arg)
+  (setf (slot-value arg 'owner-element)
+	(slot-value self 'element)))
+
+(defmethod dom:normalize ((node node))
+  (assert-writeable node)
   (labels ((walk (n)
              (when (eq (dom:node-type n) :element)
                (map nil #'walk (dom:items (dom:attributes n))))
@@ -837,7 +1069,7 @@
                        (setf previous child)
                        (incf i)))))) 
              (map nil #'walk (dom:child-nodes n))))
-    (walk element))
+    (walk node))
   (values))
 
 ;;; TEXT
@@ -856,7 +1088,17 @@
 ;;; COMMENT -- nix
 ;;; CDATA-SECTION -- nix
 
-;;; DOCUMENT-TYPE -- missing
+;;; DOCUMENT-TYPE
+
+(defmethod dom:internal-subset ((node document-type))
+  ;; FIXME: encoding ist falsch, anderen sink nehmen!
+  (if (slot-boundp node 'internal-subset)
+      (with-output-to-string (stream)
+	(let ((sink (cxml:make-character-stream-sink stream)))
+	  (dolist (def (internal-subset node))
+	    (apply (car def) sink (cdr def)))))
+      nil))
+
 ;;; NOTATION -- nix
 ;;; ENTITY -- nix
 
@@ -978,6 +1220,9 @@
                        :owner document))
          (result (import-node-internal 'element document node deep
                                        :attributes attributes
+				       :namespace-uri (dom:namespace-uri node)
+				       :local-name (dom:local-name node)
+				       :prefix (dom:prefix node)
                                        :tag-name (dom:tag-name node))))
     (setf (slot-value attributes 'element) result)
     (dolist (attribute (dom:items (dom:attributes node)))
@@ -1034,7 +1279,7 @@
 
 ;;; Erweiterung
 
-(defun dom:create-document (&optional document-element)
+(defun dom-impl:create-document (&optional document-element)
   ;; Um ein neues Dokumentenobject zu erzeugen, parsen wir einfach ein
   ;; Dummydokument.
   (let* ((handler (dom:make-dom-builder))

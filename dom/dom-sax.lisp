@@ -11,26 +11,41 @@
 (defun dom:map-document
     (handler document
      &key (include-xmlns-attributes sax:*include-xmlns-attributes*)
+	  include-doctype
           include-default-values)
   (sax:start-document handler)
-  (let ((doctype (dom:doctype document)))
-    (when doctype
-      (sax:start-dtd handler (dom:name doctype) nil nil)
-      ;; need notations for canonical mode 2
-      (let* ((ns (dom:notations doctype))
-             (a (make-array (dom:length ns))))
-        ;; get them
-        (dotimes (k (dom:length ns))
-          (setf (elt a k) (dom:item ns k)))
-        ;; sort them 
-        (setf a (sort a #'rod< :key #'dom:name))
-        (loop for n across a do
-              (sax:notation-declaration handler
-                                        (dom:name n)
-                                        (dom:public-id n)
-                                        (dom:system-id n)))
-        ;; fixme: entities!
-        (sax:end-dtd handler))))
+  (when include-doctype
+    (let ((doctype (dom:doctype document)))
+      (when doctype
+	(sax:start-dtd handler
+		       (dom:name doctype)
+		       (dom:public-id doctype)
+		       (dom:system-id doctype))
+	(ecase include-doctype
+	  (:full-internal-subset
+	    (when (slot-boundp doctype 'internal-subset)
+	      (sax:start-internal-subset handler)
+	      (dolist (def (internal-subset doctype))
+		(apply (car def) handler (cdr def)))
+	      (sax:end-internal-subset handler)))
+	  (:canonical-notations
+	    ;; need notations for canonical mode 2
+	    (let* ((ns (dom:notations doctype))
+		   (a (make-array (dom:length ns))))
+	      (when (plusp (dom:length ns))
+		(sax:start-internal-subset handler)
+		;; get them
+		(dotimes (k (dom:length ns))
+		  (setf (elt a k) (dom:item ns k)))
+		;; sort them 
+		(setf a (sort a #'rod< :key #'dom:name))
+		(loop for n across a do
+		      (sax:notation-declaration handler
+						(dom:name n)
+						(dom:public-id n)
+						(dom:system-id n)))
+		(sax:end-internal-subset handler)))))
+	(sax:end-dtd handler))))
   (labels ((walk (node)
              (dom:do-node-list (child (dom:child-nodes node))
                (ecase (dom:node-type child)

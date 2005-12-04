@@ -1,11 +1,13 @@
-;;; -*- Mode: Lisp; Syntax: Common-Lisp; Package: SAX; readtable: glisp; Encoding: utf-8; -*-
+;;; -*- Mode: Lisp; Syntax: Common-Lisp; Package: SAX; readtable: runes; Encoding: utf-8; -*-
 ;;; ---------------------------------------------------------------------------
 ;;;     Title: A SAX2-like API for the xml parser
 ;;;   Created: 2003-06-30
 ;;;    Author: Henrik Motakef <hmot@henrik-motakef.de>
+;;;    Author: David Lichteblau (DTD-related changes)
 ;;;   License: BSD
 ;;; ---------------------------------------------------------------------------
 ;;;  © copyright 2003 by Henrik Motakef
+;;;  © copyright 2004 knowledgeTools Int. GmbH
 
 ;;; Redistribution and use  in source and binary   forms, with or  without
 ;;; modification, are permitted provided that the following conditions are
@@ -40,23 +42,22 @@
 ;;   * document-locator/(setf document-locator)
 ;;     (probably implies a handler class with an appropriate slot)
 ;;   * skipped-entity
-;;   * notation-declaration
-;;   * unparsed-entity-declaration
 ;;   * The whole ErrorHandler class, this is better handled using
 ;;     conditions (but isn't yet)
-;;   * The LexicalHandler (start-cdata etc) would be nice
-;;   * The DeclHandler interface (element-decl, attribute-decl...)
-;;     is useful, but the Java interface sucks.
-;; o Despite all the namespace-uri etc arguments, namespaces are not
-;;   really supported yet, the xml parser always passes nil. This will
-;;   hopefully change Real Soon Now, and I didn't want to have to
-;;   rewrite the interface then
+;;   * The LexicalHandler (start-cdata etc) would be nice  [-- partly done]
 
 (defpackage :sax
   (:use :common-lisp)
   (:export #:*namespace-processing*
 	   #:*include-xmlns-attributes*
 	   #:*use-xmlns-namespace*
+
+           #:make-attribute
+           #:attribute-namespace-uri
+           #:attribute-local-name
+           #:attribute-qname
+           #:attribute-value
+           #:attribute-specified-p
 	   
 	   #:start-document
 	   #:start-prefix-mapping
@@ -68,7 +69,18 @@
 	   #:end-document
 	   #:comment
 	   #:start-cdata
-	   #:end-cdata))
+	   #:end-cdata
+	   #:start-dtd
+	   #:end-dtd
+	   #:start-internal-subset
+	   #:end-internal-subset
+           #:unparsed-entity-declaration
+           #:external-entity-declaration
+           #:internal-entity-declaration
+           #:notation-declaration
+           #:element-declaration
+           #:attribute-declaration
+           #:entity-resolver))
 
 (in-package :sax)
 
@@ -118,6 +130,13 @@ qname:                 #\"xmlns:ex\"
 Setting this variable has no effect unless both
 `*namespace-processing*' and `*include-xmlns-attributes*' are non-nil.")
 
+(defstruct attribute
+  namespace-uri
+  local-name
+  qname
+  value
+  specified-p)
+
 (defgeneric start-document (handler)
   (:documentation "Called at the beginning of the parsing process,
 before any element, processing instruction or comment is reported.
@@ -126,9 +145,6 @@ Handlers that need to maintain internal state may use this to perform
 any neccessary initializations.")
   (:method ((handler t)) nil))
 
-;; How should attributes be represented?
-;; Currently its just a (name . value) alist, but this isn't too
-;; useful wrt namespaced attributes. Probably a struct.
 (defgeneric start-element (handler namespace-uri local-name qname attributes)
   (:documentation "Called to report the beginning of an element.
 
@@ -147,7 +163,9 @@ local-name properties, the same rules as for the element name
 apply. Additionally, namespace-declaring attributes (those whose name
 is \"xmlns\" or starts with \"xmlns:\") are only included if
 *namespace-prefixes* is non-nil.")
-  (:method ((handler t) namespace-uri local-name qname attributes) nil))
+  (:method ((handler t) namespace-uri local-name qname attributes)
+    (declare (ignore namespace-uri local-name qname attributes))
+    nil))
 
 (defgeneric start-prefix-mapping (handler prefix uri)
   (:documentation "Called when the scope of a new prefix -> namespace-uri mapping begins.
@@ -159,7 +177,7 @@ Clients don't usually have to implement this except under special
 circumstances, for example when they have to deal with qualified names
 in textual content. The parser will handle namespaces of elements and
 attributes on its own.")
-  (:method ((handler t) prefix uri) nil))
+  (:method ((handler t) prefix uri) (declare (ignore prefix uri)) nil))
 
 (defgeneric characters (handler data)
   (:documentation "Called for textual element content.
@@ -167,13 +185,13 @@ attributes on its own.")
 The data is passed as a rod, with all entity references resolved.
 It is possible that the character content of an element is reported
 via multiple subsequent calls to this generic function.")
-  (:method ((handler t) data) nil))
+  (:method ((handler t) data) (declare (ignore data)) nil))
 
 (defgeneric processing-instruction (handler target data)
   (:documentation "Called when a processing instruction is read.
 
 Both target and data are rods.")
-  (:method ((handler t) target data) nil))
+  (:method ((handler t) target data) (declare (ignore target data)) nil))
 
 (defgeneric end-prefix-mapping (handler prefix)
   (:documentation "Called when a prefix -> namespace-uri mapping goes out of scope.
@@ -186,14 +204,16 @@ Clients don't usually have to implement this except under special
 circumstances, for example when they have to deal with qualified names
 in textual content. The parser will handle namespaces of elements and
 attributes on its own.")
-  (:method ((handler t) prefix) nil))
+  (:method ((handler t) prefix) prefix nil))
 
 (defgeneric end-element (handler namespace-uri local-name qname)
   (:documentation "Called to report the end of an element.
 
 See the documentation for `start-element' for a description of the
 parameters.")
-  (:method ((handler t) namespace-uri local-name qname) nil))
+  (:method ((handler t) namespace-uri local-name qname)
+    (declare (ignore namespace-uri local-name qname))
+    nil))
 
 (defgeneric end-document (handler)
   (:documentation "Called at the end of parsing a document.
@@ -206,7 +226,7 @@ is significant, it will be returned by the parse-file/stream/string function.")
 ;; LexicalHandler
 
 (defgeneric comment (handler data)
-  (:method ((handler t) data) nil))
+  (:method ((handler t) data) data nil))
 
 (defgeneric start-cdata (handler)
   (:documentation "Called at the beginning of parsing a CDATA section.
@@ -225,3 +245,87 @@ lexical structure of the parsed document. The content of the CDATA
 section is reported via the `characters' generic function like all
 other textual content.")
   (:method ((handler t)) nil))
+
+(defgeneric start-dtd (handler name public-id system-id)
+  (:documentation "Called at the beginning of parsing a DTD.")
+  (:method ((handler t) name public-id system-id)
+    (declare (ignore name public-id system-id))
+    nil))
+
+(defgeneric end-dtd (handler)
+  (:documentation "Called at the end of parsing a DTD.")
+  (:method ((handler t)) nil))
+
+(defgeneric start-internal-subset (handler)
+  (:documentation "Reports that an internal subset is present.  Called before
+any definition from the internal subset is reported.")
+  (:method ((handler t)) nil))
+
+(defgeneric end-internal-subset (handler)
+  (:documentation "Called after processing of the internal subset has
+finished, if present.")
+  (:method ((handler t)) nil))
+
+(defgeneric unparsed-entity-declaration
+    (handler name public-id system-id notation-name)
+  (:documentation
+   "Called when an unparsed entity declaration is seen in a DTD.")
+  (:method ((handler t) name public-id system-id notation-name)
+    (declare (ignore name public-id system-id notation-name))
+    nil))
+
+(defgeneric external-entity-declaration
+    (handler kind name public-id system-id)
+  (:documentation
+   "Called when a parsed external entity declaration is seen in a DTD.")
+  (:method ((handler t) kind name public-id system-id)
+    (declare (ignore kind name public-id system-id))
+    nil))
+
+(defgeneric internal-entity-declaration
+    (handler kind name value)
+  (:documentation
+   "Called when an internal entity declaration is seen in a DTD.")
+  (:method ((handler t) kind name value)
+    (declare (ignore kind name value))
+    nil))
+
+(defgeneric notation-declaration
+    (handler name public-id system-id)
+  (:documentation
+   "Called when a notation declaration is seen while parsing a DTD.")
+  (:method ((handler t) name public-id system-id)
+    (declare (ignore name public-id system-id))
+    nil))
+
+(defgeneric element-declaration (handler name model)
+  (:documentation
+   "Called when a element declaration is seen in a DTD.  Model is not a string,
+    but a nested list, with *, ?, +, OR, and AND being the operators, rods
+    as names, :EMPTY and :PCDATA as special tokens.  (AND represents
+    sequences.)")
+  (:method ((handler t) name model)
+    (declare (ignore name model))
+    nil))
+
+(defgeneric attribute-declaration
+    (handler element-name attribute-name type default)
+  (:documentation
+   "Called when an attribute declaration is seen in a DTD.
+    type        one of :CDATA, :ID, :IDREF, :IDREFS,
+                :ENTITY, :ENTITIES, :NMTOKEN, :NMTOKENS,
+                (:NOTATION <name>*), or (:ENUMERATION <name>*)
+    default     :REQUIRED, :IMPLIED, (:FIXED content), or (:DEFAULT content)")
+  (:method ((handler t) element-name attribute-name type value)
+    (declare (ignore element-name attribute-name type value))
+    nil))
+
+(defgeneric entity-resolver
+    (handler resolver)
+  (:documentation
+   "Called between sax:end-dtd and sax:end-document to register an entity
+    resolver, a function of two arguments: An entity name and SAX handler.
+    When called, the resolver function will parse the named entities data.")
+  (:method ((handler t) resolver)
+    (declare (ignore resolver))
+    nil))

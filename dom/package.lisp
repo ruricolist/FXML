@@ -12,7 +12,33 @@
    ;; lisp-specific extensions
    #:make-dom-builder
 
-   ;; methods
+   ;; DOM 2 functions
+   #:owner-element
+   #:import-node
+   #:create-element-ns
+   #:create-attribute-ns
+   #:get-elements-by-tag-name-ns
+   #:get-element-by-id
+   #:get-named-item-ns
+   #:set-named-item-ns
+   #:remove-named-item-ns
+   #:is-supported
+   #:has-attributes
+   #:namespace-uri
+   #:prefix
+   #:local-name
+   #:internal-subset
+   #:create-document-type
+   #:create-document
+   #:get-attribute-ns
+   #:set-attribute-ns
+   #:remove-attribute-ns
+   #:get-attribute-node-ns
+   #:set-attribute-node-ns
+   #:has-attribute
+   #:has-attribute-ns
+
+   ;; DOM 1 functions
    #:has-feature
    #:doctype
    #:implementation
@@ -72,7 +98,6 @@
    #:system-id
    #:notation-name
    #:target
-   #:import-node
    #:code
    
    ;; protocol classes

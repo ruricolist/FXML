@@ -7,9 +7,9 @@
 ;;;    Author: David Lichteblau <david@lichteblau.com>
 ;;;   License: Lisp-LGPL (See file COPYING for details).
 ;;; ---------------------------------------------------------------------------
-;;;  Â© copyright 1999 by Gilbert Baumann
-;;;  Â© copyright 2004 by knowledgeTools Int. GmbH
-;;;  Â© copyright 2004 by David Lichteblau (for headcraft.de)
+;;;  Â© copyright 1999 by Gilbert Baumann
+;;;  Â© copyright 2004 by knowledgeTools Int. GmbH
+;;;  Â© copyright 2004 by David Lichteblau (for headcraft.de)
 
 ;;; This library is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU Library General Public
@@ -184,42 +184,185 @@
         (unparse-string public-id sink)
         (write-rod #"\"" sink)))))
 
+(defmethod sax:start-internal-subset ((sink sink))
+  (ensure-doctype sink)
+  (write-rod #" [" sink)
+  (write-rune #/U+000A sink))
+
+(defmethod sax:end-internal-subset ((sink sink))
+  (ensure-doctype sink)
+  (write-rod #"]" sink))
+
 (defmethod sax:notation-declaration ((sink sink) name public-id system-id)
-  (when (and (canonical sink) (>= (canonical sink) 2))
-    (let ((prev (previous-notation sink)))
-      (cond
-        (prev
-          (unless (rod< prev name)
-            (error "misordered notations; cannot unparse canonically")))
-        (t
-          (ensure-doctype sink)
-          (write-rod #" [" sink)
-          (write-rune #/U+000A sink)))
-      (setf (previous-notation sink) name)) 
-    (write-rod #"<!NOTATION " sink)
+  (let ((prev (previous-notation sink)))
+    (when (and (and (canonical sink) (>= (canonical sink) 2))
+	       prev
+	       (not (rod< prev name)))
+      (error "misordered notations; cannot unparse canonically"))
+    (setf (previous-notation sink) name)) 
+  (write-rod #"<!NOTATION " sink)
+  (write-rod name sink)
+  (cond
+    ((zerop (length public-id))
+      (write-rod #" SYSTEM '" sink)
+      (write-rod system-id sink)
+      (write-rune #/' sink))
+    ((zerop (length system-id))
+      (write-rod #" PUBLIC '" sink)
+      (write-rod public-id sink)
+      (write-rune #/' sink))
+    (t 
+      (write-rod #" PUBLIC '" sink)
+      (write-rod public-id sink)
+      (write-rod #"' '" sink)
+      (write-rod system-id sink)
+      (write-rune #/' sink)))
+  (write-rune #/> sink)
+  (write-rune #/U+000A sink))
+
+(defmethod sax:unparsed-entity-declaration
+    ((sink sink) name public-id system-id notation-name)
+  (unless (and (canonical sink) (< (canonical sink) 3))
+    (write-rod #"<!ENTITY " sink)
     (write-rod name sink)
     (cond
       ((zerop (length public-id))
-        (write-rod #" SYSTEM '" sink)
-        (write-rod system-id sink)
-        (write-rune #/' sink))
+	(write-rod #" SYSTEM '" sink)
+	(write-rod system-id sink)
+	(write-rune #/' sink))
       ((zerop (length system-id))
-        (write-rod #" PUBLIC '" sink)
-        (write-rod public-id sink)
-        (write-rune #/' sink))
+	(write-rod #" PUBLIC '" sink)
+	(write-rod public-id sink)
+	(write-rune #/' sink))
       (t 
-        (write-rod #" PUBLIC '" sink)
-        (write-rod public-id sink)
-        (write-rod #"' '" sink)
-        (write-rod system-id sink)
-        (write-rune #/' sink)))
+	(write-rod #" PUBLIC '" sink)
+	(write-rod public-id sink)
+	(write-rod #"' '" sink)
+	(write-rod system-id sink)
+	(write-rune #/' sink)))
+    (write-rod #" NDATA " sink)
+    (write-rod notation-name sink)
     (write-rune #/> sink)
     (write-rune #/U+000A sink)))
 
+(defmethod sax:external-entity-declaration
+    ((sink sink) kind name public-id system-id)
+  (when (canonical sink)
+    (error "cannot serialize parsed entities in canonical mode"))
+  (write-rod #"<!ENTITY " sink)
+  (when (eq kind :parameter)
+    (write-rod #" % " sink))
+  (write-rod name sink)
+  (cond
+    ((zerop (length public-id))
+      (write-rod #" SYSTEM '" sink)
+      (write-rod system-id sink)
+      (write-rune #/' sink))
+    ((zerop (length system-id))
+      (write-rod #" PUBLIC '" sink)
+      (write-rod public-id sink)
+      (write-rune #/' sink))
+    (t 
+      (write-rod #" PUBLIC '" sink)
+      (write-rod public-id sink)
+      (write-rod #"' '" sink)
+      (write-rod system-id sink)
+      (write-rune #/' sink)))
+  (write-rune #/> sink)
+  (write-rune #/U+000A sink))
+
+(defmethod sax:internal-entity-declaration ((sink sink) kind name value)
+  (when (canonical sink)
+    (error "cannot serialize parsed entities in canonical mode"))
+  (write-rod #"<!ENTITY " sink)
+  (when (eq kind :parameter)
+    (write-rod #" % " sink))
+  (write-rod name sink)
+  (write-rune #/U+0020 sink)
+  (write-rune #/\" sink)
+  (unparse-string value sink)
+  (write-rune #/\" sink)
+  (write-rune #/> sink)
+  (write-rune #/U+000A sink))
+
+(defmethod sax:element-declaration ((sink sink) name model)
+  (when (canonical sink)
+    (error "cannot serialize element type declarations in canonical mode"))
+  (write-rod #"<!ELEMENT " sink)
+  (write-rod name sink)
+  (write-rune #/U+0020 sink)
+  (labels ((walk (m)
+	     (cond
+	       ((eq m :EMPTY)
+		 (write-rod "EMPTY" sink))
+	       ((eq m :PCDATA)
+		 (write-rod "#PCDATA" sink))
+	       ((atom m)
+		 (unparse-string m sink))
+	       (t
+		 (ecase (car m)
+		   (and
+		     (write-rune #/\( sink)
+		     (loop for (n . rest) on (cdr m) do
+			   (walk n)
+			   (when rest
+			     (write-rune #\, sink)))
+		     (write-rune #/\) sink))
+		   (or
+		     (write-rune #/\( sink)
+		     (loop for (n . rest) on (cdr m) do
+			   (walk n)
+			   (when rest
+			     (write-rune #\| sink)))
+		     (write-rune #/\) sink))
+		   (*
+		     (walk (second m))
+		     (write-rod #/* sink))
+		   (+
+		     (walk (second m))
+		     (write-rod #/+ sink))
+		   (?
+		     (walk (second m))
+		     (write-rod #/? sink)))))))
+    (walk model))
+  (write-rune #/> sink)
+  (write-rune #/U+000A sink))
+
+(defmethod sax:attribute-declaration ((sink sink) ename aname type default)
+  (when (canonical sink)
+    (error "cannot serialize attribute type declarations in canonical mode"))
+  (write-rod #"<!ATTLIST " sink)
+  (write-rod ename sink)
+  (write-rune #/U+0020 sink)
+  (write-rod aname sink)
+  (write-rune #/U+0020 sink)
+  (cond
+    ((atom type)
+      (write-rod (rod (string-upcase (symbol-name type))) sink))
+    (t
+      (when (eq :NOTATION (car type))
+	(write-rod #"NOTATION " sink))
+      (write-rune #/\( sink)
+      (loop for (n . rest) on (cdr type) do
+	    (write-rod n sink)
+	    (when rest
+	      (write-rune #\| sink)))
+      (write-rune #/\) sink)))
+  (cond
+    ((atom default)
+      (write-rune #/# sink)
+      (write-rod (rod (string-upcase (symbol-name default))) sink))
+    (t
+      (when (eq :FIXED (car default))
+	(write-rod #"#FIXED " sink))
+      (write-rune #/\" sink)
+      (unparse-string (second default) sink)
+      (write-rune #/\" sink)))
+  (write-rune #/> sink)
+  (write-rune #/U+000A sink))
+
 (defmethod sax:end-dtd ((sink sink))
   (when (have-doctype sink)
-    (when (previous-notation sink)
-      (write-rod #"]" sink))
     (write-rod #">" sink)
     (write-rune #/U+000A sink)))
 

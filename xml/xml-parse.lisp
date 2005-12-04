@@ -1517,7 +1517,6 @@
                           delim))))))
 
 (defun read-character-reference (input)
-  ;; xxx eof handling
   ;; The #/& is already read
   (let ((res
          (let ((c (read-rune input)))
@@ -2080,9 +2079,9 @@
 ;;;     to indicate whether the end tag is valid.
 ;;;
 ;;; Function B will be called with the character data rod as its argument, it
-;;; returns a boolean indicating whether this text element is allowed.
+;;; returns a boolean indicating whether this text node is allowed.
 ;;;
-;;; That is, if one of the functions ever returns NIL, the element is
+;;; That is, if one of the functions ever returns NIL, the node is
 ;;; rejected as invalid.
 
 (defun cmodel-done (actual-value)
@@ -2471,6 +2470,7 @@
           (wf-error input "document includes an internal subset"))
         (ensure-dtd)
         (consume-token input)
+	(sax:start-internal-subset (handler *ctx*))
         (while (progn (p/S? input)
                       (not (eq (peek-token input) :\] )))
           (if (eq (peek-token input) :PE-REFERENCE)
@@ -2487,6 +2487,7 @@
               (let ((*expand-pe-p* t))
                 (p/markup-decl input))))
         (consume-token input)
+	(sax:end-internal-subset (handler *ctx*))
         (p/S? input))
       (expect input :>)
       (when extid

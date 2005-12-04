@@ -12,7 +12,8 @@
 
 (defclass dom-builder ()
   ((document      :initform nil :accessor document)
-   (element-stack :initform '() :accessor element-stack)))
+   (element-stack :initform '() :accessor element-stack)
+   (internal-subset             :accessor internal-subset)))
 
 (defun dom:make-dom-builder ()
   (make-instance 'dom-builder))
@@ -39,26 +40,48 @@
   (setf (slot-value (document handler) 'entity-resolver) resolver))
 
 (defmethod sax:start-dtd ((handler dom-builder) name publicid systemid)
-  (declare (ignore publicid systemid))
   (let* ((document (document handler))
-         (doctype (make-instance 'dom-impl::document-type
-                    :name name
-                    :notations (make-instance 'dom-impl::named-node-map
-                                 :element-type :notation
-                                 :owner document)
-                    :entities (make-instance 'dom-impl::named-node-map
-                                :element-type :entity
-                                :owner document))))
+         (doctype
+	  (dom:create-document-type 'implementation name publicid systemid)))
     (setf (slot-value doctype 'dom-impl::owner) document
+	  (slot-value (dom:notations doctype) 'dom-impl::owner) document
+	  (slot-value (dom:entities doctype) 'dom-impl::owner) document
 	  (slot-value document 'dom-impl::doc-type) doctype)))
+
+(defmethod sax:start-internal-subset ((handler dom-builder))
+  (setf (internal-subset handler) nil))
+
+(defmethod sax:end-internal-subset ((handler dom-builder))
+  (setf (internal-subset (slot-value (document handler) 'dom-impl::doc-type))
+	(nreverse (internal-subset handler)))
+  (slot-makunbound handler 'internal-subset))
+
+(macrolet ((defhandler (name &rest args)
+	     `(defmethod ,name ((handler dom-builder) ,@args)
+		(when (slot-boundp handler 'internal-subset)
+		  (push (list ',name ,@args) (internal-subset handler))))))
+  (defhandler sax:unparsed-entity-declaration
+      name public-id system-id notation-name)
+  (defhandler sax:external-entity-declaration
+      kind name public-id system-id)
+  (defhandler sax:internal-entity-declaration
+      kind name value)
+  (defhandler sax:notation-declaration
+      name public-id system-id)
+  (defhandler sax:element-declaration
+      name model)
+  (defhandler sax:attribute-declaration
+      element-name attribute-name type default))
 
 (defmethod sax:start-element
     ((handler dom-builder) namespace-uri local-name qname attributes)
-  (declare (ignore namespace-uri local-name))
   (with-slots (document element-stack) handler
     (let ((element (make-instance 'element 
                      :tag-name qname
-                     :owner document))
+                     :owner document
+		     :namespace-uri namespace-uri
+		     :local-name local-name
+		     :prefix (cxml::split-qname (cxml::rod qname))))
 	  (parent (car element-stack))
           (anodes '()))
       (dolist (attr attributes)
@@ -68,6 +91,7 @@
                (dom:create-text-node document (sax:attribute-value attr))))
           (setf (slot-value anode 'dom-impl::specified-p)
                 (sax:attribute-specified-p attr))
+	  (setf (slot-value anode 'dom-impl::owner-element) element)
           (dom:append-child anode text)
           (push anode anodes)))
       (setf (slot-value element 'dom-impl::parent) parent)

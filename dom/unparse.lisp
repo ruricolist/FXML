@@ -1,9 +1,20 @@
 (in-package :cxml)
 
-(defun unparse-document-to-octets (doc &rest initargs)
-  (let ((sink (apply #'make-octet-vector-sink initargs)))
-    (dom:map-document sink doc :include-default-values t)))
+(defun %unparse-document (sink doc canonical)
+  (dom:map-document sink
+		    doc
+		    :include-doctype (if (and canonical (>= canonical 2))
+					 :canonical-notations
+					 nil)
+		    :include-default-values t))
 
-(defun unparse-document (doc character-stream &rest initargs)
-  (let ((sink (apply #'make-character-stream-sink character-stream initargs)))
-    (dom:map-document sink doc :include-default-values t)))
+(defun unparse-document-to-octets (doc &rest initargs &key canonical)
+  (%unparse-document (apply #'make-octet-vector-sink initargs)
+		     doc
+		     canonical))
+
+(defun unparse-document (doc character-stream &rest initargs &key canonical)
+  (%unparse-document
+   (apply #'make-character-stream-sink character-stream initargs)
+   doc
+   canonical))
