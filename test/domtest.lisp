@@ -689,9 +689,13 @@
     (format t "~&~D/~D tests failed; ~D test~:P were skipped"
             nfailed ntried (- n ntried))))
 
-(defun run-test (*directory* href)
-  (let* ((test-directory (merge-pathnames "tests/level1/core/" *directory*))
-         (lisp (slurp-test (merge-pathnames href test-directory)))
+(defun run-test (*directory* level href)
+  (let* ((test-directory
+	  (ecase level
+	    (1 (merge-pathnames "tests/level1/core/" *directory*))
+	    (2 (merge-pathnames "tests/level2/core/" *directory*))))
+	 (lisp (slurp-test (merge-pathnames href test-directory)))
+	 (*files-directory* (merge-pathnames "files/" test-directory))
          (cxml::*validate* nil))
     (print lisp)
     (when lisp

@@ -39,7 +39,7 @@
 (defmethod dom:namespace-uri ((node node)) nil)
 
 (defclass namespace-mixin ()
-  ((prefix        :initarg :prefix        :reader dom:prefix)
+  ((prefix        :initarg :prefix        :accessor dom:prefix)
    (local-name    :initarg :local-name    :reader dom:local-name)
    (namespace-uri :initarg :namespace-uri :reader dom:namespace-uri)))
 
@@ -267,11 +267,11 @@
 	(cxml:well-formedness-violation (c)
 	  (dom-error :NAMESPACE_ERR "~A" c)))
     (when prefix
-      (when (and (rod= prefix "xml")
-		 (not (rod= uri "http://www.w3.org/XML/1998/namespace")))
+      (when (and (rod= prefix #"xml")
+		 (not (rod= uri #"http://www.w3.org/XML/1998/namespace")))
 	(dom-error :NAMESPACE_ERR "invalid uri for prefix `xml'"))
-      (when (and (rod= prefix "xmlns")
-		 (not (rod= uri "http://www.w3.org/2000/xmlns/")))
+      (when (and (rod= prefix #"xmlns")
+		 (not (rod= uri #"http://www.w3.org/2000/xmlns/")))
 	(dom-error :NAMESPACE_ERR "invalid uri for prefix `xmlns'")))
     (values prefix local-name)))
 
@@ -335,6 +335,7 @@
     :prefix nil
     :namespace-uri nil
     :specified-p t
+    :owner-element nil
     :owner document))
 
 (defmethod dom:create-attribute-ns ((document document) uri qname)
@@ -348,6 +349,7 @@
       :local-name local-name
       :prefix prefix
       :specified-p t
+      :owner-element nil
       :owner document)))
 
 (defmethod dom:create-entity-reference ((document document) name)
@@ -361,7 +363,7 @@
 (defmethod get-elements-by-tag-name-internal (node tag-name)
   (setf tag-name (rod tag-name))
   (let ((result (make-node-list))
-	(wild-p (rod= tag-name '#.(string-rod "*"))))
+	(wild-p (rod= tag-name #"*")))
     (labels ((walk (n)
 	       (dovector (c (dom:child-nodes n))
 		 (when (dom:element-p c)
@@ -375,8 +377,8 @@
   (setf uri (rod uri))
   (setf lname (rod lname))
   (let ((result (make-node-list))
-	(wild-uri-p (rod= uri '#.(string-rod "*")))
-	(wild-lname-p (rod= lname '#.(string-rod "*"))))
+	(wild-uri-p (rod= uri #"*"))
+	(wild-lname-p (rod= lname #"*")))
     (labels ((walk (n)
 	       (dovector (c (dom:child-nodes n))
 		 (when (dom:element-p c)
@@ -1030,6 +1032,12 @@
 (defmethod dom:remove-named-item :after ((self attribute-node-map) name)
   (maybe-add-default-attribute (slot-value self 'element) name))
 
+(defmethod dom:remove-named-item-ns
+    ((self attribute-node-map) uri lname)
+  (let ((k (call-next-method)))
+    (maybe-add-default-attribute (slot-value self 'element) (dom:node-name k))
+    k))
+
 (defmethod dom:get-elements-by-tag-name ((element element) name)
   (assert-writeable element)
   (get-elements-by-tag-name-internal element name))
@@ -1039,6 +1047,10 @@
   (get-elements-by-tag-name-internal-ns element uri lname))
 
 (defmethod dom:set-named-item :after ((self attribute-node-map) arg)
+  (setf (slot-value arg 'owner-element)
+	(slot-value self 'element)))
+
+(defmethod dom:set-named-item-ns :after ((self attribute-node-map) arg)
   (setf (slot-value arg 'owner-element)
 	(slot-value self 'element)))
 

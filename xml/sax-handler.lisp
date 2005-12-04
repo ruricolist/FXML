@@ -94,7 +94,7 @@ of the consequences of modifying this variable, and
 related options.")
 
 ;; The http://xml.org/sax/features/namespace-prefixes property.
-(defvar *include-xmlns-attributes* nil
+(defvar *include-xmlns-attributes* t
   "If non-nil, namespace declarations are reported as normal
 attributes.
 
@@ -104,7 +104,7 @@ non-nil.
 See also `*use-xmlns-namespace*', and `start-element' for a detailed
 description of the consequences of setting this variable.")
 
-(defvar *use-xmlns-namespace* nil
+(defvar *use-xmlns-namespace* t
   "If this variable is nil (the default), attributes with a name like
 'xmlns:x' are not considered to be in a namespace, following the
 'Namespaces in XML' specification.

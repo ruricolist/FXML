@@ -22,6 +22,10 @@
   (vector-push-extend new-element vector (max 1 (array-dimension vector 0))))
 
 (defmethod sax:start-document ((handler dom-builder))
+  (when (and sax:*namespace-processing*
+	     (not (and sax:*include-xmlns-attributes*
+		       sax:*use-xmlns-namespace*)))
+    (error "SAX configuration is incompatible with DOM: *namespace-processing* is activated, but *include-xmlns-attributes* or *use-xmlns-namespace* are not"))
   (let ((document (make-instance 'dom-impl::document)))
     (setf (slot-value document 'dom-impl::owner) nil
 	  (slot-value document 'dom-impl::doc-type) nil)
@@ -86,7 +90,9 @@
           (anodes '()))
       (dolist (attr attributes)
 	(let ((anode
-               (dom:create-attribute document (sax:attribute-qname attr)))
+               (dom:create-attribute-ns document
+					(sax:attribute-namespace-uri attr)
+					(sax:attribute-qname attr)))
               (text
                (dom:create-text-node document (sax:attribute-value attr))))
           (setf (slot-value anode 'dom-impl::specified-p)
