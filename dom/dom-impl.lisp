@@ -214,7 +214,8 @@
 (defmethod dom:has-feature ((factory (eql 'implementation)) feature version)
   (and (or (string-equal (rod-string feature) "xml")
 	   (string-equal (rod-string feature) "core"))
-       (or (string-equal (rod-string version) "1.0")
+       (or (zerop (length version))
+	   (string-equal (rod-string version) "1.0")
 	   (string-equal (rod-string version) "2.0"))))
 
 (defun %create-document-type (name publicid systemid)
