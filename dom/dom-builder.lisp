@@ -104,12 +104,15 @@
           (push anode anodes)))
       (setf (slot-value element 'dom-impl::parent) parent)
       (fast-push element (slot-value parent 'dom-impl::children))
-      (setf (slot-value element 'dom-impl::attributes)
-            (make-instance 'attribute-node-map
-              :items anodes
-              :element-type :attribute
-              :element element
-              :owner document))
+      (let ((map
+	      (make-instance 'attribute-node-map
+		:items anodes
+		:element-type :attribute
+		:element element
+		:owner document)))
+	(setf (slot-value element 'dom-impl::attributes) map)
+	(dolist (anode anodes)
+	  (setf (slot-value anode 'map) map)))
       (push element element-stack))))
 
 (defmethod sax:end-element ((handler dom-builder) namespace-uri local-name qname)
