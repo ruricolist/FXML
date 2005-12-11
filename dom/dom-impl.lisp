@@ -50,6 +50,10 @@
 		      (dom:namespace-uri node)))
   (setf (slot-value node 'prefix) newval))
 
+(defmethod (setf dom:prefix) :before (newval (node attribute))
+  (when (rod= (dom:node-name node) #"xmlns")
+    (dom-error :NAMESPACE_ERR "must not change xmlns attribute prefix")))
+
 (defmethod (setf dom:prefix) :after (newval (node attribute))
   (setf (slot-value node 'name)
 	(concatenate 'rod newval #":" (dom:local-name node))))
