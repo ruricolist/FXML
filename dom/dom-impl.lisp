@@ -1193,11 +1193,10 @@
   (let* ((owner (dom:owner-document instance))
          (handler (dom:make-dom-builder))
          (resolver (slot-value owner 'entity-resolver)))
-    (unless resolver
-      (dom-error :NOT_SUPPORTED_ERR "No entity resolver registered."))
-    (setf (document handler) owner)
-    (push instance (element-stack handler))
-    (funcall resolver (dom:name instance) handler))
+    (when resolver
+      (setf (document handler) owner)
+      (push instance (element-stack handler))
+      (funcall resolver (dom:name instance) handler)))
   (labels ((walk (n)
              (setf (slot-value n 'read-only-p) t)
              (when (dom:element-p n)
