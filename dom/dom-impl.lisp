@@ -1039,19 +1039,23 @@
     (unless (find old-attr items)
       (dom-error :NOT_FOUND_ERR "Attribute not found."))
     (setf items (remove old-attr items))
-    (maybe-add-default-attribute element (dom:name old-attr))
+    (maybe-add-default-attribute element old-attr)
     old-attr))
 
 ;; eek, defaulting:
 
-(defun maybe-add-default-attribute (element name)
-  (let* ((dtd (dtd (slot-value element 'owner)))
+(defun maybe-add-default-attribute (element old-attr)
+  (let* ((qname (dom:name old-attr))
+	 (dtd (dtd (slot-value element 'owner)))
          (e (when dtd (cxml::find-element
 		       (cxml::rod (dom:tag-name element))
 		       dtd)))
-         (a (when e (cxml::find-attribute e name))))
+         (a (when e (cxml::find-attribute e qname))))
     (when (and a (listp (cxml::attdef-default a)))
-      (add-default-attribute element a))))
+      (let ((new (add-default-attribute element a)))
+	(setf (slot-value new 'namespace-uri) (dom:namespace-uri old-attr))
+	(setf (slot-value new 'prefix) (dom:prefix old-attr))
+	(setf (slot-value new 'local-name) (dom:local-name old-attr))))))
 
 (defun add-default-attributes (element)
   (let* ((dtd (dtd (slot-value element 'owner)))
@@ -1065,7 +1069,16 @@
 		   (not (dom:get-attribute-node
 			 element
 			 (cxml::attdef-name a))))
-          (add-default-attribute element a))))))
+          (let ((anode (add-default-attribute element a)))
+	    (multiple-value-bind (prefix local-name)
+		(handler-case
+		    (cxml::split-qname (cxml::attdef-name a))
+		  (cxml:well-formedness-violation (c)
+		    (dom-error :NAMESPACE_ERR "~A" c)))
+	      ;; das ist fuer importnode07.
+	      ;; so richtig ueberzeugend finde ich das ja nicht.
+	      (setf (slot-value anode 'prefix) prefix)
+	      (setf (slot-value anode 'local-name) local-name))))))))
 
 (defun add-default-attribute (element adef)
   (let* ((value (second (cxml::attdef-default adef)))
@@ -1074,25 +1087,20 @@
          (text (dom:create-text-node owner value)))
     (setf (slot-value anode 'specified-p) nil)
     (setf (slot-value anode 'owner-element) element)
-    (multiple-value-bind (prefix local-name)
-	(handler-case
-	    (cxml::split-qname (cxml::attdef-name adef))
-	  (cxml:well-formedness-violation (c)
-	    (dom-error :NAMESPACE_ERR "~A" c)))
-      ;; das ist fuer importnode07.
-      ;; so richtig ueberzeugend finde ich das ja nicht.
-      (setf (slot-value anode 'prefix) prefix)
-      (setf (slot-value anode 'local-name) local-name))
     (dom:append-child anode text)
-    (push anode (slot-value (dom:attributes element) 'items))))
+    (push anode (slot-value (dom:attributes element) 'items))
+    anode))
 
-(defmethod dom:remove-named-item :after ((self attribute-node-map) name)
-  (maybe-add-default-attribute (slot-value self 'element) name))
-
-(defmethod dom:remove-named-item-ns
-    ((self attribute-node-map) uri lname)
+(defmethod dom:remove-named-item ((self attribute-node-map) name)
+  name
   (let ((k (call-next-method)))
-    (maybe-add-default-attribute (slot-value self 'element) (dom:node-name k))
+    (maybe-add-default-attribute (slot-value self 'element) k)
+    k))
+
+(defmethod dom:remove-named-item-ns ((self attribute-node-map) uri lname)
+  uri lname
+  (let ((k (call-next-method)))
+    (maybe-add-default-attribute (slot-value self 'element) k)
     k))
 
 (defmethod dom:get-elements-by-tag-name ((element element) name)
