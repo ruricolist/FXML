@@ -727,7 +727,6 @@ not implemented
 692/808 importNode16.xml
 693/808 importNode17.xml
 694/808 internalSubset01.xml
-TEST FAILED: The assertion (NULL DOMTEST-TESTS::|internal|) failed.
 695/808 isSupported01.xml
 696/808 isSupported02.xml
 697/808 isSupported04.xml
@@ -859,4 +858,4 @@ implementationAttribute expandEntityReferences not supported, skipping test
 803/808 setNamedItemNS04.xml
 804/808 setNamedItemNS05.xml
 805/808 systemId01.xml
-8/763 tests failed; 45 tests were skipped
+7/763 tests failed; 45 tests were skipped

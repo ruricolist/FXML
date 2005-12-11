@@ -1150,7 +1150,11 @@
 
 (defmethod dom:internal-subset ((node document-type))
   ;; FIXME: encoding ist falsch, anderen sink nehmen!
-  (if (slot-boundp node 'internal-subset)
+  (if (and (slot-boundp node 'internal-subset)
+	   ;; die damen und herren von der test suite sind wohl der meinung,
+	   ;; dass ein leeres internal subset nicht vorhanden ist und
+	   ;; wir daher nil liefern sollen.  bittesehr!
+	   (internal-subset node))
       (with-output-to-string (stream)
 	(let ((sink (cxml:make-character-stream-sink stream)))
 	  (dolist (def (internal-subset node))
