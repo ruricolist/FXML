@@ -1344,12 +1344,8 @@
 
 (defmethod dom:import-node ((document document) (node entity-reference) deep)
   (declare (ignore deep))
-  #+(or)
   (import-node-internal 'entity-reference document node nil
-                        :name (dom:name node))
-  ;; XXX If the document being imported into provides a definition for
-  ;; this entity name, its value is assigned.
-  (dom-error :NOT_SUPPORTED_ERR "not implemented"))
+                        :name (dom:name node)))
 
 (defmethod dom:import-node ((document document) (node notation) deep)
   (import-node-internal 'notation document node deep

@@ -718,8 +718,6 @@ implementationAttribute expandEntityReferences not supported, skipping test
 685/808 importNode09.xml
 686/808 importNode10.xml
 687/808 importNode11.xml
-TEST FAILED: NOT_SUPPORTED_ERR (9):
-not implemented
 688/808 importNode12.xml
 689/808 importNode13.xml
 690/808 importNode14.xml
@@ -841,4 +839,4 @@ implementationAttribute expandEntityReferences not supported, skipping test
 803/808 setNamedItemNS04.xml
 804/808 setNamedItemNS05.xml
 805/808 systemId01.xml
-2/763 tests failed; 45 tests were skipped
+1/763 tests failed; 45 tests were skipped
