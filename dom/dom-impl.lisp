@@ -1280,7 +1280,14 @@
     (setf (slot-value attributes 'element) result)
     (dolist (attribute (dom:items (dom:attributes node)))
       (when (or (dom:specified attribute) *clone-not-import*)
-        (dom:set-attribute result (dom:name attribute) (dom:value attribute))))
+        (if (dom:namespace-uri attribute)
+	    (dom:set-attribute-ns result
+				  (dom:namespace-uri attribute)
+				  (dom:local-name attribute)
+				  (dom:value attribute))
+	    (dom:set-attribute result
+			       (dom:name attribute)
+			       (dom:value attribute)))))
     result))
 
 (defmethod dom:import-node ((document document) (node entity) deep)
