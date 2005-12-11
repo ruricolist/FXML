@@ -50,6 +50,14 @@
 		      (dom:namespace-uri node)))
   (setf (slot-value node 'prefix) newval))
 
+(defmethod (setf dom:prefix) :after (newval (node attribute))
+  (setf (slot-value node 'name)
+	(concatenate 'rod newval #":" (dom:local-name node))))
+
+(defmethod (setf dom:prefix) :after (newval (node element))
+  (setf (slot-value node 'tag-name)
+	(concatenate 'rod newval #":" (dom:local-name node))))
+
 (defclass document (node)
   ((doc-type    :initarg :doc-type     :reader dom:doctype)
    (dtd         :initform nil          :reader dtd)
