@@ -1292,6 +1292,7 @@
 
 (defmethod dom:import-node ((document document) (node entity) deep)
   (import-node-internal 'entity document node deep
+			:name (dom:name node)
                         :public-id (dom:public-id node)
                         :system-id (dom:system-id node)
                         :notation-name (dom:notation-name node)))

@@ -614,7 +614,6 @@ implementationAttribute signed not supported, skipping test
 584/808 documentimportnode17.xml
 585/808 documentimportnode18.xml
 586/808 documentimportnode19.xml
-TEST FAILED: The slot DOM-IMPL::NAME is unbound in the object #<DOM-IMPL::ENTITY {xxxxxxxx}>.
 587/808 documentimportnode20.xml
 implementationAttribute expandEntityReferences not supported, skipping test
 588/808 documentimportnode21.xml
@@ -878,4 +877,4 @@ TEST FAILED: expected exception INUSE_ATTRIBUTE_ERR
 803/808 setNamedItemNS04.xml
 804/808 setNamedItemNS05.xml
 805/808 systemId01.xml
-21/763 tests failed; 45 tests were skipped
+20/763 tests failed; 45 tests were skipped
