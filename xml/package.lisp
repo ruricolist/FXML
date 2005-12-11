@@ -74,4 +74,5 @@
    
    #:make-recoder
    #:sax-proxy
-   #:proxy-chained-handler))
+   #:proxy-chained-handler
+   #:make-namespace-normalizer))

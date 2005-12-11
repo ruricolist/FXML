@@ -1,6 +1,8 @@
 (in-package :cxml)
 
 (defun %unparse-document (sink doc canonical)
+  (when sax:*namespace-processing*
+    (setf sink (cxml:make-namespace-normalizer sink)))
   (dom:map-document sink
 		    doc
 		    :include-doctype (if (and canonical (>= canonical 2))

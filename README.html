@@ -90,7 +90,12 @@
     <h2>Recent Changes</h2>
     <p class="nomargin"><tt>rel-2005-xx-yy</tt></p>
     <ul class="nomargin">
-      <li>Implemented DOM 2 Core.</li>
+      <li>
+        Implemented DOM 2 Core.
+        (A handler for DOM 3-style namespace normalization is provided and 
+        used by default for serialization of DOM documents if namespace
+	support is enabled.)
+      </li>
       <li>
         Error handling overhaul: All syntax errors should now be
         reported as instances of <tt>well-formedness-violation</tt>.  We

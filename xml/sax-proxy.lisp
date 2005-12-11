@@ -29,6 +29,8 @@
   (define-proxy-method sax:end-cdata ())
   (define-proxy-method sax:start-dtd (name public-id system-id))
   (define-proxy-method sax:end-dtd ())
+  (define-proxy-method sax:start-internal-subset ())
+  (define-proxy-method sax:end-internal-subset ())
   (define-proxy-method sax:unparsed-entity-declaration (name pub sys not))
   (define-proxy-method sax:external-entity-declaration (kind name pub sys))
   (define-proxy-method sax:internal-entity-declaration (kind name value))

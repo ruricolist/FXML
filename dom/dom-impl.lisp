@@ -50,18 +50,6 @@
 		      (dom:namespace-uri node)))
   (setf (slot-value node 'prefix) newval))
 
-(defmethod (setf dom:prefix) :before (newval (node attribute))
-  (when (rod= (dom:node-name node) #"xmlns")
-    (dom-error :NAMESPACE_ERR "must not change xmlns attribute prefix")))
-
-(defmethod (setf dom:prefix) :after (newval (node attribute))
-  (setf (slot-value node 'name)
-	(concatenate 'rod newval #":" (dom:local-name node))))
-
-(defmethod (setf dom:prefix) :after (newval (node element))
-  (setf (slot-value node 'tag-name)
-	(concatenate 'rod newval #":" (dom:local-name node))))
-
 (defclass document (node)
   ((doc-type    :initarg :doc-type     :reader dom:doctype)
    (dtd         :initform nil          :reader dtd)
@@ -78,6 +66,14 @@
    (owner-element :initarg :owner-element :reader dom:owner-element)
    (specified-p :initarg :specified-p   :reader dom:specified)))
 
+(defmethod (setf dom:prefix) :before (newval (node attribute))
+  (when (rod= (dom:node-name node) #"xmlns")
+    (dom-error :NAMESPACE_ERR "must not change xmlns attribute prefix")))
+
+(defmethod (setf dom:prefix) :after (newval (node attribute))
+  (setf (slot-value node 'name)
+	(concatenate 'rod newval #":" (dom:local-name node))))
+
 (defmethod print-object ((object attribute) stream)
   (print-unreadable-object (object stream :type t :identity t)
     (format stream "~A=~S"
@@ -87,6 +83,10 @@
 (defclass element (namespace-mixin node)
   ((tag-name    :initarg :tag-name      :reader dom:tag-name)
    (attributes  :initarg :attributes    :reader dom:attributes)))
+
+(defmethod (setf dom:prefix) :after (newval (node element))
+  (setf (slot-value node 'tag-name)
+	(concatenate 'rod newval #":" (dom:local-name node))))
 
 (defmethod print-object ((object element) stream)
   (print-unreadable-object (object stream :type t :identity t)

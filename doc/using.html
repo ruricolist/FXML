@@ -156,12 +156,6 @@
     </p>
 
     <p>
-      <div class="def">Function DOM:MAKE-DOM-BUILDER ()</div>
-      Create a SAX handler which builds a DOM document.&nbsp; Example:
-    </p>
-    <pre>(cxml:parse-file "test.xml" (dom:make-dom-builder))</pre>
-
-    <p>
       <div class="def">Condition class CXML:XML-PARSE-ERROR ()</div>
       Superclass of all conditions signalled by the CXML parser.
     </p>
@@ -183,7 +177,8 @@
     <p>
       <div class="def">Function CXML:UNPARSE-DOCUMENT (document stream &rest keys)</div>
       <div class="def">Function CXML:UNPARSE-DOCUMENT-TO-OCTETS (document &rest keys) => vector</div>
-      Serialize a DOM document object.
+      Serialize a DOM document object.  These convenience functions are
+      wrappers around <tt>dom:map-document</tt>.
     </p>
     <ul>
       <li><tt>document</tt> -- a DOM document object</li>
@@ -224,6 +219,10 @@
       does not matter to the application.
     </p>
     <p>
+      If namespace support is enabled (the default), these functions use
+      a namespace normalizer (<tt>cxml:make-namespace-normalizer</tt>).
+    </p>
+    <p>
       <tt>unparse-document-to-octets</tt> returns an <tt>(unsigned-byte
       8)</tt> array, whereas <tt>unparse-document</tt> writes
       characters.&nbsp; <tt>unparse-document</tt> is useful together
@@ -247,7 +246,7 @@
     </p>
 
     <p>
-      <div class="def">Macro CXML:WITH-XML-OUTPUT (sink &body body) => vector</div>
+      <div class="def">Macro CXML:WITH-XML-OUTPUT (sink &body body) => sink-specific result</div>
       <div class="def">Macro CXML:WITH-ELEMENT (qname &body body) => result</div>
       <div class="def">Function CXML:ATTRIBUTE (name value) => value</div>
       <div class="def">Function CXML:TEXT (data) => data</div>
@@ -320,12 +319,6 @@
   (dom:map-document (cxml:make-validator x #"foo") d))</pre>
 
     <p>
-      <div class="def">Function DOM:MAP-DOCUMENT (handler document &key include-xmlns-attributes include-default-values)</div>
-      Traverse a DOM document and call SAX functions as if an XML
-      representation of the document were processed by a SAX parser.
-    </p>
-
-    <p>
       <div class="def">Class CXML:SAX-PROXY ()</div>
       <div class="def">Accessor CXML:PROXY-CHAINED-HANDLER</div>
       <tt>sax-proxy</tt> is a SAX handler which passes all events it
@@ -336,6 +329,17 @@
       handler, and define methods on your handler class for the events
       to be modified.  All other events will pass through to the chained
       handler unmodified.
+    </p>
+
+    <p>
+    <div class="def">Accessor CXML:MAKE-NAMESPACE-NORMALIZER (next-handler)</div>
+    </p>
+    <p>
+      Return a SAX handler that performs <a
+      href="http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407/namespaces-algorithms.html#normalizeDocumentAlgo">DOM
+      3-style namespace normalization</a> on Attribute lists in
+      <tt>start-element</tt> events before passing them on the next
+      handler.
     </p>
 
     <a name="xmls"/>
@@ -649,19 +653,45 @@ NIL</pre>
     <a name="dom"/>
     <h2>DOM Notes</h2>
     <p>
-      CXML implements the DOM Level 2 Core interfaces.&nbsp; Explaining
-      DOM is better left to the <a
-      href="http://www.w3.org/TR/DOM-Level-2-Core/core.html">specification</a>,
-      so please refer to the official W3C documents for DOM.
+      CXML implements the DOM Level 2 Core interfaces.&nbsp; For details
+      on DOM, please refer to the <a
+      href="http://www.w3.org/TR/DOM-Level-2-Core/core.html">specification</a>.
     </p>
     <p>
-      However, there is no "standard" DOM mapping for Lisp.&nbsp; DOM
+      However, note that there is no "standard" DOM mapping for Lisp.&nbsp; DOM
       is <a
       href="http://www.w3.org/TR/DOM-Level-2-Core/idl-definitions.html">specified
       in CORBA IDL</a>, but it refrains from using object-oriented IDL
       features, allowing for a much more natural Lisp implemenation than
-      the the ordinary IDL/Lisp mapping would.
+      the the ordinary IDL/Lisp mapping would.  The mapping chosen for
+      cxml is explained below.
     </p>
+
+    <h3>Example</h3>
+    <pre>XML(97): (dom:node-type
+          (dom:document-element
+           (cxml:parse-file "~/test.xml" (dom:make-dom-builder))))
+:ELEMENT</pre>
+
+    <h3>CXML-specific functions</h3>
+    <p>
+      <div class="def">Function DOM:MAKE-DOM-BUILDER ()</div>
+      Create a SAX handler which builds a DOM document.&nbsp; Example:
+    </p>
+    <pre>(cxml:parse-file "test.xml" (dom:make-dom-builder))</pre>
+
+    <p>
+      <div class="def">Function DOM:MAP-DOCUMENT (handler document &key include-xmlns-attributes include-default-values)</div>
+      Traverse a DOM document and call SAX functions as if an XML
+      representation of the document were processed by a SAX parser.
+    </p>
+    <p>
+      <tt>dom:map-document</tt> is the low-level building-block used to
+      implement the <a href="#serialization">serialization functions</a>
+      like <tt>unparse-document</tt>, but can also be used directly.
+    </p>
+
+    <h3>DOM/Lisp mapping</h3>
     <p>
       Differences between CXML's DOM and the direct IDL/Lisp mapping:
     </p>
@@ -715,10 +745,5 @@ NIL</pre>
         <tt>dom:do-node-list</tt>, which can be implemented portably.
       </li>
     </ul>
-    <p>Example:</p>
-    <pre>XML(97): (dom:node-type
-          (dom:document-element
-           (cxml:parse-file "~/test.xml" (dom:make-dom-builder))))
-:ELEMENT</pre>
   </body>
 </html>
