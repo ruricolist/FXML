@@ -199,7 +199,6 @@
     ("equals" (translate-equals element))
     ("notEquals" (translate-not-equals element))
     ("contentType" (translate-content-type element))
-    ("hasFeature" (translate-has-feature element))
     ("implementationAttribute" (assert-have-implementation-attribute element))
     ("isNull" (translate-is-null element))
     ("not" (translate-is-null element))
@@ -403,11 +402,13 @@
         (error "oops")))))
 
 (defun translate-has-feature (element)
-  (with-attributes (|var| |feature| |version|) element
-    (maybe-setf (%intern |var|)
-                `(and (runes:rod-equal ,(parse-java-literal |feature|) #"XML")
-                      (or (zerop (length ,(parse-java-literal |version|)))
-                          (runes:rod-equal ,(parse-java-literal |version|) #"1.0"))))))
+  (with-attributes (|obj| |var| |feature| |version|) element
+    (if (nullify |obj|)
+	(translate-member element)
+	(maybe-setf (%intern |var|)
+		    `(dom:has-feature 'dom-impl::implementation
+				      ,(parse-java-literal |feature|)
+				      ,(parse-java-literal |version|))))))
 
 (defun translate-fail (element)
   (declare (ignore element))

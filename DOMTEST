@@ -630,11 +630,8 @@ implementationAttribute expandEntityReferences not supported, skipping test
 598/808 domimplementationcreatedocumenttype02.xml
 599/808 domimplementationcreatedocumenttype04.xml
 600/808 domimplementationfeaturecore.xml
-TEST FAILED: The assertion DOMTEST-TESTS::|state| failed.
 601/808 domimplementationfeaturexmlversion2.xml
-TEST FAILED: The assertion DOMTEST-TESTS::|state| failed.
 602/808 domimplementationhasfeature01.xml
-TEST FAILED: The assertion DOMTEST-TESTS::|success| failed.
 603/808 domimplementationhasfeature02.xml
 604/808 elementgetattributenodens01.xml
 605/808 elementgetattributenodens02.xml
@@ -877,4 +874,4 @@ TEST FAILED: expected exception INUSE_ATTRIBUTE_ERR
 803/808 setNamedItemNS04.xml
 804/808 setNamedItemNS05.xml
 805/808 systemId01.xml
-20/763 tests failed; 45 tests were skipped
+17/763 tests failed; 45 tests were skipped
