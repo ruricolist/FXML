@@ -714,7 +714,6 @@ implementationAttribute expandEntityReferences not supported, skipping test
 681/808 importNode05.xml
 682/808 importNode06.xml
 683/808 importNode07.xml
-TEST FAILED: The assertion (EQL (LENGTH DOMTEST::COLLECTION) 1) failed.
 684/808 importNode08.xml
 685/808 importNode09.xml
 686/808 importNode10.xml
@@ -753,10 +752,6 @@ TEST FAILED: The assertion (NULL DOMTEST-TESTS::|internal|) failed.
 716/808 namednodemapgetnameditemns06.xml
 717/808 namednodemapremovenameditemns01.xml
 718/808 namednodemapremovenameditemns02.xml
-TEST FAILED: There is no applicable method for the generic function
-               #<STANDARD-GENERIC-FUNCTION DOM:NODE-VALUE (10)>
-             when called with arguments
-               (NIL).
 719/808 namednodemapremovenameditemns03.xml
 720/808 namednodemapremovenameditemns04.xml
 721/808 namednodemapremovenameditemns05.xml
@@ -864,4 +859,4 @@ implementationAttribute expandEntityReferences not supported, skipping test
 803/808 setNamedItemNS04.xml
 804/808 setNamedItemNS05.xml
 805/808 systemId01.xml
-10/763 tests failed; 45 tests were skipped
+8/763 tests failed; 45 tests were skipped

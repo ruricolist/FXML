@@ -1045,7 +1045,11 @@
 		       dtd))))
     (when e
       (dolist (a (cxml::elmdef-attributes e))
-        (when (and a (listp (cxml::attdef-default a)))
+        (when (and a
+		   (listp (cxml::attdef-default a))
+		   (not (dom:get-attribute-node
+			 element
+			 (cxml::attdef-name a))))
           (add-default-attribute element a))))))
 
 (defun add-default-attribute (element adef)
@@ -1055,6 +1059,15 @@
          (text (dom:create-text-node owner value)))
     (setf (slot-value anode 'specified-p) nil)
     (setf (slot-value anode 'owner-element) element)
+    (multiple-value-bind (prefix local-name)
+	(handler-case
+	    (cxml::split-qname (cxml::attdef-name adef))
+	  (cxml:well-formedness-violation (c)
+	    (dom-error :NAMESPACE_ERR "~A" c)))
+      ;; das ist fuer importnode07.
+      ;; so richtig ueberzeugend finde ich das ja nicht.
+      (setf (slot-value anode 'prefix) prefix)
+      (setf (slot-value anode 'local-name) local-name))
     (dom:append-child anode text)
     (push anode (slot-value (dom:attributes element) 'items))))
 
@@ -1292,6 +1305,7 @@
 	    (dom:set-attribute result
 			       (dom:name attribute)
 			       (dom:value attribute)))))
+    (add-default-attributes result)
     result))
 
 (defmethod dom:import-node ((document document) (node entity) deep)
