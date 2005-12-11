@@ -425,9 +425,9 @@
   (get-elements-by-tag-name-internal-ns document uri lname))
 
 (defmethod dom:get-element-by-id ((document document) id)
-  (block nil
+  (block t
     (unless (dtd document)
-      (return nil))
+      (return-from t nil))
     (setf id (%rod id))
     (labels ((walk (n)
 	       (dovector (c (dom:child-nodes n))
@@ -441,7 +441,7 @@
 			   (let* ((name (rod (cxml::attdef-name a)))
 				  (value (dom:get-attribute c name)))
 			     (when (and value (rod= value id))
-			       (return c)))))))
+			       (return-from t c)))))))
 		   (walk c)))))
       (walk document))))
 
