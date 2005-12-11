@@ -1106,6 +1106,10 @@
                        (dom:remove-child n child)
                        ;; not (incf i)
                        )
+		     ((zerop (length (dom:data child)))
+                       (dom:remove-child n child)
+                       ;; not (incf i)
+		       )
                      (t
                        (setf previous child)
                        (incf i)))))) 
