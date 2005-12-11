@@ -448,6 +448,9 @@
 
 ;;; Node
 
+(defmethod dom:has-attributes ((element node))
+  nil)
+
 (defmethod dom:is-supported ((node node) feature version)
   (dom:has-feature 'implementation feature version))
 
