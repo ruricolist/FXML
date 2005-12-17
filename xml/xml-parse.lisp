@@ -3033,7 +3033,7 @@
   (make-rod-xstream (string-rod string)))
 
 (defclass octet-input-stream
-    (trivial-gray-stream fundamental-binary-input-stream)
+    (trivial-gray-stream-mixin fundamental-binary-input-stream)
     ((octets :initarg :octets)
      (pos :initform 0)))
 
