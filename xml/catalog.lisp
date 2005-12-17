@@ -223,7 +223,7 @@
   (handler-case
       (parse-catalog-file/strict uri)
     (file-error () nil)
-    (parser-error () nil)))
+    (xml-parse-error () nil)))
 
 (defparameter *catalog-dtd*
     (let* ((cxml
