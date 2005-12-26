@@ -5,11 +5,24 @@ div.sidebar {
   margin: 0em 2pt 1em 2em;
   min-width: 15%;
   padding: 0pt 5pt 5pt 5pt;
+  font-family: helvetica;
 }
 
-div.sidebar ul {
+div.sidebar ul.main {
   padding: 0pt 0pt 0pt 1em;
   margin: 0 0 1em;
+}
+
+div.sidebar ul.sub {
+  list-style-type: square;
+  padding: 0pt 0pt 0pt 1em;
+  margin: 0 0 1em;
+}
+
+div.sidebar ul.hack {
+  padding: 0 0 0 0;
+  margin: 0 0 1em;
+  list-style-type: none;
 }
 
 body {
@@ -18,6 +31,7 @@ body {
   margin-right: 0pt;
   margin-bottom: 10%;
   padding-left: 30px;
+  font-family: helvetica;
 }
 
 h1,h2,h3 {

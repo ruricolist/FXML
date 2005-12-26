@@ -10,32 +10,6 @@
       <p>
 	<a href="README.html">CXML Homepage</a>
       </p>
-      <ul>
-	<li>
-          <a href="doc/installation.html">Installing Closure XML</a>
-          <ul>
-	    <li><a href="doc/installation.html#download"><b>Download</b></a></li>
-	    <li><a href="doc/installation.html#implementations">Implementation-specific notes</a></li>
-	    <li><a href="doc/installation.html#compilation"><b>Compilation</b></a></li>
-	    <li><a href="doc/installation.html#tests">Tests</a></li>
-          </ul>
-	</li>
-	<li>
-          <a href="doc/using.html">Using Closure XML</a>
-          <ul>
-            <li><a href="doc/using.html#quickstart"><b>Quick-Start Example</b></a></li>
-            <li><a href="doc/using.html#parser">Parsing and Validating</a></li>
-            <li><a href="doc/using.html#serialization">Serialization</a></li>
-            <li><a href="doc/using.html#misc">Miscellaneous Utility Functions</a></li>
-            <li><a href="doc/using.html#xmls">XMLS Compatibility</a></li>
-            <li><a href="doc/using.html#rods">Dealing with Rods</a></li>
-            <li><a href="doc/using.html#dtdcache">Caching of DTD Objects</a></li>
-            <li><a href="doc/using.html#catalogs">XML Catalogs</a></li>
-	    <li><a href="doc/using.html#sax">SAX Interface</a></li>
-	    <li><a href="doc/using.html#dom">DOM Notes</a></li>
-          </ul>
-	</li>
-      </ul>
     </div>
 
     <h1>Closure XML Parser</h1>
@@ -90,17 +64,8 @@
     <h2>Recent Changes</h2>
     <p class="nomargin"><tt>rel-2005-xx-yy</tt></p>
     <ul class="nomargin">
-      <li>
-        Implemented DOM 2 Core.
-        (A handler for DOM 3-style namespace normalization is provided and 
-        used by default for serialization of DOM documents if namespace
-	support is enabled.)
-      </li>
-      <li>
-        Error handling overhaul: All syntax errors should now be
-        reported as instances of <tt>well-formedness-violation</tt>.  We
-        also print line number information.
-      </li>
+      <li>Implemented DOM 2 Core.</li>
+      <li>Error handling overhaul.</li>
       <li>Support internal subset serialization.</li>
       <li>Gilbert Baumann has clarified the license as Lisp-LGPL.</li>
       <li>Use trivial-gray-streams.</li>

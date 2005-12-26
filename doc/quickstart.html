@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+  <head>
+    <title>Closure XML</title>
+    <link rel="stylesheet" type="text/css" href="cxml.css"/>
+  </head>
+  <body>
+    <div class="sidebar">
+      <p>
+	<a href="../README.html">CXML Homepage</a>
+      </p>
+      <ul class="main">
+	<li>
+          <a href="installation.html">Installing Closure XML</a>
+          <ul class="sub">
+	    <li><a href="installation.html#download"><b>Download</b></a></li>
+	    <li><a href="installation.html#implementations">Implementation-specific notes</a></li>
+	    <li><a href="installation.html#compilation"><b>Compilation</b></a></li>
+	    <li><a href="installation.html#tests">Tests</a></li>
+          </ul>
+	</li>
+        <li>
+          <ul class="hack">
+            <li>
+              <a href="using.html#quickstart"><b>Quick-Start Example</b></a>
+            </li>
+          </ul>
+        </li>
+	<li>
+          <a href="using.html">SAX parser</a>
+          <ul class="sub">
+            <li><a href="using.html#parser">Parsing and Validating</a></li>
+            <li><a href="using.html#serialization">Serialization</a></li>
+            <li><a href="using.html#misc">Miscellaneous SAX handlers</a></li>
+            <li><a href="using.html#rods">Dealing with Rods</a></li>
+            <li><a href="using.html#dtdcache">Caching of DTD Objects</a></li>
+            <li><a href="using.html#catalogs">XML Catalogs</a></li>
+	    <li><a href="using.html#sax">SAX Interface</a></li>
+          </ul>
+	</li>
+	<li>
+          <a href="using.html">DOM implementation</a>
+          <ul class="sub">
+            <li><a href="dom.html#parser">Parsing with the DOM builder</a></li>
+            <li><a href="dom.html#serialization">Serialization</a></li>
+	    <li><a href="dom.html#mapping">DOM/Lisp mapping</a></li>
+          </ul>
+	</li>
+	<li>
+          <ul class="hack">
+            <li><a href="xmls-compat.html">XMLS Builder</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+
+    <h1>Quick-Start Example</h1>
+
+    <p>
+      Make sure to <a href="installation.html#installation">install and load</a> cxml first.
+    </p>
+
+    <p>Create a test file called <tt>example.xml</tt>:</p>
+    <pre>* <b>(with-open-file (s "example.xml" :direction :output)
+    (write-string "&lt;test a='b'&gt;&lt;child/&gt;&lt;/test>" s))</b></pre>
+
+    <p>Parse <tt>example.xml</tt> into a DOM tree (<a href="using.html#parser">read
+    more</a>):</p>
+    <pre>* <b>(cxml:parse-file "example.xml" (dom:make-dom-builder))</b>
+#&lt;DOM-IMPL::DOCUMENT @ #x72206172>
+;; save result for later:
+* <b>(defparameter *example* *)</b>
+*EXAMPLE*</pre>
+
+    <p>Inspect the DOM tree (<a href="using.html#dom">read more</a>):</p>
+    <pre>* <b>(dom:document-element *example*)</b>
+#&lt;DOM-IMPL::ELEMENT test @ #x722b6ba2&gt;
+* <b>(dom:tag-name (dom:document-element *example*))</b>
+"test"
+* <b>(dom:child-nodes (dom:document-element *example*))</b>
+#(#&lt;DOM-IMPL::ELEMENT child @ #x722b6d8a&gt;)
+* <b>(dom:get-attribute (dom:document-element *example*) "a")</b>
+"b"</pre>
+
+    <p>Serialize the DOM document back into a stream (<a
+    href="using.html#serialization">read more</a>):</p>
+    <pre><b>(cxml:unparse-document *example* *standard-output*)</b>
+&lt;test a="b"&gt;&lt;child&gt;&lt;/child>&lt;/test></pre>
+
+    <p>As an alternative to DOM, parse into xmls-compatible list
+    structure (<a href="xmls-compat.html">read more</a>):</p>
+    <pre>* <b>(cxml:parse-file "example.xml" (cxml-xmls:make-xmls-builder))</b>
+("test" (("a" "b")) ("child" NIL))</pre>
+  </body>
+</html>

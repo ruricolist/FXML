@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+  <head>
+    <title>Closure XML</title>
+    <link rel="stylesheet" type="text/css" href="cxml.css"/>
+  </head>
+  <body>
+    <div class="sidebar">
+    </div>
+
+    <h1>XMLS Builder</h1>
+    <p>
+      Like other XML parsers written in Lisp, CXML can work with
+      documents represented as list structures. The specific model
+      implemented by cxml is compatible with the <a
+      href="http://common-lisp.net/project/xmls/">xmls parser</a>.  Xmls
+      list structures are a simpler and faster alternative to full DOM
+      document trees.  They also serve as an example showing how to
+      implement user-defined document models as an independent layer
+      over the the base parser (c.f. <tt>xml/xmls-compat.lisp</tt> in
+      the cxml distribution).  However, note that the list structures do
+      not include all information available in DOM documents
+      (notably, things like <tt>dom:parent-node</tt>) and are
+      sometimes more difficult to work with because of that since many
+      DOM functions cannot be implemented on them.
+    </p>
+    <p>
+      <div class="def">Function CXML-XMLS:MAKE-XMLS-BUILDER (&key include-default-values)</div>
+      Create a SAX handler which builds XMLS list structures.&nbsp;
+      If <tt>include-default-values</tt> is true, default values for
+      attributes declared in a DTD are included as attributes in the
+      xmls output.  <tt>include-default-values</tt> is true by default
+      and can be set to <tt>nil</tt> to suppress inclusion of default
+      values.
+    </p>
+    <p>
+      Example:
+    </p>
+    <pre>(cxml:parse-file "test.xml" (cxml-xmls:make-xmls-builder))</pre>
+    <p>
+      <div class="def">Function CXML-XMLS:MAP-NODE (handler node &key include-xmlns-attributes)</div>
+      Traverse an XMLS document/node and call SAX functions as if an XML
+      representation of the document were processed by a SAX parser.
+    </p>
+    <p>
+      Use this function to serialize XMLS data.  For example, we could
+      define a replacement for <tt>xmls:write-xml</tt> like this:
+    </p>
+    <pre>(defun write-xml (stream node &key indent)
+  (let ((sink (cxml:make-character-stream-sink
+               stream :canonical nil :indentation indent)))
+    (cxml-xmls:map-node sink node)))</pre>
+    <p>
+      <div class="def">Function CXML-XMLS:MAKE-NODE (&key name ns attrs
+      children) => xmls node</div>
+      Build a list node of the form
+      (<em>name</em>&nbsp;((<em>name</em>&nbsp;<em>value</em>)<em>*</em>)&nbsp;<em>child*</em>).
+    </p>
+    <p>
+      The node list's <tt>car</tt> can also be a cons of local <tt>name</tt>
+      and namespace prefix <tt>ns</tt>.
+    </p>
+    <p>
+      <em>fixme:</em> It is unclear to me how namespaces are meant to
+      work in xmls, since xmls documentation differs from how xmls
+      actually works in current releases.  Usually applications need to
+      know both the namespace prefix <em>and</em> the namespace URI.  We
+      currently follow the xmls <em>implementation</em> and use the
+      namespace prefix instead of following its <em>documentation</em> which
+      shows the URI.  We do not follow xmls in munging xmlns attribute
+      values.  Attributes themselves have namespaces and it is not clear
+      to me how that works in xmls.
+    </p>
+    <p>
+      <div class="def">Accessor CXML-XMLS:NODE-NAME (node)</div>
+      <div class="def">Accessor CXML-XMLS:NODE-NS (node)</div>
+      <div class="def">Accessor CXML-XMLS:NODE-ATTRS (node)</div>
+      <div class="def">Accessor CXML-XMLS:NODE-CHILDREN (node)</div>
+      Accessors for xmls node data.
+    </p>
+    <p>
+    </p>
+  </body>
+</html>

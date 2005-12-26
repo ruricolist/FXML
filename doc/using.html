@@ -7,79 +7,16 @@
   </head>
   <body>
     <div class="sidebar">
-      <p>
-	<a href="../README.html">CXML Homepage</a>
-      </p>
-      <ul>
-	<li>
-          <a href="installation.html">Installing Closure XML</a>
-          <ul>
-	    <li><a href="installation.html#download"><b>Download</b></a></li>
-	    <li><a href="installation.html#implementations">Implementation-specific notes</a></li>
-	    <li><a href="installation.html#compilation"><b>Compilation</b></a></li>
-	    <li><a href="installation.html#tests">Tests</a></li>
-          </ul>
-	</li>
-	<li>
-          <a href="using.html">Using Closure XML</a>
-          <ul>
-            <li><a href="using.html#quickstart"><b>Quick-Start Example</b></a></li>
-            <li><a href="using.html#parser">Parsing and Validating</a></li>
-            <li><a href="using.html#serialization">Serialization</a></li>
-            <li><a href="using.html#misc">Miscellaneous Utility Functions</a></li>
-            <li><a href="using.html#xmls">XMLS Compatibility</a></li>
-            <li><a href="using.html#rods">Dealing with Rods</a></li>
-            <li><a href="using.html#dtdcache">Caching of DTD Objects</a></li>
-            <li><a href="using.html#catalogs">XML Catalogs</a></li>
-	    <li><a href="using.html#sax">SAX Interface</a></li>
-	    <li><a href="using.html#dom">DOM Notes</a></li>
-          </ul>
-	</li>
-      </ul>
     </div>
-    <h1>Using Closure XML</h1>
-
-    <a name="quickstart"/>
-    <h3>Quick-Start Example</h3>
-
-    <p>
-      Make sure to <a href="installation.html#installation">install and load</a> cxml first.
-    </p>
-
-    <p>Create a test file called <tt>example.xml</tt>:</p>
-    <pre>* <b>(with-open-file (s "example.xml" :direction :output)
-    (write-string "&lt;test a='b'&gt;&lt;child/&gt;&lt;/test>" s))</b></pre>
-
-    <p>Parse <tt>example.xml</tt> into a DOM tree (<a href="#parser">read
-    more</a>):</p>
-    <pre>* <b>(cxml:parse-file "example.xml" (dom:make-dom-builder))</b>
-#&lt;DOM-IMPL::DOCUMENT @ #x72206172>
-;; save result for later:
-* <b>(defparameter *example* *)</b>
-*EXAMPLE*</pre>
-
-    <p>Inspect the DOM tree (<a href="#dom">read more</a>):</p>
-    <pre>* <b>(dom:document-element *example*)</b>
-#&lt;DOM-IMPL::ELEMENT test @ #x722b6ba2&gt;
-* <b>(dom:tag-name (dom:document-element *example*))</b>
-"test"
-* <b>(dom:child-nodes (dom:document-element *example*))</b>
-#(#&lt;DOM-IMPL::ELEMENT child @ #x722b6d8a&gt;)
-* <b>(dom:get-attribute (dom:document-element *example*) "a")</b>
-"b"</pre>
-
-    <p>Serialize the DOM document back into a stream (<a
-    href="#serialization">read more</a>):</p>
-    <pre><b>(cxml:unparse-document *example* *standard-output*)</b>
-&lt;test a="b"&gt;&lt;child&gt;&lt;/child>&lt;/test></pre>
-
-    <p>As an alternative to DOM, parse into xmls-compatible list
-    structure (<a href="#xmls">read more</a>):</p>
-    <pre>* <b>(cxml:parse-file "example.xml" (cxml-xmls:make-xmls-builder))</b>
-("test" (("a" "b")) ("child" NIL))</pre>
+    <h1>Using the SAX parser</h1>
 
     <a name="parser"/>
     <h3>Parsing and Validating</h3>
+    <p>
+      CXML is implemented as a SAX parser.  (Refer to <a
+      href="dom.html#parser">make-dom-builder</a> for information about
+      DOM.)
+    </p>
     <p>
       <div class="def">Function CXML:PARSE-FILE (pathname handler &key ...)</div>
       <div class="def">Function CXML:PARSE-STREAM (stream handler &key ...)</div>
@@ -175,16 +112,29 @@
     <a name="serialization"/>
     <h3>Serialization</h3>
     <p>
-      <div class="def">Function CXML:UNPARSE-DOCUMENT (document stream &rest keys)</div>
-      <div class="def">Function CXML:UNPARSE-DOCUMENT-TO-OCTETS (document &rest keys) => vector</div>
-      Serialize a DOM document object.  These convenience functions are
-      wrappers around <tt>dom:map-document</tt>.
+      Serialization is performed using <tt>sink</tt> objects.  A sink
+      is an output stream for runes.  There are different kinds of sinks
+      for output to lisp streams, vectors, etc.
     </p>
-    <ul>
-      <li><tt>document</tt> -- a DOM document object</li>
-      <li><tt>stream</tt> -- a Common Lisp stream with element-type
-        <tt>character</tt></li>
-    </ul>
+    <p>
+      Technically, sinks are SAX handlers that write XML output for SAX
+      events sent to them.  In practise, user code would normally not
+      generate those SAX events manually, and instead use a function
+      like <a href="dom.html#serialization">dom:map-document</a> or <a
+      href="xmls-compat.html">xmls-compat:map-node</a> to serialize an
+      in-memory document.
+    </p>
+    <p>
+      In addition to <tt>map-document</tt>, cxml has a set of
+      convenience macros for serialization (see below for
+      <tt>with-xml-output</tt>, <tt>with-element</tt>, etc).
+    </p>
+
+    <p>
+      <div class="def">Function CXML:MAKE-CHARACTER-STREAM-SINK (stream &rest keys) => sink</div>
+      <div class="def">Function CXML:MAKE-OCTET-VECTOR-SINK (&rest keys) => sink</div>
+      Return a handle suitable for event-based XML serialization.
+    </p>
     <p>Keyword arguments:</p>
     <ul>
       <li>
@@ -231,12 +181,6 @@
       characters written by <tt>unparse-document</tt> are really UTF-8
       bytes encoded as characters.
     </p>
-
-    <p>
-      <div class="def">Function CXML:MAKE-CHARACTER-STREAM-SINK (stream &rest keys) => sink</div>
-      <div class="def">Function CXML:MAKE-OCTET-VECTOR-SINK (&rest keys) => sink</div>
-      Return a handle suitable for event-based XML serialization.
-    </p>
     <p>
       These function provide the low-level mechanism used by the DOM
       serialization functions.  To serialize a document without building
@@ -272,7 +216,7 @@
 &lt;/foo&gt;</pre>
    <p>
       (Note that these functions accept both strings and rods, so we
-      could write <tt>"foo"</tt> instead of <tt>#"foo"</tt> above.)
+      can write <tt>"foo"</tt> instead of <tt>#"foo"</tt> above.)
    </p>
 
     <p>
@@ -303,7 +247,7 @@
   (sax:end-document sink))</pre>
 
     <a name="misc"/>
-    <h3>Miscellaneous Utility Functions</h3>
+    <h3>Miscellaneous SAX handlers</h3>
     <p>
       <div class="def">Function CXML:MAKE-VALIDATOR (dtd root)</div>
       Create a SAX handler which validates against a DTD instance.&nbsp;
@@ -337,80 +281,9 @@
     <p>
       Return a SAX handler that performs <a
       href="http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407/namespaces-algorithms.html#normalizeDocumentAlgo">DOM
-      3-style namespace normalization</a> on Attribute lists in
+      3-style namespace normalization</a> on attribute lists in
       <tt>start-element</tt> events before passing them on the next
       handler.
-    </p>
-
-    <a name="xmls"/>
-    <h3>XMLS Compatibility</h3>
-    <p>
-      Like other XML parsers written in Lisp, CXML can work with
-      documents represented as list structures. The specific model
-      implemented by cxml is compatible with the <a
-      href="http://common-lisp.net/project/xmls/">xmls parser</a>.  Xmls
-      list structures are a simpler and faster alternative to full DOM
-      document trees.  They also serve as an example showing how to
-      implement user-defined document models as an independent layer
-      over the the base parser (c.f. <tt>xml/xmls-compat.lisp</tt> in
-      the cxml distribution).  However, note that the list structures do
-      not include all information available in DOM documents and are
-      sometimes more difficult to work wth since many DOM functions
-      cannot be implemented on them.
-    </p>
-    <p>
-      <div class="def">Function CXML-XMLS:MAKE-XMLS-BUILDER (&key include-default-values)</div>
-      Create a SAX handler which builds XMLS list structures.&nbsp;
-      If <tt>include-default-values</tt> is true, default values for
-      attributes declared in a DTD are included as attributes in the
-      xmls output.  <tt>include-default-values</tt> is true by default
-      and can be set to <tt>nil</tt> to suppress inclusion of default
-      values.
-    </p>
-    <p>
-      Example:
-    </p>
-    <pre>(cxml:parse-file "test.xml" (cxml-xmls:make-xmls-builder))</pre>
-    <p>
-      <div class="def">Function CXML-XMLS:MAP-NODE (handler node &key include-xmlns-attributes)</div>
-      Traverse an XMLS document/node and call SAX functions as if an XML
-      representation of the document were processed by a SAX parser.
-    </p>
-    <p>
-      Use this function to serialize XMLS data.  For example, we could
-      define a replacement for <tt>xmls:write-xml</tt> like this:
-    </p>
-    <pre>(defun write-xml (stream node &key indent)
-  (let ((sink (cxml:make-character-stream-sink
-               stream :canonical nil :indentation indent)))
-    (cxml-xmls:map-node sink node)))</pre>
-    <p>
-      <div class="def">Function CXML-XMLS:MAKE-NODE (&key name ns attrs
-      children) => xmls node</div>
-      Build a list node of the form
-      (<em>name</em>&nbsp;((<em>name</em>&nbsp;<em>value</em>)<em>*</em>)&nbsp;<em>child*</em>).
-    </p>
-    <p>
-      The node list's <tt>car</tt> can also be a cons of local <tt>name</tt>
-      and namespace prefix <tt>ns</tt>.
-      <em>fixme:</em> It is unclear to me how namespaces are meant to
-      work in xmls, since xmls documentation differs from how xmls
-      actually works in current releases.  Usually applications need to
-      know both the namespace prefix <em>and</em> the namespace URI.  We
-      currently follow the xmls <em>implementation</em> and use the
-      namespace prefix instead of following its <em>documentation</em> which
-      shows the URI.  We do not follow xmls in munging xmlns attribute
-      values.  Attributes themselves have namespaces and it is not clear
-      to me how that works in xmls.
-    </p>
-    <p>
-      <div class="def">Accessor CXML-XMLS:NODE-NAME (node)</div>
-      <div class="def">Accessor CXML-XMLS:NODE-NS (node)</div>
-      <div class="def">Accessor CXML-XMLS:NODE-ATTRS (node)</div>
-      <div class="def">Accessor CXML-XMLS:NODE-CHILDREN (node)</div>
-      Accessors for xmls node data.
-    </p>
-    <p>
     </p>
 
     <a name="rods"/>
@@ -648,102 +521,5 @@ NIL</pre>
     <p>
       <i>fixme</i>: For more information on these functions refer to the docstrings.
     </p>
-
-
-    <a name="dom"/>
-    <h2>DOM Notes</h2>
-    <p>
-      CXML implements the DOM Level 2 Core interfaces.&nbsp; For details
-      on DOM, please refer to the <a
-      href="http://www.w3.org/TR/DOM-Level-2-Core/core.html">specification</a>.
-    </p>
-    <p>
-      However, note that there is no "standard" DOM mapping for Lisp.&nbsp; DOM
-      is <a
-      href="http://www.w3.org/TR/DOM-Level-2-Core/idl-definitions.html">specified
-      in CORBA IDL</a>, but it refrains from using object-oriented IDL
-      features, allowing for a much more natural Lisp implemenation than
-      the the ordinary IDL/Lisp mapping would.  The mapping chosen for
-      cxml is explained below.
-    </p>
-
-    <h3>Example</h3>
-    <pre>XML(97): (dom:node-type
-          (dom:document-element
-           (cxml:parse-file "~/test.xml" (dom:make-dom-builder))))
-:ELEMENT</pre>
-
-    <h3>CXML-specific functions</h3>
-    <p>
-      <div class="def">Function DOM:MAKE-DOM-BUILDER ()</div>
-      Create a SAX handler which builds a DOM document.&nbsp; Example:
-    </p>
-    <pre>(cxml:parse-file "test.xml" (dom:make-dom-builder))</pre>
-
-    <p>
-      <div class="def">Function DOM:MAP-DOCUMENT (handler document &key include-xmlns-attributes include-default-values)</div>
-      Traverse a DOM document and call SAX functions as if an XML
-      representation of the document were processed by a SAX parser.
-    </p>
-    <p>
-      <tt>dom:map-document</tt> is the low-level building-block used to
-      implement the <a href="#serialization">serialization functions</a>
-      like <tt>unparse-document</tt>, but can also be used directly.
-    </p>
-
-    <h3>DOM/Lisp mapping</h3>
-    <p>
-      Differences between CXML's DOM and the direct IDL/Lisp mapping:
-    </p>
-    <ul>
-      <li>
-        DOM function names are symbols in the <tt>DOM</tt> package (not
-        the <tt>OP</tt> package).
-      </li>
-      <li>
-        DOM functions have proper required arguments, not a huge
-        <tt>&rest</tt> lambda list.
-      </li>
-      <li>
-        Although most IDL interfaces are implemented as CLOS classes by
-        CXML, the Lisp types of DOM objects is not documented and cannot
-        be relied upon.&nbsp; A node's type can be determined using
-        <tt>dom:node-type</tt> instead.
-      </li>
-      <li>
-        <tt>DOMString</tt> is mapped to <tt>rod</tt>, which is either
-        an <tt>(unsigned-byte 16)</tt> array type or a string type.
-      </li>
-      <li>
-        The IDL/Lisp mapping maps CORBA enums to Lisp keywords.&nbsp;
-        Unfortunately, the DOM IDL does not use enums.&nbsp; Instead,
-        both exception types and node types are defined integer
-        constants.&nbsp; CXML chooses to ignore this definition and uses
-        keywords instead.
-      </li>
-      <li>
-        DOM uses StudlyCaps.&nbsp; Lisp programmers don't.&nbsp; We
-        insert <tt>#\-</tt> before every upper case letter preceded by a
-        lower case letter and before every upper case letter which is
-        followed by a lower case letter, but preceded by a capital
-        letter.&nbsp; This algorithms leads to the natural Lisp spelling
-        of DOM function names.
-      </li>
-      <li>
-        Implementation note: DOM's <tt>NodeList</tt> does not
-        necessarily map to a native "sequence" type.&nbsp; (For example,
-        node lists are objects in Java, not arrays.)&nbsp;
-        <tt>NodeList</tt> is specified to reflect changes done after a
-        node list was created, so node lists cannot be Lisp lists.&nbsp;
-        (A node list could be implemented as a CLOS object pointing to
-        said list though.)&nbsp; Instead, CXML currently implements node
-        lists as adjustable vectors.&nbsp; Note that code which relies on
-        this implementation and uses Lisp sequence functions
-        instead of sticking to <tt>dom:item</tt> and <tt>dom:length</tt>
-        is not portable.&nbsp; As a compromise, you can use our
-        extensions <tt>dom:map-node-list</tt> or
-        <tt>dom:do-node-list</tt>, which can be implemented portably.
-      </li>
-    </ul>
   </body>
 </html>
