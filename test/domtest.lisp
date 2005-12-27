@@ -174,7 +174,7 @@
 
 (defun read-members (&optional (directory *directory*))
   (let* ((pathname (merge-pathnames "build/dom2-interfaces.xml" directory))
-         (builder (dom:make-dom-builder))
+         (builder (rune-dom:make-dom-builder))
          (library (dom:document-element (cxml:parse-file pathname builder)))
          (methods '())
          (fields '()))
@@ -209,9 +209,9 @@
     (t (error "unknown condition: ~A" element))))
 
 (defun equalsp (a b test)
-  (when (typep a 'dom-impl::named-node-map)
+  (when (dom:named-node-map-p a)
     (setf a (dom:items a)))
-  (when (typep b 'dom-impl::named-node-map)
+  (when (dom:named-node-map-p b)
     (setf b (dom:items b)))
   (if (and (typep a 'sequence) (typep b 'sequence))
       (null (set-exclusive-or (coerce a 'list) (coerce b 'list) :test test))
@@ -368,7 +368,7 @@
 
 (defun translate-implementation (elt)
   (with-attributes (|var|) elt
-    (maybe-setf (%intern |var|) `'dom-impl::implementation)))
+    (maybe-setf (%intern |var|) `'rune-dom:implementation)))
 
 (defun translate-length (load)
   ;; XXX Soweit ich sehe unterscheiden die Tests nicht zwischen
@@ -406,7 +406,7 @@
     (if (nullify |obj|)
 	(translate-member element)
 	(maybe-setf (%intern |var|)
-		    `(dom:has-feature 'dom-impl::implementation
+		    `(dom:has-feature 'rune-dom:implementation
 				      ,(parse-java-literal |feature|)
 				      ,(parse-java-literal |version|))))))
 
@@ -458,7 +458,7 @@
 (defun translate-assert-size (element)
   (with-attributes (|collection| |size|) element
     `(let ((collection ,(%intern |collection|)))
-       (when (typep collection 'dom-impl::named-node-map)
+       (when (dom:named-node-map-p collection)
          (setf collection (dom:items collection)))
        (assert (eql (length collection) ,(parse-java-literal |size|))))))
 
@@ -493,9 +493,9 @@
       (return
         `(block assert-domexception
            (handler-bind
-               ((dom-impl::dom-exception
+               ((rune-dom::dom-exception
                  (lambda (c)
-                   (when (eq (dom-impl::dom-exception-key c)
+                   (when (eq (rune-dom::dom-exception-key c)
                              ,(intern (tag-name c) :keyword))
                      (return-from assert-domexception)))))
              ,@(translate-body c)
@@ -506,7 +506,7 @@
      ,@(map-child-elements
         'list
         (lambda (exception)
-          `(when (eq (dom-impl::dom-exception-key c)
+          `(when (eq (rune-dom::dom-exception-key c)
                      ,(intern (runes:rod-string (dom:get-attribute exception "code"))
                               :keyword))
              ,@(translate-body exception)
@@ -516,7 +516,7 @@
 (defun translate-try (element)
   `(block try
      (handler-bind
-         ((dom-impl::dom-exception
+         ((rune-dom::dom-exception
            ,(translate-catch
              (do-child-elements (c element :name "catch") (return c))
              '(return-from try))))
@@ -556,7 +556,7 @@
 (defun translate-for-each (element)
   (with-attributes (|collection| |member|) element
     `(let ((collection ,(%intern |collection|)))
-       (when (typep collection 'dom-impl::named-node-map)
+       (when (dom:named-node-map-p collection)
          (setf collection (dom:items collection)))
        (map nil (lambda (,(%intern |member|)) ,@(translate-body element))
             collection))))
@@ -582,7 +582,7 @@
   (unless *fields*
     (multiple-value-setq (*methods* *fields*) (read-members)))
   (catch 'give-up
-    (let* ((builder (dom:make-dom-builder))
+    (let* ((builder (rune-dom:make-dom-builder))
            (cxml::*validate* nil)         ;dom1.dtd is buggy
            (test (dom:document-element (cxml:parse-file pathname builder)))
            title
@@ -631,7 +631,7 @@
   (setf name (runes:rod-string name))
   (cxml:parse-file
    (make-pathname :name name :type "xml" :defaults *files-directory*)
-   (dom:make-dom-builder)))
+   (rune-dom:make-dom-builder)))
 
 (defparameter *bad-tests*
     '("hc_elementnormalize2.xml"
@@ -654,7 +654,7 @@
          (nfailed 0))
     (flet ((parse (test-directory)
 	     (let* ((all-tests (merge-pathnames "alltests.xml" test-directory))
-		    (builder (dom:make-dom-builder))
+		    (builder (rune-dom:make-dom-builder))
 		    (suite (dom:document-element
 			    (cxml:parse-file all-tests builder)))
 		    (*files-directory*

@@ -12,7 +12,7 @@
     ((recoder :initarg :recoder :accessor recoder)
      (chained-handler :initarg :chained-handler :accessor chained-handler)))
 
-(defun make-recoder (chained-handler &optional (recoder-fn #'rod-string))
+(defun make-recoder (chained-handler recoder-fn)
   (make-instance 'recoder
     :recoder recoder-fn
     :chained-handler chained-handler))

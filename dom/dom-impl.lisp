@@ -7,11 +7,24 @@
 ;;;; Author: David Lichteblau <david@lichteblau.com>
 ;;;; Author: knowledgeTools Int. GmbH
 
-(defpackage :dom-impl
+#-cxml-system::utf8dom-file
+(defpackage :rune-dom
   (:use :cl :runes)
-  (:export #:create-document))
+  #+rune-is-character (:nicknames :cxml-dom)
+  (:export #:implementation #:make-dom-builder #:create-document))
 
-(in-package :dom-impl)
+#+cxml-system::utf8dom-file
+(defpackage :utf8-dom
+  (:use :cl :utf8-runes)
+  (:nicknames :cxml-dom)
+  (:export #:implementation #:make-dom-builder #:create-document))
+
+#-cxml-system::utf8dom-file
+(in-package :rune-dom)
+
+#+cxml-system::utf8dom-file
+(in-package :utf8-dom)
+
 
 ;; Classes
 
@@ -107,7 +120,7 @@
    (system-id     :initarg :system-id     :reader dom:system-id)
    (entities      :initarg :entities      :reader dom:entities)
    (notations     :initarg :notations     :reader dom:notations)
-   (internal-subset                       :accessor internal-subset)))
+   (dom::%internal-subset                 :accessor dom::%internal-subset)))
 
 (defclass notation (node)
   ((name          :initarg :name          :reader dom:name)
@@ -144,8 +157,23 @@
   (etypecase x
     (null x)
     (rod x)
+    #+cxml-system::utf8dom-file (runes::rod (cxml::rod-to-utf8-string x))
     (string (string-rod x))
     (vector x)))
+
+#-cxml-system::utf8dom-file
+(defun real-rod (x)
+  (%rod x))
+
+#+cxml-system::utf8dom-file
+(defun real-rod (x)
+  (etypecase x
+    (null x)
+    (runes::rod x)
+    (string (cxml::utf8-string-to-rod x))))
+
+(defun valid-name-p (x)
+  (cxml::valid-name-p (real-rod x)))
 
 (defun assert-writeable (node)
   (when (read-only-p node)
@@ -231,12 +259,12 @@
 	   (string-equal (rod-string version) "2.0"))))
 
 (defun %create-document-type (name publicid systemid)
-  (make-instance 'dom-impl::document-type
+  (make-instance 'document-type
     :name name
-    :notations (make-instance 'dom-impl::named-node-map
+    :notations (make-instance 'named-node-map
 		 :element-type :notation
 		 :owner nil)
-    :entities (make-instance 'dom-impl::named-node-map
+    :entities (make-instance 'named-node-map
 		:element-type :entity
 		:owner nil)
     :public-id publicid
@@ -249,7 +277,7 @@
 
 (defmethod dom:create-document
     ((factory (eql 'implementation)) uri qname doctype)
-  (let ((document (make-instance 'dom-impl::document)))
+  (let ((document (make-instance 'document)))
     (setf (slot-value document 'owner) nil
 	  (slot-value document 'doc-type) doctype)
     (when doctype
@@ -258,9 +286,9 @@
 		   "doctype was created by a different dom implementation"))
       (when (dom:owner-document doctype)
 	(dom-error :WRONG_DOCUMENT_ERR "doctype already in use"))
-      (setf (slot-value doctype 'dom-impl::owner) document
-	    (slot-value (dom:notations doctype) 'dom-impl::owner) document
-	    (slot-value (dom:entities doctype) 'dom-impl::owner) document))
+      (setf (slot-value doctype 'owner) document
+	    (slot-value (dom:notations doctype) 'owner) document
+	    (slot-value (dom:entities doctype) 'owner) document))
     (when (or uri qname)
       (dom:append-child document (dom:create-element-ns document uri qname)))
     document))
@@ -278,7 +306,7 @@
 
 (defmethod dom:create-element ((document document) tag-name)
   (setf tag-name (%rod tag-name))
-  (unless (cxml::valid-name-p tag-name)
+  (unless (valid-name-p tag-name)
     (dom-error :INVALID_CHARACTER_ERR "not a name: ~A" (rod-string tag-name)))
   (let ((result (make-instance 'element
                   :tag-name tag-name
@@ -295,14 +323,16 @@
     result))
 
 (defun safe-split-qname (qname uri)
-  (unless (cxml::valid-name-p qname)
+  (unless (valid-name-p qname)
     (dom-error :INVALID_CHARACTER_ERR "not a name: ~A" (rod-string qname)))
   (multiple-value-bind (prefix local-name)
       (handler-case
-	  (cxml::split-qname qname)
+	  (cxml::split-qname (real-rod qname))
 	(cxml:well-formedness-violation (c)
 	  (dom-error :NAMESPACE_ERR "~A" c)))
+    (setf local-name (%rod local-name))
     (when prefix
+      (setf prefix (%rod prefix))
       (unless uri
 	(dom-error :NAMESPACE_ERR "prefix specified but no namespace URI"))
       (when (and (rod= prefix #"xml")
@@ -356,7 +386,7 @@
 (defmethod dom:create-processing-instruction ((document document) target data)
   (setf target (%rod target))
   (setf data (%rod data))
-  (unless (cxml::valid-name-p target)
+  (unless (valid-name-p target)
     (dom-error :INVALID_CHARACTER_ERR "not a name: ~A" (rod-string target)))
   (make-instance 'processing-instruction
     :owner document
@@ -365,7 +395,7 @@
 
 (defmethod dom:create-attribute ((document document) name)
   (setf name (%rod name))
-  (unless (cxml::valid-name-p name)
+  (unless (valid-name-p name)
     (dom-error :INVALID_CHARACTER_ERR "not a name: ~A" (rod-string name)))
   (make-instance 'attribute
     :name name
@@ -395,7 +425,7 @@
 
 (defmethod dom:create-entity-reference ((document document) name)
   (setf name (%rod name))
-  (unless (cxml::valid-name-p name)
+  (unless (valid-name-p name)
     (dom-error :INVALID_CHARACTER_ERR "not a name: ~A" (rod-string name)))
   (make-instance 'entity-reference
     :name name
@@ -445,12 +475,12 @@
 	       (dovector (c (dom:child-nodes n))
 		 (when (dom:element-p c)
 		   (let ((e (cxml::find-element
-			     (cxml::rod (dom:tag-name c))
+			     (real-rod (dom:tag-name c))
 			     (dtd document))))
 		     (when e
 		       (dolist (a (cxml::elmdef-attributes e))
 			 (when (eq :ID (cxml::attdef-type a))
-			   (let* ((name (rod (cxml::attdef-name a)))
+			   (let* ((name (%rod (cxml::attdef-name a)))
 				  (value (dom:get-attribute c name)))
 			     (when (and value (rod= value id))
 			       (return-from t c)))))))
@@ -603,19 +633,19 @@
 ;; node-name 
 
 (defmethod dom:node-name ((self document))
-  '#.(string-rod "#document"))
+  #"#document")
 
 (defmethod dom:node-name ((self document-fragment))
-  '#.(string-rod "#document-fragment"))
+  #"#document-fragment")
 
 (defmethod dom:node-name ((self text))
-  '#.(string-rod "#text"))
+  #"#text")
 
 (defmethod dom:node-name ((self cdata-section))
-  '#.(string-rod "#cdata-section"))
+  #"#cdata-section")
 
 (defmethod dom:node-name ((self comment))
-  '#.(string-rod "#comment"))
+  #"#comment")
 
 (defmethod dom:node-name ((self attribute))
   (dom:name self))
@@ -999,13 +1029,13 @@
   (let ((a (dom:get-attribute-node element name)))
     (if a
         (dom:value a)
-        #.(string-rod ""))))
+        #"")))
 
 (defmethod dom:get-attribute-ns ((element element) uri lname)
   (let ((a (dom:get-attribute-node-ns element uri lname)))
     (if a
         (dom:value a)
-        #.(string-rod ""))))
+        #"")))
 
 (defmethod dom:set-attribute ((element element) name value)
   (assert-writeable element)
@@ -1048,9 +1078,9 @@
   (let* ((qname (dom:name old-attr))
 	 (dtd (dtd (slot-value element 'owner)))
          (e (when dtd (cxml::find-element
-		       (cxml::rod (dom:tag-name element))
+		       (real-rod (dom:tag-name element))
 		       dtd)))
-         (a (when e (cxml::find-attribute e qname))))
+         (a (when e (cxml::find-attribute e (real-rod qname)))))
     (when (and a (listp (cxml::attdef-default a)))
       (let ((new (add-default-attribute element a)))
 	(setf (slot-value new 'namespace-uri) (dom:namespace-uri old-attr))
@@ -1060,7 +1090,7 @@
 (defun add-default-attributes (element)
   (let* ((dtd (dtd (slot-value element 'owner)))
          (e (when dtd (cxml::find-element
-		       (cxml::rod (dom:tag-name element))
+		       (real-rod (dom:tag-name element))
 		       dtd))))
     (when e
       (dolist (a (cxml::elmdef-attributes e))
@@ -1068,13 +1098,15 @@
 		   (listp (cxml::attdef-default a))
 		   (not (dom:get-attribute-node
 			 element
-			 (cxml::attdef-name a))))
+			 (%rod (cxml::attdef-name a)))))
           (let ((anode (add-default-attribute element a)))
 	    (multiple-value-bind (prefix local-name)
 		(handler-case
 		    (cxml::split-qname (cxml::attdef-name a))
 		  (cxml:well-formedness-violation (c)
 		    (dom-error :NAMESPACE_ERR "~A" c)))
+	      (when prefix (setf prefix (%rod prefix)))
+	      (setf local-name (%rod local-name))
 	      ;; das ist fuer importnode07.
 	      ;; so richtig ueberzeugend finde ich das ja nicht.
 	      (setf (slot-value anode 'prefix) prefix)
@@ -1173,14 +1205,14 @@
 
 (defmethod dom:internal-subset ((node document-type))
   ;; FIXME: encoding ist falsch, anderen sink nehmen!
-  (if (and (slot-boundp node 'internal-subset)
+  (if (and (slot-boundp node 'dom::%internal-subset)
 	   ;; die damen und herren von der test suite sind wohl der meinung,
 	   ;; dass ein leeres internal subset nicht vorhanden ist und
 	   ;; wir daher nil liefern sollen.  bittesehr!
-	   (internal-subset node))
+	   (dom::%internal-subset node))
       (with-output-to-string (stream)
 	(let ((sink (cxml:make-character-stream-sink stream)))
-	  (dolist (def (internal-subset node))
+	  (dolist (def (dom::%internal-subset node))
 	    (apply (car def) sink (cdr def)))))
       nil))
 
@@ -1191,7 +1223,7 @@
 
 (defmethod initialize-instance :after ((instance entity-reference) &key)
   (let* ((owner (dom:owner-document instance))
-         (handler (dom:make-dom-builder))
+         (handler (make-dom-builder))
          (resolver (slot-value owner 'entity-resolver)))
     (when resolver
       (setf (document handler) owner)
@@ -1380,10 +1412,10 @@
 
 ;;; Erweiterung
 
-(defun dom-impl:create-document (&optional document-element)
+(defun create-document (&optional document-element)
   ;; Um ein neues Dokumentenobject zu erzeugen, parsen wir einfach ein
   ;; Dummydokument.
-  (let* ((handler (dom:make-dom-builder))
+  (let* ((handler (make-dom-builder))
          (cxml::*ctx* (cxml::make-context :handler handler))
          (result
           (progn

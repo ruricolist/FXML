@@ -46,6 +46,7 @@
              #-rune-is-character "runes"
              #+rune-is-character "characters"
 	    :depends-on ("package" "definline"))
+     #+rune-is-integer (:file "utf8" :depends-on ("package"))
      (:file "syntax" :depends-on ("package" "definline" runes))
      (:file "encodings" :depends-on ("package"))
      (:file "encodings-data" :depends-on ("package" "encodings"))
@@ -73,6 +74,25 @@
      (:file "sax-proxy"       :depends-on ("xml-parse")))
     :depends-on (:cxml-runes :puri :trivial-gray-streams))
 
+(defclass utf8dom-file (closure-source-file) ((of)))
+
+(defmethod output-files ((operation compile-op) (c utf8dom-file))
+  (let* ((normal (car (call-next-method)))
+	 (name (concatenate 'string (pathname-name normal) "-utf8"))
+	 (of (make-pathname :name name :defaults normal)))
+    (setf (slot-value c 'of) of)
+    (list of)))
+
+(defmethod perform ((o load-op) (c utf8dom-file))
+  (load (slot-value c 'of)))
+
+(defvar *utf8-runes-readtable*)
+
+(defmethod perform ((operation compile-op) (c utf8dom-file))
+  (let ((*features* (cons 'utf8dom-file *features*))
+	(*readtable* *utf8-runes-readtable*))
+    (call-next-method)))
+
 (asdf:defsystem :cxml-dom
     :default-component-class closure-source-file
     :pathname (merge-pathnames
@@ -80,8 +100,12 @@
                (make-pathname :name nil :type nil :defaults *load-truename*))
     :components
     ((:file "package")
-     (:file "dom-impl"        :depends-on ("package"))
-     (:file "dom-builder"     :depends-on ("dom-impl"))
+     (:file rune-impl :pathname "dom-impl" :depends-on ("package"))
+     (:file rune-builder :pathname "dom-builder" :depends-on (rune-impl))
+     #+rune-is-integer
+     (utf8dom-file utf8-impl :pathname "dom-impl" :depends-on ("package"))
+     #+rune-is-integer
+     (utf8dom-file utf8-builder :pathname "dom-builder" :depends-on (utf8-impl))
      (:file "unparse"         :depends-on ("package"))
      (:file "dom-sax"         :depends-on ("package")))
     :depends-on (:cxml-xml))

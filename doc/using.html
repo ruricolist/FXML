@@ -323,11 +323,10 @@
       builder, since DOM is specified to use UTF-16.
     </p>
     <p>
-      <div class="def">Function CXML:MAKE-RECODER (chained-handler &optional recoder-fn)</div>
+      <div class="def">Function CXML:MAKE-RECODER (chained-handler recoder-fn)</div>
       Return a SAX handler which passes all events on to
       <tt>chained-handler</tt> after converting all strings and rods
-      using <tt>recoder-fn</tt>, a function of one argument which
-      defaults to <tt>runes:rod-string</tt>.
+      using <tt>recoder-fn</tt>, a function of one argument.
     </p>
     <p>
       <b>Example.</b> In a Lisp which ordinarily would use octet vector rods:
@@ -337,7 +336,7 @@
     <p>
       Use a SAX recoder to get strings instead::
     </p>
-    <pre>CL-USER(17): (parse-string "&lt;test/&gt;" (cxml:make-recoder (cxml-xmls:make-xmls-builder)))
+    <pre>CL-USER(17): (parse-string "&lt;test/&gt;" (cxml:make-recoder (cxml-xmls:make-xmls-builder) 'runes:rod-string))
 ("test" NIL)</pre>
 
     <a name="dtdcache"/>

@@ -8,14 +8,19 @@
 ;;;; Author: David Lichteblau <david@lichteblau.com>
 ;;;; Author: knowledgeTools Int. GmbH
 
-(in-package :dom-impl)
+#-cxml-system::utf8dom-file
+(in-package :rune-dom)
+
+#+cxml-system::utf8dom-file
+(in-package :utf8-dom)
+
 
 (defclass dom-builder ()
   ((document      :initform nil :accessor document)
    (element-stack :initform '() :accessor element-stack)
    (internal-subset             :accessor internal-subset)))
 
-(defun dom:make-dom-builder ()
+(defun make-dom-builder ()
   (make-instance 'dom-builder))
 
 (defun fast-push (new-element vector)
@@ -26,9 +31,9 @@
 	     (not (and sax:*include-xmlns-attributes*
 		       sax:*use-xmlns-namespace*)))
     (error "SAX configuration is incompatible with DOM: *namespace-processing* is activated, but *include-xmlns-attributes* or *use-xmlns-namespace* are not"))
-  (let ((document (make-instance 'dom-impl::document)))
-    (setf (slot-value document 'dom-impl::owner) nil
-	  (slot-value document 'dom-impl::doc-type) nil)
+  (let ((document (make-instance 'document)))
+    (setf (slot-value document 'owner) nil
+	  (slot-value document 'doc-type) nil)
     (setf (document handler) document)
     (push document (element-stack handler))))
 
@@ -46,16 +51,16 @@
 (defmethod sax:start-dtd ((handler dom-builder) name publicid systemid)
   (let* ((document (document handler))
          (doctype (%create-document-type name publicid systemid)))
-    (setf (slot-value doctype 'dom-impl::owner) document
-	  (slot-value (dom:notations doctype) 'dom-impl::owner) document
-	  (slot-value (dom:entities doctype) 'dom-impl::owner) document
-	  (slot-value document 'dom-impl::doc-type) doctype)))
+    (setf (slot-value doctype 'owner) document
+	  (slot-value (dom:notations doctype) 'owner) document
+	  (slot-value (dom:entities doctype) 'owner) document
+	  (slot-value document 'doc-type) doctype)))
 
 (defmethod sax:start-internal-subset ((handler dom-builder))
   (setf (internal-subset handler) nil))
 
 (defmethod sax:end-internal-subset ((handler dom-builder))
-  (setf (internal-subset (slot-value (document handler) 'dom-impl::doc-type))
+  (setf (dom::%internal-subset (slot-value (document handler) 'doc-type))
 	(nreverse (internal-subset handler)))
   (slot-makunbound handler 'internal-subset))
 
@@ -78,6 +83,7 @@
 
 (defmethod sax:start-element
     ((handler dom-builder) namespace-uri local-name qname attributes)
+  (check-type qname rod)
   (with-slots (document element-stack) handler
     (let* ((nsp sax:*namespace-processing*)
 	   (element (make-instance 'element 
@@ -85,7 +91,7 @@
                      :owner document
 		     :namespace-uri (when nsp namespace-uri)
 		     :local-name (when nsp local-name)
-		     :prefix (when nsp (cxml::split-qname (cxml::rod qname)))))
+		     :prefix (%rod (when nsp (cxml::split-qname (real-rod qname))))))
 	  (parent (car element-stack))
           (anodes '()))
       (dolist (attr attributes)
@@ -97,20 +103,20 @@
 		   (dom:create-attribute document (sax:attribute-qname attr))))
               (text
                (dom:create-text-node document (sax:attribute-value attr))))
-          (setf (slot-value anode 'dom-impl::specified-p)
+          (setf (slot-value anode 'specified-p)
                 (sax:attribute-specified-p attr))
-	  (setf (slot-value anode 'dom-impl::owner-element) element)
+	  (setf (slot-value anode 'owner-element) element)
           (dom:append-child anode text)
           (push anode anodes)))
-      (setf (slot-value element 'dom-impl::parent) parent)
-      (fast-push element (slot-value parent 'dom-impl::children))
+      (setf (slot-value element 'parent) parent)
+      (fast-push element (slot-value parent 'children))
       (let ((map
 	      (make-instance 'attribute-node-map
 		:items anodes
 		:element-type :attribute
 		:element element
 		:owner document)))
-	(setf (slot-value element 'dom-impl::attributes) map)
+	(setf (slot-value element 'attributes) map)
 	(dolist (anode anodes)
 	  (setf (slot-value anode 'map) map)))
       (push element element-stack))))
@@ -134,15 +140,15 @@
           (dom:append-data last-child data))
         (t
           (let ((node (dom:create-text-node document data)))
-            (setf (slot-value node 'dom-impl::parent) parent)
-            (fast-push node (slot-value (car element-stack) 'dom-impl::children))))))))
+            (setf (slot-value node 'parent) parent)
+            (fast-push node (slot-value (car element-stack) 'children))))))))
 
 (defmethod sax:start-cdata ((handler dom-builder))
   (with-slots (document element-stack) handler
     (let ((node (dom:create-cdata-section document #""))
           (parent (car element-stack)))
-      (setf (slot-value node 'dom-impl::parent) parent)
-      (fast-push node (slot-value parent 'dom-impl::children))
+      (setf (slot-value node 'parent) parent)
+      (fast-push node (slot-value parent 'children))
       (push node element-stack))))
 
 (defmethod sax:end-cdata ((handler dom-builder))
@@ -153,15 +159,15 @@
   (with-slots (document element-stack) handler
     (let ((node (dom:create-processing-instruction document target data))
           (parent (car element-stack)))
-      (setf (slot-value node 'dom-impl::parent) parent)
-      (fast-push node (slot-value (car element-stack) 'dom-impl::children)))))
+      (setf (slot-value node 'parent) parent)
+      (fast-push node (slot-value (car element-stack) 'children)))))
 
 (defmethod sax:comment ((handler dom-builder) data)
   (with-slots (document element-stack) handler
     (let ((node (dom:create-comment document data))
           (parent (car element-stack)))
-      (setf (slot-value node 'dom-impl::parent) parent)
-      (fast-push node (slot-value (car element-stack) 'dom-impl::children)))))
+      (setf (slot-value node 'parent) parent)
+      (fast-push node (slot-value (car element-stack) 'children)))))
 
 (defmethod sax:unparsed-entity-declaration
     ((handler dom-builder) name public-id system-id notation-name)
@@ -182,7 +188,7 @@
 
 (defun set-entity (handler name pid sid notation)
   (dom:set-named-item (dom:entities (dom:doctype (document handler)))
-                      (make-instance 'dom-impl::entity
+                      (make-instance 'entity
                         :owner (document handler)
                         :name name
                         :public-id pid
@@ -192,7 +198,7 @@
 (defmethod sax:notation-declaration
     ((handler dom-builder) name public-id system-id)
   (dom:set-named-item (dom:notations (dom:doctype (document handler)))
-                      (make-instance 'dom-impl::notation
+                      (make-instance 'notation
                         :owner (document handler)
                         :name name
                         :public-id public-id

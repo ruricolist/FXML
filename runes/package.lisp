@@ -61,6 +61,12 @@
            #:set-to-full-speed
            #:xstream-name))
 
+(defpackage :utf8-runes
+  (:use :cl)
+  (:export *utf8-runes-readtable*
+	   #:rune #:rod #:simple-rod #:rod-string #:rod= #:make-rod
+	   #:string-rod))
+
 (defpackage :runes-encoding
   (:use :cl :runes)
   (:export

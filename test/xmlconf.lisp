@@ -76,7 +76,7 @@
 
 (defun run-all-tests (directory)
   (let* ((pathname (merge-pathnames "xmlconf.xml" directory))
-         (builder (dom:make-dom-builder))
+         (builder (rune-dom:make-dom-builder))
          (xmlconf (cxml:parse-file pathname builder))
          (ntried 0)
          (nfailed 0)
@@ -124,7 +124,7 @@
   (declare (ignore description))
   (let ((document (apply #'cxml:parse-file
                          pathname
-                         (dom:make-dom-builder)
+                         (rune-dom:make-dom-builder)
                          args)))
     (cond
       ((null output)
@@ -161,7 +161,7 @@
        (handler-case
            (progn
              (format t " [validating:]")
-             (cxml:parse-file pathname (dom:make-dom-builder) :validate t)
+             (cxml:parse-file pathname (rune-dom:make-dom-builder) :validate t)
              (error "validity error not detected")
              nil)
          (cxml:validity-error ()
@@ -174,7 +174,7 @@
   (handler-case
       (progn
          (format t " [not validating:]")
-	(cxml:parse-file pathname (dom:make-dom-builder) :validate nil)
+	(cxml:parse-file pathname (rune-dom:make-dom-builder) :validate nil)
 	(error "well-formedness violation not detected")
       nil)
     (cxml:well-formedness-violation ()
@@ -183,7 +183,7 @@
   (handler-case
       (progn
 	(format t " [validating:]")
-	(cxml:parse-file pathname (dom:make-dom-builder) :validate t)
+	(cxml:parse-file pathname (rune-dom:make-dom-builder) :validate t)
 	(error "well-formedness violation not detected")
       nil)
     (cxml:well-formedness-violation ()

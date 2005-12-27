@@ -8,10 +8,6 @@
 (defpackage :dom
   (:use)
   (:export
-   
-   ;; lisp-specific extensions
-   #:make-dom-builder
-
    ;; DOM 2 functions
    #:owner-element
    #:import-node
@@ -100,26 +96,29 @@
    #:target
    #:code
    
-   ;; protocol classes
-   #:dom-implementation
-   #:document-fragment
-   #:document
-   #:node
-   #:node-list
-   #:named-node-map
-   #:character-data
-   #:attr
-   #:element
-   #:text
-   #:comment
-   #:cdata-section
-   #:document-type
-   #:notation
-   #:entity
-   #:entity-reference
-   #:processing-instruction
+   ;; not exported:
+;;;   ;; protocol classes
+;;;   #:dom-implementation
+;;;   #:document-fragment
+;;;   #:document
+;;;   #:node
+;;;   #:node-list
+;;;   #:named-node-map
+;;;   #:character-data
+;;;   #:attr
+;;;   #:element
+;;;   #:text
+;;;   #:comment
+;;;   #:cdata-section
+;;;   #:document-type
+;;;   #:notation
+;;;   #:entity
+;;;   #:entity-reference
+;;;   #:processing-instruction
+
    ;;
    #:items
+
    ;;
    #:node-p
    #:document-p

@@ -639,6 +639,6 @@
   (let* ((bytes (map '(vector (unsigned-byte 8)) #'char-code str))
          (buffer (make-array (length bytes) :element-type '(unsigned-byte 16)))
          (n (decode-sequence :utf-8 bytes 0 (length bytes) buffer 0 0 nil))
-         (result (make-array n :element-type 'rod)))
+         (result (make-array n :element-type 'rune)))
     (map-into result #'code-rune buffer)
     result))

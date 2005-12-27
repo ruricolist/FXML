@@ -6,7 +6,7 @@
 ;;;; Author: David Lichteblau <david@lichteblau.com>
 ;;;; Copyright (c) 2004 knowledgeTools Int. GmbH
 
-(in-package :dom-impl)
+(in-package :cxml)
 
 (defun dom:map-document
     (handler document
@@ -23,9 +23,9 @@
 		       (dom:system-id doctype))
 	(ecase include-doctype
 	  (:full-internal-subset
-	    (when (slot-boundp doctype 'internal-subset)
+	    (when (slot-boundp doctype 'dom::%internal-subset)
 	      (sax:start-internal-subset handler)
-	      (dolist (def (internal-subset doctype))
+	      (dolist (def (dom::%internal-subset doctype))
 		(apply (car def) handler (cdr def)))
 	      (sax:end-internal-subset handler)))
 	  (:canonical-notations
