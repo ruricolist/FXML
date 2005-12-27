@@ -13,7 +13,8 @@
      &key (include-xmlns-attributes sax:*include-xmlns-attributes*)
 	  include-doctype
           include-default-values
-	  (recode (typep document 'utf8-dom::node)))
+	  (recode (and #+rune-is-integer (typep document 'utf8-dom::node))))
+  (declare (ignorable recode))
   #+rune-is-integer
   (when recode
     (setf handler (make-recoder handler #'utf8-string-to-rod)))
@@ -54,16 +55,16 @@
              (dom:do-node-list (child (dom:child-nodes node))
                (ecase (dom:node-type child)
                  (:element
-                   ;; fixme: namespaces
                    (let ((attlist
                           (compute-attributes child
                                               include-xmlns-attributes
                                               include-default-values))
-                         (lname (dom:tag-name child))
+			 (uri (dom:namespace-uri child))
+                         (lname (dom:local-name child))
                          (qname (dom:tag-name child)))
-                     (sax:start-element handler nil lname qname attlist)
+                     (sax:start-element handler uri lname qname attlist)
                      (walk child)
-                     (sax:end-element handler nil lname qname)))
+                     (sax:end-element handler uri lname qname)))
                  (:cdata-section
                    (sax:start-cdata handler)
                    (sax:characters handler (dom:data child))
@@ -83,10 +84,11 @@
   (let ((results '()))
     (dom:do-node-list (a (dom:attributes element))
       (when (and (or defaultp (dom:specified a))
-                 (or xmlnsp (not (cxml::xmlns-attr-p (dom:name a)))))
+                 (or xmlnsp (not (cxml::xmlns-attr-p (rod (dom:name a))))))
         (push
          (sax:make-attribute :qname (dom:name a)
                              :value (dom:value a)
+			     :namespace-uri (dom:namespace-uri a)
                              :specified-p (dom:specified a))
          results)))
     (reverse results)))

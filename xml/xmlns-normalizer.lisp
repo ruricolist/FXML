@@ -90,7 +90,8 @@
 	(let ((binding (normalizer-find-prefix handler prefix)))
 	  (cond
 	    ((null binding)
-	      (push-namespace prefix uri))
+	      (unless (and (null prefix) (zerop (length uri)))
+		(push-namespace prefix uri)))
 	    ((rod= (sax:attribute-value binding) uri))
 	    ((member binding (car (xmlns-stack handler)))
 	      (setf (sax:attribute-value binding) uri))

@@ -151,7 +151,7 @@
 		    (#/n (vector-push-extend #/newline v (length v)))
 		    ((#/\\ #/\") (vector-push-extend #/\\ v (length v)))))
                 (vector-push-extend c v (length v))))
-        (coerce v 'runes::simple-rod)))
+        (make-array (length v) :element-type 'runes:rune :initial-contents v)))
     (t
       (%intern str))))
 
@@ -680,7 +680,7 @@
 			      (dom:get-attribute member "href"))))
 		   (unless (or (runes:rod= (dom:tag-name member) #"metadata")
 			       (member href *bad-tests* :test 'equal))
-		     (format t "~&~D/~D ~A~%" i n href)
+		     (format t "~&~D/~D ~A~%" i #+nil n 808 href)
 		     (let ((lisp (slurp-test
 				  (merge-pathnames href test-directory))))
 		       (when verbose

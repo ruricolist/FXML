@@ -10,14 +10,6 @@
 (deftype rod () '(vector rune))
 (deftype simple-rod () '(simple-array rune))
 
-#+(or)
-(definline rune (rod index)
-  (char rod index))
-
-#+(or)
-(defun (setf rune) (newval rod index)
-  (setf (char rod index) newval))
-
 (defun rod= (r s)
   (string= r s))
 

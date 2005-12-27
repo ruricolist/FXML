@@ -116,11 +116,7 @@
 ;;
 ;; o better extensibility wrt character representation, one may want to
 ;;   have
-;;    - UTF-8  in standard CL strings
-;;    - UCS-2  in RODs
-;;    - UTF-16 in RODs
 ;;    - UCS-4  in vectoren
-;;   [habe ich eigentlich nicht vor--david]
 ;;
 ;; o xstreams auslagern, documententieren und dann auch in SGML und
 ;;   CSS parser verwenden. (halt alles was zeichen liest).
@@ -1210,10 +1206,10 @@
                   (values :nmtoken (read-name-token input)))
                  ((rune= #/# c)
                   (let ((q (read-name-token input)))
-                    (cond ((equalp q '#.(string-rod "REQUIRED")) :|#REQUIRED|)
-                          ((equalp q '#.(string-rod "IMPLIED")) :|#IMPLIED|)
-                          ((equalp q '#.(string-rod "FIXED"))   :|#FIXED|)
-                          ((equalp q '#.(string-rod "PCDATA"))  :|#PCDATA|)
+                    (cond ((rod= q '#.(string-rod "REQUIRED")) :|#REQUIRED|)
+                          ((rod= q '#.(string-rod "IMPLIED")) :|#IMPLIED|)
+                          ((rod= q '#.(string-rod "FIXED"))   :|#FIXED|)
+                          ((rod= q '#.(string-rod "PCDATA"))  :|#PCDATA|)
                           (t
                            (wf-error zinput "Unknown token: ~S." q)))))
                  ((or (rune= c #/U+0020)
@@ -1821,15 +1817,15 @@
   ;; [59] Enumeration ::= '(' S? Nmtoken (S? '|' S? Nmtoken)* S? ')' /* VC: Enumeration */
   (multiple-value-bind (cat sem) (read-token input)
     (cond ((eq cat :nmtoken)
-           (cond ((equalp sem '#.(string-rod "CDATA"))    :CDATA)
-                 ((equalp sem '#.(string-rod "ID"))       :ID)
-                 ((equalp sem '#.(string-rod "IDREF"))    :IDREFS)
-                 ((equalp sem '#.(string-rod "IDREFS"))   :IDREFS)
-                 ((equalp sem '#.(string-rod "ENTITY"))   :ENTITY)
-                 ((equalp sem '#.(string-rod "ENTITIES")) :ENTITIES)
-                 ((equalp sem '#.(string-rod "NMTOKEN"))  :NMTOKEN)
-                 ((equalp sem '#.(string-rod "NMTOKENS")) :NMTOKENS)
-                 ((equalp sem '#.(string-rod "NOTATION"))
+           (cond ((rod= sem '#.(string-rod "CDATA"))    :CDATA)
+                 ((rod= sem '#.(string-rod "ID"))       :ID)
+                 ((rod= sem '#.(string-rod "IDREF"))    :IDREFS)
+                 ((rod= sem '#.(string-rod "IDREFS"))   :IDREFS)
+                 ((rod= sem '#.(string-rod "ENTITY"))   :ENTITY)
+                 ((rod= sem '#.(string-rod "ENTITIES")) :ENTITIES)
+                 ((rod= sem '#.(string-rod "NMTOKEN"))  :NMTOKEN)
+                 ((rod= sem '#.(string-rod "NMTOKENS")) :NMTOKENS)
+                 ((rod= sem '#.(string-rod "NOTATION"))
                   (let (names)
                     (p/S input)
                     (expect input :\()
@@ -1923,15 +1919,15 @@
     (cond ((member cat '(:\" :\'))
            (make-internal-entdef (p/entity-value input)))
           ((and (eq cat :nmtoken)
-                (or (equalp sem '#.(string-rod "SYSTEM"))
-                    (equalp sem '#.(string-rod "PUBLIC"))))
+                (or (rod= sem '#.(string-rod "SYSTEM"))
+                    (rod= sem '#.(string-rod "PUBLIC"))))
            (let (extid ndata)
              (setf extid (p/external-id input nil))
              (when (eq kind :general)   ;NDATA allowed at all?
                (cond ((eq (peek-token input) :S)
                       (p/S? input)
                       (when (and (eq (peek-token input) :nmtoken)
-                                 (equalp (nth-value 1 (peek-token input))
+                                 (rod= (nth-value 1 (peek-token input))
                                          '#.(string-rod "NDATA")))
                         (consume-token input)
                         (p/S input)
@@ -1961,10 +1957,10 @@
 (defun p/external-id (input &optional (public-only-ok-p nil))
   ;; xxx public-only-ok-p
   (multiple-value-bind (cat sem) (read-token input)
-    (cond ((and (eq cat :nmtoken) (equalp sem '#.(string-rod "SYSTEM")))
+    (cond ((and (eq cat :nmtoken) (rod= sem '#.(string-rod "SYSTEM")))
            (p/S input)
            (make-extid nil (p/system-literal input)))
-          ((and (eq cat :nmtoken) (equalp sem '#.(string-rod "PUBLIC")))
+          ((and (eq cat :nmtoken) (rod= sem '#.(string-rod "PUBLIC")))
            (let (pub sys)
              (p/S input)
              (setf pub (p/pubid-literal input))
@@ -3390,9 +3386,7 @@
     (dolist (ns-decl ns-decls)
       ;; check some namespace validity constraints
       (let ((prefix (car ns-decl))
-	    (uri (if (rod= #"" (cdr ns-decl))
-		     nil
-		     (cdr ns-decl))))
+	    (uri (cdr ns-decl)))
 	(cond
 	  ((and (rod= prefix #"xml")
 		(not (rod= uri #"http://www.w3.org/XML/1998/namespace")))
@@ -3425,7 +3419,8 @@
                       may be bound to an empty namespace URI, thus ~
                       undeclaring it."))
 	  (t
-	   (push (cons prefix uri) *namespace-bindings*)
+	   (push (cons prefix (if (rod= #"" uri) nil uri))
+		 *namespace-bindings*)
 	   (sax:start-prefix-mapping (handler *ctx*)
 				     (car ns-decl)
 				     (cdr ns-decl))))))

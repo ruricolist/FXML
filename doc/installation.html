@@ -14,35 +14,31 @@
     <h2>Download</h2>
     <ul>
       <li>
-        <a href="http://common-lisp.net/project/cxml/download/">tarballs</a>
+        <div><a href="http://common-lisp.net/project/cxml/download/">tarballs</a></div>
       </li>
-    <li>
+      <li>
+        <div>
       Anoncvs (<a href="http://common-lisp.net/cgi-bin/viewcvs.cgi/cxml/?cvsroot=cxml">browse</a>):
       <pre>$ export CVSROOT=:pserver:anonymous@common-lisp.net:/project/cxml/cvsroot
 $ cvs login
 Logging in to :pserver:anonymous@common-lisp.net:2401/project/cxml/cvsroot
 CVS password: anonymous
 $ cvs co cxml</pre>
-      </lii>
+        </div>
+      </li>
     </ul>
 
     <a name="implementations"/>
     <h2>Implementation-specific notes</h2>
     <p>
       CXML should be portable to all Common Lisp implementations
-      supporting gray streams.  Currently supported are ACL, CLISP,
-      CMUCL, LispWorks, OpenMCL, and SBCL.
+      supported by <a
+      href="http://common-lisp.net/project/cl-plus-ssl/#trivial-gray-streams">trivial-gray-streams</a>.
     </p>
     <ul>
       <li>
-	Note that CMUCL and OpenMCL do not support Unicode
-	natively.&nbsp; (You might want to use the <a
-	href="using.html#rods">recoding SAX handler</a> to work with
-	native strings anyway.)
-      </li>
-      <li>
 	SBCL and CLISP will trip over cxml's non-ASCII source files
-	unless compiled using a suitable locale configuration
+	unless run using a suitable locale configuration
 	(<tt>LC_CTYPE=en_US.ISO-8859-1</tt> should help).
       </li>
       <li>
@@ -50,19 +46,6 @@ $ cvs co cxml</pre>
 	advantage of SBCL's full 21 bit character support.
       </li>
     </ul>
-
-<!--
-    <p>
-      Optional configuration (skip this unless you know better): CXML
-      has full Unicode code support - - even on Lisps without Unicode
-      strings.  On non-unicode aware Lisps, <tt>DOMString</tt> is
-      implemented as an array of character codes.  CXML will auto-detect
-      at compile-time which string representation to use.  To override
-      the auto-detection, you can set one of the features
-      <tt>:rune-is-character</tt> and <tt>:rune-is-integer</tt> before
-      loading <tt>cxml.asd</tt>.
-    </p>
--->
 
     <a name="compilation"/>
     <h2>Compilation</h2>
@@ -117,9 +100,9 @@ $ cd 2001/DOM-Test-Suite && ant dom1-dtd dom2-dtd</pre>
     </p>
 
     <p>
-      <b>fixme</b> My parser does not understand the current testsuite
-      anymore.&nbsp; To fix this problem, revert the affected files
-      manually after check-out:
+      <b>fixme</b> domtest.lisp does not understand the current
+      testsuite driver anymore.&nbsp; To fix this problem, revert the
+      affected files manually after check-out:
     </p>
 
     <pre>$ cd 2001/XML-Test-Suite/xmlconf/

@@ -117,6 +117,15 @@
         href="using.html#misc">namespace normalizer</a> is used.
       </li>
     </ul>
+    <p>
+      <tt>unparse-document-to-octets</tt> returns an <tt>(unsigned-byte
+      8)</tt> array, whereas <tt>unparse-document</tt> writes
+      characters.&nbsp; <tt>unparse-document</tt> is useful together
+      with <tt>with-output-to-string</tt>.&nbsp; However, note that the
+      resulting document in both cases is UTF-8 encoded, so the
+      characters written by <tt>unparse-document</tt> are really UTF-8
+      bytes encoded as characters.
+    </p>
 
     <a name="mapping"/>
     <h3>DOM/Lisp mapping</h3>

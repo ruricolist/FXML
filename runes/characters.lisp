@@ -95,7 +95,9 @@
   (stringp x))
 
 (defun rod= (x y)
-  (string= x y))
+  (if (zerop (length x))
+      (zerop (length y))
+      (and (plusp (length y)) (string= x y))))
 
 (defun rod-equal (x y)
   (string-equal x y))

@@ -138,9 +138,10 @@
     </p>
 
     <p>
-      <div class="def">Function CXML:MAKE-CHARACTER-STREAM-SINK (stream &rest keys) => sink</div>
+      <div class="def">Function CXML:MAKE-OCTET-STREAM-SINK (stream &rest keys) => sink</div>
       <div class="def">Function CXML:MAKE-OCTET-VECTOR-SINK (&rest keys) => sink</div>
-      Return a handle suitable for event-based XML serialization.
+      <div class="def">Function CXML:MAKE-CHARACTER-STREAM-SINK (stream &rest keys) => sink</div>
+      Return a SAX serialization handle.
     </p>
     <p>Keyword arguments:</p>
     <ul>
@@ -175,26 +176,6 @@
       changes the document model and should only be used if whitespace
       does not matter to the application.
     </p>
-    <p>
-      If namespace support is enabled (the default), these functions use
-      a namespace normalizer (<tt>cxml:make-namespace-normalizer</tt>).
-    </p>
-    <p>
-      <tt>unparse-document-to-octets</tt> returns an <tt>(unsigned-byte
-      8)</tt> array, whereas <tt>unparse-document</tt> writes
-      characters.&nbsp; <tt>unparse-document</tt> is useful together
-      with <tt>with-output-to-string</tt>.&nbsp; However, note that the
-      resulting document in both cases is UTF-8 encoded, so the
-      characters written by <tt>unparse-document</tt> are really UTF-8
-      bytes encoded as characters.
-    </p>
-    <p>
-      These function provide the low-level mechanism used by the DOM
-      serialization functions.  To serialize a document without building
-      its DOM tree first, create a sink handle and call SAX functions on that
-      handle.  <tt>sax:end-document</tt> returns the serialized form of
-      the document described by the SAX events.
-    </p>
 
     <p>
       <div class="def">Macro CXML:WITH-XML-OUTPUT (sink &body body) => sink-specific result</div>
@@ -214,17 +195,12 @@
       (attribute "blub" "bla"))
     (text "Hi there.")))</pre>
    <p>
-      Prints this to <tt>stream</tt>, which must be an
-      <tt>(unsigned-byte 8)</tt> stream:
+      Prints this to <tt>stream</tt>:
    </p>
    <pre>&lt;foo xyz="abc"&gt;
   &lt;bar blub="bla"&gt;&lt;/bar&gt;
   Hi there.
 &lt;/foo&gt;</pre>
-   <p>
-      (Note that these functions accept both strings and rods, so we
-      can write <tt>"foo"</tt> instead of <tt>#"foo"</tt> above.)
-   </p>
 
     <p>
       <div class="def">Macro XHTML-GENERATOR:WITH-XHTML (sink &rest forms)</div>
