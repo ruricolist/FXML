@@ -64,6 +64,11 @@
       <tt>map-document</tt>.
     </p>
     <p>
+      Applications dealing with namespaces might want to inject a
+      <a href="using.html#misc">namespace normalizer</a> into the
+      sink chain.
+    </p>
+    <p>
       <div class="def">Function DOM:MAP-DOCUMENT (handler document &key include-xmlns-attributes include-default-values include-doctype)</div>
       Traverse a DOM document and call SAX functions as if an XML
       representation of the document was processed by a SAX parser.
@@ -110,11 +115,6 @@
         If keyword argument <tt>canonical</tt> is specified as 2, a
         doctype declaration will be written that includes notations
         declared in the document.
-      </li>
-      <li>
-        If namespace processing is enabled
-        (<tt>sax:*namespace-processing*</tt>), a <a
-        href="using.html#misc">namespace normalizer</a> is used.
       </li>
     </ul>
     <p>
