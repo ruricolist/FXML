@@ -2552,13 +2552,18 @@
 
 (defun p/document
     (input handler
-     &key validate dtd root entity-resolver disallow-internal-subset)
+     &key validate dtd root entity-resolver disallow-internal-subset
+	  (recode t))
   ;; check types of user-supplied arguments for better error messages:
   (check-type validate boolean)
+  (check-type recode boolean)
   (check-type dtd (or null extid))
   (check-type root (or null rod))
   (check-type entity-resolver (or null function symbol))
   (check-type disallow-internal-subset boolean)
+  #+rune-is-integer
+  (when recode
+    (setf handler (make-recoder handler #'rod-to-utf8-string)))
   (let ((*ctx*
          (make-context :handler handler
 		       :main-zstream input

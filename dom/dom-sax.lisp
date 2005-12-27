@@ -12,7 +12,11 @@
     (handler document
      &key (include-xmlns-attributes sax:*include-xmlns-attributes*)
 	  include-doctype
-          include-default-values)
+          include-default-values
+	  (recode (typep document 'utf8-dom::node)))
+  #+rune-is-integer
+  (when recode
+    (setf handler (make-recoder handler #'utf8-string-to-rod)))
   (sax:start-document handler)
   (when include-doctype
     (let ((doctype (dom:doctype document)))

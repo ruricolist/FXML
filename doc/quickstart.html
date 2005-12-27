@@ -33,7 +33,7 @@
             <li><a href="using.html#parser">Parsing and Validating</a></li>
             <li><a href="using.html#serialization">Serialization</a></li>
             <li><a href="using.html#misc">Miscellaneous SAX handlers</a></li>
-            <li><a href="using.html#rods">Dealing with Rods</a></li>
+            <li><a href="using.html#rods">Recoders</a></li>
             <li><a href="using.html#dtdcache">Caching of DTD Objects</a></li>
             <li><a href="using.html#catalogs">XML Catalogs</a></li>
 	    <li><a href="using.html#sax">SAX Interface</a></li>
@@ -67,7 +67,7 @@
 
     <p>Parse <tt>example.xml</tt> into a DOM tree (<a href="using.html#parser">read
     more</a>):</p>
-    <pre>* <b>(cxml:parse-file "example.xml" (dom:make-dom-builder))</b>
+    <pre>* <b>(cxml:parse-file "example.xml" (cxml-dom:make-dom-builder))</b>
 #&lt;DOM-IMPL::DOCUMENT @ #x72206172>
 ;; save result for later:
 * <b>(defparameter *example* *)</b>

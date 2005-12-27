@@ -74,6 +74,9 @@
     (%string public-id)
     (%string system-id))
 
+  (defwrapper sax:start-internal-subset ())
+  (defwrapper sax:end-internal-subset ())
+
   (defwrapper sax:end-dtd ())
 
   (defwrapper sax:unparsed-entity-declaration

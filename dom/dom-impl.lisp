@@ -1228,7 +1228,9 @@
     (when resolver
       (setf (document handler) owner)
       (push instance (element-stack handler))
-      (funcall resolver (dom:name instance) handler)))
+      #+cxml-system::utf8dom-file
+      (setf handler (cxml:make-recoder handler #'cxml:rod-to-utf8-string))
+      (funcall resolver (real-rod (dom:name instance)) handler)))
   (labels ((walk (n)
              (setf (slot-value n 'read-only-p) t)
              (when (dom:element-p n)

@@ -22,10 +22,33 @@
       To parse an XML document into a DOM tree, use the SAX parser with a
       DOM builder as the SAX handler.  Example:
     </p>
-    <pre>(cxml:parse-file "test.xml" (dom:make-dom-builder))</pre>
+    <pre>(cxml:parse-file "test.xml" (cxml-dom:make-dom-builder))</pre>
     <p>
-      <div class="def">Function DOM:MAKE-DOM-BUILDER ()</div>
+      <div class="def">Function CXML-DOM:MAKE-DOM-BUILDER ()</div>
       Create a SAX handler which builds a DOM document.
+    <p>
+    </p>
+      This functions returns a DOM builder that will work with the default
+      configuration of the SAX parser and is guaranteed to use
+      characters/strings instead of runes/rods, if that makes a
+      difference on the Lisp in question.
+    <p>
+    </p>
+      This is the same as <tt>rune-dom:make-dom-builder</tt> on Lisps
+      with Unicode support, and the same as
+      <tt>utf8-dom:make-dom-builder</tt> otherwise.
+    </p>
+
+    <p>
+      <div class="def">Function RUNE-DOM:MAKE-DOM-BUILDER ()</div>
+      Create a SAX handler which builds a DOM document using runes and rods.
+    </p>
+
+    <p>
+      <div class="def">Function UTF8-DOM:MAKE-DOM-BUILDER ()</div>
+      (Only on Lisps without Unicode support:)
+      Create a SAX handler which builds a DOM document using
+      UTF-8-encoded strings.
     </p>
 
     <a name="serialization"/>
@@ -62,6 +85,12 @@
       <li>
         <tt>include-default-values</tt> -- include attribute nodes with nil
         <tt>dom:specified</tt>.
+      </li>
+      <li>
+        <tt>recode</tt> -- (ignored on Lisps with Unicode support.) If
+        true, recode UTF-8 strings to rods.   Defaults to true if used
+        with a UTF-8 DOM document.  It can be set to false manually to
+        suppress recoding in this case.
       </li>
     </ul>
 

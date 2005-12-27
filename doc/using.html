@@ -69,6 +69,13 @@
         <tt>disallow-internal-subset</tt> -- a boolean.  If true, signal
         an error if the document contains an internal subset.
       </li>
+      <li>
+        <tt>recode</tt> -- a boolean.  (Ignored on Lisps with Unicode
+        support.)  Recode rods to UTF-8 strings.  Defaults to true.
+	Make sure to use <tt>utf8-dom:make-dom-builder</tt> if this
+        option is enabled and <tt>rune-dom:make-dom-builder</tt>
+        otherwise.
+      </li>
     </ul>
 
     <p>
@@ -258,7 +265,7 @@
       ignored.<br/>
       Example:
     </p>
-    <pre>(let ((d (parse-file "~/test.xml" (dom:make-dom-builder)))
+    <pre>(let ((d (parse-file "~/test.xml" (cxml-dom:make-dom-builder)))
       (x (parse-dtd-file "~/test.dtd")))
   (dom:map-document (cxml:make-validator x #"foo") d))</pre>
 
@@ -287,40 +294,15 @@
     </p>
 
     <a name="rods"/>
-    <h3>Dealing with Rods</h3>
+    <h3>Recoders</h3>
     <p>
-      As explained above, the XML parser handles character encoding and
-      uses 16bit strings internally.  Instead of using characters and strings
-      it uses <em>runes</em> and <em>rods</em>.  This is seen as a
-      feature, but can be inconvenient.
+      Recoders are a mechanism used by CXML internally on Lisp implementations
+      without Unicode support to recode UTF-16 vectors (rods) of
+      integers (runes) into UTF-8 strings.
     </p>
-    <ul>
-      <li>
-        If your Lisp supports 16 bit unicode strings, use feature
-        <tt>:rune-is-character</tt> and forget about runes and rods.
-        CXML will use ordinary Lisp characters and strings both
-        internally and externally.
-      </li>
-      <li>
-        If your Lisp does not support such strings and your application
-        needs Unicode support, use functions defined in the
-        <tt>runes</tt> package instead of ordinary string operators.
-      </li>
-      <li>
-        If your Lisp does not support such strings and your application
-        does not need Unicode support anyway, it will probably be more
-        convenient to let CXML convert rods into strings automatically.
-        To do that, use <tt>cxml:make-recoder</tt> to chain a special
-        sax handler between the parser and your application handler.
-        The recoder translates all rods using an application defined
-        function, which defaults to <tt>runes:rod-string</tt>.  Although
-        the actual XML parser still uses rods internally, you SAX
-        handler will only see ordinary Lisp strings.
-      </li>
-    </ul>
     <p>
-      Note that the recoder approach does <em>not</em> work with the DOM
-      builder, since DOM is specified to use UTF-16.
+      User code does not usually need to deal with recoders in current
+      versions of CXML.
     </p>
     <p>
       <div class="def">Function CXML:MAKE-RECODER (chained-handler recoder-fn)</div>
@@ -328,16 +310,6 @@
       <tt>chained-handler</tt> after converting all strings and rods
       using <tt>recoder-fn</tt>, a function of one argument.
     </p>
-    <p>
-      <b>Example.</b> In a Lisp which ordinarily would use octet vector rods:
-    </p>
-    <pre>CL-USER(14): (cxml:parse-string "&lt;test/&gt;" (cxml-xmls:make-xmls-builder))
-(#(116 101 115 116) NIL)</pre>
-    <p>
-      Use a SAX recoder to get strings instead::
-    </p>
-    <pre>CL-USER(17): (parse-string "&lt;test/&gt;" (cxml:make-recoder (cxml-xmls:make-xmls-builder) 'runes:rod-string))
-("test" NIL)</pre>
 
     <a name="dtdcache"/>
     <h3>Caching of DTD Objects</h3>

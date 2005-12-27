@@ -175,7 +175,8 @@
 (defun read-members (&optional (directory *directory*))
   (let* ((pathname (merge-pathnames "build/dom2-interfaces.xml" directory))
          (builder (rune-dom:make-dom-builder))
-         (library (dom:document-element (cxml:parse-file pathname builder)))
+         (library (dom:document-element
+		   (cxml:parse-file pathname builder :recode nil)))
          (methods '())
          (fields '()))
     (do-child-elements (interface library :name "interface")
@@ -584,7 +585,8 @@
   (catch 'give-up
     (let* ((builder (rune-dom:make-dom-builder))
            (cxml::*validate* nil)         ;dom1.dtd is buggy
-           (test (dom:document-element (cxml:parse-file pathname builder)))
+           (test (dom:document-element
+		  (cxml:parse-file pathname builder :recode nil)))
            title
            (bindings '())
            (code '()))
@@ -631,7 +633,8 @@
   (setf name (runes:rod-string name))
   (cxml:parse-file
    (make-pathname :name name :type "xml" :defaults *files-directory*)
-   (rune-dom:make-dom-builder)))
+   (rune-dom:make-dom-builder)
+   :recode nil))
 
 (defparameter *bad-tests*
     '("hc_elementnormalize2.xml"
@@ -656,7 +659,7 @@
 	     (let* ((all-tests (merge-pathnames "alltests.xml" test-directory))
 		    (builder (rune-dom:make-dom-builder))
 		    (suite (dom:document-element
-			    (cxml:parse-file all-tests builder)))
+			    (cxml:parse-file all-tests builder :recode nil)))
 		    (*files-directory*
 		     (merge-pathnames "files/" test-directory)))
 	       (do-child-elements (member suite)

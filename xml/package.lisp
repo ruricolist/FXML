@@ -75,4 +75,6 @@
    #:make-recoder
    #:sax-proxy
    #:proxy-chained-handler
-   #:make-namespace-normalizer))
+   #:make-namespace-normalizer
+   #:rod-to-utf8-string
+   #:utf8-string-to-rod))

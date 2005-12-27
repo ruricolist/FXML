@@ -83,7 +83,7 @@
 
 (defmethod sax:start-element
     ((handler dom-builder) namespace-uri local-name qname attributes)
-  (check-type qname rod)
+  (check-type qname rod)		;catch recoder/builder mismatch
   (with-slots (document element-stack) handler
     (let* ((nsp sax:*namespace-processing*)
 	   (element (make-instance 'element 
