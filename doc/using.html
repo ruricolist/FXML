@@ -7,6 +7,52 @@
   </head>
   <body>
     <div class="sidebar">
+      <p>
+	<a href="../README.html">CXML Homepage</a>
+      </p>
+      <ul class="main">
+	<li>
+          <a href="installation.html">Installing Closure XML</a>
+          <ul class="sub">
+	    <li><a href="installation.html#download"><b>Download</b></a></li>
+	    <li><a href="installation.html#implementations">Implementation-specific notes</a></li>
+	    <li><a href="installation.html#compilation">Compilation</a></li>
+	    <li><a href="installation.html#tests">Tests</a></li>
+          </ul>
+	</li>
+        <li>
+          <ul class="hack">
+            <li>
+              <a href="using.html#quickstart"><b>Quick-Start Example</b></a>
+            </li>
+          </ul>
+        </li>
+	<li>
+          <a href="using.html">SAX parser</a>
+          <ul class="sub">
+            <li><a href="using.html#parser">Parsing and Validating</a></li>
+            <li><a href="using.html#serialization">Serialization</a></li>
+            <li><a href="using.html#misc">Miscellaneous SAX handlers</a></li>
+            <li><a href="using.html#rods">Recoders</a></li>
+            <li><a href="using.html#dtdcache">Caching of DTD Objects</a></li>
+            <li><a href="using.html#catalogs">XML Catalogs</a></li>
+	    <li><a href="using.html#sax">SAX Interface</a></li>
+          </ul>
+	</li>
+	<li>
+          <a href="using.html">DOM implementation</a>
+          <ul class="sub">
+            <li><a href="dom.html#parser">Parsing with the DOM builder</a></li>
+            <li><a href="dom.html#serialization">Serialization</a></li>
+	    <li><a href="dom.html#mapping">DOM/Lisp mapping</a></li>
+          </ul>
+	</li>
+	<li>
+          <ul class="hack">
+            <li><a href="xmls-compat.html">XMLS Builder</a></li>
+          </ul>
+        </li>
+      </ul>
     </div>
     <h1>Using the SAX parser</h1>
 
@@ -137,12 +183,70 @@
       <tt>with-xml-output</tt>, <tt>with-element</tt>, etc).
     </p>
 
+    <div style="background-color: #ddddff">
+      Portable sinks:<br/>
+      <span class="def">Function CXML:MAKE-OCTET-VECTOR-SINK (&rest keys) => sink</span><br/>
+      <span class="def">Function CXML:MAKE-OCTET-STREAM-SINK (stream &rest keys) => sink</span><br/>
+      <span class="def">Function CXML:MAKE-ROD-SINK (&rest keys) => sink</span><br/>
+      <br/>
+      Only on Lisps with Unicode support:<br/>
+      <span class="def">Function CXML:MAKE-STRING-SINK</span> -- alias for <tt>cxml:make-rod-sink</tt><br/>
+      <span class="def">Function CXML:MAKE-CHARACTER-STREAM-SINK (stream &rest keys) => sink</span><br/>
+      <br/>
+      Only on Lisps <em>without</em> Unicode support:<br/>
+      <span class="def">Function CXML:MAKE-STRING-SINK/UTF8 (&rest keys) => sink</span><br/>
+      <span class="def">Function CXML:MAKE-CHARACTER-STREAM-SINK/UTF8 (stream &rest keys) => sink</span><br/>
+    </div>
     <p>
-      <div class="def">Function CXML:MAKE-OCTET-STREAM-SINK (stream &rest keys) => sink</div>
-      <div class="def">Function CXML:MAKE-OCTET-VECTOR-SINK (&rest keys) => sink</div>
-      <div class="def">Function CXML:MAKE-CHARACTER-STREAM-SINK (stream &rest keys) => sink</div>
       Return a SAX serialization handle.
     </p>
+    <ul>
+      <li>
+        The <tt>-octet-</tt> functions write the document encoded into
+        UTF-8.
+	<tt>make-octet-stream-sink</tt> works with Lisp streams of
+	element-type <tt>(unsigned-byte 8)</tt>.
+	<tt>make-octet-vector-sink</tt> returns a vector of
+	<tt>(unsigned-byte 8)</tt>.
+      </li>
+      <li>
+        <tt>make-character-stream-sink</tt> works with character
+	streams.  It serializes the document into characters <em>without
+	encoding it into an external format</em>.  When using these
+	functions, <em>take care to avoid encoding the result into
+	an incorrect external format</em>.  (Note that characters undergo
+	external format conversion when written to a character stream.
+	If the document's XML declaration specifies an encoding, make
+	sure to specify this encoding as the external format if and when
+	writing the serialized document to a character stream.  If the
+	document does not specify an encoding, either UTF-8 or UTF-16
+	must be used.)  This function is available only on Lisps with
+	unicode support.
+      </li>
+      <li>
+        <tt>make-rod-sink</tt> serializes the document into a vector of
+	runes <em>without encoding it into an external format</em>.
+	(On Lisp with unicode support, the result will be a string;
+	otherwise, a vector of character codes will be returned.)
+	The warnings given for <tt>make-character-stream-sink</tt>
+	apply to this function as well.
+      </li>
+      <li>
+        The <tt>/utf8</tt> functions write the document encoded into
+	characters representing a UTF-8 encoding.
+	When using these functions, <em>take care to avoid encoding the
+	result</em> into an external format for a second time.  (Note
+	that characters undergo external format conversion when written
+	to a character stream.  Since these functions already perform
+	external format conversion, make sure to specify an external
+	format that does "nothing" if and when writing the serialized document
+	to a character stream.  ISO-8859-1 external formats usually
+	achieve the desired effect.)
+	<tt>make-character-stream-sink/utf8</tt> works with character streams.
+	<tt>make-string-sink/utf8</tt> returns a string.
+        These functions are available only on Lisps without unicode support.
+      </li>
+    </ul>
     <p>Keyword arguments:</p>
     <ul>
       <li>
@@ -170,6 +274,16 @@
         <tt>NIL</tt>: Use a more readable non-canonical representation.
       </li>
     </ul>
+    <p>
+      An internal subset will be included in the result regardless of
+      the <tt>canonical</tt> setting.  It is the responsibility of the
+      caller to not report an internal subset for
+      canonical&nbsp;&lt;=&nbsp;1, or only notations as required for
+      canonical&nbsp;=&nbsp;2.  For example, the
+      <tt>include-doctype</tt> argument to <tt>dom:map-document</tt>
+      should be set to <tt>nil</tt> for the former behaviour and
+      <tt>:canonical-notations</tt> for the latter.
+    </p>
     <p>
       With an <tt>indentation</tt> level, pretty-print the XML by
       inserting additional whitespace.&nbsp; Note that indentation

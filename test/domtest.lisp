@@ -680,7 +680,7 @@
 			      (dom:get-attribute member "href"))))
 		   (unless (or (runes:rod= (dom:tag-name member) #"metadata")
 			       (member href *bad-tests* :test 'equal))
-		     (format t "~&~D/~D ~A~%" i #+nil n 808 href)
+		     (format t "~&~D/~D ~A~%" i n href)
 		     (let ((lisp (slurp-test
 				  (merge-pathnames href test-directory))))
 		       (when verbose

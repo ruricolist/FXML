@@ -54,9 +54,10 @@
               (merge-pathnames output sub-directory)))))
 
 (defun serialize-document (document)
-  (map 'vector #'char-code
-       (with-output-to-string (s)
-         (cxml:unparse-document document s :canonical 2))))
+  (dom:map-document (cxml:make-octet-vector-sink :canonical 2)
+		    document
+		    :include-doctype :canonical-notations
+		    :include-default-values t))
 
 (defun file-contents (pathname)
   (with-open-file (s pathname :element-type '(unsigned-byte 8))

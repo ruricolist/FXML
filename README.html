@@ -10,6 +10,49 @@
       <p>
 	<a href="README.html">CXML Homepage</a>
       </p>
+      <ul class="main">
+	<li>
+          <a href="doc/installation.html">Installing Closure XML</a>
+          <ul class="sub">
+	    <li><a href="doc/installation.html#download"><b>Download</b></a></li>
+	    <li><a href="doc/installation.html#implementations">Implementation-specific notes</a></li>
+	    <li><a href="doc/installation.html#compilation">Compilation</a></li>
+	    <li><a href="doc/installation.html#tests">Tests</a></li>
+          </ul>
+	</li>
+        <li>
+          <ul class="hack">
+            <li>
+              <a href="doc/using.html#quickstart"><b>Quick-Start Example</b></a>
+            </li>
+          </ul>
+        </li>
+	<li>
+          <a href="doc/using.html">SAX parser</a>
+          <ul class="sub">
+            <li><a href="doc/using.html#parser">Parsing and Validating</a></li>
+            <li><a href="doc/using.html#serialization">Serialization</a></li>
+            <li><a href="doc/using.html#misc">Miscellaneous SAX handlers</a></li>
+            <li><a href="doc/using.html#rods">Recoders</a></li>
+            <li><a href="doc/using.html#dtdcache">Caching of DTD Objects</a></li>
+            <li><a href="doc/using.html#catalogs">XML Catalogs</a></li>
+	    <li><a href="doc/using.html#sax">SAX Interface</a></li>
+          </ul>
+	</li>
+	<li>
+          <a href="doc/using.html">DOM implementation</a>
+          <ul class="sub">
+            <li><a href="doc/dom.html#parser">Parsing with the DOM builder</a></li>
+            <li><a href="doc/dom.html#serialization">Serialization</a></li>
+	    <li><a href="doc/dom.html#mapping">DOM/Lisp mapping</a></li>
+          </ul>
+	</li>
+	<li>
+          <ul class="hack">
+            <li><a href="doc/xmls-compat.html">XMLS Builder</a></li>
+          </ul>
+        </li>
+      </ul>
     </div>
 
     <h1>Closure XML Parser</h1>
@@ -67,6 +110,7 @@
       <li>Implemented DOM 2 Core.</li>
       <li>Error handling overhaul.</li>
       <li>UTF-8 string support in DOM on Lisps without Unicode characters.</li>
+      <li>Sink API has been changed.</li>
       <li>Support internal subset serialization.</li>
       <li>Gilbert Baumann has clarified the license as Lisp-LGPL.</li>
       <li>Use trivial-gray-streams.</li>

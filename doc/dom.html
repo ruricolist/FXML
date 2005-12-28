@@ -7,6 +7,52 @@
   </head>
   <body>
     <div class="sidebar">
+      <p>
+	<a href="../README.html">CXML Homepage</a>
+      </p>
+      <ul class="main">
+	<li>
+          <a href="installation.html">Installing Closure XML</a>
+          <ul class="sub">
+	    <li><a href="installation.html#download"><b>Download</b></a></li>
+	    <li><a href="installation.html#implementations">Implementation-specific notes</a></li>
+	    <li><a href="installation.html#compilation">Compilation</a></li>
+	    <li><a href="installation.html#tests">Tests</a></li>
+          </ul>
+	</li>
+        <li>
+          <ul class="hack">
+            <li>
+              <a href="using.html#quickstart"><b>Quick-Start Example</b></a>
+            </li>
+          </ul>
+        </li>
+	<li>
+          <a href="using.html">SAX parser</a>
+          <ul class="sub">
+            <li><a href="using.html#parser">Parsing and Validating</a></li>
+            <li><a href="using.html#serialization">Serialization</a></li>
+            <li><a href="using.html#misc">Miscellaneous SAX handlers</a></li>
+            <li><a href="using.html#rods">Recoders</a></li>
+            <li><a href="using.html#dtdcache">Caching of DTD Objects</a></li>
+            <li><a href="using.html#catalogs">XML Catalogs</a></li>
+	    <li><a href="using.html#sax">SAX Interface</a></li>
+          </ul>
+	</li>
+	<li>
+          <a href="using.html">DOM implementation</a>
+          <ul class="sub">
+            <li><a href="dom.html#parser">Parsing with the DOM builder</a></li>
+            <li><a href="dom.html#serialization">Serialization</a></li>
+	    <li><a href="dom.html#mapping">DOM/Lisp mapping</a></li>
+          </ul>
+	</li>
+	<li>
+          <ul class="hack">
+            <li><a href="xmls-compat.html">XMLS Builder</a></li>
+          </ul>
+        </li>
+      </ul>
     </div>
 
     <h1>The DOM implementation</h1>
@@ -54,14 +100,9 @@
     <a name="serialization"/>
     <h3>Serializing DOM</h3>
     <p>
-      The technique used to serialize a DOM document is to use a SAX
-      serialization sink as the argument to <tt>dom:map-document</tt>,
-      which generates SAX events for the DOM tree.
-    </p>
-    <p>
-      In addition, there are convenience functions like
-      <tt>unparse-document</tt> as a thin wrapper around
-      <tt>map-document</tt>.
+      To serialize a DOM document, use a SAX serialization sink as the
+      argument to <tt>dom:map-document</tt>, which generates SAX events
+      for the DOM tree.
     </p>
     <p>
       Applications dealing with namespaces might want to inject a
@@ -98,34 +139,6 @@
         suppress recoding in this case.
       </li>
     </ul>
-
-    <p>
-      <div class="def">Function CXML:UNPARSE-DOCUMENT (document stream &rest keys)</div>
-      <div class="def">Function CXML:UNPARSE-DOCUMENT-TO-OCTETS (document &rest keys) => vector</div>
-    </p>
-    <p>
-      Serialize a DOM document object.  These convenience functions are
-      wrappers around <tt>dom:map-document</tt>.
-    </p>
-    <p>Keyword arguments are passed on to the sink.  C.f. <a
-    href="using.html#serialization">cxml:make-octet-vector-sink</a>.</p>
-    <p>Notes:</p>
-    <ul>
-      <li>
-        If keyword argument <tt>canonical</tt> is specified as 2, a
-        doctype declaration will be written that includes notations
-        declared in the document.
-      </li>
-    </ul>
-    <p>
-      <tt>unparse-document-to-octets</tt> returns an <tt>(unsigned-byte
-      8)</tt> array, whereas <tt>unparse-document</tt> writes
-      characters.&nbsp; <tt>unparse-document</tt> is useful together
-      with <tt>with-output-to-string</tt>.&nbsp; However, note that the
-      resulting document in both cases is UTF-8 encoded, so the
-      characters written by <tt>unparse-document</tt> are really UTF-8
-      bytes encoded as characters.
-    </p>
 
     <a name="mapping"/>
     <h3>DOM/Lisp mapping</h3>

@@ -67,11 +67,10 @@
 ;; -- James Clark (jjc@jclark.com)
 
 
-;;;; SINK: a rune output "stream"
+;;;; SINK: an xml output sink
 
 (defclass sink ()
-    ((high-surrogate :initform nil)
-     (column :initform 0 :accessor column)
+    ((ystream :initarg :ystream :accessor sink-ystream)
      (width :initform 79 :initarg :width :accessor width)
      (canonical :initform t :initarg :canonical :accessor canonical)
      (indentation :initform nil :initarg :indentation :accessor indentation)
@@ -90,77 +89,49 @@
   (when (and (canonical instance) (indentation instance))
     (error "Cannot indent XML in canonical mode")))
 
-;; WRITE-OCTET als generisch zu machen ist vielleicht nicht die schnellste
-;; Loesung, aber die einfachste.
-(defgeneric write-octet (octet sink))
-
 (defun make-buffer (&key (element-type '(unsigned-byte 8)))
   (make-array 1
               :element-type element-type
               :adjustable t
               :fill-pointer 0))
 
-(defmethod write-octet :after (octet sink)
-  (with-slots (column) sink
-    (setf column (if (eql octet 10) 0 (1+ column)))))
+;; total haesslich, aber die ystreams will ich im moment eigentlich nicht
+;; dokumentieren
+(macrolet ((define-maker (make-sink make-ystream &rest args)
+	     `(defun ,make-sink (,@args &rest initargs)
+		(apply #'make-instance
+		       'sink
+		       :ystream (,make-ystream ,@args)
+		       initargs))))
+  (define-maker make-octet-vector-sink make-octet-vector-ystream)
+  (define-maker make-octet-stream-sink make-octet-stream-ystream stream)
+  (define-maker make-rod-sink make-rod-ystream)
+
+  #+rune-is-character
+  (define-maker make-character-stream-sink make-character-ystream stream)
+
+  #-rune-is-character
+  (define-maker make-string-sink/utf8 make-string-ystream/utf8)
+
+  #-rune-is-character
+  (define-maker make-character-stream-sink/utf8
+      make-character-stream-ystream/utf8
+    stream))
+
+#+rune-is-character
+(defun make-string-sink (&rest args) (apply #'make-rod-sink args))
 
 
-;; vector (octet) sinks
-
-(defclass vector-sink (sink)
-    ((target-vector :initform (make-buffer))))
-
-(defun make-octet-vector-sink (&rest initargs)
-  (apply #'make-instance 'vector-sink initargs))
-
-(defmethod write-octet (octet (sink vector-sink))
-  (let ((target-vector (slot-value sink 'target-vector)))
-    (vector-push-extend octet target-vector (length target-vector))))
-
-(defmethod sax:end-document ((sink vector-sink))
-  (slot-value sink 'target-vector))
-
-
-;; character stream sinks
-
-(defclass character-stream-sink (sink)
-    ((target-stream :initarg :target-stream)))
-
-(defun make-character-stream-sink (character-stream &rest initargs)
-  (apply #'make-instance 'character-stream-sink
-         :target-stream character-stream
-         initargs))
-
-(defmethod write-octet (octet (sink character-stream-sink))
-  (write-char (code-char octet) (slot-value sink 'target-stream)))
-
-(defmethod sax:end-document ((sink character-stream-sink))
-  (slot-value sink 'target-stream))
-
-
-;; octet stream sinks
-
-(defclass octet-stream-sink (sink)
-    ((target-stream :initarg :target-stream)))
-
-(defun make-octet-stream-sink (octet-stream &rest initargs)
-  (apply #'make-instance 'octet-stream-sink
-         :target-stream octet-stream
-         initargs))
-
-(defmethod write-octet (octet (sink octet-stream-sink))
-  (write-byte octet (slot-value sink 'target-stream)))
-
-(defmethod sax:end-document ((sink octet-stream-sink))
-  (slot-value sink 'target-stream))
+(defmethod sax:end-document ((sink sink))
+  (close-ystream (sink-ystream sink)))
 
 
 ;;;; doctype and notations
 
 (defmethod sax:start-document ((sink sink))
   (unless (canonical sink)
-    (write-rod #"<?xml version=\"1.0\" encoding=\"UTF-8\"?>" sink)
-    (write-rune #/U+000A sink)))
+    (%write-rod #"<?xml version=\"1.0\" encoding=\"UTF-8\"?>" sink)
+    (%write-rune #/U+000A sink)))
 
 (defmethod sax:start-dtd ((sink sink) name public-id system-id)
   (setf (name-for-dtd sink) name)
@@ -170,28 +141,28 @@
 (defun ensure-doctype (sink &optional public-id system-id)
   (unless (have-doctype sink)
     (setf (have-doctype sink) t)
-    (write-rod #"<!DOCTYPE " sink)
-    (write-rod (name-for-dtd sink) sink)
+    (%write-rod #"<!DOCTYPE " sink)
+    (%write-rod (name-for-dtd sink) sink)
     (cond
       (public-id
-        (write-rod #" PUBLIC \"" sink)
+        (%write-rod #" PUBLIC \"" sink)
         (unparse-string public-id sink)
-        (write-rod #"\" \"" sink)
+        (%write-rod #"\" \"" sink)
         (unparse-string system-id sink)
-        (write-rod #"\"" sink))
+        (%write-rod #"\"" sink))
       (system-id
-        (write-rod #" SYSTEM \"" sink)
+        (%write-rod #" SYSTEM \"" sink)
         (unparse-string public-id sink)
-        (write-rod #"\"" sink)))))
+        (%write-rod #"\"" sink)))))
 
 (defmethod sax:start-internal-subset ((sink sink))
   (ensure-doctype sink)
-  (write-rod #" [" sink)
-  (write-rune #/U+000A sink))
+  (%write-rod #" [" sink)
+  (%write-rune #/U+000A sink))
 
 (defmethod sax:end-internal-subset ((sink sink))
   (ensure-doctype sink)
-  (write-rod #"]" sink))
+  (%write-rod #"]" sink))
 
 (defmethod sax:notation-declaration ((sink sink) name public-id system-id)
   (let ((prev (previous-notation sink)))
@@ -200,171 +171,171 @@
 	       (not (rod< prev name)))
       (error "misordered notations; cannot unparse canonically"))
     (setf (previous-notation sink) name)) 
-  (write-rod #"<!NOTATION " sink)
-  (write-rod name sink)
+  (%write-rod #"<!NOTATION " sink)
+  (%write-rod name sink)
   (cond
     ((zerop (length public-id))
-      (write-rod #" SYSTEM '" sink)
-      (write-rod system-id sink)
-      (write-rune #/' sink))
+      (%write-rod #" SYSTEM '" sink)
+      (%write-rod system-id sink)
+      (%write-rune #/' sink))
     ((zerop (length system-id))
-      (write-rod #" PUBLIC '" sink)
-      (write-rod public-id sink)
-      (write-rune #/' sink))
+      (%write-rod #" PUBLIC '" sink)
+      (%write-rod public-id sink)
+      (%write-rune #/' sink))
     (t 
-      (write-rod #" PUBLIC '" sink)
-      (write-rod public-id sink)
-      (write-rod #"' '" sink)
-      (write-rod system-id sink)
-      (write-rune #/' sink)))
-  (write-rune #/> sink)
-  (write-rune #/U+000A sink))
+      (%write-rod #" PUBLIC '" sink)
+      (%write-rod public-id sink)
+      (%write-rod #"' '" sink)
+      (%write-rod system-id sink)
+      (%write-rune #/' sink)))
+  (%write-rune #/> sink)
+  (%write-rune #/U+000A sink))
 
 (defmethod sax:unparsed-entity-declaration
     ((sink sink) name public-id system-id notation-name)
   (unless (and (canonical sink) (< (canonical sink) 3))
-    (write-rod #"<!ENTITY " sink)
-    (write-rod name sink)
+    (%write-rod #"<!ENTITY " sink)
+    (%write-rod name sink)
     (cond
       ((zerop (length public-id))
-	(write-rod #" SYSTEM '" sink)
-	(write-rod system-id sink)
-	(write-rune #/' sink))
+	(%write-rod #" SYSTEM '" sink)
+	(%write-rod system-id sink)
+	(%write-rune #/' sink))
       ((zerop (length system-id))
-	(write-rod #" PUBLIC '" sink)
-	(write-rod public-id sink)
-	(write-rune #/' sink))
+	(%write-rod #" PUBLIC '" sink)
+	(%write-rod public-id sink)
+	(%write-rune #/' sink))
       (t 
-	(write-rod #" PUBLIC '" sink)
-	(write-rod public-id sink)
-	(write-rod #"' '" sink)
-	(write-rod system-id sink)
-	(write-rune #/' sink)))
-    (write-rod #" NDATA " sink)
-    (write-rod notation-name sink)
-    (write-rune #/> sink)
-    (write-rune #/U+000A sink)))
+	(%write-rod #" PUBLIC '" sink)
+	(%write-rod public-id sink)
+	(%write-rod #"' '" sink)
+	(%write-rod system-id sink)
+	(%write-rune #/' sink)))
+    (%write-rod #" NDATA " sink)
+    (%write-rod notation-name sink)
+    (%write-rune #/> sink)
+    (%write-rune #/U+000A sink)))
 
 (defmethod sax:external-entity-declaration
     ((sink sink) kind name public-id system-id)
   (when (canonical sink)
     (error "cannot serialize parsed entities in canonical mode"))
-  (write-rod #"<!ENTITY " sink)
+  (%write-rod #"<!ENTITY " sink)
   (when (eq kind :parameter)
-    (write-rod #" % " sink))
-  (write-rod name sink)
+    (%write-rod #" % " sink))
+  (%write-rod name sink)
   (cond
     ((zerop (length public-id))
-      (write-rod #" SYSTEM '" sink)
-      (write-rod system-id sink)
-      (write-rune #/' sink))
+      (%write-rod #" SYSTEM '" sink)
+      (%write-rod system-id sink)
+      (%write-rune #/' sink))
     ((zerop (length system-id))
-      (write-rod #" PUBLIC '" sink)
-      (write-rod public-id sink)
-      (write-rune #/' sink))
+      (%write-rod #" PUBLIC '" sink)
+      (%write-rod public-id sink)
+      (%write-rune #/' sink))
     (t 
-      (write-rod #" PUBLIC '" sink)
-      (write-rod public-id sink)
-      (write-rod #"' '" sink)
-      (write-rod system-id sink)
-      (write-rune #/' sink)))
-  (write-rune #/> sink)
-  (write-rune #/U+000A sink))
+      (%write-rod #" PUBLIC '" sink)
+      (%write-rod public-id sink)
+      (%write-rod #"' '" sink)
+      (%write-rod system-id sink)
+      (%write-rune #/' sink)))
+  (%write-rune #/> sink)
+  (%write-rune #/U+000A sink))
 
 (defmethod sax:internal-entity-declaration ((sink sink) kind name value)
   (when (canonical sink)
     (error "cannot serialize parsed entities in canonical mode"))
-  (write-rod #"<!ENTITY " sink)
+  (%write-rod #"<!ENTITY " sink)
   (when (eq kind :parameter)
-    (write-rod #" % " sink))
-  (write-rod name sink)
-  (write-rune #/U+0020 sink)
-  (write-rune #/\" sink)
+    (%write-rod #" % " sink))
+  (%write-rod name sink)
+  (%write-rune #/U+0020 sink)
+  (%write-rune #/\" sink)
   (unparse-string value sink)
-  (write-rune #/\" sink)
-  (write-rune #/> sink)
-  (write-rune #/U+000A sink))
+  (%write-rune #/\" sink)
+  (%write-rune #/> sink)
+  (%write-rune #/U+000A sink))
 
 (defmethod sax:element-declaration ((sink sink) name model)
   (when (canonical sink)
     (error "cannot serialize element type declarations in canonical mode"))
-  (write-rod #"<!ELEMENT " sink)
-  (write-rod name sink)
-  (write-rune #/U+0020 sink)
+  (%write-rod #"<!ELEMENT " sink)
+  (%write-rod name sink)
+  (%write-rune #/U+0020 sink)
   (labels ((walk (m)
 	     (cond
 	       ((eq m :EMPTY)
-		 (write-rod "EMPTY" sink))
+		 (%write-rod "EMPTY" sink))
 	       ((eq m :PCDATA)
-		 (write-rod "#PCDATA" sink))
+		 (%write-rod "#PCDATA" sink))
 	       ((atom m)
 		 (unparse-string m sink))
 	       (t
 		 (ecase (car m)
 		   (and
-		     (write-rune #/\( sink)
+		     (%write-rune #/\( sink)
 		     (loop for (n . rest) on (cdr m) do
 			   (walk n)
 			   (when rest
-			     (write-rune #\, sink)))
-		     (write-rune #/\) sink))
+			     (%write-rune #\, sink)))
+		     (%write-rune #/\) sink))
 		   (or
-		     (write-rune #/\( sink)
+		     (%write-rune #/\( sink)
 		     (loop for (n . rest) on (cdr m) do
 			   (walk n)
 			   (when rest
-			     (write-rune #\| sink)))
-		     (write-rune #/\) sink))
+			     (%write-rune #\| sink)))
+		     (%write-rune #/\) sink))
 		   (*
 		     (walk (second m))
-		     (write-rod #/* sink))
+		     (%write-rod #/* sink))
 		   (+
 		     (walk (second m))
-		     (write-rod #/+ sink))
+		     (%write-rod #/+ sink))
 		   (?
 		     (walk (second m))
-		     (write-rod #/? sink)))))))
+		     (%write-rod #/? sink)))))))
     (walk model))
-  (write-rune #/> sink)
-  (write-rune #/U+000A sink))
+  (%write-rune #/> sink)
+  (%write-rune #/U+000A sink))
 
 (defmethod sax:attribute-declaration ((sink sink) ename aname type default)
   (when (canonical sink)
     (error "cannot serialize attribute type declarations in canonical mode"))
-  (write-rod #"<!ATTLIST " sink)
-  (write-rod ename sink)
-  (write-rune #/U+0020 sink)
-  (write-rod aname sink)
-  (write-rune #/U+0020 sink)
+  (%write-rod #"<!ATTLIST " sink)
+  (%write-rod ename sink)
+  (%write-rune #/U+0020 sink)
+  (%write-rod aname sink)
+  (%write-rune #/U+0020 sink)
   (cond
     ((atom type)
-      (write-rod (rod (string-upcase (symbol-name type))) sink))
+      (%write-rod (rod (string-upcase (symbol-name type))) sink))
     (t
       (when (eq :NOTATION (car type))
-	(write-rod #"NOTATION " sink))
-      (write-rune #/\( sink)
+	(%write-rod #"NOTATION " sink))
+      (%write-rune #/\( sink)
       (loop for (n . rest) on (cdr type) do
-	    (write-rod n sink)
+	    (%write-rod n sink)
 	    (when rest
-	      (write-rune #\| sink)))
-      (write-rune #/\) sink)))
+	      (%write-rune #\| sink)))
+      (%write-rune #/\) sink)))
   (cond
     ((atom default)
-      (write-rune #/# sink)
-      (write-rod (rod (string-upcase (symbol-name default))) sink))
+      (%write-rune #/# sink)
+      (%write-rod (rod (string-upcase (symbol-name default))) sink))
     (t
       (when (eq :FIXED (car default))
-	(write-rod #"#FIXED " sink))
-      (write-rune #/\" sink)
+	(%write-rod #"#FIXED " sink))
+      (%write-rune #/\" sink)
       (unparse-string (second default) sink)
-      (write-rune #/\" sink)))
-  (write-rune #/> sink)
-  (write-rune #/U+000A sink))
+      (%write-rune #/\" sink)))
+  (%write-rune #/> sink)
+  (%write-rune #/U+000A sink))
 
 (defmethod sax:end-dtd ((sink sink))
   (when (have-doctype sink)
-    (write-rod #">" sink)
-    (write-rune #/U+000A sink)))
+    (%write-rod #">" sink)
+    (%write-rune #/U+000A sink)))
 
 
 ;;;; elements
@@ -375,15 +346,15 @@
   (have-gt nil))
 
 (defun sink-fresh-line (sink)
-  (unless (zerop (column sink))
-    (write-rune-0 10 sink)
+  (unless (zerop (ystream-column (sink-ystream sink)))
+    (%write-rune 10 sink)
     (indent sink)))
 
 (defun maybe-close-tag (sink)
   (let ((tag (car (stack sink))))
     (when (and (tag-p tag) (not (tag-have-gt tag)))
       (setf (tag-have-gt tag) t)
-      (write-rune #/> sink))))
+      (%write-rune #/> sink))))
 
 (defmethod sax:start-element
     ((sink sink) namespace-uri local-name qname attributes)
@@ -395,16 +366,16 @@
   (when (indentation sink)
     (sink-fresh-line sink)
     (start-indentation-block sink))
-  (write-rune #/< sink)
-  (write-rod qname sink)
+  (%write-rune #/< sink)
+  (%write-rod qname sink)
   (let ((atts (sort (copy-list attributes) #'rod< :key #'sax:attribute-qname)))
     (dolist (a atts)
-      (write-rune #/space sink)
-      (write-rod (sax:attribute-qname a) sink)
-      (write-rune #/= sink)
-      (write-rune #/\" sink)
-      (map nil (lambda (c) (unparse-datachar c sink)) (sax:attribute-value a))
-      (write-rune #/\" sink)))
+      (%write-rune #/space sink)
+      (%write-rod (sax:attribute-qname a) sink)
+      (%write-rune #/= sink)
+      (%write-rune #/\" sink)
+      (unparse-string (sax:attribute-value a) sink)
+      (%write-rune #/\" sink)))
   (when (canonical sink)
     (maybe-close-tag sink)))
 
@@ -423,21 +394,21 @@
         (sink-fresh-line sink)))
     (cond
       ((tag-have-gt tag)
-       (write-rod '#.(string-rod "</") sink)
-       (write-rod qname sink)
-       (write-rod '#.(string-rod ">") sink))
+       (%write-rod '#.(string-rod "</") sink)
+       (%write-rod qname sink)
+       (%write-rod '#.(string-rod ">") sink))
       (t
-       (write-rod #"/>" sink)))))
+       (%write-rod #"/>" sink)))))
 
 (defmethod sax:processing-instruction ((sink sink) target data)
   (maybe-close-tag sink)
   (unless (rod-equal target '#.(string-rod "xml"))
-    (write-rod '#.(string-rod "<?") sink)
-    (write-rod target sink)
+    (%write-rod '#.(string-rod "<?") sink)
+    (%write-rod target sink)
     (when data
-      (write-rune #/space sink)
-      (write-rod data sink))
-    (write-rod '#.(string-rod "?>") sink)))
+      (%write-rune #/space sink)
+      (%write-rod data sink))
+    (%write-rod '#.(string-rod "?>") sink)))
 
 (defmethod sax:start-cdata ((sink sink))
   (maybe-close-tag sink)
@@ -451,17 +422,17 @@
           (not (search #"]]" data)))
       (when (indentation sink)
         (sink-fresh-line sink))
-      (write-rod #"<![CDATA[" sink)
+      (%write-rod #"<![CDATA[" sink)
       ;; XXX signal error if body is unprintable?
-      (map nil (lambda (c) (write-rune c sink)) data)
-      (write-rod #"]]>" sink))
+      (map nil (lambda (c) (%write-rune c sink)) data)
+      (%write-rod #"]]>" sink))
     (t
       (if (indentation sink)
           (unparse-indented-text data sink)
-          (map nil (if (canonical sink)
-                       (lambda (c) (unparse-datachar c sink))
-                       (lambda (c) (unparse-datachar-readable c sink)))
-               data)))))
+	  (let ((y (sink-ystream sink)))
+	    (if (canonical sink)
+		(loop for c across data do (unparse-datachar c y))
+		(loop for c across data do (unparse-datachar-readable c y))))))))
 
 (defmethod sax:end-cdata ((sink sink))
   (unless (eq (pop (stack sink)) :cdata)
@@ -469,7 +440,7 @@
 
 (defun indent (sink)
   (dotimes (x (current-indentation sink))
-    (write-rune-0 32 sink)))
+    (%write-rune 32 sink)))
 
 (defun start-indentation-block (sink)
   (incf (current-indentation sink) (indentation sink)))
@@ -491,89 +462,47 @@
             (let* ((w (or (position-if #'whitespacep data :start (1+ pos)) n))
                    (next (or (position-if-not #'whitespacep data :start w) n)))
               (when need-whitespace-p
-                (if (< (+ (column sink) w (- pos)) (width sink))
-                    (write-rune-0 32 sink)
+                (if (< (+ (ystream-column (sink-ystream sink)) w (- pos))
+		       (width sink))
+                    (%write-rune 32 sink)
                     (sink-fresh-line sink)))
               (loop
+		  with y = (sink-ystream sink)
                   for i from pos below w do
-                    (unparse-datachar-readable (elt data i) sink))
+                    (unparse-datachar-readable (elt data i) y))
               (setf need-whitespace-p (< w n))
               (setf pos next))))
         (t
-          (write-rune-0 32 sink))))))
+          (%write-rune 32 sink))))))
 
 (defun unparse-string (str sink)
-  (map nil (lambda (c) (unparse-datachar c sink)) str))
+  (let ((y (sink-ystream sink)))
+    (loop for rune across str do (unparse-datachar rune y))))
 
-(defun unparse-datachar (c sink)
-  (cond ((rune= c #/&) (write-rod '#.(string-rod "&amp;") sink))
-        ((rune= c #/<) (write-rod '#.(string-rod "&lt;") sink))
-        ((rune= c #/>) (write-rod '#.(string-rod "&gt;") sink))
-        ((rune= c #/\") (write-rod '#.(string-rod "&quot;") sink))
-        ((rune= c #/U+0009) (write-rod '#.(string-rod "&#9;") sink))
-        ((rune= c #/U+000A) (write-rod '#.(string-rod "&#10;") sink))
-        ((rune= c #/U+000D) (write-rod '#.(string-rod "&#13;") sink))
+(defun unparse-datachar (c ystream)
+  (cond ((rune= c #/&) (write-rod '#.(string-rod "&amp;") ystream))
+        ((rune= c #/<) (write-rod '#.(string-rod "&lt;") ystream))
+        ((rune= c #/>) (write-rod '#.(string-rod "&gt;") ystream))
+        ((rune= c #/\") (write-rod '#.(string-rod "&quot;") ystream))
+        ((rune= c #/U+0009) (write-rod '#.(string-rod "&#9;") ystream))
+        ((rune= c #/U+000A) (write-rod '#.(string-rod "&#10;") ystream))
+        ((rune= c #/U+000D) (write-rod '#.(string-rod "&#13;") ystream))
         (t
-         (write-rune c sink))))
+         (write-rune c ystream))))
 
-(defun unparse-datachar-readable (c sink)
-  (cond ((rune= c #/&) (write-rod '#.(string-rod "&amp;") sink))
-        ((rune= c #/<) (write-rod '#.(string-rod "&lt;") sink))
-        ((rune= c #/>) (write-rod '#.(string-rod "&gt;") sink))
-        ((rune= c #/\") (write-rod '#.(string-rod "&quot;") sink))
+(defun unparse-datachar-readable (c ystream)
+  (cond ((rune= c #/&) (write-rod '#.(string-rod "&amp;") ystream))
+        ((rune= c #/<) (write-rod '#.(string-rod "&lt;") ystream))
+        ((rune= c #/>) (write-rod '#.(string-rod "&gt;") ystream))
+        ((rune= c #/\") (write-rod '#.(string-rod "&quot;") ystream))
         (t
-          (write-rune c sink))))
+          (write-rune c ystream))))
 
+(defun %write-rune (c sink)
+  (write-rune c (sink-ystream sink)))
 
-;;;; UTF-8 output for SINKs
-
-(defun write-rod (rod sink)
-  (map nil (lambda (c) (write-rune c sink)) rod))
-
-(defun write-rune (rune sink)
-  (let ((code (rune-code rune)))
-    (with-slots (high-surrogate) sink
-      (cond
-        ((<= #xD800 code #xDBFF)
-          (setf high-surrogate code))
-        ((<= #xDC00 code #xDFFF)
-          (let ((q (logior (ash (- high-surrogate #xD7C0) 10)
-                           (- code #xDC00))))
-            (write-rune-0 q sink))
-          (setf high-surrogate nil))
-        (t
-          (write-rune-0 code sink))))))
-
-(defun write-rune-0 (code sink)
-  (labels ((wr (x)
-             (write-octet x sink)))
-    (cond ((<= #x00000000 code #x0000007F) 
-           (wr code))
-          ((<= #x00000080 code #x000007FF)
-           (wr (logior #b11000000 (ldb (byte 5 6) code)))
-           (wr (logior #b10000000 (ldb (byte 6 0) code))))
-          ((<= #x00000800 code #x0000FFFF)
-           (wr (logior #b11100000 (ldb (byte 4 12) code)))
-           (wr (logior #b10000000 (ldb (byte 6 6) code)))
-           (wr (logior #b10000000 (ldb (byte 6 0) code))))
-          ((<= #x00010000 code #x001FFFFF)
-           (wr (logior #b11110000 (ldb (byte 3 18) code)))
-           (wr (logior #b10000000 (ldb (byte 6 12) code)))
-           (wr (logior #b10000000 (ldb (byte 6 6) code)))
-           (wr (logior #b10000000 (ldb (byte 6 0) code))))
-          ((<= #x00200000 code #x03FFFFFF)
-           (wr (logior #b11111000 (ldb (byte 2 24) code)))
-           (wr (logior #b10000000 (ldb (byte 6 18) code)))
-           (wr (logior #b10000000 (ldb (byte 6 12) code)))
-           (wr (logior #b10000000 (ldb (byte 6 6) code)))
-           (wr (logior #b10000000 (ldb (byte 6 0) code))))
-          ((<= #x04000000 code #x7FFFFFFF)
-           (wr (logior #b11111100 (ldb (byte 1 30) code)))
-           (wr (logior #b10000000 (ldb (byte 6 24) code)))
-           (wr (logior #b10000000 (ldb (byte 6 18) code)))
-           (wr (logior #b10000000 (ldb (byte 6 12) code)))
-           (wr (logior #b10000000 (ldb (byte 6 6) code)))
-           (wr (logior #b10000000 (ldb (byte 6 0) code)))))))
+(defun %write-rod (r sink)
+  (write-rod r (sink-ystream sink)))
 
 
 ;;;; convenience functions for DOMless XML serialization
@@ -632,8 +561,9 @@
   data)
 
 (defun rod-to-utf8-string (rod)
-  (with-output-to-string (s)
-    (write-rod rod (cxml:make-character-stream-sink s))))
+  (let ((out (make-buffer :element-type 'character)))
+    (runes-to-utf8/adjustable-string out rod (length rod))
+    out))
 
 (defun utf8-string-to-rod (str)
   (let* ((bytes (map '(vector (unsigned-byte 8)) #'char-code str))

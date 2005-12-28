@@ -973,7 +973,7 @@
     (rod-stream-buf stream)))
 
 (defmethod write-attribute-child ((node node) stream)
-  (write-rod (dom:node-value node) stream))
+  (put-rod (dom:node-value node) stream))
 
 (defmethod write-attribute-child ((node entity-reference) stream)
   (dovector (child (dom:child-nodes node))
@@ -988,7 +988,7 @@
   (buf nil)
   (position 0))
 
-(defun write-rod (rod rod-stream)
+(defun put-rod (rod rod-stream)
   (let ((buf (rod-stream-buf rod-stream)))
     (when buf
       (move rod buf 0 (rod-stream-position rod-stream) (length rod)))
@@ -1210,10 +1210,12 @@
 	   ;; dass ein leeres internal subset nicht vorhanden ist und
 	   ;; wir daher nil liefern sollen.  bittesehr!
 	   (dom::%internal-subset node))
-      (with-output-to-string (stream)
-	(let ((sink (cxml:make-character-stream-sink stream)))
-	  (dolist (def (dom::%internal-subset node))
-	    (apply (car def) sink (cdr def)))))
+      (let ((sink
+	     #+rune-is-character (cxml:make-string-sink)
+	     #-rune-is-character (cxml:make-string-sink/utf8)))
+	(dolist (def (dom::%internal-subset node))
+	  (apply (car def) sink (cdr def)))
+	(sax:end-document sink))
       nil))
 
 ;;; NOTATION -- nix

@@ -59,7 +59,21 @@
            #:xstream-plist
            #:xstream-encoding
            #:set-to-full-speed
-           #:xstream-name))
+           #:xstream-name
+
+           ;; ystream.lisp
+	   #:ystream
+	   #:close-ystream
+	   #:write-rune
+	   #:write-rod
+	   #:ystream-column
+           #:make-octet-vector-ystream
+           #:make-octet-stream-ystream
+           #:make-rod-ystream
+           #+rune-is-character #:make-character-stream-ystream
+           #+rune-is-integer #:make-string-ystream/utf8
+           #+rune-is-integer #:make-character-stream-ystream/utf8
+	   #:runes-to-utf8/adjustable-string))
 
 (defpackage :utf8-runes
   (:use :cl)

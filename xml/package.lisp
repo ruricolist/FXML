@@ -38,11 +38,13 @@
    ;; #:parse-string
    #:parse-octets
 
-   #:make-character-stream-sink
    #:make-octet-vector-sink
    #:make-octet-stream-sink
-   #:unparse-document
-   #:unparse-document-to-octets
+   #:make-rod-sink
+   #+rune-is-character #:make-string-sink
+   #+rune-is-character #:make-character-stream-sink
+   #-rune-is-character #:make-string-sink/utf8
+   #-rune-is-character #:make-character-stream-sink/utf8
 
    #:with-xml-output
    #:with-element

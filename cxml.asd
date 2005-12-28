@@ -51,7 +51,8 @@
      (:file "encodings" :depends-on ("package"))
      (:file "encodings-data" :depends-on ("package" "encodings"))
      (:file "xstream"
-            :depends-on ("package" "definline" "syntax" "encodings-data"))))
+            :depends-on ("package" "definline" "syntax" "encodings-data"))
+     (:file "ystream" :depends-on (runes))))
 
 (asdf:defsystem :cxml-xml
     :default-component-class closure-source-file
@@ -106,7 +107,6 @@
      (utf8dom-file utf8-impl :pathname "dom-impl" :depends-on ("package"))
      #+rune-is-integer
      (utf8dom-file utf8-builder :pathname "dom-builder" :depends-on (utf8-impl))
-     (:file "unparse"         :depends-on ("package"))
      (:file "dom-sax"         :depends-on ("package")))
     :depends-on (:cxml-xml))
 

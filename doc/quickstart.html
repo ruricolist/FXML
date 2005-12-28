@@ -83,10 +83,10 @@
 * <b>(dom:get-attribute (dom:document-element *example*) "a")</b>
 "b"</pre>
 
-    <p>Serialize the DOM document back into a stream (<a
+    <p>Serialize the DOM document back into a file (<a
     href="using.html#serialization">read more</a>):</p>
-    <pre><b>(cxml:unparse-document *example* *standard-output*)</b>
-&lt;test a="b"&gt;&lt;child&gt;&lt;/child>&lt;/test></pre>
+    <pre><b>(with-open-file (out "example.out" :direction :output :element-type '(unsigned-byte 8))
+  (dom:map-document (cxml:make-octet-stream-sink out) *example*))</b></pre>
 
     <p>As an alternative to DOM, parse into xmls-compatible list
     structure (<a href="xmls-compat.html">read more</a>):</p>
