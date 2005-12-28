@@ -3025,12 +3025,10 @@
         (p/ext-subset zstream)
         (dtd *ctx*)))))
 
-(defun parse-string (string handler)
-  ;; XXX this function mis-handles encoding
+(defun parse-rod (string handler)
   (parse-xstream (string->xstream string) handler))
 
 (defun string->xstream (string)
-  ;; XXX encoding is mis-handled by this kind of stream
   (make-rod-xstream (string-rod string)))
 
 (defclass octet-input-stream

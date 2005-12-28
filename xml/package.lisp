@@ -34,8 +34,7 @@
    
    #:parse-file
    #:parse-stream
-   ;; XXX encoding is mis-handled by parse-string, don't export it
-   ;; #:parse-string
+   #:parse-rod
    #:parse-octets
 
    #:make-octet-vector-sink

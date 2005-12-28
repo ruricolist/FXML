@@ -67,6 +67,7 @@
       <div class="def">Function CXML:PARSE-FILE (pathname handler &key ...)</div>
       <div class="def">Function CXML:PARSE-STREAM (stream handler &key ...)</div>
       <div class="def">Function CXML:PARSE-OCTETS (octets handler &key ...)</div>
+      <div class="def">Function CXML:PARSE-ROD (rod handler &key ...)</div>
       Parse an XML document.&nbsp;
       Return values from this function depend on the SAX handler used.<br/>
       Arguments:
@@ -123,6 +124,11 @@
         otherwise.
       </li>
     </ul>
+    <p>
+      Note: <tt>parse-rod</tt> assumes that the input has already been
+      decoded into Unicode runes and ignores the encoding
+      specified in the XML declaration, if any.
+    </p>
 
     <p>
       <div class="def">Function CXML:PARSE-DTD-FILE (pathname)</div>
