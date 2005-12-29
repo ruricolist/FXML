@@ -76,7 +76,7 @@
     (when (plusp ptr)
       (let* ((in (ystream-in-buffer ystream))
 	     (out (ystream-out-buffer ystream))
-	     (surrogatep (<= #xD800 (elt in (1- ptr)) #xDBFF))
+	     (surrogatep (<= #xD800 (rune-code (elt in (1- ptr))) #xDBFF))
 	     n)
 	(when surrogatep
 	  (decf ptr))
@@ -179,11 +179,11 @@
 	      (:conc-name "YSTREAM-"))
     (target-stream nil))
 
-  (defmethod flush-ystream ((ystream rod-ystream))
+  (defmethod flush-ystream ((ystream character-stream-ystream))
     (write-string (ystream-in-buffer ystream) (ystream-target-stream ystream))
     (setf (ystream-in-ptr ystream) 0))
 
-  (defmethod close-ystream ((ystream rod-ystream))
+  (defmethod close-ystream ((ystream character-stream-ystream))
     (ystream-target-stream ystream)))
 
 

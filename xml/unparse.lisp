@@ -108,7 +108,7 @@
   (define-maker make-rod-sink make-rod-ystream)
 
   #+rune-is-character
-  (define-maker make-character-stream-sink make-character-ystream stream)
+  (define-maker make-character-stream-sink make-character-stream-ystream stream)
 
   #-rune-is-character
   (define-maker make-string-sink/utf8 make-string-ystream/utf8)
