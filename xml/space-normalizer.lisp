@@ -29,9 +29,9 @@
       (let ((xml-space
 	     (sax:find-attribute (if (stringp qname) "xml:space" #"xml:space")
 				 attrs)))
-	(push (print(if xml-space
+	(push (if xml-space
 		  (rod= (rod (sax:attribute-value xml-space)) #"default")
-		  (car (xml-space-attributes handler))))
+		  (car (xml-space-attributes handler)))
 	      (xml-space-attributes handler)))
       (let* ((e (cxml::find-element (rod qname) dtd))
 	     (cspec (when e (cxml::elmdef-content e))))
