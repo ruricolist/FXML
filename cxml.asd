@@ -71,6 +71,7 @@
      (:file "xmls-compat"     :depends-on ("xml-parse"))
      (:file "recoder"         :depends-on ("xml-parse"))
      (:file "xmlns-normalizer" :depends-on ("xml-parse"))
+     (:file "space-normalizer" :depends-on ("xml-parse"))
      (:file "catalog"         :depends-on ("xml-parse"))
      (:file "sax-proxy"       :depends-on ("xml-parse")))
     :depends-on (:cxml-runes :puri :trivial-gray-streams))

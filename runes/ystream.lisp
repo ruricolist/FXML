@@ -223,6 +223,7 @@
 #+rune-is-integer
 (progn
   (defstruct (character-stream-ystream/utf8
+	      (:constructor make-character-stream-ystream/utf8 (os-stream))
 	      (:include %stream-ystream)
 	      (:conc-name "YSTREAM-")))
 

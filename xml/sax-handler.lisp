@@ -53,6 +53,8 @@
 	   #:*use-xmlns-namespace*
 
            #:make-attribute
+           #:find-attribute
+           #:find-attribute-ns
            #:attribute-namespace-uri
            #:attribute-local-name
            #:attribute-qname
@@ -136,6 +138,23 @@ Setting this variable has no effect unless both
   qname
   value
   specified-p)
+
+(defun %rod= (x y)
+  ;; allow rods *and* strings *and* null
+  (cond
+    ((zerop (length x)) (zerop (length y)))
+    ((zerop (length y)) nil)
+    ((stringp x) (string= x y))
+    (t (runes:rod= x y))))
+
+(defun find-attribute (qname attrs)
+  (find qname attrs :key #'attribute-qname :test #'%rod=))
+
+(defun find-attribute-ns (uri lname attrs)
+  (find-if (lambda (attr)
+	     (and (%rod= uri (sax:attribute-namespace-uri attr))
+		  (%rod= lname (sax:attribute-local-name attr))))
+	   attrs))
 
 (defgeneric start-document (handler)
   (:documentation "Called at the beginning of the parsing process,
@@ -325,7 +344,11 @@ finished, if present.")
   (:documentation
    "Called between sax:end-dtd and sax:end-document to register an entity
     resolver, a function of two arguments: An entity name and SAX handler.
-    When called, the resolver function will parse the named entities data.")
+    When called, the resolver function will parse the named entity's data.")
   (:method ((handler t) resolver)
     (declare (ignore resolver))
     nil))
+
+;; internal for now
+(defgeneric dtd (handler dtd)
+  (:method ((handler t) dtd) (declare (ignore dtd)) nil))

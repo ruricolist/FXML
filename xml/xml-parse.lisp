@@ -2513,7 +2513,8 @@
       (let ((dtd (dtd *ctx*)))
         (sax:entity-resolver
          (handler *ctx*)
-         (lambda (name handler) (resolve-entity name handler dtd))))
+         (lambda (name handler) (resolve-entity name handler dtd)))
+        (sax::dtd (handler *ctx*) dtd))
       (list :DOCTYPE name extid))))
 
 (defun report-cached-dtd (dtd)

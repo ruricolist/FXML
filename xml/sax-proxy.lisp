@@ -37,4 +37,5 @@
   (define-proxy-method sax:notation-declaration (name public-id system-id))
   (define-proxy-method sax:element-declaration (name model))
   (define-proxy-method sax:attribute-declaration (elt attr type default))
-  (define-proxy-method sax:entity-resolver (resolver)))
+  (define-proxy-method sax:entity-resolver (resolver))
+  (define-proxy-method sax::dtd (dtd)))

@@ -23,7 +23,7 @@
         <li>
           <ul class="hack">
             <li>
-              <a href="using.html#quickstart"><b>Quick-Start Example</b></a>
+              <a href="quickstart.html"><b>Quick-Start Example</b></a>
             </li>
           </ul>
         </li>
@@ -388,6 +388,32 @@
       <tt>start-element</tt> events before passing them on the next
       handler.
     </p>
+    <p>
+      <div class="def">Function CXML:MAKE-WHITESPACE-NORMALIZER (chained-handler &optional dtd)</div>
+      Return a SAX handler which removes whitespace from elements that
+      have <em>element content</em> and have not been declared to
+      preserve space using an xml:space attribute.
+    </p>
+    <p>Example:</p>
+    <pre>(cxml:parse-file "example.xml"
+                 (cxml:make-whitespace-normalizer (cxml-dom:make-dom-builder))
+                 :validate t)</pre>
+    <p>Example input:</p>
+    <pre>&lt;!DOCTYPE test [
+&lt;!ELEMENT test (foo,bar*)>
+&lt;!ATTLIST test a CDATA #IMPLIED>
+&lt;!ELEMENT foo #PCDATA>
+&lt;!ELEMENT bar (foo?)>
+&lt;!ATTLIST bar xml:space (default|preserve) "default">
+]>
+&lt;test a='b'>
+  &lt;foo>   &lt;/foo>
+  &lt;bar>   &lt;/bar>
+  &lt;bar xml:space="preserve">   &lt;/bar>
+&lt;/test>
+</pre>
+    <p>Example result:</p>
+    <pre>&lt;test a="b">&lt;foo>   &lt;/foo>&lt;bar>&lt;/bar>&lt;bar xml:space="preserve">   &lt;/bar>&lt;/test></pre>
 
     <a name="rods"/>
     <h3>Recoders</h3>
@@ -572,6 +598,9 @@ NIL</pre>
       <div class="def">Accessor SAX:ATTRIBUTE-QNAME (attribute)</div>
       <div class="def">Accessor SAX:ATTRIBUTE-SPECIFIED-P (attribute)</div>
       <div class="def">Accessor SAX:ATTRIBUTE-VALUE (attribute)</div>
+      <br/>
+      <div class="def">Function SAX:FIND-ATTRIBUTE (qname attributes)</div>
+      <div class="def">Function SAX:FIND-ATTRIBUTE-NS (uri lname attributes)</div>
     </p>
     <p>
       The entity declaration methods are similar to Java SAX

@@ -118,4 +118,8 @@
 
   (defwrapper sax:entity-resolver
       (resolver)
-    resolver))
+    resolver)
+
+  (defwrapper sax::dtd
+      (dtd)
+    dtd))

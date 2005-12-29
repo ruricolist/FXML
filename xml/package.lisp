@@ -77,5 +77,6 @@
    #:sax-proxy
    #:proxy-chained-handler
    #:make-namespace-normalizer
+   #:make-whitespace-normalizer
    #:rod-to-utf8-string
    #:utf8-string-to-rod))
