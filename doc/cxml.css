@@ -30,8 +30,13 @@ body {
   background-color: #ffffff;
   margin-right: 0pt;
   margin-bottom: 10%;
+  margin-left: 40px;
   padding-left: 30px;
   font-family: helvetica;
+  background-image: url(bg.png);
+  background-position: top left;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
 }
 
 h1,h2,h3 {
