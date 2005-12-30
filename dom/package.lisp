@@ -138,5 +138,7 @@
 
    #:map-node-list
    #:do-node-list
+   #:map-node-map
+   #:do-node-map
    #:create-document
    #:map-document))

@@ -188,6 +188,15 @@
      (dom:map-node-list (lambda (,var) ,@body) ,nodelist)
      ,resultform))
 
+(defun dom:map-node-map (fn node-map)
+  (with-slots (items) node-map
+    (mapc fn items)))
+
+(defmacro dom:do-node-map ((var node-map &optional resultform) &body body)
+  `(block nil
+     (dom:map-node-map (lambda (,var) ,@body) ,node-map)
+     ,resultform))
+
 (defmacro dovector ((var vector &optional resultform) &body body)
   `(loop
        for ,var across ,vector do (progn ,@body)

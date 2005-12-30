@@ -256,9 +256,7 @@
 
 ;;; Underflow
 
-;;(defun read-runes (sequence input))
-
-(defun xstream-underflow (input)
+(defmethod xstream-underflow ((input xstream))
   (declare (type xstream input))
   ;; we are about to fill new data into the buffer, so we need to
   ;; adjust buffer-start.

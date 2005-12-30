@@ -43,6 +43,7 @@
            #:rod<
 
            ;; xstream.lisp
+           #:xstream
            #:make-xstream
            #:make-rod-xstream
            #:close-xstream
