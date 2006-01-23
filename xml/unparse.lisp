@@ -347,7 +347,7 @@
 
 (defun sink-fresh-line (sink)
   (unless (zerop (ystream-column (sink-ystream sink)))
-    (%write-rune 10 sink)
+    (%write-rune #/U+000A sink)		;newline
     (indent sink)))
 
 (defun maybe-close-tag (sink)
@@ -440,7 +440,7 @@
 
 (defun indent (sink)
   (dotimes (x (current-indentation sink))
-    (%write-rune 32 sink)))
+    (%write-rune #/U+0020 sink))) ; space
 
 (defun start-indentation-block (sink)
   (incf (current-indentation sink) (indentation sink)))
@@ -464,7 +464,7 @@
               (when need-whitespace-p
                 (if (< (+ (ystream-column (sink-ystream sink)) w (- pos))
 		       (width sink))
-                    (%write-rune 32 sink)
+                    (%write-rune #/U+0020 sink)
                     (sink-fresh-line sink)))
               (loop
 		  with y = (sink-ystream sink)
@@ -473,7 +473,7 @@
               (setf need-whitespace-p (< w n))
               (setf pos next))))
         (t
-          (%write-rune 32 sink))))))
+          (%write-rune #/U+0020 sink))))))
 
 (defun unparse-string (str sink)
   (let ((y (sink-ystream sink)))
