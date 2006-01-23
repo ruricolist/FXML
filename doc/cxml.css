@@ -1,5 +1,26 @@
 div.sidebar {
   float: right;
+  min-width: 15%;
+  padding: 0pt 5pt 5pt 5pt;
+  font-family: helvetica;
+}
+
+div.sidebar-title {
+  font-weight: bold;
+  background-color: #9c0000;
+  border: solid #9c0000;
+  border-top-width: 1px;
+  border-bottom-width: 0px;
+  border-left-width: 4px;
+  border-right-width: 0px;
+  margin: 0em 2pt 1px 2em;
+}
+
+div.sidebar-title a {
+  color: #ffffff;
+}
+
+div.sidebar-main {
   background-color: #eeeeee;
   border: solid #9c0000;
   border-top-width: 0px;
@@ -7,9 +28,8 @@ div.sidebar {
   border-left-width: 4px;
   border-right-width: 0px;
   margin: 0em 2pt 1em 2em;
-  min-width: 15%;
-  padding: 0pt 5pt 5pt 5pt;
-  font-family: helvetica;
+  padding-top: 2px;
+  padding-left: 2px;
 }
 
 div.sidebar ul.main {
