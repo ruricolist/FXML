@@ -2011,7 +2011,7 @@
   ;; :FILE and NIL anway.
   (when (eql (search "file://" str) 0)
     (setf str (subseq str (length "file://"))))
-  (puri:parse-uri str))
+  (puri:parse-uri (coerce str 'simple-string)))
 
 (defun p/system-literal (input)
   (let* ((rod (p/id input))
@@ -3026,8 +3026,8 @@
         (p/ext-subset zstream)
         (dtd *ctx*)))))
 
-(defun parse-rod (string handler)
-  (parse-xstream (string->xstream string) handler))
+(defun parse-rod (string handler &rest args)
+  (apply #'parse-xstream (string->xstream string) handler args))
 
 (defun string->xstream (string)
   (make-rod-xstream (string-rod string)))
