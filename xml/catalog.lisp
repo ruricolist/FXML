@@ -222,8 +222,8 @@
 (defun parse-catalog-file (uri)
   (handler-case
       (parse-catalog-file/strict uri)
-    (file-error () nil)
-    (xml-parse-error () nil)))
+    ((or file-error xml-parse-error) (c)
+      (warn "ignoring catalog error: ~A" c))))
 
 (defparameter *catalog-dtd*
     (let* ((cxml
@@ -248,9 +248,8 @@
                                  :element-type '(unsigned-byte 8)
                                  :direction :input))
         (parse-stream s
-                      (make-recoder (make-instance 'catalog-parser :uri uri)
-                                    #'rod-to-utf8-string)
-                      :validate t
+                      (make-instance 'catalog-parser :uri uri)
+                      :validate nil
                       :dtd (make-extid nil dtd-sysid)
                       :root #"catalog"
                       :entity-resolver #'entity-resolver)))))
@@ -284,7 +283,11 @@
   (setf lname (or lname qname))
   ;; we can dispatch on lnames only because we validate against the DTD,
   ;; which disallows other namespaces.
-  (push (string-or (get-attribute/lname "prefer" attrs) (prefer handler))
+  (push (let ((new (get-attribute/lname "prefer" attrs)))
+          (cond
+            ((equal new "public") :public)
+            ((equal new "system") :system)
+            ((null new) (prefer handler))))
         (prefer-stack handler))
   (push (string-or (get-attribute/lname "base" attrs) (base handler))
         (base-stack handler))
