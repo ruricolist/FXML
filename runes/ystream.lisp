@@ -180,7 +180,9 @@
     (target-stream nil))
 
   (defmethod flush-ystream ((ystream character-stream-ystream))
-    (write-string (ystream-in-buffer ystream) (ystream-target-stream ystream))
+    (write-string (ystream-in-buffer ystream)
+		  (ystream-target-stream ystream)
+		  :end (ystream-in-ptr ystream))
     (setf (ystream-in-ptr ystream) 0))
 
   (defmethod close-ystream ((ystream character-stream-ystream))
