@@ -1,4 +1,4 @@
-;;;; dom-impl.lisp -- Implementation of DOM 1 Core
+;;;; dom-impl.lisp -- Implementation of DOM 1 Core -*- package: rune-dom -*-
 ;;;;
 ;;;; This file is part of the CXML parser, released under Lisp-LGPL.
 ;;;; See file COPYING for details.
