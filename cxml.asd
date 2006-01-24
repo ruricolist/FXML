@@ -38,21 +38,20 @@
     :pathname (merge-pathnames
                "runes/"
                (make-pathname :name nil :type nil :defaults *load-truename*))
+    :serial t
     :components
     ((:file "package")
-     (:file "definline" :depends-on ("package"))
+     (:file "definline")
      (:file runes
             :pathname
              #-rune-is-character "runes"
-             #+rune-is-character "characters"
-	    :depends-on ("package" "definline"))
-     #+rune-is-integer (:file "utf8" :depends-on ("package"))
-     (:file "syntax" :depends-on ("package" "definline" runes))
-     (:file "encodings" :depends-on ("package"))
-     (:file "encodings-data" :depends-on ("package" "encodings"))
-     (:file "xstream"
-            :depends-on ("package" "definline" "syntax" "encodings-data"))
-     (:file "ystream" :depends-on (runes))))
+             #+rune-is-character "characters")
+     #+rune-is-integer (:file "utf8")
+     (:file "syntax")
+     (:file "encodings")
+     (:file "encodings-data")
+     (:file "xstream")
+     (:file "ystream")))
 
 (asdf:defsystem :cxml-xml
     :default-component-class closure-source-file
