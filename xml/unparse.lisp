@@ -521,11 +521,6 @@
     (sax:end-document *sink*)))
 
 (defmacro with-element (qname &body body)
-  ;; XXX Statt qname soll man in zukunft auch mal (lname prefix) angeben
-  ;; koennen.  Hat aber Zeit bis DOM 2.
-  (when (listp qname)
-    (destructuring-bind (n) qname
-      (setf qname n)))
   `(invoke-with-element (lambda () ,@body) ,qname))
 
 (defun maybe-emit-start-tag ()
