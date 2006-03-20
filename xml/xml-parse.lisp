@@ -2978,7 +2978,7 @@
       (make-stream-name
        :entity-name "main document"
        :entity-kind :main
-       :uri (pathname-to-uri filename)))
+       :uri (pathname-to-uri (merge-pathnames filename))))
     (apply #'parse-xstream input handler args)))
 
 (defun resolve-synonym-stream (stream)
@@ -2991,7 +2991,7 @@
 	   ;; ignore-errors, because sb-bsd-sockets creates instances of
 	   ;; FILE-STREAMs that aren't
            (ignore-errors (pathname stream)))
-      (pathname-to-uri (pathname stream))
+      (pathname-to-uri (merge-pathnames (pathname stream)))
       nil))
 
 (defun parse-stream (stream handler &rest args)
