@@ -545,6 +545,7 @@
   value)
 
 (defun cdata (data)
+  (maybe-emit-start-tag)
   (sax:start-cdata *sink*)
   (sax:characters *sink* (rod data))
   (sax:end-cdata *sink*)
