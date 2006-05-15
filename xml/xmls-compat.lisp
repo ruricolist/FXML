@@ -7,7 +7,7 @@
 ;;;; Copyright: David Lichteblau
 
 ;;;; XXX Der namespace-Support in xmls kommt mir zweifelhaft vor.
-;;;; Wir immitieren das soweit es gebraucht wurde bisher.
+;;;; Wir imitieren das soweit es gebraucht wurde bisher.
 
 (defpackage cxml-xmls
   (:use :cl :runes)
@@ -135,9 +135,12 @@
              (let* ((attlist
                      (compute-attributes node include-xmlns-attributes))
                     (lname (rod (node-name node)))
-                    (ns (rod (node-ns node)))
-                    (qname (concatenate 'rod ns (rod ":") lname)))
-               ;; fixme: namespaces
+                    (qname (if (node-ns node)
+			       (concatenate 'rod
+				 (rod (node-ns node))
+				 (rod ":")
+				 lname)
+			       lname)))
                (sax:start-element handler nil lname qname attlist)
                (dolist (child (node-children node))
                  (typecase child
