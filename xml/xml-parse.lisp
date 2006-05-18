@@ -3027,7 +3027,13 @@
         (dtd *ctx*)))))
 
 (defun parse-rod (string handler &rest args)
-  (apply #'parse-xstream (string->xstream string) handler args))
+  (let ((xstream (string->xstream string)))
+    (setf (xstream-name xstream)
+	  (make-stream-name
+	   :entity-name "main document"
+	   :entity-kind :main
+	   :uri nil))
+    (apply #'parse-xstream xstream handler args)))
 
 (defun string->xstream (string)
   (make-rod-xstream (string-rod string)))
