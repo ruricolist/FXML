@@ -40,7 +40,7 @@
              (dom-exception-string c)
              (dom-exception-arguments c)))))
 
-(defclass node ()
+(defclass node (dom:node)
   ((parent      :initarg :parent        :initform nil)
    (children    :initarg :children      :initform (make-node-list))
    (owner       :initarg :owner         :initform nil)
@@ -63,18 +63,18 @@
 		      (dom:namespace-uri node)))
   (setf (slot-value node 'prefix) newval))
 
-(defclass document (node)
+(defclass document (node dom:document)
   ((doc-type    :initarg :doc-type     :reader dom:doctype)
    (dtd         :initform nil          :reader dtd)
    (entity-resolver :initform nil)))
 
-(defclass document-fragment (node)
+(defclass document-fragment (node dom:document-fragment)
   ())
 
-(defclass character-data (node)
+(defclass character-data (node dom:character-data)
   ((value       :initarg :data          :reader dom:data)))
 
-(defclass attribute (namespace-mixin node)
+(defclass attribute (namespace-mixin node dom:attr)
   ((name        :initarg :name          :reader dom:name)
    (owner-element :initarg :owner-element :reader dom:owner-element)
    (specified-p :initarg :specified-p   :reader dom:specified)))
@@ -93,7 +93,7 @@
             (rod-string (dom:name object))
             (rod-string (dom:value object)))))
 
-(defclass element (namespace-mixin node)
+(defclass element (namespace-mixin node dom:element)
   ((tag-name    :initarg :tag-name      :reader dom:tag-name)
    (attributes  :initarg :attributes    :reader dom:attributes)))
 
@@ -105,16 +105,16 @@
   (print-unreadable-object (object stream :type t :identity t)
     (princ (rod-string (dom:tag-name object)) stream)))
 
-(defclass text (character-data)
+(defclass text (character-data dom:text)
   ())
 
-(defclass comment (character-data)
+(defclass comment (character-data dom:comment)
   ())
 
-(defclass cdata-section (text)
+(defclass cdata-section (text dom:cdata-section)
   ())
 
-(defclass document-type (node)
+(defclass document-type (node dom:document-type)
   ((name          :initarg :name          :reader dom:name)
    (public-id     :initarg :public-id     :reader dom:public-id)
    (system-id     :initarg :system-id     :reader dom:system-id)
@@ -122,25 +122,25 @@
    (notations     :initarg :notations     :reader dom:notations)
    (dom::%internal-subset                 :accessor dom::%internal-subset)))
 
-(defclass notation (node)
+(defclass notation (node dom:notation)
   ((name          :initarg :name          :reader dom:name)
    (public-id     :initarg :public-id     :reader dom:public-id)
    (system-id     :initarg :system-id     :reader dom:system-id)))
 
-(defclass entity (node)
+(defclass entity (node dom:entity)
   ((name          :initarg :name          :reader dom:name)
    (public-id     :initarg :public-id     :reader dom:public-id)
    (system-id     :initarg :system-id     :reader dom:system-id)
    (notation-name :initarg :notation-name :reader dom:notation-name)))
 
-(defclass entity-reference (node) 
+(defclass entity-reference (node dom:entity-reference)
   ((name          :initarg :name          :reader dom:name)))
 
-(defclass processing-instruction (node)
+(defclass processing-instruction (node dom:processing-instruction)
   ((target        :initarg :target        :reader dom:target)
    (data          :initarg :data          :reader dom:data)))
 
-(defclass named-node-map ()
+(defclass named-node-map (dom:named-node-map)
   ((items         :initarg :items         :reader dom:items
                   :initform nil)
    (owner         :initarg :owner         :reader dom:owner-document)

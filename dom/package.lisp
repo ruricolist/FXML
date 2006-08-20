@@ -95,26 +95,26 @@
    #:notation-name
    #:target
    #:code
-   
-   ;; not exported:
-;;;   ;; protocol classes
+
+   ;; IDL interfaces, exported "inofficially"
+   #:node
+   #:document
+   #:document-fragment
+   #:character-data
+   #:attr
+   #:element
+   #:text
+   #:comment
+   #:cdata-section
+   #:document-type
+   #:notation
+   #:entity
+   #:entity-reference
+   #:processing-instruction
+   #:named-node-map
+   ;; no classes:
 ;;;   #:dom-implementation
-;;;   #:document-fragment
-;;;   #:document
-;;;   #:node
 ;;;   #:node-list
-;;;   #:named-node-map
-;;;   #:character-data
-;;;   #:attr
-;;;   #:element
-;;;   #:text
-;;;   #:comment
-;;;   #:cdata-section
-;;;   #:document-type
-;;;   #:notation
-;;;   #:entity
-;;;   #:entity-reference
-;;;   #:processing-instruction
 
    ;;
    #:items
@@ -142,3 +142,20 @@
    #:do-node-map
    #:create-document
    #:map-document))
+
+(defclass dom:node () ())
+(defclass dom:document (dom:node) ())
+(defclass dom:document-fragment (dom:node) ())
+(defclass dom:character-data (dom:node) ())
+(defclass dom:attr (dom:node) ())
+(defclass dom:element (dom:node) ())
+(defclass dom:text (dom:character-data) ())
+(defclass dom:comment (dom:character-data) ())
+(defclass dom:cdata-section (dom:text) ())
+(defclass dom:document-type (dom:node) ())
+(defclass dom:notation (dom:node) ())
+(defclass dom:entity (dom:node) ())
+(defclass dom:entity-reference (dom:node) ())
+(defclass dom:processing-instruction (dom:node) ())
+
+(defclass dom:named-node-map () ())
