@@ -2,7 +2,7 @@ div.sidebar {
   float: right;
   min-width: 15%;
   padding: 0pt 5pt 5pt 5pt;
-  font-family: helvetica;
+  font-family: verdana, arial;
 }
 
 div.sidebar-title {
@@ -56,7 +56,7 @@ body {
   margin-bottom: 10%;
   margin-left: 40px;
   padding-left: 30px;
-  font-family: helvetica;
+  font-family: verdana, arial;
   background-image: url(bg.png);
   background-position: top left;
   background-attachment: fixed;

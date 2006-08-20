@@ -713,8 +713,14 @@
 	 (lisp (slurp-test (merge-pathnames href test-directory)))
          (cxml::*validate* nil))
     (print lisp)
+    (fresh-line)
     (when lisp
       (funcall (compile nil lisp)))))
 
 #+(or)
-(run-all-tests "~/src/2001/DOM-Test-Suite/")
+(domtest::run-all-tests "/home/david/2001/DOM-Test-Suite/")
+
+#+(or)
+(domtest::run-test "/home/david/2001/DOM-Test-Suite/"
+		   1
+		   "attrcreatedocumentfragment.xml")

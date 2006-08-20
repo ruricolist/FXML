@@ -206,4 +206,4 @@
       t)))
 
 #+(or)
-(xmlconf::dribble-tests "/home/david/2001/XML-Test-Suite/xmlconf/")
+(xmlconf::run-all-tests "/home/david/2001/XML-Test-Suite/xmlconf/")
