@@ -36,6 +36,7 @@
    #:parse-stream
    #:parse-rod
    #:parse-octets
+   #:parse-empty-document
 
    #:make-octet-vector-sink
    #:make-octet-stream-sink

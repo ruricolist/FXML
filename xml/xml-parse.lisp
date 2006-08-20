@@ -3005,6 +3005,64 @@
           :initial-speed 1)))
     (apply #'parse-xstream xstream handler args)))
 
+(defun parse-empty-document
+    (uri qname handler &key public-id system-id entity-resolver (recode t))
+  (check-type uri (or null rod))
+  (check-type qname (or null rod))
+  (check-type public-id (or null rod))
+  (check-type system-id (or null puri:uri))
+  (check-type entity-resolver (or null function symbol))
+  (check-type recode boolean)
+  #+rune-is-integer
+  (when recode
+    (setf handler (make-recoder handler #'rod-to-utf8-string)))
+  (let ((*ctx*
+         (make-context :handler handler :entity-resolver entity-resolver))
+        (*validate* nil)
+	(extid
+	 (when (or public-id system-id)
+	   (extid-using-catalog (make-extid public-id system-id)))))
+    (sax:start-document handler)
+    (when extid
+      (sax:start-dtd handler
+                     qname
+                     (and public-id)
+                     (and system-id (uri-rod system-id)))
+      (setf (dtd *ctx*) (getdtd (extid-system extid) *dtd-cache*))
+      (unless (dtd *ctx*)
+	(with-scratch-pads ()
+	  (let ((*data-behaviour* :DTD))
+	    (let* ((xi2 (xstream-open-extid extid))
+		   (zi2 (make-zstream :input-stack (list xi2))))
+	      (ensure-dtd)
+	      (p/ext-subset zi2)))))
+      (sax:end-dtd handler)
+      (let ((dtd (dtd *ctx*)))
+        (sax:entity-resolver handler (lambda (n h) (resolve-entity n h dtd)))
+        (sax::dtd handler dtd)))
+    (ensure-dtd)
+    (when (or uri qname)
+      (let* ((attrs
+	      (when uri
+		(list (sax:make-attribute :qname #"xmlns"
+					  :value (rod uri)
+					  :specified-p t))))
+	     (*namespace-bindings* *namespace-bindings*)
+	     new-namespaces)
+	(when sax:*namespace-processing*
+	  (setf new-namespaces (declare-namespaces attrs))
+	  (mapc #'set-attribute-namespace attrs))
+	(multiple-value-bind (uri prefix local-name)
+	    (if sax:*namespace-processing* (decode-qname qname) nil)
+	  (declare (ignore prefix))
+	  (unless (or sax:*include-xmlns-attributes*
+		      (null sax:*namespace-processing*))
+	    (setf attrs nil)) 
+	  (sax:start-element (handler *ctx*) uri local-name qname attrs)
+	  (sax:end-element (handler *ctx*) uri local-name qname))
+	(undeclare-namespaces new-namespaces)))
+    (sax:end-document handler)))
+
 (defun parse-dtd-file (filename &optional handler)
   (with-open-file (s filename :element-type '(unsigned-byte 8))
     (parse-dtd-stream s handler)))

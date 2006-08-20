@@ -133,6 +133,18 @@
     </p>
 
     <p>
+      <div class="def">Function CXML:PARSE-FILE (uri qname handler &key public-id system-id entity-resolver recode)</div>
+    </p>
+    <p>
+      Simulate parsing a document with a document element <tt>qname</tt>
+      having no attributes except for an optional namespace
+      declaration to <tt>uri</tt>.  If an external ID is specified
+      (<tt>system-id</tt>, <tt>public-id</tt>), find, parse, and report
+      this DTD as if with <tt>parse-file</tt>, using the specified
+      entity resolver.
+    </p>
+
+    <p>
       <div class="def">Function CXML:PARSE-DTD-FILE (pathname)</div>
       <div class="def">Function CXML:PARSE-DTD-STREAM (stream)</div>
       Parse <a
