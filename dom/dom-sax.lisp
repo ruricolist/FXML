@@ -88,6 +88,7 @@
         (push
          (sax:make-attribute :qname (dom:name a)
                              :value (dom:value a)
+			     :local-name (dom:local-name a)
 			     :namespace-uri (dom:namespace-uri a)
                              :specified-p (dom:specified a))
          results)))

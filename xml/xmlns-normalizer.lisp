@@ -38,6 +38,8 @@
     :chained-handler chained-handler))
 
 (defun normalizer-find-prefix (handler prefix)
+  (when (zerop (length prefix))
+    (setf prefix #"xmlns"))
   (block t
     (dolist (bindings (xmlns-stack handler))
       (dolist (attribute bindings)
@@ -54,7 +56,7 @@
 	  (return-from t attribute))))))
 
 (defun make-xmlns-attribute (prefix uri)
-  (if prefix
+  (if (and (plusp (length prefix)) (not (equal prefix #"xmlns")))
       (sax:make-attribute
        :qname (concatenate 'rod #"xmlns:" prefix)
        :namespace-uri *xmlns-namespace*
@@ -112,7 +114,7 @@
 		      (rename-attribute
 		       a
 		       (sax:attribute-local-name uri-binding)))
-		    ((null prefix-binding)
+		    ((and prefix (null prefix-binding))
 		      (push-namespace prefix u))
 		    (t
 		      (loop
