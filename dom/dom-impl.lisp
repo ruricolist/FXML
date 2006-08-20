@@ -282,7 +282,10 @@
 (defmethod dom:create-document-type
     ((factory (eql 'implementation)) name publicid systemid)
   (safe-split-qname name #"")
-  (%create-document-type name publicid systemid))
+  (let ((result (%create-document-type name publicid systemid)))
+    (setf (slot-value (dom:entities result) 'read-only-p) t)
+    (setf (slot-value (dom:notations result) 'read-only-p) t)
+    result))
 
 (defmethod dom:create-document
     ((factory (eql 'implementation)) uri qname doctype)
@@ -1421,6 +1424,42 @@
 (defmethod dom:clone-node ((node node) deep)
   (let ((*clone-not-import* t))
     (dom:import-node (dom:owner-document node) node deep)))
+
+;; extension:
+(defmethod dom:clone-node ((node document) deep)
+  (let* ((document (make-instance 'document))
+	 (original-doctype (dom:doctype node))
+	 (doctype 
+	  (when original-doctype
+	    (make-instance 'document-type
+	      :owner document
+	      :name (dom:name original-doctype)
+	      :public-id (dom:public-id original-doctype)
+	      :system-id (dom:system-id original-doctype)
+	      :notations (make-instance 'named-node-map
+			   :element-type :notation
+			   :owner document
+			   :items (dom:items (dom:notations original-doctype)))
+	      :entities (make-instance 'named-node-map
+			  :element-type :entity
+			  :owner document
+			  :items (dom:items
+				  (dom:entities original-doctype)))))))
+    (setf (slot-value document 'owner) nil)
+    (setf (slot-value document 'doc-type) doctype)
+    (setf (slot-value document 'dtd) (dtd node))
+    (setf (slot-value document 'entity-resolver)
+	  (slot-value node 'entity-resolver))
+    (setf (slot-value (dom:entities doctype) 'read-only-p) t)
+    (setf (slot-value (dom:notations doctype) 'read-only-p) t)
+    (when doctype
+      (setf (dom::%internal-subset doctype)
+	    (dom::%internal-subset original-doctype)))
+    (when (and (dom:document-element node) deep)
+      (let* ((*clone-not-import* t)
+	     (clone (dom:import-node document (dom:document-element node) t)))
+	(dom:append-child document clone)))
+    document))
 
 
 ;;; Erweiterung
