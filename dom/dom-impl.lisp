@@ -1452,7 +1452,7 @@
 	  (slot-value node 'entity-resolver))
     (setf (slot-value (dom:entities doctype) 'read-only-p) t)
     (setf (slot-value (dom:notations doctype) 'read-only-p) t)
-    (when doctype
+    (when (and doctype (slot-boundp doctype 'dom::%internal-subset))
       (setf (dom::%internal-subset doctype)
 	    (dom::%internal-subset original-doctype)))
     (when (and (dom:document-element node) deep)
