@@ -6,8 +6,8 @@
 ;;;    Author: David Lichteblau (DTD-related changes)
 ;;;   License: BSD
 ;;; ---------------------------------------------------------------------------
-;;;  © copyright 2003 by Henrik Motakef
-;;;  © copyright 2004 knowledgeTools Int. GmbH
+;;;  (c) copyright 2003 by Henrik Motakef
+;;;  (c) copyright 2004 knowledgeTools Int. GmbH
 
 ;;; Redistribution and use  in source and binary   forms, with or  without
 ;;; modification, are permitted provided that the following conditions are

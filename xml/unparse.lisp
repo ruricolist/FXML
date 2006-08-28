@@ -7,9 +7,9 @@
 ;;;    Author: David Lichteblau <david@lichteblau.com>
 ;;;   License: Lisp-LGPL (See file COPYING for details).
 ;;; ---------------------------------------------------------------------------
-;;;  Å¬Å© copyright 1999 by Gilbert Baumann
-;;;  Å¬Å© copyright 2004 by knowledgeTools Int. GmbH
-;;;  Å¬Å© copyright 2004 by David Lichteblau (for headcraft.de)
+;;;  (c) copyright 1999 by Gilbert Baumann
+;;;  (c) copyright 2004 by knowledgeTools Int. GmbH
+;;;  (c) copyright 2004 by David Lichteblau (for headcraft.de)
 
 ;;; This library is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU Library General Public
