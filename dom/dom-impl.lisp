@@ -1349,6 +1349,7 @@
   (import-node-internal 'attribute
 			document node
 			t
+                        :specified-p (dom:specified node)
 			:name (dom:name node)
 			:namespace-uri (dom:namespace-uri node)
 			:local-name (dom:local-name node)
@@ -1371,14 +1372,10 @@
     (setf (slot-value attributes 'element) result)
     (dolist (attribute (dom:items (dom:attributes node)))
       (when (or (dom:specified attribute) *clone-not-import*)
-        (if (dom:namespace-uri attribute)
-	    (dom:set-attribute-ns result
-				  (dom:namespace-uri attribute)
-				  (dom:local-name attribute)
-				  (dom:value attribute))
-	    (dom:set-attribute result
-			       (dom:name attribute)
-			       (dom:value attribute)))))
+        (let ((attr (dom:import-node document attribute t)))
+          (if (dom:namespace-uri attribute)
+              (dom:set-attribute-node-ns result attr)
+              (dom:set-attribute-node result attr)))))
     (add-default-attributes result)
     result))
 
