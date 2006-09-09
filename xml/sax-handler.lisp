@@ -181,7 +181,7 @@ of the `attribute' structure class. The for their namespace-uri and
 local-name properties, the same rules as for the element name
 apply. Additionally, namespace-declaring attributes (those whose name
 is \"xmlns\" or starts with \"xmlns:\") are only included if
-*namespace-prefixes* is non-nil.")
+*include-xmlns-attributes* is non-nil.")
   (:method ((handler t) namespace-uri local-name qname attributes)
     (declare (ignore namespace-uri local-name qname attributes))
     nil))
