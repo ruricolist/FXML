@@ -105,15 +105,19 @@
 	       (declare (type simple-vector range-vector))
 	       ;;we were always dealing with a sorted vector... bin search it
  
-	       (loop with start = 0 
-		     with end = (length range-vector)
-		     while (< start end)
-		     for mid-index = (+ start (floor (- end start) 2))
-		     for (mid-item-low mid-item-high) = (aref range-vector mid-index)
-		     if (< mid-item-high code) do (setf start (1+ mid-index))
-		     else if (< code mid-item-low) do (setf end mid-index)
-		     else do (return T)
-		     finally (return nil)))
+	       (let ((start 0)
+		     (end (length range-vector)))
+		 (while (< start end)
+		   (let ((mid-index (+ start (floor (- end start) 2))))
+		     (destructuring-bind (mid-item-low mid-item-high)
+			 (aref range-vector mid-index)
+		       (cond
+			 ((< mid-item-high code)
+			   (setf start (1+ mid-index)))
+			 ((< code mid-item-low)
+			   (setf end mid-index))
+			 (t
+			   (return t))))))))
 	     
 	     (name-start-rune-p (rune)
                (or (letter-rune-p rune)

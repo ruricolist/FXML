@@ -587,9 +587,11 @@
     (setf (slot-value new-child 'parent) node)
     new-child))
 
-(defmethod dom:insert-before ((node node) (fragment document-fragment) ref-child)
-  (dovector (child (dom:child-nodes fragment))
-    (dom:insert-before node child ref-child))
+(defmethod dom:insert-before
+    ((node node) (fragment document-fragment) ref-child)
+  (let ((children (dom:child-nodes fragment)))
+    (cxml::while (plusp (length children))
+      (dom:insert-before node (elt children 0) ref-child)))
   fragment)
 
 (defmethod dom:replace-child ((node node) (new-child node) (old-child node))
@@ -631,8 +633,9 @@
 
 (defmethod dom:append-child ((node node) (new-child document-fragment))
   (assert-writeable node)
-  (dovector (child (dom:child-nodes new-child))
-    (dom:append-child node child))
+  (let ((children (dom:child-nodes new-child)))
+    (cxml::while (plusp (length children))
+      (dom:append-child node (elt children 0))))
   new-child)
 
 ;; was auf node noch implemetiert werden muss:
