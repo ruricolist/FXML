@@ -85,11 +85,6 @@ $ cvs co cxml</pre>
     </p>
     <ul>
       <li>
-	SBCL and CLISP will trip over cxml's non-ASCII source files
-	unless run using a suitable locale configuration
-	(<tt>LC_CTYPE=en_US.ISO-8859-1</tt> should help).
-      </li>
-      <li>
 	The SBCL port uses 16 bit surrogate characters instead of taking
 	advantage of SBCL's full 21 bit character support.
       </li>

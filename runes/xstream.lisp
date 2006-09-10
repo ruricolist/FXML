@@ -5,7 +5,7 @@
 ;;;    Author: Gilbert Baumann <unk6@rz.uni-karlsruhe.de>
 ;;;   License: Lisp-LGPL (See file COPYING for details).
 ;;; ---------------------------------------------------------------------------
-;;;  © copyright 1999 by Gilbert Baumann
+;;;  (c) copyright 1999 by Gilbert Baumann
 
 ;;; This library is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU Library General Public

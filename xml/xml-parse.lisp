@@ -7,11 +7,11 @@
 ;;;    Author: David Lichteblau <david@lichteblau.com>
 ;;;   License: Lisp-LGPL (See file COPYING for details).
 ;;; ---------------------------------------------------------------------------
-;;;  © copyright 1999 by Gilbert Baumann
-;;;  © copyright 2003 by Henrik Motakef
-;;;  © copyright 2004 knowledgeTools Int. GmbH
-;;;  © copyright 2004 David Lichteblau
-;;;  © copyright 2005 David Lichteblau
+;;;  (c) copyright 1999 by Gilbert Baumann
+;;;  (c) copyright 2003 by Henrik Motakef
+;;;  (c) copyright 2004 knowledgeTools Int. GmbH
+;;;  (c) copyright 2004 David Lichteblau
+;;;  (c) copyright 2005 David Lichteblau
 
 ;;; This library is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU Library General Public
@@ -3177,7 +3177,7 @@
       (cond ((%= rptr fptr)
              ;; underflow -- hmm inject the scratch-pad with what we
              ;; read and continue, while using read-rune and collecting
-             ;; d.h. besser wäre hier auch while-reading zu benutzen.
+             ;; d.h. besser waere hier auch while-reading zu benutzen.
              (setf (xstream-read-ptr ,input) rptr)
              (multiple-value-setq (,res ,res-start ,res-end)
                (with-rune-collector/raw (collect)
