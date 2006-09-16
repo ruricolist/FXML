@@ -1278,6 +1278,11 @@
 			      (mu target)))
                    (t
                     (values :PI (cons target content))))))
+          ((eq *data-behaviour* :DTD)
+	    (unread-rune d input)
+	    (unless (or (rune= #// d) (name-start-rune-p d))
+	      (wf-error zinput "Expected '!' or '?' after '<' in DTD."))
+	    (values :seen-< nil))
           ((rune= #// d)
            (let ((c (peek-rune input)))
              (cond ((name-start-rune-p c)
@@ -2605,6 +2610,11 @@
         (setf (model-stack *ctx*) (list (make-root-model root))))
       ;; element
       (let ((*data-behaviour* :DOC))
+	(when (eq (peek-token input) :seen-<)
+	  (multiple-value-bind (c s)
+	      (read-token-after-|<| input (car (zstream-input-stack input)))
+	    (setf (zstream-token-category input) c
+		  (zstream-token-semantic input) s)))
         (p/element input))
       ;; optional Misc*
       (p/misc*-2 input)
