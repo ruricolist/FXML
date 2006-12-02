@@ -43,8 +43,11 @@
    #:make-rod-sink
    #+rune-is-character #:make-string-sink
    #+rune-is-character #:make-character-stream-sink
-   #-rune-is-character #:make-string-sink/utf8
-   #-rune-is-character #:make-character-stream-sink/utf8
+   ;; See comment in runes/package.lisp
+   ;; #-rune-is-character
+   #:make-string-sink/utf8
+   ;; #-rune-is-character
+   #:make-character-stream-sink/utf8
 
    #:with-xml-output
    #:with-element

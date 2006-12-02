@@ -222,7 +222,7 @@
 
 ;;;; CHARACTER-STREAM-YSTREAM/UTF8
 
-#+rune-is-integer
+;; #+rune-is-integer
 (progn
   (defstruct (character-stream-ystream/utf8
 	      (:constructor make-character-stream-ystream/utf8 (os-stream))
@@ -239,7 +239,7 @@
 
 ;;;; STRING-YSTREAM/UTF8
 
-#+rune-is-integer
+;; #+rune-is-integer
 (progn
   (defstruct (string-ystream/utf8
 	      (:include character-stream-ystream/utf8

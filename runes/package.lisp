@@ -72,8 +72,13 @@
            #:make-octet-stream-ystream
            #:make-rod-ystream
            #+rune-is-character #:make-character-stream-ystream
-           #+rune-is-integer #:make-string-ystream/utf8
-           #+rune-is-integer #:make-character-stream-ystream/utf8
+	   ;; These don't make too much sense on Unicode-enabled,
+	   ;; implementations but for those applications using them anyway,
+	   ;; I have commented out the reader conditionals now:
+           ;; #+rune-is-integer
+	   #:make-string-ystream/utf8
+           ;; #+rune-is-integer
+	   #:make-character-stream-ystream/utf8
 	   #:runes-to-utf8/adjustable-string))
 
 (defpackage :utf8-runes

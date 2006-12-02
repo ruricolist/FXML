@@ -95,8 +95,8 @@
               :adjustable t
               :fill-pointer 0))
 
-;; total haesslich, aber die ystreams will ich im moment eigentlich nicht
-;; dokumentieren
+;; bisschen unschoen hier die ganze api zu duplizieren, aber die
+;; ystreams sind noch undokumentiert
 (macrolet ((define-maker (make-sink make-ystream &rest args)
 	     `(defun ,make-sink (,@args &rest initargs)
 		(apply #'make-instance
@@ -110,10 +110,10 @@
   #+rune-is-character
   (define-maker make-character-stream-sink make-character-stream-ystream stream)
 
-  #-rune-is-character
+  ;; #-rune-is-character
   (define-maker make-string-sink/utf8 make-string-ystream/utf8)
 
-  #-rune-is-character
+  ;; #-rune-is-character
   (define-maker make-character-stream-sink/utf8
       make-character-stream-ystream/utf8
     stream))
@@ -539,10 +539,21 @@
       (maybe-emit-start-tag)
       (sax:end-element *sink* nil nil qname))))
 
-(defun attribute (name value)
+(defun attribute-1 (name value)
   (push (sax:make-attribute :qname (rod name) :value (rod value))
         (cdr *current-element*))
   value)
+
+(defgeneric attribute (name value))
+
+(defmethod attribute (name (value string))
+  (attribute-1 name value))
+
+(defmethod attribute (name (value null))
+  (declare (ignore name)))
+
+(defmethod attribute (name (value integer))
+  (attribute-1 name (write-to-string value)))
 
 (defun cdata (data)
   (maybe-emit-start-tag)
