@@ -83,4 +83,6 @@
    #:make-namespace-normalizer
    #:make-whitespace-normalizer
    #:rod-to-utf8-string
-   #:utf8-string-to-rod))
+   #:utf8-string-to-rod
+
+   #:make-source))

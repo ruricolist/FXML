@@ -68,11 +68,11 @@
 ;;    :stag (<name> . <atts>)           ;start tag
 ;;    :etag (<name> . <atts>)           ;end tag
 ;;    :ztag (<name> . <atts>)           ;empty tag
-;;    :<!element
-;;    :<!entity
-;;    :<!attlist
-;;    :<!notation
-;;    :<!doctype
+;;    :<!ELEMENT
+;;    :<!ENTITY
+;;    :<!ATTLIST
+;;    :<!NOTATION
+;;    :<!DOCTYPE
 ;;    :<![
 ;;    :comment <content>
 
@@ -194,10 +194,12 @@
 
 (defvar *expand-pe-p* nil)
 
-(defparameter *namespace-bindings*
+(defparameter *initial-namespace-bindings*
   '((#"" . nil)
     (#"xmlns" . #"http://www.w3.org/2000/xmlns/")
     (#"xml" . #"http://www.w3.org/XML/1998/namespace")))
+
+(defparameter *namespace-bindings* *initial-namespace-bindings*)
 
 ;;;; ---------------------------------------------------------------------------
 ;;;; xstreams
@@ -2571,22 +2573,16 @@
 		       :main-zstream input
                        :entity-resolver entity-resolver
                        :disallow-internal-subset disallow-internal-subset))
-        (*validate* validate))
+        (*validate* validate)
+	(*namespace-bindings* *initial-namespace-bindings*))
     (sax:start-document handler)
     ;; document ::= XMLDecl? Misc* (doctypedecl Misc*)? element Misc*
     ;; Misc ::= Comment | PI |  S
     ;; xmldecl::='<?xml' VersionInfo EncodingDecl? SDDecl? S? '?>'
     ;; sddecl::= S 'standalone' Eq (("'" ('yes' | 'no') "'") | ('"' ('yes' | 'no') '"'))
-    ;;
-    ;; we will use the attribute-value parser for the xml decl.
     (let ((*data-behaviour* :DTD))
       ;; optional XMLDecl?
-      (cond ((eq (peek-token input) :xml-decl)
-             (let ((hd (parse-xml-decl (cdr (nth-value 1 (peek-token input))))))
-               (setf (standalone-p *ctx*) (eq (xml-header-standalone-p hd) :yes))
-               (setup-encoding input hd))
-             (read-token input)))
-      (set-full-speed input)
+      (p/xmldecl input)
       ;; Misc*
       (p/misc*-2 input)
       ;; (doctypedecl Misc*)?
@@ -2595,13 +2591,7 @@
           (p/doctype-decl input dtd)
           (p/misc*-2 input))
         (dtd
-          (let ((dummy (string->xstream "<!DOCTYPE dummy>")))
-            (setf (xstream-name dummy)
-                  (make-stream-name
-                   :entity-name "dummy doctype"
-                   :entity-kind :main
-                   :uri (zstream-base-sysid input)))
-            (p/doctype-decl (make-zstream :input-stack (list dummy)) dtd)))
+	  (synthesize-doctype dtd input))
         ((and validate (not dtd))
           (validity-error "invalid document: no doctype")))
       (ensure-dtd)
@@ -2610,28 +2600,65 @@
         (setf (model-stack *ctx*) (list (make-root-model root))))
       ;; element
       (let ((*data-behaviour* :DOC))
-	(when (eq (peek-token input) :seen-<)
-	  (multiple-value-bind (c s)
-	      (read-token-after-|<| input (car (zstream-input-stack input)))
-	    (setf (zstream-token-category input) c
-		  (zstream-token-semantic input) s)))
+	(fix-seen-< input)
         (p/element input))
       ;; optional Misc*
       (p/misc*-2 input)
-      (unless (eq (peek-token input) :eof)
-        (wf-error input "Garbage at end of document."))
-      (when *validate*
-        (maphash (lambda (k v)
-                   (unless v
-                     (validity-error "(11) IDREF: ~S not defined" (rod-string k))))
-                 (id-table *ctx*))
-
-        (dolist (name (referenced-notations *ctx*))
-          (unless (find-notation name (dtd *ctx*))
-            (validity-error "(23) Notation Declared: ~S" (rod-string name)))))
+      (p/eof input)
       (sax:end-document handler))))
 
+(defun synthesize-doctype (dtd input)
+  (let ((dummy (string->xstream "<!DOCTYPE dummy>")))
+    (setf (xstream-name dummy)
+	  (make-stream-name
+	   :entity-name "dummy doctype"
+	   :entity-kind :main
+	   :uri (zstream-base-sysid input)))
+    (p/doctype-decl (make-zstream :input-stack (list dummy)) dtd)))
+
+(defun fix-seen-< (input)
+  (when (eq (peek-token input) :seen-<)
+    (multiple-value-bind (c s)
+	(read-token-after-|<| input (car (zstream-input-stack input)))
+      (setf (zstream-token-category input) c
+	    (zstream-token-semantic input) s))))
+
+(defun p/xmldecl (input)
+  ;; we will use the attribute-value parser for the xml decl.
+  (prog1
+      (when (eq (peek-token input) :xml-decl)
+	(let ((hd (parse-xml-decl (cdr (nth-value 1 (peek-token input))))))
+	  (setf (standalone-p *ctx*) (eq (xml-header-standalone-p hd) :yes))
+	  (setup-encoding input hd)
+	  (read-token input)
+	  hd))
+    (set-full-speed input)))
+
+(defun p/eof (input)
+  (unless (eq (peek-token input) :eof)
+    (wf-error input "Garbage at end of document."))
+  (when *validate*
+    (maphash (lambda (k v)
+	       (unless v
+		 (validity-error "(11) IDREF: ~S not defined" (rod-string k))))
+	     (id-table *ctx*))
+
+    (dolist (name (referenced-notations *ctx*))
+      (unless (find-notation name (dtd *ctx*))
+	(validity-error "(23) Notation Declared: ~S" (rod-string name))))))
+
 (defun p/element (input)
+  (multiple-value-bind (cat n-b new-b uri lname qname attrs) (p/sztag input)
+    (sax:start-element (handler *ctx*) uri lname qname attrs)
+    (when (eq cat :stag)
+      (let ((*namespace-bindings* n-b))
+	(p/content input))
+      (p/etag input qname))
+    (sax:end-element (handler *ctx*) uri lname qname)
+    (undeclare-namespaces new-b)
+    (validate-end-element *ctx* qname)))
+
+(defun p/sztag (input)
   (multiple-value-bind (cat sem) (read-token input)
     (case cat
       ((:stag :ztag))
@@ -2657,28 +2684,39 @@
 	    (setf attrs
 		  (remove-if (compose #'xmlns-attr-p #'sax:attribute-qname)
 			     attrs))) 
-	  (cond
-	    ((eq cat :ztag)
-	      (sax:start-element (handler *ctx*) uri local-name name attrs)
-	      (sax:end-element (handler *ctx*) uri local-name name))
-		
-	    ((eq cat :stag)
-	      (sax:start-element (handler *ctx*) uri local-name name attrs)
-	      (p/content input)
-	      (multiple-value-bind (cat2 sem2) (read-token input)
-		(unless (and (eq cat2 :etag)
-			     (eq (car sem2) name))
-		  (wf-error input "Bad nesting. ~S / ~S"
-			    (mu name)
-			    (mu (cons cat2 sem2))))
-		(when (cdr sem2)
-		  (wf-error input "no attributes allowed in end tag")))
-	      (sax:end-element (handler *ctx*) uri local-name name))
-		
-	    (t
-	      (wf-error input "Expecting element, got ~S." cat))))
-	(undeclare-namespaces new-namespaces))
-      (validate-end-element *ctx* name))))
+	  (values cat
+		  *namespace-bindings*
+		  new-namespaces
+		  uri local-name name attrs))))))
+
+(defun p/etag (input qname)
+  (multiple-value-bind (cat2 sem2) (read-token input)
+    (unless (and (eq cat2 :etag)
+		 (eq (car sem2) qname))
+      (wf-error input "Bad nesting. ~S / ~S"
+		(mu qname)
+		(mu (cons cat2 sem2))))
+    (when (cdr sem2)
+      (wf-error input "no attributes allowed in end tag"))))
+
+(defun process-characters (input sem)
+  (consume-token input)
+  (when (search #"]]>" sem)
+    (wf-error input "']]>' not allowed in CharData"))
+  (validate-characters *ctx* sem))
+
+(defun process-cdata-section (input)
+  (consume-token input)
+  (let ((input (car (zstream-input-stack input))))
+    (unless (and (rune= #/C (read-rune input))
+		 (rune= #/D (read-rune input))
+		 (rune= #/A (read-rune input))
+		 (rune= #/T (read-rune input))
+		 (rune= #/A (read-rune input))
+		 (rune= #/\[ (read-rune input)))
+      (wf-error input "After '<![', 'CDATA[' is expected."))
+    (validate-characters *ctx* #"hack")	;anything other than whitespace
+    (read-cdata-sect input)))
 
 (defun p/content (input)
   ;; [43] content ::= (element | CharData | Reference | CDSect | PI | Comment)*
@@ -2688,10 +2726,7 @@
        (p/element input)
        (p/content input))
       ((:CDATA)
-       (consume-token input)
-       (when (search #"]]>" sem)
-	 (wf-error input "']]>' not allowed in CharData"))
-       (validate-characters *ctx* sem)
+       (process-characters input sem)
        (sax:characters (handler *ctx*) sem)
        (p/content input))
       ((:ENTITY-REF)
@@ -2709,21 +2744,11 @@
 					     (peek-token input))))))
           (p/content input))))
       ((:<!\[)
-       (consume-token input)
-       (cons
-        (let ((input (car (zstream-input-stack input))))
-          (unless (and (rune= #/C (read-rune input))
-                       (rune= #/D (read-rune input))
-                       (rune= #/A (read-rune input))
-                       (rune= #/T (read-rune input))
-                       (rune= #/A (read-rune input))
-                       (rune= #/\[ (read-rune input)))
-            (wf-error input "After '<![', 'CDATA[' is expected."))
-	  (validate-characters *ctx* #"hack") ;anything other than whitespace
-	  (sax:start-cdata (handler *ctx*))
-	  (sax:characters (handler *ctx*) (read-cdata-sect input))
-	  (sax:end-cdata (handler *ctx*)))
-        (p/content input)))
+       (let ((data (process-cdata-section input)))
+	 (sax:start-cdata (handler *ctx*))
+	 (sax:characters (handler *ctx*) data)
+	 (sax:end-cdata (handler *ctx*)))
+       (p/content input))
       ((:PI)
        (consume-token input)
        (sax:processing-instruction (handler *ctx*) (car sem) (cdr sem))

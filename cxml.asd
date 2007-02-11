@@ -109,6 +109,18 @@
      (:file "dom-sax"         :depends-on ("package")))
     :depends-on (:cxml-xml))
 
+(asdf:defsystem :cxml-klacks
+    :default-component-class closure-source-file
+    :pathname (merge-pathnames
+               "klacks/"
+               (make-pathname :name nil :type nil :defaults *load-truename*))
+    :serial t
+    :components
+    ((:file "package")
+     (:file "klacks")
+     (:file "klacks-impl"))
+    :depends-on (:cxml-xml))
+
 (asdf:defsystem :cxml-test
     :default-component-class closure-source-file
     :pathname (merge-pathnames
@@ -117,4 +129,6 @@
     :components ((:file "domtest") (:file "xmlconf"))
     :depends-on (:cxml-xml :cxml-dom))
 
-(asdf:defsystem :cxml :components () :depends-on (:cxml-dom :cxml-test))
+(asdf:defsystem :cxml
+    :components ()
+    :depends-on (:cxml-dom :cxml-klacks :cxml-test))
