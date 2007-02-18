@@ -45,7 +45,8 @@ NIL
 * <b>(klacks:consume *source*)</b>
 NIL</pre>
 
-    <h3>Klacks sources</h3>
+    <a name="sources"/>
+    <h3>Parsing incrementally using sources</h3>
     <p>
       To parse using Klacks, create an XML <tt>source</tt> first.
     </p>
@@ -96,8 +97,22 @@ NIL</pre>
       closed otherwise.
     </p>
     <p>
-      <b>Keyword arguments</b> have the same meaning as with the SAX parser,
-      please refer to the documentation of <a
+      <b>Buffering:</b> By default, the Klacks parser performs buffering
+      of octets being read from the stream as an optimization.  This can
+      result in unwanted blocking if the stream is a socket and the
+      parser tries to read more data than required to parse the current
+      event.  Use <tt>:buffering nil</tt> to disable this optimization.
+    </p>
+    <ul>
+      <li>
+        <tt>buffering</tt> -- Boolean, defaults to <tt>t</tt>.  If
+        enabled, read data several kilobytes at time.  If disabled,
+        read only single bytes at a time.
+      </li>
+    </ul>
+    <p>
+      The following <b>keyword arguments</b> have the same meaning as
+      with the SAX parser, please refer to the documentation of <a
       href="sax.html#parser">parse-file</a> for more information:
     </p>
     <ul>
@@ -216,6 +231,7 @@ NIL</pre>
       exiting <tt>body</tt>, whether normally or abnormally.
     </p>
 
+    <a name="klacksax"/>
     <h3>Bridging Klacks and SAX</h3>
     <p>
       <div class="def">Function KLACKS:SERIALIZE-SOURCE (source handler)</div>

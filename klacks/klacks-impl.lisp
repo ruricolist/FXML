@@ -101,10 +101,12 @@
 (defun make-source
     (input &rest args
      &key validate dtd root entity-resolver disallow-internal-subset
-	  pathname)
+	  (buffering t) pathname)
   (declare (ignore validate dtd root entity-resolver disallow-internal-subset))
   (etypecase input
     (xstream
+      (when (and (not buffering) (< 1 (runes::xstream-speed input)))
+	(warn "make-source called with !buffering, but xstream is buffering"))
       (let ((*ctx* nil))
 	(let ((zstream (make-zstream :input-stack (list input))))
 	  (peek-rune input)
@@ -113,10 +115,10 @@
 		   zstream
 		   (loop
 		       for (name value) on args by #'cddr
-		       unless (eq name :pathname)
+		       unless (member name '(:pathname :buffering))
 		       append (list name value)))))))
     (stream
-      (let ((xstream (make-xstream input)))
+      (let ((xstream (make-xstream input :speed (if buffering 8192 1))))
 	(setf (xstream-name xstream)
 	      (make-stream-name
 	       :entity-name "main document"
@@ -126,7 +128,8 @@
 	(apply #'make-source xstream args)))
     (pathname
       (let* ((xstream
-	      (make-xstream (open input :element-type '(unsigned-byte 8)))))
+	      (make-xstream (open input :element-type '(unsigned-byte 8))
+			    :speed (if buffering 8192 1))))
 	(setf (xstream-name xstream)
 	      (make-stream-name
 	       :entity-name "main document"
