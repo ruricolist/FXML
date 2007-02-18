@@ -1,69 +1,4 @@
-<?xml version="1.0" encoding="iso-8859-1"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
-  <head>
-    <title>Closure XML</title>
-    <link rel="stylesheet" type="text/css" href="cxml.css"/>
-  </head>
-  <body>
-    <div class="sidebar">
-      <div class="sidebar-title">
-	<a href="README.html">Closure XML</a>
-      </div>
-      <div class="sidebar-main">
-      <ul class="main">
-	<li>
-          <a href="installation.html">Installing Closure XML</a>
-          <ul class="sub">
-	    <li><a href="installation.html#download"><b>Download</b></a></li>
-	    <li><a href="installation.html#implementations">Implementation-specific notes</a></li>
-	    <li><a href="installation.html#compilation">Compilation</a></li>
-	    <li><a href="installation.html#tests">Tests</a></li>
-          </ul>
-	</li>
-        <li>
-          <ul class="hack">
-            <li>
-              <a href="quickstart.html"><b>Quick-Start Example</b></a>
-            </li>
-          </ul>
-        </li>
-	<li>
-          <a href="using.html">SAX parser</a>
-          <ul class="sub">
-            <li><a href="using.html#parser">Parsing and Validating</a></li>
-            <li><a href="using.html#serialization">Serialization</a></li>
-            <li><a href="using.html#misc">Miscellaneous SAX handlers</a></li>
-            <li><a href="using.html#rods">Recoders</a></li>
-            <li><a href="using.html#dtdcache">Caching of DTD Objects</a></li>
-            <li><a href="using.html#catalogs">XML Catalogs</a></li>
-	    <li><a href="using.html#sax">SAX Interface</a></li>
-          </ul>
-	</li>
-	<li>
-          <a href="klacks.html">Klacks parser</a>
-          <ul class="hack">
-            <li><a href="klacks.html#parsing">Parsing incrementally</a></li>
-            <li><a href="klacks.html#sax">Bridging Klacks and SAX</a></li>
-          </ul>
-        </li>
-	<li>
-          <a href="dom.html">DOM implementation</a>
-          <ul class="sub">
-            <li><a href="dom.html#parser">Parsing with the DOM builder</a></li>
-            <li><a href="dom.html#serialization">Serialization</a></li>
-	    <li><a href="dom.html#mapping">DOM/Lisp mapping</a></li>
-          </ul>
-	</li>
-	<li>
-          <ul class="hack">
-            <li><a href="xmls-compat.html">XMLS Builder</a></li>
-          </ul>
-        </li>
-      </ul>
-      </div>
-    </div>
-
+<documentation title="CXML Klacks parser">
     <h1>Klacks parser</h1>
     <p>
       The Klacks parser provides an alternative parsing interface,
@@ -115,7 +50,7 @@ NIL</pre>
       To parse using Klacks, create an XML <tt>source</tt> first.
     </p>
     <p>
-      <div class="def">Function CXML:MAKE-SOURCE (input &key validate
+      <div class="def">Function CXML:MAKE-SOURCE (input &amp;key validate
       dtd root entity-resolver disallow-external-subset pathname)</div>
       Create and return a source for <tt>input</tt>.
     </p>
@@ -163,7 +98,7 @@ NIL</pre>
     <p>
       <b>Keyword arguments</b> have the same meaning as with the SAX parser,
       please refer to the documentation of <a
-      href="using.html#parser">parse-file</a> for more information:
+      href="sax.html#parser">parse-file</a> for more information:
     </p>
     <ul>
       <li>
@@ -195,7 +130,6 @@ NIL</pre>
     <p>
       Events are read from the stream using the following functions:
     </p>
-    <p>
       <div class="def">Function KLACKS:PEEK (source)</div>
      <p> => :start-document<br/>
           or => :start-document, version, encoding, standalonep<br/>
@@ -275,11 +209,10 @@ NIL</pre>
       Close all streams referred to by <tt>source</tt>.
     </p>
     <p>
-      <div class="def">Macro KLACKS:WITH-OPEN-SOURCE ((var source) &body body)</div>
+      <div class="def">Macro KLACKS:WITH-OPEN-SOURCE ((var source) &amp;body body)</div>
       Evaluate <tt>source</tt> to create a source object, bind it to
       symbol <tt>var</tt> and evaluate <tt>body</tt> as an implicit progn.
       Call <tt>klacks:close-source</tt> to close the source after
       exiting <tt>body</tt>, whether normally or abnormally.
     </p>
-  </body>
-</html>
+</documentation>

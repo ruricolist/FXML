@@ -1,0 +1,56 @@
+<documentation title="CXML Quick-Start Example">
+    <h1>Quick-Start Example</h1>
+
+    <p>
+      Make sure to <a href="installation.html#installation">install and load</a> cxml first.
+    </p>
+
+    <p>Create a test file called <tt>example.xml</tt>:</p>
+    <pre>* <b>(with-open-file (s "example.xml" :direction :output)
+    (write-string "&lt;test a='b'&gt;&lt;child/&gt;&lt;/test>" s))</b></pre>
+
+    <p>Parse <tt>example.xml</tt> into a DOM tree (<a href="sax.html#parser">read
+    more</a>):</p>
+    <pre>* <b>(cxml:parse-file "example.xml" (cxml-dom:make-dom-builder))</b>
+#&lt;DOM-IMPL::DOCUMENT @ #x72206172>
+;; save result for later:
+* <b>(defparameter *example* *)</b>
+*EXAMPLE*</pre>
+
+    <p>Inspect the DOM tree (<a href="sax.html#dom">read more</a>):</p>
+    <pre>* <b>(dom:document-element *example*)</b>
+#&lt;DOM-IMPL::ELEMENT test @ #x722b6ba2&gt;
+* <b>(dom:tag-name (dom:document-element *example*))</b>
+"test"
+* <b>(dom:child-nodes (dom:document-element *example*))</b>
+#(#&lt;DOM-IMPL::ELEMENT child @ #x722b6d8a&gt;)
+* <b>(dom:get-attribute (dom:document-element *example*) "a")</b>
+"b"</pre>
+
+    <p>Serialize the DOM document back into a file (<a
+    href="sax.html#serialization">read more</a>):</p>
+    <pre><b>(with-open-file (out "example.out" :direction :output :element-type '(unsigned-byte 8))
+  (dom:map-document (cxml:make-octet-stream-sink out) *example*))</b></pre>
+
+    <p>As an alternative to DOM, parse into xmls-compatible list
+    structure (<a href="xmls-compat.html">read more</a>):</p>
+    <pre>* <b>(cxml:parse-file "example.xml" (cxml-xmls:make-xmls-builder))</b>
+("test" (("a" "b")) ("child" NIL))</pre>
+
+    <p>Use klacks to read events from the parser incrementally.  The
+    following example looks only for :start-element and :end-element
+    events and prints them (<a href="klacks.html">read more</a>):</p>
+    <pre>* <b>(klacks:with-open-source
+    (s (cxml:make-source #p"example.xml"))
+  (loop
+      for key = (klacks:peek s)
+      while key
+      do
+	(case key
+	  (:start-element
+	    (format t "~A {" (klacks:current-qname s)))
+	  (:end-element
+	    (format t "}")))
+	(klacks:consume s)))</b>
+test {child {}}</pre>
+</documentation>

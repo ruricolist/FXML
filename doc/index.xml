@@ -1,62 +1,4 @@
-<?xml version="1.0" encoding="iso-8859-1"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
-  <head>
-    <title>Closure XML</title>
-    <link rel="stylesheet" type="text/css" href="doc/cxml.css"/>
-  </head>
-  <body>
-    <div class="sidebar">
-      <div class="sidebar-title">
-	<a href="README.html">Closure XML</a>
-      </div>
-      <div class="sidebar-main">
-      <ul class="main">
-	<li>
-          <a href="doc/installation.html">Installing Closure XML</a>
-          <ul class="sub">
-	    <li><a href="doc/installation.html#download"><b>Download</b></a></li>
-	    <li><a href="doc/installation.html#implementations">Implementation-specific notes</a></li>
-	    <li><a href="doc/installation.html#compilation">Compilation</a></li>
-	    <li><a href="doc/installation.html#tests">Tests</a></li>
-          </ul>
-	</li>
-        <li>
-          <ul class="hack">
-            <li>
-              <a href="doc/quickstart.html"><b>Quick-Start Example</b></a>
-            </li>
-          </ul>
-        </li>
-	<li>
-          <a href="doc/using.html">SAX parser</a>
-          <ul class="sub">
-            <li><a href="doc/using.html#parser">Parsing and Validating</a></li>
-            <li><a href="doc/using.html#serialization">Serialization</a></li>
-            <li><a href="doc/using.html#misc">Miscellaneous SAX handlers</a></li>
-            <li><a href="doc/using.html#rods">Recoders</a></li>
-            <li><a href="doc/using.html#dtdcache">Caching of DTD Objects</a></li>
-            <li><a href="doc/using.html#catalogs">XML Catalogs</a></li>
-	    <li><a href="doc/using.html#sax">SAX Interface</a></li>
-          </ul>
-	</li>
-	<li>
-          <a href="doc/dom.html">DOM implementation</a>
-          <ul class="sub">
-            <li><a href="doc/dom.html#parser">Parsing with the DOM builder</a></li>
-            <li><a href="doc/dom.html#serialization">Serialization</a></li>
-	    <li><a href="doc/dom.html#mapping">DOM/Lisp mapping</a></li>
-          </ul>
-	</li>
-	<li>
-          <ul class="hack">
-            <li><a href="doc/xmls-compat.html">XMLS Builder</a></li>
-          </ul>
-        </li>
-      </ul>
-      </div>
-    </div>
-
+<documentation title="Closure XML">
     <h1>Closure XML Parser</h1>
 
     <p>An XML parser written in Common Lisp.</p>
@@ -87,9 +29,9 @@
       CXML implements a <a
       href="http://www.w3.org/TR/REC-xml-names/">namespace-aware</a>,
       validating <a
-      href="http://www.w3.org/TR/2000/REC-xml-20001006">XML&nbsp;1.0</a>
+      href="http://www.w3.org/TR/2000/REC-xml-20001006">XML&#160;1.0</a>
       parser as well as the <a
-      href="http://www.w3.org/TR/DOM-Level-2-Core/">DOM&nbsp;Level&nbsp;2&nbsp;Core</a>
+      href="http://www.w3.org/TR/DOM-Level-2-Core/">DOM&#160;Level&#160;2&#160;Core</a>
       interfaces.  Two parser interfaces are offered, one SAX-like, the
       other similar to StAX.
     </p>
@@ -170,54 +112,4 @@
     <ul class="nomargin">
       <li>Initial release.</li>
     </ul>
-
-<!--
-    <a name="todo"/>
-    <h2>To Do</h2>
-    <ul>
-      <li>
-        <strike>David's changes might have affected performance.&nbsp; Some
-        benchmarking needs to be done here.</strike> (The actual parser
-        seems to be faster than xmls - - good enough for me.)
-      </li>
-      <li>
-        DOM in general is pretty heavyweight.&nbsp; There is/was a
-        "simple-dom" which should be faster.&nbsp; This might be worth
-        reviving.
-      </li>
-      <li>
-        <strike>For those who don't like DOM at all, it would be a very simple
-        exercise to write a SAX handler for "Lisp-XML" output instead of
-        DOM.</strike> (done)
-      <li>
-        <strike>The serializer supports only <a
-        href="http://www.w3.org/TR/2001/REC-xml-c14n-20010315">Canonical
-        XML</a> right now.</strike>&nbsp; In the future we want support for:
-        <strike>Including doctype declarations in the output</strike>
-        (done), <strike>ordinary output with less character reference
-        noise</strike> (done), <strike>optional indentation</strike>
-        (done), user-specified encoding, etc.
-      </li>
-      <li>
-        <strike>There are still thread-safety issues.</strike> (fixed)
-      </li>
-      <li>
-        <strike>Validation!</strike> (done)
-      </li>
-      <li>
-        Upgrade to DOM Level 2 for complete namespace support.
-      </li>
-      <li>
-        Unless <tt>rune-is-character</tt> is enabled, rod hashing
-        currently uses <tt>equalp</tt> hash tables, which can be very slow.
-        (See <tt>%make-rod-hash-table</tt>.)
-      </li>
-    </ul>
-    <p>
-      (Compare also with Gilbert Baumann's older TODO list in
-      <tt>xml-parse.lisp</tt>.)
-    </p>
--->
-
-  </body>
-</html>
+</documentation>

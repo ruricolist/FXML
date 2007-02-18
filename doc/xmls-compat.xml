@@ -1,62 +1,4 @@
-<?xml version="1.0" encoding="iso-8859-1"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
-  <head>
-    <title>Closure XML</title>
-    <link rel="stylesheet" type="text/css" href="cxml.css"/>
-  </head>
-  <body>
-    <div class="sidebar">
-      <div class="sidebar-title">
-	<a href="README.html">Closure XML</a>
-      </div>
-      <div class="sidebar-main">
-      <ul class="main">
-	<li>
-          <a href="installation.html">Installing Closure XML</a>
-          <ul class="sub">
-	    <li><a href="installation.html#download"><b>Download</b></a></li>
-	    <li><a href="installation.html#implementations">Implementation-specific notes</a></li>
-	    <li><a href="installation.html#compilation">Compilation</a></li>
-	    <li><a href="installation.html#tests">Tests</a></li>
-          </ul>
-	</li>
-        <li>
-          <ul class="hack">
-            <li>
-              <a href="quickstart.html"><b>Quick-Start Example</b></a>
-            </li>
-          </ul>
-        </li>
-	<li>
-          <a href="using.html">SAX parser</a>
-          <ul class="sub">
-            <li><a href="using.html#parser">Parsing and Validating</a></li>
-            <li><a href="using.html#serialization">Serialization</a></li>
-            <li><a href="using.html#misc">Miscellaneous SAX handlers</a></li>
-            <li><a href="using.html#rods">Recoders</a></li>
-            <li><a href="using.html#dtdcache">Caching of DTD Objects</a></li>
-            <li><a href="using.html#catalogs">XML Catalogs</a></li>
-	    <li><a href="using.html#sax">SAX Interface</a></li>
-          </ul>
-	</li>
-	<li>
-          <a href="dom.html">DOM implementation</a>
-          <ul class="sub">
-            <li><a href="dom.html#parser">Parsing with the DOM builder</a></li>
-            <li><a href="dom.html#serialization">Serialization</a></li>
-	    <li><a href="dom.html#mapping">DOM/Lisp mapping</a></li>
-          </ul>
-	</li>
-	<li>
-          <ul class="hack">
-            <li><a href="xmls-compat.html">XMLS Builder</a></li>
-          </ul>
-        </li>
-      </ul>
-      </div>
-    </div>
-
+<documentation title="CXML XMLS Compatibility">
     <h1>XMLS Builder</h1>
     <p>
       Like other XML parsers written in Lisp, CXML can work with
@@ -74,8 +16,8 @@
       DOM functions cannot be implemented on them.
     </p>
     <p>
-      <div class="def">Function CXML-XMLS:MAKE-XMLS-BUILDER (&key include-default-values)</div>
-      Create a SAX handler which builds XMLS list structures.&nbsp;
+      <div class="def">Function CXML-XMLS:MAKE-XMLS-BUILDER (&amp;key include-default-values)</div>
+      Create a SAX handler which builds XMLS list structures.&#160;
       If <tt>include-default-values</tt> is true, default values for
       attributes declared in a DTD are included as attributes in the
       xmls output.  <tt>include-default-values</tt> is true by default
@@ -87,7 +29,7 @@
     </p>
     <pre>(cxml:parse-file "test.xml" (cxml-xmls:make-xmls-builder))</pre>
     <p>
-      <div class="def">Function CXML-XMLS:MAP-NODE (handler node &key include-xmlns-attributes)</div>
+      <div class="def">Function CXML-XMLS:MAP-NODE (handler node &amp;key include-xmlns-attributes)</div>
       Traverse an XMLS document/node and call SAX functions as if an XML
       representation of the document were processed by a SAX parser.
     </p>
@@ -95,15 +37,15 @@
       Use this function to serialize XMLS data.  For example, we could
       define a replacement for <tt>xmls:write-xml</tt> like this:
     </p>
-    <pre>(defun write-xml (stream node &key indent)
+    <pre>(defun write-xml (stream node &amp;key indent)
   (let ((sink (cxml:make-character-stream-sink
                stream :canonical nil :indentation indent)))
     (cxml-xmls:map-node sink node)))</pre>
     <p>
-      <div class="def">Function CXML-XMLS:MAKE-NODE (&key name ns attrs
+      <div class="def">Function CXML-XMLS:MAKE-NODE (&amp;key name ns attrs
       children) => xmls node</div>
       Build a list node of the form
-      (<em>name</em>&nbsp;((<em>name</em>&nbsp;<em>value</em>)<em>*</em>)&nbsp;<em>child*</em>).
+      (<em>name</em>&#160;((<em>name</em>&#160;<em>value</em>)<em>*</em>)&#160;<em>child*</em>).
     </p>
     <p>
       The node list's <tt>car</tt> can also be a cons of local <tt>name</tt>
@@ -129,5 +71,4 @@
     </p>
     <p>
     </p>
-  </body>
-</html>
+</documentation>
