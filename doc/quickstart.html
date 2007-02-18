@@ -94,5 +94,22 @@
     structure (<a href="xmls-compat.html">read more</a>):</p>
     <pre>* <b>(cxml:parse-file "example.xml" (cxml-xmls:make-xmls-builder))</b>
 ("test" (("a" "b")) ("child" NIL))</pre>
+
+    <p>Use klacks to read events from the parser incrementally.  The
+    following example looks only for :start-element and :end-element
+    events and prints them (<a href="klacks.html">read more</a>):</p>
+    <pre>* <b>(klacks:with-open-source
+    (s (cxml:make-source #p"example.xml"))
+  (loop
+      for key = (klacks:peek s)
+      while key
+      do
+	(case key
+	  (:start-element
+	    (format t "~A {" (klacks:current-qname s)))
+	  (:end-element
+	    (format t "}")))
+	(klacks:consume s)))</b>
+test {child {}}</pre>
   </body>
 </html>

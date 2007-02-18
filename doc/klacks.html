@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+  <head>
+    <title>Closure XML</title>
+    <link rel="stylesheet" type="text/css" href="cxml.css"/>
+  </head>
+  <body>
+    <div class="sidebar">
+      <div class="sidebar-title">
+	<a href="README.html">Closure XML</a>
+      </div>
+      <div class="sidebar-main">
+      <ul class="main">
+	<li>
+          <a href="installation.html">Installing Closure XML</a>
+          <ul class="sub">
+	    <li><a href="installation.html#download"><b>Download</b></a></li>
+	    <li><a href="installation.html#implementations">Implementation-specific notes</a></li>
+	    <li><a href="installation.html#compilation">Compilation</a></li>
+	    <li><a href="installation.html#tests">Tests</a></li>
+          </ul>
+	</li>
+        <li>
+          <ul class="hack">
+            <li>
+              <a href="quickstart.html"><b>Quick-Start Example</b></a>
+            </li>
+          </ul>
+        </li>
+	<li>
+          <a href="using.html">SAX parser</a>
+          <ul class="sub">
+            <li><a href="using.html#parser">Parsing and Validating</a></li>
+            <li><a href="using.html#serialization">Serialization</a></li>
+            <li><a href="using.html#misc">Miscellaneous SAX handlers</a></li>
+            <li><a href="using.html#rods">Recoders</a></li>
+            <li><a href="using.html#dtdcache">Caching of DTD Objects</a></li>
+            <li><a href="using.html#catalogs">XML Catalogs</a></li>
+	    <li><a href="using.html#sax">SAX Interface</a></li>
+          </ul>
+	</li>
+	<li>
+          <a href="klacks.html">Klacks parser</a>
+          <ul class="hack">
+            <li><a href="klacks.html#parsing">Parsing incrementally</a></li>
+            <li><a href="klacks.html#sax">Bridging Klacks and SAX</a></li>
+          </ul>
+        </li>
+	<li>
+          <a href="dom.html">DOM implementation</a>
+          <ul class="sub">
+            <li><a href="dom.html#parser">Parsing with the DOM builder</a></li>
+            <li><a href="dom.html#serialization">Serialization</a></li>
+	    <li><a href="dom.html#mapping">DOM/Lisp mapping</a></li>
+          </ul>
+	</li>
+	<li>
+          <ul class="hack">
+            <li><a href="xmls-compat.html">XMLS Builder</a></li>
+          </ul>
+        </li>
+      </ul>
+      </div>
+    </div>
+
+    <h1>Klacks parser</h1>
+    <p>
+      The Klacks parser provides an alternative parsing interface,
+      similar in concept to Java's <a
+      href="http://jcp.org/en/jsr/detail?id=173">Streaming API for
+      XML</a> (StAX).
+    </p>
+    <p>
+      It implements a streaming, "pull-based" API.  This is different
+      from SAX, which is a "push-based" model.
+    </p>
+    <p>
+      Klacks is implemented using the same code base as the SAX parser
+      and has the same parsing characteristics (validation, namespace
+      support, entity resolution) while offering a more flexible interface
+      than SAX.
+    </p>
+
+    <h3>Example</h3>
+    <p>
+      The following example illustrates creation of a klacks <tt>source</tt>,
+      use of the <tt>consume</tt> function to read individual events,
+      and shows some of the most common event types.
+    </p>
+    <pre>* <b>(defparameter *source* (cxml:make-source "&lt;example>text&lt;/example>"))</b>
+*SOURCE*
+* <b>(klacks:consume *source*)</b>
+:START-DOCUMENT
+* <b>(klacks:consume *source*)</b>
+:START-ELEMENT
+NIL                      ;namespace URI
+"example"                ;local name
+"example"                ;qualified name
+* <b>(klacks:consume *source*)</b>
+:CHARACTERS
+"text"
+* <b>(klacks:consume *source*)</b>
+:END-ELEMENT
+NIL
+"example"
+"example"
+* <b>(klacks:consume *source*)</b>
+:END-DOCUMENT
+* <b>(klacks:consume *source*)</b>
+NIL</pre>
+
+    <h3>Klacks sources</h3>
+    <p>
+      To parse using Klacks, create an XML <tt>source</tt> first.
+    </p>
+    <p>
+      <div class="def">Function CXML:MAKE-SOURCE (input &key validate
+      dtd root entity-resolver disallow-external-subset pathname)</div>
+      Create and return a source for <tt>input</tt>.
+    </p>
+    <p>
+      Exact behaviour depends on <tt>input</tt>, which can
+      be one of the following types:
+    </p>
+    <ul>
+      <li>
+	<tt>pathname</tt> -- a Common Lisp pathname.  
+	Open the file specified by the pathname and create a source for
+	the resulting stream.  See below for information on how to
+        close the stream.
+      </li>
+      <li><tt>stream</tt> -- a Common Lisp stream with element-type
+        <tt>(unsigned-byte 8)</tt>.  See below for information on how to
+        close the stream.
+      </li>
+      <li>
+	<tt>octets</tt> -- an <tt>(unsigned-byte 8)</tt> array.
+	The array is parsed directly, and interpreted according to the
+	encoding it specifies.
+      </li>
+      <li>
+	<tt>string</tt>/<tt>rod</tt> -- a rod (or <tt>string</tt> on
+	unicode-capable implementations).
+	Parses an XML document from the input string that has already
+	undergone external-format decoding.
+      </li>
+    </ul>
+    <p>
+      <b>Closing streams:</b> Sources can refer to Lisp streams that
+      need to be closed after parsing.  This includes a stream passed
+      explicitly as <tt>input</tt>, a stream created implicitly for the
+      <tt>pathname</tt> case, as well as any streams created
+      automatically for external parsed entities referred to by the
+      document.
+    </p>
+    <p>
+      All these stream get closed automatically if end of file is
+      reached normally.  Use <tt>klacks:close-source</tt> or
+      <tt>klacks:with-open-source</tt> to ensure that the streams get
+      closed otherwise.
+    </p>
+    <p>
+      <b>Keyword arguments</b> have the same meaning as with the SAX parser,
+      please refer to the documentation of <a
+      href="using.html#parser">parse-file</a> for more information:
+    </p>
+    <ul>
+      <li>
+        <tt>validate</tt>
+      </li>
+      <li>
+        <tt>dtd</tt>
+      </li>
+      <li><tt>root</tt>
+      </li>
+      <li>
+        <tt>entity-resolver</tt>
+      </li>
+      <li>
+        <tt>disallow-internal-subset</tt>
+      </li>
+    </ul>
+    <p>
+      In addition, the following argument is for types of <tt>input</tt>
+      other than <tt>pathname</tt>:
+    </p>
+    <ul>
+      <li>
+        <tt>pathname</tt> -- If specified, defines the base URI of the
+        document based on this pathname instance.
+      </li>
+    </ul>
+
+    <p>
+      Events are read from the stream using the following functions:
+    </p>
+    <p>
+      <div class="def">Function KLACKS:PEEK (source)</div>
+     <p> => :start-document<br/>
+          or => :start-document, version, encoding, standalonep<br/>
+          or => :dtd, name, public-id, system-id<br/>
+          or => :start-element, uri, lname, qname<br/>
+          or => :end-element, uri, lname, qname<br/>
+          or => :characters, data<br/>
+          or => :processing-instruction, target, data<br/>
+          or => :comment, data<br/>
+          or => :end-document, data<br/>
+          or => nil
+    </p>
+    <p>
+      <tt>peek</tt> returns the current event's key and main values.
+    </p>
+    <p>
+      <div class="def">Function KLACKS:CONSUME (source) => key, value*</div>
+    </p>
+    <p>
+      Return the same values <tt>peek</tt> would, and in addition
+      advance the source forward to the next event.
+    </p>
+    <p>
+      <div class="def">Function KLACKS:PEEK-VALUE (source) => value*</div>
+    </p>
+    <p>
+      Like <tt>peek</tt>, but return only the values, not the key.
+    </p>
+    <p>
+      <div class="def">Function KLACKS:CURRENT-URI (source) => uri</div>
+      <div class="def">Function KLACKS:CURRENT-LNAME (source) => string</div>
+      <div class="def">Function KLACKS:CURRENT-QNAME (source) => string</div>
+    </p>
+    <p>
+     If the current event is :start-element or :end-element, return the
+     corresponding value.  Else, signal an error.
+    </p>
+    <p>
+      <div class="def">Function KLACKS:CURRENT-CHARACTERS (source) => string</div>
+    </p>
+    <p>
+     If the current event is :characters, return the character data
+     value.  Else, signal an error.
+    </p>
+    <p>
+      <div class="def">Function KLACKS:CURRENT-CDATA-SECTION-P (source) => boolean</div>
+    </p>
+    <p>
+     If the current event is :characters, determine whether the data was
+     specified using a CDATA section in the source document.  Else,
+     signal an error.
+    </p>
+    <p>
+      <div class="def">Function KLACKS:MAP-ATTRIBUTES (fn source)</div>
+    </p>
+    <p>
+     Call <tt>fn</tt> for each attribute of the current start tag in
+     turn, and pass the following values as arguments to the function:
+	<ul>
+	  <li>namespace uri</li>
+	  <li>local name</li>
+	  <li>qualified name</li>
+	  <li>attribute value</li>
+	  <li>a boolean indicating whether the attribute was specified
+	  explicitly in the source document, rather than defaulted from
+	  a DTD</li>
+	</ul>
+     Only valid for :start-element.
+    </p>
+    <p>
+     Return a list of SAX attribute structures for the current start tag.
+     Only valid for :start-element.
+    </p>
+
+    <p>
+      <div class="def">Function KLACKS:CLOSE-SOURCE (source)</div>
+      Close all streams referred to by <tt>source</tt>.
+    </p>
+    <p>
+      <div class="def">Macro KLACKS:WITH-OPEN-SOURCE ((var source) &body body)</div>
+      Evaluate <tt>source</tt> to create a source object, bind it to
+      symbol <tt>var</tt> and evaluate <tt>body</tt> as an implicit progn.
+      Call <tt>klacks:close-source</tt> to close the source after
+      exiting <tt>body</tt>, whether normally or abnormally.
+    </p>
+  </body>
+</html>

@@ -86,11 +86,12 @@
     <p>
       CXML implements a <a
       href="http://www.w3.org/TR/REC-xml-names/">namespace-aware</a>,
-      validating SAX-like <a
+      validating <a
       href="http://www.w3.org/TR/2000/REC-xml-20001006">XML&nbsp;1.0</a>
       parser as well as the <a
       href="http://www.w3.org/TR/DOM-Level-2-Core/">DOM&nbsp;Level&nbsp;2&nbsp;Core</a>
-      interfaces.
+      interfaces.  Two parser interfaces are offered, one SAX-like, the
+      other similar to StAX.
     </p>
 
     <p>
@@ -107,8 +108,9 @@
 
     <a name="changes"/>
     <h2>Recent Changes</h2>
-    <p class="nomargin"><tt>rel-2006-xx-yy</tt></p>
+    <p class="nomargin"><tt>rel-2007-xx-yy</tt></p>
     <ul class="nomargin">
+      <li>New StAX-like parser interface.</li>
       <li>Serialization fixes (thanks to Nathan Bird, Donavon Keithley).</li>
       <li>characters.lisp cleanup (thanks to Nathan Bird).</li>
       <li>Namespace normalizer bugfixes.</li>

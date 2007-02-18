@@ -249,6 +249,7 @@
 (defun klacks/eof (source input)
   (with-source (source current-key current-values)
     (p/eof input)
+    (klacks:close-source source)
     (setf current-key :end-document)
     (setf current-values nil)
     (lambda () (klacks/nil source))))
