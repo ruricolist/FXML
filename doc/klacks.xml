@@ -296,7 +296,7 @@ NIL</pre>
       uninteresting events until the opening <tt>child1</tt> tag is
       found.  Then <tt>serialize-element</tt> is used to generate SAX
       events for the following element, including its children, and an
-      xmls-compatible list structure is build from those
+      xmls-compatible list structure is built from those
       events.  <tt>find-element</tt> skips over whitespace,
       and <tt>find-event</tt> is used to parse up
       to <tt>:end-document</tt>, ensuring that the source has been
