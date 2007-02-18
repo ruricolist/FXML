@@ -236,8 +236,8 @@
     <h3>Bridging Klacks and SAX</h3>
     <p>
       <div class="def">Function KLACKS:SERIALIZE-EVENT (source handler)</div>
-      Send the current klacks events from <tt>source</tt> as a SAX
-      events to the SAX <tt>handler</tt> and consume it.
+      Send the current klacks event from <tt>source</tt> as a SAX
+      event to the SAX <tt>handler</tt> and consume it.
     </p>
     <p>
       <div class="def">Function KLACKS:SERIALIZE-ELEMENT (source handler
