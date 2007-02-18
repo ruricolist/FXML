@@ -58,7 +58,9 @@
           <a href="klacks.html">Klacks parser</a>
           <ul class="sub">
             <li><a href="klacks.html#sources">Parsing incrementally</a></li>
+            <li><a href="klacks.html#convenience">Convenience functions</a></li>
             <li><a href="klacks.html#klacksax">Bridging Klacks and SAX</a></li>
+            <li><a href="klacks.html#klacksax">Examples</a></li>
           </ul>
         </li>
 	<li>

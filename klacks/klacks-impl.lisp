@@ -79,6 +79,12 @@
     (fill-source source)
     (apply #'values current-values)))
 
+(defmethod klacks:peek-next ((source cxml-source))
+  (with-source (source current-key current-values)
+    (setf current-key nil)
+    (fill-source source)
+    (apply #'values current-key current-values)))
+
 (defmethod klacks:consume ((source cxml-source))
   (with-source (source current-key current-values)
     (fill-source source)

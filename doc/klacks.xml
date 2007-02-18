@@ -16,34 +16,9 @@
       support, entity resolution) while offering a more flexible interface
       than SAX.
     </p>
-
-    <h3>Example</h3>
     <p>
-      The following example illustrates creation of a klacks <tt>source</tt>,
-      use of the <tt>consume</tt> function to read individual events,
-      and shows some of the most common event types.
+      See below for <a href="#examples">examples</a>.
     </p>
-    <pre>* <b>(defparameter *source* (cxml:make-source "&lt;example>text&lt;/example>"))</b>
-*SOURCE*
-* <b>(klacks:consume *source*)</b>
-:START-DOCUMENT
-* <b>(klacks:consume *source*)</b>
-:START-ELEMENT
-NIL                      ;namespace URI
-"example"                ;local name
-"example"                ;qualified name
-* <b>(klacks:consume *source*)</b>
-:CHARACTERS
-"text"
-* <b>(klacks:consume *source*)</b>
-:END-ELEMENT
-NIL
-"example"
-"example"
-* <b>(klacks:consume *source*)</b>
-:END-DOCUMENT
-* <b>(klacks:consume *source*)</b>
-NIL</pre>
 
     <a name="sources"/>
     <h3>Parsing incrementally using sources</h3>
@@ -161,17 +136,24 @@ NIL</pre>
       <tt>peek</tt> returns the current event's key and main values.
     </p>
     <p>
-      <div class="def">Function KLACKS:CONSUME (source) => key, value*</div>
+      <div class="def">Function KLACKS:PEEK-NEXT (source) => key, value*</div>
     </p>
     <p>
-      Return the same values <tt>peek</tt> would, and in addition
-      advance the source forward to the next event.
+      Advance the source forward to the next event and returns it
+      like <tt>peek</tt> would.
     </p>
     <p>
       <div class="def">Function KLACKS:PEEK-VALUE (source) => value*</div>
     </p>
     <p>
       Like <tt>peek</tt>, but return only the values, not the key.
+    </p>
+    <p>
+      <div class="def">Function KLACKS:CONSUME (source) => key, value*</div>
+    </p>
+    <p>
+      Return the same values <tt>peek</tt> would, and in addition
+      advance the source forward to the next event.
     </p>
     <p>
       <div class="def">Function KLACKS:CURRENT-URI (source) => uri</div>
@@ -231,11 +213,124 @@ NIL</pre>
       exiting <tt>body</tt>, whether normally or abnormally.
     </p>
 
+    <a name="convenience"/>
+    <h3>Convenience functions</h3>
+    <p>
+      <div class="def">Function KLACKS:FIND-EVENT (source key)</div>
+      Read events from <tt>source</tt> and discard them until an event
+      of type <i>key</i> is found.  Return values like <tt>peek</tt>, or
+      NIL if no such event was found.
+    </p>
+    <p>
+      <div class="def">Function KLACKS:FIND-ELEMENT (source &amp;optional
+      lname uri)</div>
+      Read events from <tt>source</tt> and discard them until an event
+      of type :start-element is found with matching local name and
+      namespace uri is found.   If <tt>lname</tt> is <tt>nil</tt>, any
+      tag name matches.  If <tt>uri</tt> is <tt>nil</tt>, any
+      namespace matches. Return values like <tt>peek</tt> or NIL if no
+      such event was found.
+    </p>
+
     <a name="klacksax"/>
     <h3>Bridging Klacks and SAX</h3>
+    <p>
+      <div class="def">Function KLACKS:SERIALIZE-EVENT (source handler)</div>
+      Send the current klacks events from <tt>source</tt> as a SAX
+      events to the SAX <tt>handler</tt> and consume it.
+    </p>
+    <p>
+      <div class="def">Function KLACKS:SERIALIZE-ELEMENT (source handler
+      &amp;key document-events)</div>
+      Read all klacks events from the following <tt>:start-element</tt> to
+      its <tt>:end-element</tt> and send them as SAX events
+      to <tt>handler</tt>.  When this function is called, the current
+      event must be <tt>:start-element</tt>, else an error is
+      signalled.  With <tt>document-events</tt> (the default),
+      <tt>sax:start-document</tt> and <tt>sax:end-document</tt> events
+      are sent around the element.
+    </p>
     <p>
       <div class="def">Function KLACKS:SERIALIZE-SOURCE (source handler)</div>
       Read all klacks events from <tt>source</tt> and send them as SAX
       events to the SAX <tt>handler</tt>.
     </p>
+
+    <a name="examples"/>
+    <h3>Examples</h3>
+    <p>
+      The following example illustrates creation of a klacks <tt>source</tt>,
+      use of the <tt>peek-next</tt> function to read individual events,
+      and shows some of the most common event types.
+    </p>
+    <pre>* <b>(defparameter *source* (cxml:make-source "&lt;example>text&lt;/example>"))</b>
+*SOURCE*
+
+* <b>(klacks:peek-next *source*)</b>
+:START-DOCUMENT
+
+* <b>(klacks:peek-next *source*)</b>
+:START-ELEMENT
+NIL                      ;namespace URI
+"example"                ;local name
+"example"                ;qualified name
+
+* <b>(klacks:peek-next *source*)</b>
+:CHARACTERS
+"text"
+
+* <b>(klacks:peek-next *source*)</b>
+:END-ELEMENT
+NIL
+"example"
+"example"
+
+* <b>(klacks:peek-next *source*)</b>
+:END-DOCUMENT
+
+* <b>(klacks:peek-next *source*)</b>
+NIL</pre>
+
+    <p>
+      In this example, <tt>find-element</tt> is used to skip over the
+      uninteresting events until the opening <tt>child1</tt> tag is
+      found.  Then <tt>serialize-element</tt> is used to generate SAX
+      events for the following element, including its children, and an
+      xmls-compatible list structure is build from those
+      events.  <tt>find-element</tt> skips over whitespace,
+      and <tt>find-event</tt> is used to parse up
+      to <tt>:end-document</tt>, ensuring that the source has been
+      closed.
+    </p>
+    <pre>* <b>(defparameter *source*
+      (cxml:make-source "&lt;example>
+                           &lt;child1>&lt;p>foo&lt;/p>&lt;/child1>
+                           &lt;child2 bar='baz'/>
+                         &lt;/example>"))</b>
+*SOURCE*
+
+* <b>(klacks:find-element *source* "child1")</b>
+:START-ELEMENT
+NIL
+"child1"
+"child1"
+
+* <b>(klacks:serialize-element *source* (cxml-xmls:make-xmls-builder))</b>
+("child1" NIL ("p" NIL "foo"))
+
+* <b>(klacks:find-element *source*)</b>
+:START-ELEMENT
+NIL
+"child2"
+"child2"
+
+*  <b>(klacks:serialize-element *source* (cxml-xmls:make-xmls-builder))</b>
+("child2" (("bar" "baz")))
+
+* <b>(klacks:find-event *source* :end-document)</b>
+:END-DOCUMENT
+NIL
+NIL
+NIL
+</pre>
 </documentation>

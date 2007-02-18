@@ -69,9 +69,9 @@
     (check-type key (member :characters))
     characters))
 
-(defun klacks:serialize-source (source handler)
-  (loop
-    (multiple-value-bind (key a b c) (klacks:peek source)
+(defun klacks:serialize-event (source handler)
+  (multiple-value-bind (key a b c) (klacks:peek source)
+    (let ((result nil))
       (case key
 	(:start-document
 	  (sax:start-document handler))
@@ -107,12 +107,66 @@
 	(:end-element
 	  (sax:end-element handler a b c))
 	(:end-document
-	  (return (sax:end-document handler)))
+	  (setf result (sax:end-document handler)))
+	((nil)
+	  (error "serialize-event read past end of document"))
 	(t
 	  (error "unexpected klacks key: ~A" key)))
-      (klacks:consume source))))
+      (klacks:consume source)
+      result)))
 
 (defun serialize-declaration-kludge (list handler)
   (loop
       for (fn . args) in list
       do (apply fn handler args)))
+
+(defun klacks:serialize-source (source handler)
+  (loop
+    (let ((document (klacks:serialize-event source handler)))
+      (when document
+	(return document)))))
+
+(defun klacks:serialize-element (source handler &key (document-events t))
+  (unless (eq (klacks:peek source) :start-element)
+    (error "not at start of element"))
+  (when document-events
+    (sax:start-document handler))
+  (labels ((recurse ()
+	     (klacks:serialize-event source handler)
+	     (loop
+	       (let ((key (klacks:peek source)))
+		 (ecase key
+		   (:start-element (recurse))
+		   (:end-element (return))
+		   ((:characters :comment :processing-instruction)
+		     (klacks:serialize-event source handler)))))
+	     (klacks:serialize-event source handler)))
+    (recurse))
+  (when document-events
+    (sax:end-document handler)))
+
+(defun klacks:find-element (source &optional lname uri)
+  (loop
+    (multiple-value-bind (key current-uri current-lname current-qname)
+	(klacks:peek-next source)
+      (case key
+	((nil)
+	  (return nil))
+	(:start-element
+	  (when (and (eq key :start-element)
+		     (or (null lname)
+			 (equal lname (klacks:current-lname source)))
+		     (or (null uri)
+			 (equal uri (klacks:current-uri source))))
+	    (return
+	      (values key current-uri current-lname current-qname))))))))
+
+(defun klacks:find-event (source key)
+  (loop
+    (multiple-value-bind (this a b c)
+	(klacks:peek-next source)
+      (cond
+	((null this)
+	  (return nil))
+	((eq this key)
+	  (return (values this a b c)))))))

@@ -24,6 +24,11 @@
 
 	   #:peek
 	   #:peek-value
+	   #:peek-next
+	   #:consume
+
+	   #:find-element
+	   #:find-event
 
 	   #:map-attributes
 	   #:list-attributes
@@ -33,6 +38,6 @@
 	   #:current-characters
 	   #:current-cdata-section-p
 	   
-	   #:consume
-
+	   #:serialize-event
+	   #:serialize-element
 	   #:serialize-source))
