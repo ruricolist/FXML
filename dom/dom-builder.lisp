@@ -37,10 +37,11 @@
     (setf (document handler) document)
     (push document (element-stack handler))))
 
+;; fixme
+(defmethod sax::dtd ((handler dom-builder) dtd)
+  (setf (slot-value (document handler) 'dtd) dtd))
+
 (defmethod sax:end-document ((handler dom-builder))
-  (setf (slot-value (document handler) 'dtd)
-	;; FIXME!
-	(and cxml::*ctx* (cxml::dtd cxml::*ctx*)))
   (let ((doctype (dom:doctype (document handler))))
     (when doctype
       (setf (slot-value (dom:entities doctype) 'read-only-p) t)

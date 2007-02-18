@@ -18,7 +18,13 @@
 
 (in-package :cxml)
 
-(defclass klacks:source () ())
+(defclass klacks:source ()
+    (
+     ;; fixme, terrible DTD kludges
+     (internal-declarations)
+     (external-declarations :initform nil)
+     (dom-impl-dtd :initform nil)
+     (dom-impl-entity-resolver :initform nil)))
 
 (defgeneric klacks:close-source (source))
 
@@ -83,7 +89,19 @@
 	  (sax:comment handler a))
 	(:dtd
 	  (sax:start-dtd handler a b c)
-	  (sax:end-dtd handler))
+	  (when (slot-boundp source 'internal-declarations)
+	    (sax:start-internal-subset handler)
+	    (serialize-declaration-kludge
+	     (slot-value source 'internal-declarations)
+	     handler)
+	    (sax:end-internal-subset handler))
+	  (serialize-declaration-kludge
+	   (slot-value source 'external-declarations)
+	   handler)
+	  (sax:end-dtd handler)
+	  (sax:entity-resolver handler
+			       (slot-value source 'dom-impl-entity-resolver))
+	  (sax::dtd handler (slot-value source 'dom-impl-dtd)))
 	(:start-element
 	  (sax:start-element handler a b c (klacks:list-attributes source)))
 	(:end-element
@@ -93,3 +111,8 @@
 	(t
 	  (error "unexpected klacks key: ~A" key)))
       (klacks:consume source))))
+
+(defun serialize-declaration-kludge (list handler)
+  (loop
+      for (fn . args) in list
+      do (apply fn handler args)))

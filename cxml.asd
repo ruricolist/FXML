@@ -127,7 +127,7 @@
                "test/"
                (make-pathname :name nil :type nil :defaults *load-truename*))
     :components ((:file "domtest") (:file "xmlconf"))
-    :depends-on (:cxml-xml :cxml-dom))
+    :depends-on (:cxml-xml :cxml-klacks :cxml-dom))
 
 (asdf:defsystem :cxml
     :components ()

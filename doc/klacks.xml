@@ -215,4 +215,11 @@ NIL</pre>
       Call <tt>klacks:close-source</tt> to close the source after
       exiting <tt>body</tt>, whether normally or abnormally.
     </p>
+
+    <h3>Bridging Klacks and SAX</h3>
+    <p>
+      <div class="def">Function KLACKS:SERIALIZE-SOURCE (source handler)</div>
+      Read all klacks events from <tt>source</tt> and send them as SAX
+      events to the SAX <tt>handler</tt>.
+    </p>
 </documentation>

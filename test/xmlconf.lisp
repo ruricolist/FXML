@@ -75,8 +75,19 @@
 		     :if-exists :supersede)
       (run-all-tests directory))))
 
-(defun run-all-tests (directory)
-  (let* ((pathname (merge-pathnames "xmlconf.xml" directory))
+(defvar *parser-fn* 'sax-test)
+
+(defun sax-test (filename handler &rest args)
+  (apply #'cxml:parse-file filename handler :recode nil args))
+
+(defun klacks-test (filename handler &rest args)
+  (klacks:with-open-source
+      (s (apply #'cxml:make-source (pathname filename) args))
+    (klacks:serialize-source s handler)))
+
+(defun run-all-tests (parser-fn directory)
+  (let* ((*parser-fn* parser-fn)
+	 (pathname (merge-pathnames "xmlconf.xml" directory))
          (builder (rune-dom:make-dom-builder))
          (xmlconf (cxml:parse-file pathname builder :recode nil))
          (ntried 0)
@@ -123,10 +134,9 @@
 
 (defmethod run-test ((class null) pathname output description &rest args)
   (declare (ignore description))
-  (let ((document (apply #'cxml:parse-file
+  (let ((document (apply *parser-fn*
                          pathname
                          (rune-dom:make-dom-builder)
-			 :recode nil
                          args)))
     (cond
       ((null output)
@@ -163,10 +173,10 @@
        (handler-case
            (progn
              (format t " [validating:]")
-             (cxml:parse-file pathname
-			      (rune-dom:make-dom-builder)
-			      :recode nil
-			      :validate t)
+             (funcall *parser-fn*
+		      pathname
+		      (rune-dom:make-dom-builder)
+		      :validate t)
              (error "validity error not detected")
              nil)
          (cxml:validity-error ()
@@ -179,10 +189,10 @@
   (handler-case
       (progn
          (format t " [not validating:]")
-	(cxml:parse-file pathname
-			 (rune-dom:make-dom-builder)
-			 :recode nil
-			 :validate nil)
+	(funcall *parser-fn*
+		 pathname
+		 (rune-dom:make-dom-builder)
+		 :validate nil)
 	(error "well-formedness violation not detected")
       nil)
     (cxml:well-formedness-violation ()
@@ -191,10 +201,10 @@
   (handler-case
       (progn
 	(format t " [validating:]")
-	(cxml:parse-file pathname
-			 (rune-dom:make-dom-builder)
-			 :recode nil
-			 :validate t)
+	(funcall *parser-fn*
+		 pathname
+		 (rune-dom:make-dom-builder)
+		 :validate t)
 	(error "well-formedness violation not detected")
       nil)
     (cxml:well-formedness-violation ()
@@ -206,4 +216,9 @@
       t)))
 
 #+(or)
-(xmlconf::run-all-tests "/home/david/2001/XML-Test-Suite/xmlconf/")
+(xmlconf::run-all-tests 'xmlconf::sax-test
+			"/home/david/2001/XML-Test-Suite/xmlconf/")
+
+#+(or)
+(xmlconf::run-all-tests 'xmlconf::klacks-test
+			"/home/david/2001/XML-Test-Suite/xmlconf/")

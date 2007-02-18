@@ -31,7 +31,7 @@
      (current-values)
      (current-attributes)
      (cdata-section-p :reader klacks:current-cdata-section-p)
-     ;; extra with-source magic
+     ;; extra WITH-SOURCE magic
      (data-behaviour :initform :DTD)
      (namespace-stack :initform (list *initial-namespace-bindings*))
      (temporary-streams :initform nil)
@@ -126,13 +126,18 @@
 	(apply #'make-source xstream args)))
     (pathname
       (let* ((xstream
-	      (make-xstream (open input :element-type '(unsigned-byte 8))))
-	     (source (apply #'make-source
-			    xstream
-			    :pathname input
-			    args)))
-	(push xstream (slot-value source 'temporary-streams))
-	source))
+	      (make-xstream (open input :element-type '(unsigned-byte 8)))))
+	(setf (xstream-name xstream)
+	      (make-stream-name
+	       :entity-name "main document"
+	       :entity-kind :main
+	       :uri (pathname-to-uri (merge-pathnames input))))
+	(let ((source (apply #'make-source
+			     xstream
+			     :pathname input
+			     args)))
+	  (push xstream (slot-value source 'temporary-streams))
+	  source)))
     (rod
       (let ((xstream (string->xstream input)))
 	(setf (xstream-name xstream)
@@ -152,8 +157,7 @@
   (check-type entity-resolver (or null function symbol))
   (check-type disallow-internal-subset boolean)
   (let* ((context
-	  (make-context :handler nil
-			:main-zstream input
+	  (make-context :main-zstream input
 			:entity-resolver entity-resolver
 			:disallow-internal-subset disallow-internal-subset))
 	 (source
@@ -167,6 +171,7 @@
 	    :scratch-pad-2 *scratch-pad-2*
 	    :scratch-pad-3 *scratch-pad-3*
 	    :scratch-pad-4 *scratch-pad-4*)))
+    (setf (handler context) (make-instance 'klacks-dtd-handler :source source))
     (setf (slot-value source 'continuation)
 	  (lambda () (klacks/xmldecl source input)))
     source))
@@ -208,25 +213,26 @@
 (defun klacks/doctype (source input)
   (with-source (source current-key current-values validate dtd)
     (let ((cont (lambda () (klacks/finish-doctype source input)))
-	  ignoreme name extid)
+	  l)
       (prog1
 	  (cond
 	    ((eq (peek-token input) :<!DOCTYPE)
-	      (setf (values ignoreme name extid)
-		    (p/doctype-decl input dtd))
+	      (setf l (cdr (p/doctype-decl input dtd)))
 	      (lambda () (klacks/misc*-2 source input cont)))
 	    (dtd
-	      (setf (values ignoreme name extid)
-		    (synthesize-doctype dtd input))
+	      (setf l (cdr (synthesize-doctype dtd input)))
 	      cont)
 	    ((and validate (not dtd))
 	      (validity-error "invalid document: no doctype"))
 	    (t
 	      (return-from klacks/doctype
 		(funcall cont))))
-	(setf current-key :dtd)
-	(setf current-values
-	      (list name (extid-public extid) (extid-system extid)))))))
+	(destructuring-bind (&optional name extid) l
+	  (setf current-key :dtd)
+	  (setf current-values
+		(list name
+		      (and extid (extid-public extid))
+		      (and extid (extid-system extid)))))))))
 
 (defun klacks/finish-doctype (source input)
   (with-source (source current-key current-values root data-behaviour)
@@ -323,7 +329,7 @@
 	      (klacks/entity-reference source input name recurse)))
 	  ((:<!\[)
 	    (setf current-key :characters)
-	    (setf current-values (list (process-cdata-section input sem)))
+	    (setf current-values (list (process-cdata-section input)))
 	    (setf cdata-section-p t)
 	    recurse)
 	  ((:PI)
@@ -375,6 +381,58 @@
       (consume-token input))
     (set-full-speed input)
     (klacks/content source input cont)))
+
+
+;;;; terrible kludges
+
+(defclass klacks-dtd-handler ()
+    ((handler-source :initarg :source :reader handler-source)
+     (internal-subset-p :initform nil :accessor handler-internal-subset-p)))
+
+(defmethod sax:start-internal-subset ((handler klacks-dtd-handler))
+  (setf (slot-value (handler-source handler) 'internal-declarations) '())
+  (setf (handler-internal-subset-p handler) t))
+
+(defmethod sax:end-internal-subset ((handler klacks-dtd-handler))
+  (setf (handler-internal-subset-p handler) nil))
+
+(defmethod sax:entity-resolver ((handler klacks-dtd-handler) fn)
+  (setf (slot-value (handler-source handler) 'dom-impl-entity-resolver) fn))
+
+(defmethod sax::dtd ((handler klacks-dtd-handler) dtd)
+  (setf (slot-value (handler-source handler) 'dom-impl-dtd) dtd))
+
+(defmethod sax:end-dtd ((handler klacks-dtd-handler))
+  (let ((source (handler-source handler)))
+    (when (slot-boundp source 'internal-declarations)
+      (setf (slot-value source 'internal-declarations)
+	    (reverse (slot-value source 'internal-declarations)))
+      (setf (slot-value source 'external-declarations)
+	    (reverse (slot-value source 'external-declarations))))))
+
+(macrolet
+    ((defhandler (name &rest args)
+	 `(defmethod ,name ((handler klacks-dtd-handler) ,@args)
+	    (let ((source (handler-source handler))
+		  (spec (list ',name ,@args)))
+	      (if (handler-internal-subset-p handler)
+		  (push spec (slot-value source 'internal-declarations))
+		  (push spec (slot-value source 'external-declarations)))))))
+  (defhandler sax:unparsed-entity-declaration
+      name public-id system-id notation-name)
+  (defhandler sax:external-entity-declaration
+      kind name public-id system-id)
+  (defhandler sax:internal-entity-declaration
+      kind name value)
+  (defhandler sax:notation-declaration
+      name public-id system-id)
+  (defhandler sax:element-declaration
+      name model)
+  (defhandler sax:attribute-declaration
+      element-name attribute-name type default))
+
+
+;;;; debugging
 
 #+(or)
 (trace CXML::KLACKS/DOCTYPE 
