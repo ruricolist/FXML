@@ -52,6 +52,9 @@
     <h2>Recent Changes</h2>
     <p class="nomargin"><tt>rel-2007-xx-yy</tt></p>
     <ul class="nomargin">
+      <li>xml:base support (SAX and Klacks only, not yet used in DOM).
+      See documentation <a href="sax.html#saxparser">here</a> and <a
+      href="klacks.html#locator">here</a>.</li>
       <li>Fixed attributes to carry an lname even without when occurring
       without a namespace.</li>
       <li>Klacks improvements: Incompatibly changed

@@ -356,11 +356,12 @@
 
 (defun klacks/entity-reference (source zstream name cont)
   (assert (not (zstream-token-category zstream)))
-  (with-source (source temporary-streams)
+  (with-source (source temporary-streams context)
     (let ((new-xstream (entity->xstream zstream name :general nil)))
       (push new-xstream temporary-streams)
       (push :stop (zstream-input-stack zstream))
       (zstream-push new-xstream zstream)
+      (push (stream-name-uri (xstream-name new-xstream)) (base-stack context))
       (let ((next
 	     (lambda ()
 	       (klacks/entity-reference-2 source zstream new-xstream cont))))
@@ -371,12 +372,13 @@
 	    (klacks/ext-parsed-ent source zstream next)))))))
 
 (defun klacks/entity-reference-2 (source zstream new-xstream cont)
-  (with-source (source temporary-streams)
+  (with-source (source temporary-streams context)
     (unless (eq (peek-token zstream) :eof)
       (wf-error zstream "Trailing garbage. - ~S" (peek-token zstream)))
     (assert (eq (peek-token zstream) :eof))
     (assert (eq (pop (zstream-input-stack zstream)) new-xstream))
     (assert (eq (pop (zstream-input-stack zstream)) :stop))
+    (pop (base-stack context))
     (setf (zstream-token-category zstream) nil)
     (setf temporary-streams (remove new-xstream temporary-streams))
     (close-xstream new-xstream)
@@ -439,6 +441,39 @@
       name model)
   (defhandler sax:attribute-declaration
       element-name attribute-name type default))
+
+
+;;;; locator
+
+(defun source-xstream (source)
+  (car (zstream-input-stack (main-zstream (slot-value source 'context)))))
+
+(defun source-stream-name (source)
+  (let ((xstream (source-xstream source)))
+    (if xstream
+	(xstream-name xstream)
+	nil)))
+
+(defmethod current-line-number ((source cxml-source))
+  (let ((x (source-xstream source)))
+    (if x
+	(xstream-line-number x)
+	nil)))
+
+(defmethod current-column-number ((source cxml-source))
+  (let ((x (source-xstream source)))
+    (if x
+	(xstream-column-number x)
+	nil)))
+
+(defmethod current-system-id ((source cxml-source))
+  (let ((name (source-stream-name source)))
+    (if name
+	(stream-name-uri name)
+	nil)))
+
+(defmethod current-xml-base ((source cxml-source))
+  (car (base-stack (slot-value source 'context))))
 
 
 ;;;; debugging

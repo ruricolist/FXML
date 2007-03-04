@@ -40,6 +40,11 @@
 ;;;(defgeneric klacks:current-characters (source))
 (defgeneric klacks:current-cdata-section-p (source))
 
+(defgeneric current-line-number (source))
+(defgeneric current-column-number (source))
+(defgeneric current-system-id (source))
+(defgeneric current-xml-base (source))
+
 (defmacro klacks:with-open-source ((var source) &body body)
   `(let ((,var ,source))
      (unwind-protect

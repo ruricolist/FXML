@@ -258,17 +258,17 @@
   ((result :initform (make-entry-file) :accessor result)
    (next :initform '() :accessor next)
    (prefer-stack :initform (list *prefer*) :accessor prefer-stack)
-   (base-stack :accessor base-stack)))
+   (catalog-base-stack :accessor catalog-base-stack)))
 
 (defmethod initialize-instance :after
     ((instance catalog-parser) &key uri)
-  (setf (base-stack instance) (list uri)))
+  (setf (catalog-base-stack instance) (list uri)))
 
 (defmethod prefer ((handler catalog-parser))
   (car (prefer-stack handler)))
 
 (defmethod base ((handler catalog-parser))
-  (car (base-stack handler)))
+  (car (catalog-base-stack handler)))
 
 (defun get-attribute/lname (name attributes)
   (let ((a (find name attributes
@@ -283,6 +283,7 @@
   (setf lname (or lname qname))
   ;; we can dispatch on lnames only because we validate against the DTD,
   ;; which disallows other namespaces.
+  ;; FIXME: we don't, because we can't.
   (push (let ((new (get-attribute/lname "prefer" attrs)))
           (cond
             ((equal new "public") :public)
@@ -290,7 +291,7 @@
             ((null new) (prefer handler))))
         (prefer-stack handler))
   (push (string-or (get-attribute/lname "base" attrs) (base handler))
-        (base-stack handler))
+        (catalog-base-stack handler))
   (flet ((geturi (lname)
            (puri:merge-uris
             (safe-parse-uri (get-attribute/lname lname attrs))
@@ -341,7 +342,7 @@
 
 (defmethod sax:end-element ((handler catalog-parser) uri lname qname)
   (declare (ignore uri lname qname))
-  (pop (base-stack handler))
+  (pop (catalog-base-stack handler))
   (pop (prefer-stack handler)))
 
 (defmethod sax:end-document ((handler catalog-parser))

@@ -476,6 +476,48 @@
       <em>fixme:</em> thread-safety
     </p>
 
+    <a name="saxparser"/>
+    <h3>Location information</h3>
+    <p>
+      <div class="def">Class SAX:SAX-PARSER ()</div>
+      A class providing location information through an
+      implementation-specific subclass.  Parsers will use
+      <tt>sax:register-sax-parser</tt> to pass their parser instance to
+      the handler.  The easiest way to receive sax parsers instances is
+      to inherit from sax-parser-mixin when defining a sax handler.
+    </p>
+    <p>
+      <div class="def">Class SAX:SAX-PARSER-MIXIN ()</div>
+      A mixin for sax handler classes that records the sax handler
+      object for use with the following functions.  Trampoline methods
+      are provided that allow those functions to be called directly on
+      the sax-parser-mixin.
+    </p>
+    <p>
+      <div class="def">Function SAX:SAX-HANDLER (sax-handler-mixin) => sax-handler</div>
+      Return the sax-parser instance recorded by this handler, or NIL.
+    </p>
+    <p>
+      <div class="def">Function SAX:LINE-NUMBER (sax-parser)</div>
+      Return an approximation of the current line number, or NIL.
+    </p>
+    <p>
+      <div class="def">Function SAX:COLUMN-NUMBER (sax-parser)</div>
+      Return an approximation of the current column number, or NIL.
+    </p>
+    <p>
+      <div class="def">Function SAX:SYSTEM-ID (sax-parser)</div>
+      Return the URI of the document being parsed.  This is either the
+    main document, or the entity's system ID while contents of a parsed
+    general external entity are being processed.
+    </p>
+    <p>
+      <div class="def">Function SAX:XML-BASE (sax-parser)</div>
+      Return the [Base URI] of the current element.  This URI can differ from
+   the value returned by <tt>sax:system-id</tt> if xml:base
+      attributes are present.
+    </p>
+
     <a name="catalogs"/>
     <h3>XML Catalogs</h3>
     <p>

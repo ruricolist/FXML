@@ -282,6 +282,29 @@
       events to the SAX <tt>handler</tt>.
     </p>
 
+    <a name="locator"/>
+    <h3>Location information</h3>
+    <p>
+      <div class="def">Function KLACKS:CURRENT-LINE-NUMBER (source)</div>
+      Return an approximation of the current line number, or NIL.
+    </p>
+    <p>
+      <div class="def">Function KLACKS:CURRENT-COLUMN-NUMBER (source)</div>
+      Return an approximation of the current column number, or NIL.
+    </p>
+    <p>
+      <div class="def">Function KLACKS:CURRENT-SYSTEM-ID (source)</div>
+      Return the URI of the document being parsed.  This is either the
+    main document, or the entity's system ID while contents of a parsed
+    general external entity are being processed.
+    </p>
+    <p>
+      <div class="def">Function KLACKS:CURRENT-XML-BASE (source)</div>
+      Return the [Base URI] of the current element.  This URI can differ from
+   the value returned by <tt>current-system-id</tt> if xml:base
+      attributes are present.
+    </p>
+
     <a name="examples"/>
     <h3>Examples</h3>
     <p>

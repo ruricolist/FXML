@@ -39,8 +39,6 @@
 ;;   don't really see why.
 ;; o Missing stuff from Java SAX2:
 ;;   * ignorable-whitespace
-;;   * document-locator/(setf document-locator)
-;;     (probably implies a handler class with an appropriate slot)
 ;;   * skipped-entity
 ;;   * The whole ErrorHandler class, this is better handled using
 ;;     conditions (but isn't yet)
@@ -82,9 +80,63 @@
            #:notation-declaration
            #:element-declaration
            #:attribute-declaration
-           #:entity-resolver))
+           #:entity-resolver
+
+	   #:sax-parser
+	   #:sax-parser-mixin
+	   #:register-sax-parser
+	   #:line-number
+	   #:column-number
+	   #:system-id
+	   #:xml-base))
 
 (in-package :sax)
+
+
+;;;; SAX-PARSER interface 
+
+(defclass sax-parser () ())
+
+(defclass sax-parser-mixin ()
+    ((sax-parser :initform nil :reader sax-parser)))
+
+(defgeneric line-number (sax-parser)
+  (:documentation
+   "Return an approximation of the current line number, or NIL.")
+  (:method ((handler sax-parser-mixin))
+    (if (sax-parser handler)
+	(line-number (sax-parser handler))
+	nil)))
+
+(defgeneric column-number (sax-parser)
+  (:documentation
+   "Return an approximation of the current column number, or NIL.")
+  (:method ((handler sax-parser-mixin))
+    (if (sax-parser handler)
+	(column-number (sax-parser handler))
+	nil)))
+
+(defgeneric system-id (sax-parser)
+  (:documentation
+   "Return the URI of the document being parsed.  This is either the
+    main document, or the entity's system ID while contents of a parsed
+    general external entity are being processed.")
+  (:method ((handler sax-parser-mixin))
+    (if (sax-parser handler)
+	(system-id (sax-parser handler))
+	nil)))
+
+(defgeneric xml-base (sax-parser)
+  (:documentation
+   "Return the [Base URI] of the current element.  This URI can differ from
+   the value returned by SAX:SYSTEM-ID if xml:base attributes are present.")
+  (:method ((handler sax-parser-mixin))
+    (if (sax-parser handler)
+	(xml-base (sax-parser handler))
+	nil)))
+
+
+;;;; Configuration variables
 
 ;; The http://xml.org/sax/features/namespaces property
 (defvar *namespace-processing* t
@@ -348,6 +400,16 @@ finished, if present.")
   (:method ((handler t) resolver)
     (declare (ignore resolver))
     nil))
+
+(defgeneric register-sax-parser
+    (handler sax-parser)
+  (:documentation
+   "Set the SAX-PARSER instance of this handler.")
+  (:method ((handler t) sax-parser)
+    (declare (ignore sax-parser))
+    nil)
+  (:method ((handler sax-parser-mixin) sax-parser)
+    (setf (slot-value handler 'sax-parser) sax-parser)))
 
 ;; internal for now
 (defgeneric dtd (handler dtd)

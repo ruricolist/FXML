@@ -183,6 +183,8 @@
   handler
   (dtd nil)
   model-stack
+  ;; xml:base machen wir fuer klacks mal gleich als expliziten stack:
+  base-stack
   (referenced-notations '())
   (id-table (%make-rod-hash-table))
   ;; FIXME: Wofuer ist name-hashtable da?  Will man das wissen?
@@ -659,6 +661,38 @@
 	  stream
 	  (format nil "End of file~@[: ~?~]" x args)))
 
+(defclass cxml-parser (sax:sax-parser) ((ctx :initarg :ctx)))
+
+(defun parser-xstream (parser)
+  (car (zstream-input-stack (main-zstream (slot-value parser 'ctx)))))
+
+(defun parser-stream-name (parser)
+  (let ((xstream (parser-xstream parser)))
+    (if xstream
+	(xstream-name xstream)
+	nil)))
+
+(defmethod sax:line-number ((parser cxml-parser))
+  (let ((x (parser-xstream parser)))
+    (if x
+	(xstream-line-number x)
+	nil)))
+
+(defmethod sax:column-number ((parser cxml-parser))
+  (let ((x (parser-xstream parser)))
+    (if x
+	(xstream-column-number x)
+	nil)))
+
+(defmethod sax:system-id ((parser cxml-parser))
+  (let ((name (parser-stream-name parser)))
+    (if name
+	(stream-name-uri name)
+	nil)))
+
+(defmethod sax:xml-base ((parser cxml-parser))
+  (car (base-stack (slot-value parser 'ctx))))
+
 (defvar *validate* t)
 (defvar *external-subset-p* nil)
 
@@ -966,8 +1000,10 @@
 (defun call-with-entity-expansion-as-stream (zstream cont name kind internalp)
   ;; `zstream' is for error messages
   (let ((in (entity->xstream zstream name kind internalp)))
+    (push (stream-name-uri (xstream-name in)) (base-stack *ctx*))
     (unwind-protect
         (funcall cont in)
+      (pop (base-stack *ctx*))
       (close-xstream in))))
 
 (defun ensure-dtd ()
@@ -2570,13 +2606,18 @@
   #+rune-is-integer
   (when recode
     (setf handler (make-recoder handler #'rod-to-utf8-string)))
-  (let ((*ctx*
-         (make-context :handler handler
-		       :main-zstream input
-                       :entity-resolver entity-resolver
-                       :disallow-internal-subset disallow-internal-subset))
-        (*validate* validate)
-	(*namespace-bindings* *initial-namespace-bindings*))
+  (let* ((xstream (car (zstream-input-stack input)))
+	 (name (xstream-name xstream))
+	 (base (when name (stream-name-uri name)))
+	 (*ctx*
+	  (make-context :handler handler
+			:main-zstream input
+			:entity-resolver entity-resolver
+			:base-stack (list (or base ""))
+			:disallow-internal-subset disallow-internal-subset))
+	 (*validate* validate)
+	 (*namespace-bindings* *initial-namespace-bindings*))
+    (sax:register-sax-parser handler (make-instance 'cxml-parser :ctx *ctx*))
     (sax:start-document handler)
     ;; document ::= XMLDecl? Misc* (doctypedecl Misc*)? element Misc*
     ;; Misc ::= Comment | PI |  S
@@ -2658,6 +2699,7 @@
       (p/etag input qname))
     (sax:end-element (handler *ctx*) uri lname qname)
     (undeclare-namespaces new-b)
+    (pop (base-stack *ctx*))
     (validate-end-element *ctx* qname)))
 
 (defun p/sztag (input)
@@ -2675,6 +2717,7 @@
 	(when sax:*namespace-processing*
 	  (setf new-namespaces (declare-namespaces attrs))
 	  (mapc #'set-attribute-namespace attrs))
+	(push (compute-base attrs) (base-stack *ctx*))
 	(multiple-value-bind (uri prefix local-name)
 	    (if sax:*namespace-processing*
 		(decode-qname name)
@@ -2700,6 +2743,23 @@
 		(mu (cons cat2 sem2))))
     (when (cdr sem2)
       (wf-error input "no attributes allowed in end tag"))))
+
+;; copy&paste from cxml-rng
+(defun escape-uri (string)
+  (with-output-to-string (out)
+    (loop for c across (cxml::rod-to-utf8-string string) do
+	  (let ((code (char-code c)))
+	    ;; http://www.w3.org/TR/xlink/#link-locators
+	    (if (or (>= code 127) (<= code 32) (find c "<>\"{}|\\^`"))
+		(format out "%~2,'0X" code)
+		(write-char c out))))))
+
+(defun compute-base (attrs)
+  (let ((new (sax:find-attribute "xml:base" attrs))
+	(current (car (base-stack *ctx*))))
+    (if new
+	(puri:merge-uris (escape-uri (sax:attribute-value new)) current)
+	current)))
 
 (defun process-characters (input sem)
   (consume-token input)
@@ -3317,6 +3377,7 @@
                              (return))))
                        res))))
 
+;; used only by read-att-value-2
 (defun internal-entity-expansion (name)
   (let ((def (get-entity-definition name :general (dtd *ctx*))))
     (unless def
@@ -3326,6 +3387,7 @@
     (or (entdef-expansion def)
         (setf (entdef-expansion def) (find-internal-entity-expansion name)))))
 
+;; used only by read-att-value-2
 (defun find-internal-entity-expansion (name)
   (let ((zinput (make-zstream)))
     (with-rune-collector-3 (collect)
@@ -3366,6 +3428,7 @@
          (lambda (zinput)
            (muffle (car (zstream-input-stack zinput))))) ))))
 
+;; callback for DOM
 (defun resolve-entity (name handler dtd)
   (let ((*validate* nil))
     (if (get-entity-definition name :general dtd)
