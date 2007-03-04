@@ -165,9 +165,13 @@
   (check-type root (or null rod))
   (check-type entity-resolver (or null function symbol))
   (check-type disallow-internal-subset boolean)
-  (let* ((context
+  (let* ((xstream (car (zstream-input-stack input)))
+	 (name (xstream-name xstream))
+	 (base (when name (stream-name-uri name)))
+	 (context
 	  (make-context :main-zstream input
 			:entity-resolver entity-resolver
+			:base-stack (list (or base ""))
 			:disallow-internal-subset disallow-internal-subset))
 	 (source
 	  (make-instance 'cxml-source
@@ -454,25 +458,25 @@
 	(xstream-name xstream)
 	nil)))
 
-(defmethod current-line-number ((source cxml-source))
+(defmethod klacks:current-line-number ((source cxml-source))
   (let ((x (source-xstream source)))
     (if x
 	(xstream-line-number x)
 	nil)))
 
-(defmethod current-column-number ((source cxml-source))
+(defmethod klacks:current-column-number ((source cxml-source))
   (let ((x (source-xstream source)))
     (if x
 	(xstream-column-number x)
 	nil)))
 
-(defmethod current-system-id ((source cxml-source))
+(defmethod klacks:current-system-id ((source cxml-source))
   (let ((name (source-stream-name source)))
     (if name
 	(stream-name-uri name)
 	nil)))
 
-(defmethod current-xml-base ((source cxml-source))
+(defmethod klacks:current-xml-base ((source cxml-source))
   (car (base-stack (slot-value source 'context))))
 
 

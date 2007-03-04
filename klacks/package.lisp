@@ -45,4 +45,9 @@
 	   #:serialize-element
 	   #:serialize-source
 
-	   #:klacks-error))
+	   #:klacks-error
+
+	   #:current-line-number
+	   #:current-column-number
+	   #:current-system-id
+	   #:current-xml-base))

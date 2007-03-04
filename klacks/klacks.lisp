@@ -40,10 +40,10 @@
 ;;;(defgeneric klacks:current-characters (source))
 (defgeneric klacks:current-cdata-section-p (source))
 
-(defgeneric current-line-number (source))
-(defgeneric current-column-number (source))
-(defgeneric current-system-id (source))
-(defgeneric current-xml-base (source))
+(defgeneric klacks:current-line-number (source))
+(defgeneric klacks:current-column-number (source))
+(defgeneric klacks:current-system-id (source))
+(defgeneric klacks:current-xml-base (source))
 
 (defmacro klacks:with-open-source ((var source) &body body)
   `(let ((,var ,source))
@@ -131,9 +131,25 @@
       (when document
 	(return document)))))
 
+(defclass klacksax (sax:sax-parser)
+    ((source :initarg :source)))
+
+(defmethod sax:line-number ((parser klacksax))
+  (klacks:current-line-number (slot-value parser 'source)))
+
+(defmethod sax:column-number ((parser klacksax))
+  (klacks:current-column-number (slot-value parser 'source)))
+
+(defmethod sax:system-id ((parser klacksax))
+  (klacks:current-system-id (slot-value parser 'source)))
+
+(defmethod sax:xml-base ((parser klacksax))
+  (klacks:current-xml-base (slot-value parser 'source)))
+
 (defun klacks:serialize-element (source handler &key (document-events t))
   (unless (eq (klacks:peek source) :start-element)
     (error "not at start of element"))
+  (sax:register-sax-parser handler (make-instance 'klacksax :source source))
   (when document-events
     (sax:start-document handler))
   (labels ((recurse ()
