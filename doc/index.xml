@@ -50,6 +50,15 @@
 
     <a name="changes"/>
     <h2>Recent Changes</h2>
+    <p class="nomargin"><tt>rel-2007-xx-yy</tt></p>
+    <ul class="nomargin">
+      <li>Fixed attributes to carry an lname even without when occurring
+      without a namespace.</li>
+      <li>Klacks improvements: Incompatibly changed
+      klacks:find-element and find-event to consider the current event
+      as a result.  Added klacks-error, klacks:expect, klacks:skip,
+      klacks:expecting-element.</li>
+    </ul>
     <p class="nomargin"><tt>rel-2007-02-18</tt></p>
     <ul class="nomargin">
       <li>New StAX-like parser interface.</li>

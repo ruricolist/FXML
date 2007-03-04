@@ -27,8 +27,11 @@
 	   #:peek-next
 	   #:consume
 
+	   #:expect
+	   #:skip
 	   #:find-element
 	   #:find-event
+	   #:expecting-element
 
 	   #:map-attributes
 	   #:list-attributes
@@ -40,4 +43,6 @@
 	   
 	   #:serialize-event
 	   #:serialize-element
-	   #:serialize-source))
+	   #:serialize-source
+
+	   #:klacks-error))

@@ -948,18 +948,20 @@
       (wf-error nil "Entity '~A' is not defined." (rod-string name)))
     def))
 
-(defun xstream-open-extid (extid)
-  (let* ((sysid (extid-system extid))
-         (stream
-          (or (funcall (or (entity-resolver *ctx*) (constantly nil))
-                       (extid-public extid)
-                       (extid-system extid))
+(defun xstream-open-extid* (entity-resolver pubid sysid)
+  (let* ((stream
+          (or (funcall (or entity-resolver (constantly nil)) pubid sysid)
               (open (uri-to-pathname sysid)
                     :element-type '(unsigned-byte 8)
                     :direction :input))))
     (make-xstream stream
                   :name (make-stream-name :uri sysid)
                   :initial-speed 1)))
+
+(defun xstream-open-extid (extid)
+  (xstream-open-extid* (entity-resolver *ctx*)
+		       (extid-public extid)
+		       (extid-system extid)))
 
 (defun call-with-entity-expansion-as-stream (zstream cont name kind internalp)
   ;; `zstream' is for error messages
@@ -3568,15 +3570,12 @@
 	(setf (sax:attribute-namespace-uri attribute)
 	      #"http://www.w3.org/2000/xmlns/")
 	(multiple-value-bind (prefix local-name) (split-qname qname)
-	  (declare (ignorable local-name))
 	  (when (and prefix ;; default namespace doesn't apply to attributes
 		     (or (not (rod= #"xmlns" prefix))
 			 sax:*use-xmlns-namespace*))
-	    (multiple-value-bind (uri prefix local-name)
-		(decode-qname qname)
-	      (declare (ignore prefix))
-	      (setf (sax:attribute-namespace-uri attribute) uri)
-	      (setf (sax:attribute-local-name attribute) local-name)))))))
+	    (setf (sax:attribute-namespace-uri attribute)
+		  (decode-qname qname)))
+	  (setf (sax:attribute-local-name attribute) local-name)))))
 
 ;;;;;;;;;;;;;;;;;
 

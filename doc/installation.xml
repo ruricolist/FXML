@@ -10,11 +10,7 @@
       <li>
         <div>
       Anoncvs (<a href="http://common-lisp.net/cgi-bin/viewcvs.cgi/cxml/?cvsroot=cxml">browse</a>):
-      <pre>$ export CVSROOT=:pserver:anonymous@common-lisp.net:/project/cxml/cvsroot
-$ cvs login
-Logging in to :pserver:anonymous@common-lisp.net:2401/project/cxml/cvsroot
-CVS password: anonymous
-$ cvs co cxml</pre>
+      <pre>cvs -d :pserver:anonymous:anonymous@common-lisp.net:/project/cxml/cvsroot co cxml</pre>
         </div>
       </li>
     </ul>

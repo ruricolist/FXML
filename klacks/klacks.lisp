@@ -148,7 +148,7 @@
 (defun klacks:find-element (source &optional lname uri)
   (loop
     (multiple-value-bind (key current-uri current-lname current-qname)
-	(klacks:peek-next source)
+	(klacks:peek source)
       (case key
 	((nil)
 	  (return nil))
@@ -159,14 +159,55 @@
 		     (or (null uri)
 			 (equal uri (klacks:current-uri source))))
 	    (return
-	      (values key current-uri current-lname current-qname))))))))
+	      (values key current-uri current-lname current-qname)))))
+      (klacks:consume source))))
 
 (defun klacks:find-event (source key)
   (loop
     (multiple-value-bind (this a b c)
-	(klacks:peek-next source)
+	(klacks:peek source)
       (cond
 	((null this)
 	  (return nil))
 	((eq this key)
-	  (return (values this a b c)))))))
+	  (return (values this a b c))))
+      (klacks:consume source))))
+
+(define-condition klacks-error (xml-parse-error) ())
+
+(defun klacks-error (fmt &rest args)
+  (%error 'klacks-error
+	  nil
+	  (format nil "Klacks assertion failed: ~?" fmt args)))
+
+(defun klacks:expect (source key &optional u v w)
+  (multiple-value-bind (this a b c)
+      (klacks:peek source)
+    (unless (eq this key) (klacks-error "expected ~A but got ~A" key this))
+    (when (and u (not (equal a u)))
+      (klacks-error "expected ~A but got ~A" u a))
+    (when (and v (not (equal b v)))
+      (klacks-error "expected ~A but got ~A" v b))
+    (when (and w (not (equal c w)))
+      (klacks-error "expected ~A but got ~A" w c))
+    (values this a b c)))
+
+(defun klacks:skip (source key &optional a b c)
+  (klacks:expect source key a b c)
+  (klacks:consume source))
+
+(defun invoke-expecting-element (fn source &optional lname uri)
+  (multiple-value-bind (key a b)
+      (klacks:peek source)
+    (unless (eq key :start-element)
+      (klacks-error "expected ~A but got ~A" (or lname "element") key))
+    (when (and uri (not (equal a uri)))
+      (klacks-error "expected ~A but got ~A" uri a))
+    (when (and lname (not (equal b lname)))
+      (klacks-error "expected ~A but got ~A" lname b))
+    (multiple-value-prog1
+	(funcall fn)
+      (klacks:skip source :end-element a b))))
+
+(defmacro klacks:expecting-element ((source &optional lname uri) &body body)
+  `(invoke-expecting-element (lambda () ,@body) ,source ,lname ,uri))

@@ -231,6 +231,32 @@
       namespace matches. Return values like <tt>peek</tt> or NIL if no
       such event was found.
     </p>
+    <p>
+      <div class="def">Condition KLACKS:KLACKS-ERROR (xml-parse-error)</div>
+      The condition class signalled by <tt>expect</tt>.
+    </p>
+    <p>
+      <div class="def">Function KLACKS:EXPECT (source key &amp;optional
+      value1 value2 value3)</div>
+      Assert that the current event is equal to (key value1 value2
+      value3).  (Ignore <i>value</i> arguments that are NIL.)  If so,
+      return it as multiple values.  Otherwise signal a
+      <tt>klacks-error</tt>.
+    </p>
+    <p>
+      <div class="def">Function KLACKS:SKIP (source key &amp;optional
+      value1 value2 value3)</div>
+      <tt>expect</tt> the specific event, then <tt>consume</tt> it.
+    </p>
+    <p>
+      <div class="def">Macro KLACKS:EXPECTING-ELEMENT ((fn source
+      &amp;optional lname uri) &amp;body body</div>
+      Assert that the current event matches (:start-element uri lname).
+      (Ignore <i>value</i> arguments that are NIL)  Otherwise signal a
+      <tt>klacks-error</tt>.
+      Evaluate <tt>body</tt> as an implicit progn.  Finally assert that
+      the remaining event matches (:end-element uri lname).
+    </p>
 
     <a name="klacksax"/>
     <h3>Bridging Klacks and SAX</h3>
