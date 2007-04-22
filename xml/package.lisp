@@ -78,11 +78,15 @@
    #:resolve-extid
    
    #:make-recoder
-   #:sax-proxy
-   #:proxy-chained-handler
    #:make-namespace-normalizer
    #:make-whitespace-normalizer
    #:rod-to-utf8-string
    #:utf8-string-to-rod
+
+   #:broadcast-handler
+   #:broadcast-handler-handlers
+   #:make-broadcast-handler
+   #:sax-proxy
+   #:proxy-chained-handler
 
    #:make-source))

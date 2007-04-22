@@ -10,10 +10,11 @@ div.sidebar-title {
   background-color: #9c0000;
   border: solid #9c0000;
   border-top-width: 1px;
-  border-bottom-width: 0px;
+  border-bottom-width: 2px;
   border-left-width: 4px;
   border-right-width: 0px;
-  margin: 0em 2pt 1px 2em;
+  padding-left: 1px;
+  margin: 0em 2pt 0px 2em;
 }
 
 div.sidebar-title a {
@@ -21,15 +22,14 @@ div.sidebar-title a {
 }
 
 div.sidebar-main {
-  background-color: #eeeeee;
+  background-color: #f7f7f7;
   border: solid #9c0000;
   border-top-width: 0px;
   border-bottom-width: 0px;
   border-left-width: 4px;
   border-right-width: 0px;
   margin: 0em 2pt 1em 2em;
-  padding-top: 2px;
-  padding-left: 2px;
+  padding: 1em;
 }
 
 div.sidebar ul.main {

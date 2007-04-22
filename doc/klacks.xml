@@ -180,6 +180,18 @@
      signal an error.
     </p>
     <p>
+      <div class="def">Function KLACKS:MAP-CURRENT-NAMESPACE-DECLARATIONS (fn source) => nil</div>
+    </p>
+    <p>
+     For use only on :start-element and :end-element events, this
+     function report every namespace declaration on the current element.
+     On :start-element, these correspond to the xmlns attributes of the
+     start tag.  On :end-element, the declarations of the corresponding
+     start tag are reported.  No inherited namespaces are
+     included.  <tt>fn</tt> is called only for each declaration with two
+     arguments, the prefix and uri.
+    </p>
+    <p>
       <div class="def">Function KLACKS:MAP-ATTRIBUTES (fn source)</div>
     </p>
     <p>
@@ -280,6 +292,19 @@
       <div class="def">Function KLACKS:SERIALIZE-SOURCE (source handler)</div>
       Read all klacks events from <tt>source</tt> and send them as SAX
       events to the SAX <tt>handler</tt>.
+    </p>
+    <p>
+      <div class="def">Class KLACKS:TAPPING-SOURCE (source)</div>
+      A klacks source that relays events from an upstream klacks source
+      unchanged, while also emitting them as SAX events to a
+      user-specified handler at the same time.
+    </p>
+    <p>
+      <div class="def">Functon KLACKS:MAKE-TAPPING-SOURCE
+      (upstream-source &amp;optional sax-handler)</div>
+      Create a tapping source relaying events
+      for <tt>upstream-source</tt>, and sending SAX events
+      to <tt>sax-handler</tt>.
     </p>
 
     <a name="locator"/>

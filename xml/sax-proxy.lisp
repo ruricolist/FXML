@@ -8,14 +8,33 @@
 
 (in-package :cxml)
 
-(defclass sax-proxy ()
-  ((chained-handler :initform nil
-                    :initarg :chained-handler
-                    :accessor proxy-chained-handler)))
+(defclass broadcast-handler ()
+  ((handlers :initform nil
+	     :initarg :handlers
+	     :accessor broadcast-handler-handlers)))
+
+(defun make-broadcast-handler (&rest handlers)
+  (make-instance 'broadcast-handler :handlers handlers))
+
+(defclass sax-proxy (broadcast-handler)
+  ())
+
+(defmethod initialize-instance
+    :after ((instance sax-proxy) &key chained-handler)
+  (setf (proxy-chained-handler instance) chained-handler))
+
+(defmethod proxy-chained-handler ((instance sax-proxy))
+  (car (broadcast-handler-handlers instance)))
+
+(defmethod (setf proxy-chained-handler) (newval (instance sax-proxy))
+  (setf (broadcast-handler-handlers instance) (list newval)))
 
 (macrolet ((define-proxy-method (name (&rest args))
-             `(defmethod ,name ((handler sax-proxy) ,@args)
-                (,name (proxy-chained-handler handler) ,@args))))
+             `(defmethod ,name ((handler broadcast-handler) ,@args)
+                (let (result)
+		  (dolist (next (broadcast-handler-handlers handler))
+		    (setf result (,name next ,@args)))
+		  result))))
   (define-proxy-method sax:start-document ())
   (define-proxy-method sax:start-element (uri lname qname attributes))
   (define-proxy-method sax:start-prefix-mapping (prefix uri))
@@ -39,3 +58,7 @@
   (define-proxy-method sax:attribute-declaration (elt attr type default))
   (define-proxy-method sax:entity-resolver (resolver))
   (define-proxy-method sax::dtd (dtd)))
+
+(defmethod sax:register-sax-parser :after ((handler sax-proxy) parser)
+  (dolist (next (broadcast-handler-handlers handler))
+    (sax:register-sax-parser next parser)))

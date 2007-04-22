@@ -358,16 +358,35 @@
   (dom:map-document (cxml:make-validator x #"foo") d))</pre>
 
     <p>
-      <div class="def">Class CXML:SAX-PROXY ()</div>
+      <div class="def">Class CXML:BROADCAST-HANDLER ()</div>
+      <div class="def">Accessor CXML:BROADCAST-HANDLER-HANDLERS</div>
+      <div class="def">Function CXML:MAKE-BROADCAST-HANDLER (&amp;rest handlers)</div>
+      <tt>broadcast-handler</tt> is a SAX handler which passes every event it
+      receives on to each of several chained handlers, somewhat similar
+      to the way a <tt>broadcast-stream</tt> works.
+    </p>
+    <p>
+      You can subclass <tt>broadcast-stream</tt> to modify the events
+      before they are being passed on.  Define methods on your handler
+      class for the events to be modified.  All other events will pass
+      through to the chained handlers unmodified.
+    </p>
+    <p>
+      Broadcast handler functions return the result of calling the event
+      function on the <i>last</i> handler in the list.  In particular,
+      the overall result from <tt>sax:end-document</tt> will be ignored
+      for all other handlers.
+    </p>
+
+    <p>
+      <div class="def">Class CXML:SAX-PROXY (broadcast-handler)</div>
       <div class="def">Accessor CXML:PROXY-CHAINED-HANDLER</div>
-      <tt>sax-proxy</tt> is a SAX handler which passes all events it
-      receives on to a user-defined second handler, which defaults
-      to <tt>nil</tt>.  Use <tt>sax-proxy</tt> to modify the events a
-      SAX handler receives by defining your own subclass
-      of <tt>sax-proxy</tt>.  Setting the chained handler to the target
-      handler, and define methods on your handler class for the events
-      to be modified.  All other events will pass through to the chained
-      handler unmodified.
+      <tt>sax-proxy</tt> is a subclass of <tt>broadcast-handler</tt>
+      which sends events to exactly one chained handler.  This class is
+      still included for compatibility with older versions of
+      CXML which did not include the more
+      general <tt>broadcast-handler</tt> yet, but has been retrofitted
+      as a subclass of the latter.
     </p>
 
     <p>

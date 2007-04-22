@@ -21,6 +21,8 @@
   (:export #:source
 	   #:close-source
 	   #:with-open-source
+	   #:tapping-source
+	   #:make-tapping-source
 
 	   #:peek
 	   #:peek-value
@@ -40,6 +42,7 @@
 	   #:current-qname
 	   #:current-characters
 	   #:current-cdata-section-p
+	   #:map-current-namespace-declarations
 	   
 	   #:serialize-event
 	   #:serialize-element
@@ -50,4 +53,7 @@
 	   #:current-line-number
 	   #:current-column-number
 	   #:current-system-id
-	   #:current-xml-base))
+	   #:current-xml-base
+
+	   #:find-namespace-binding
+	   #:decode-qname))

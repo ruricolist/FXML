@@ -34,6 +34,7 @@
      ;; extra WITH-SOURCE magic
      (data-behaviour :initform :DTD)
      (namespace-stack :initform (list *initial-namespace-bindings*))
+     (current-namespace-declarations)
      (temporary-streams :initform nil)
      (scratch-pad :initarg :scratch-pad)
      (scratch-pad-2 :initarg :scratch-pad-2)
@@ -281,12 +282,13 @@
       #'klacks/done)))
 
 (defun klacks/element (source input cont)
-  (with-source (source current-key current-values current-attributes)
+  (with-source (source current-key current-values current-attributes
+		       current-namespace-declarations)
     (multiple-value-bind (cat n-b new-b uri lname qname attrs) (p/sztag input)
-      (declare (ignore new-b))
       (setf current-key :start-element)
       (setf current-values (list uri lname qname))
       (setf current-attributes attrs)
+      (setf current-namespace-declarations new-b)
       (if (eq cat :stag)
 	  (lambda ()
 	    (klacks/element-2 source input n-b cont))
@@ -297,19 +299,20 @@
   (with-source (source current-key current-values current-attributes)
     (setf current-key :end-element)
     (setf current-attributes nil)
-    ;; fixme: (undeclare-namespaces new-b)
     (validate-end-element *ctx* (third current-values))
     cont))
 
 (defun klacks/element-2 (source input n-b cont)
   (with-source (source
-		current-key current-values current-attributes namespace-stack)
-    (let ((values* current-values))
+		current-key current-values current-attributes namespace-stack
+		current-namespace-declarations)
+    (let ((values* current-values)
+	  (new-b current-namespace-declarations))
       (setf current-attributes nil)
       (push n-b namespace-stack)
       (let ((finish
 	     (lambda ()
-	       (pop namespace-stack)
+	       (setf current-namespace-declarations new-b)
 	       (klacks/element-3 source input values* cont))))
 	(klacks/content source input finish)))))
 
@@ -319,7 +322,6 @@
     (setf current-values tag-values)
     (let ((qname (third tag-values)))
       (p/etag input qname)
-      ;; fixme: (undeclare-namespaces new-b)
       (validate-end-element *ctx* qname))
     cont))
 
@@ -478,6 +480,23 @@
 
 (defmethod klacks:current-xml-base ((source cxml-source))
   (car (base-stack (slot-value source 'context))))
+
+(defmethod klacks:map-current-namespace-declarations (fn (source cxml-source))
+  (loop
+     for (prefix . uri) in (slot-value source 'current-namespace-declarations)
+     do
+       (funcall fn prefix uri)))
+
+(defmethod klacks:find-namespace-binding (prefix (source cxml-source))
+  (with-source (source)
+    (find-namespace-binding prefix)))
+
+(defmethod klacks:decode-qname (qname (source cxml-source))
+  (with-source (source)
+    (multiple-value-bind (prefix local-name) (split-qname qname)
+      (values (and prefix (find-namespace-binding prefix))
+	      local-name
+	      prefix))))
 
 
 ;;;; debugging

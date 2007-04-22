@@ -39,11 +39,16 @@
 ;;;(defgeneric klacks:current-qname (source))
 ;;;(defgeneric klacks:current-characters (source))
 (defgeneric klacks:current-cdata-section-p (source))
+(defgeneric klacks:map-current-namespace-declarations (fn source))
+(defgeneric klacks:map-previous-namespace-declarations (fn source))
 
 (defgeneric klacks:current-line-number (source))
 (defgeneric klacks:current-column-number (source))
 (defgeneric klacks:current-system-id (source))
 (defgeneric klacks:current-xml-base (source))
+
+(defgeneric klacks:find-namespace-binding (prefix source))
+(defgeneric klacks:decode-qname (qname source))
 
 (defmacro klacks:with-open-source ((var source) &body body)
   `(let ((,var ,source))
@@ -74,12 +79,14 @@
     (check-type key (member :characters))
     characters))
 
-(defun klacks:serialize-event (source handler)
+(defun klacks:serialize-event (source handler &key (consume t))
   (multiple-value-bind (key a b c) (klacks:peek source)
     (let ((result nil))
       (case key
 	(:start-document
-	  (sax:start-document handler))
+	  (sax:start-document handler)
+	  (loop for (prefix . uri) in *initial-namespace-bindings* do
+	       (sax:start-prefix-mapping handler prefix uri)))
 	(:characters
 	  (cond
 	    ((klacks:current-cdata-section-p source)
@@ -108,16 +115,28 @@
 			       (slot-value source 'dom-impl-entity-resolver))
 	  (sax::dtd handler (slot-value source 'dom-impl-dtd)))
 	(:start-element
+	  (klacks:map-current-namespace-declarations
+	   (lambda (prefix uri)
+	     (sax:start-prefix-mapping handler prefix uri))
+	   source)
 	  (sax:start-element handler a b c (klacks:list-attributes source)))
 	(:end-element
-	  (sax:end-element handler a b c))
+	  (sax:end-element handler a b c)
+	  (klacks:map-current-namespace-declarations
+	   (lambda (prefix uri)
+	     (declare (ignore uri))
+	     (sax:end-prefix-mapping handler prefix))
+	   source))
 	(:end-document
+	 (loop for (prefix . nil) in *initial-namespace-bindings* do
+	      (sax:end-prefix-mapping handler prefix))
 	  (setf result (sax:end-document handler)))
 	((nil)
 	  (error "serialize-event read past end of document"))
 	(t
 	  (error "unexpected klacks key: ~A" key)))
-      (klacks:consume source)
+      (when consume
+	(klacks:consume source))
       result)))
 
 (defun serialize-declaration-kludge (list handler)

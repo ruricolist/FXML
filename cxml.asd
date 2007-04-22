@@ -118,7 +118,8 @@
     :components
     ((:file "package")
      (:file "klacks")
-     (:file "klacks-impl"))
+     (:file "klacks-impl")
+     (:file "tap-source"))
     :depends-on (:cxml-xml))
 
 (asdf:defsystem :cxml-test

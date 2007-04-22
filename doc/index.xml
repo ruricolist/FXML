@@ -55,12 +55,20 @@
       <li>xml:base support (SAX and Klacks only, not yet used in DOM).
       See documentation <a href="sax.html#saxparser">here</a> and <a
       href="klacks.html#locator">here</a>.</li>
-      <li>Fixed attributes to carry an lname even without when occurring
+      <li>New class <tt>broadcast-handler</tt> as a generalization
+      of the older <tt>sax-proxy</tt>.</li>
+      <li>New class <tt>tapping-source</tt>, a klacks source that
+      relays events from an upstream klacks source unchanged, while also
+      emitting them as SAX events to a user-specified handler at the
+      same time.</li>
+      <li>Changed attributes to carry an lname even when occurring
       without a namespace.</li>
       <li>Klacks improvements: Incompatibly changed
       klacks:find-element and find-event to consider the current event
       as a result.  Added klacks-error, klacks:expect, klacks:skip,
-      klacks:expecting-element.</li>
+      klacks:expecting-element.  Fixed serialize-event to generate
+      start-prefix-mapping and end-prefix-mapping events.  New function
+      map-current-namespace-declarations.</li>
     </ul>
     <p class="nomargin"><tt>rel-2007-02-18</tt></p>
     <ul class="nomargin">
