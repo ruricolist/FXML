@@ -34,13 +34,13 @@
 
 (defgeneric klacks:map-attributes (fn source))
 (defgeneric klacks:list-attributes (source))
+(defgeneric klacks:get-attribute (source lname &optional uri))
 ;;;(defgeneric klacks:current-uri (source))
 ;;;(defgeneric klacks:current-lname (source))
 ;;;(defgeneric klacks:current-qname (source))
 ;;;(defgeneric klacks:current-characters (source))
 (defgeneric klacks:current-cdata-section-p (source))
 (defgeneric klacks:map-current-namespace-declarations (fn source))
-(defgeneric klacks:map-previous-namespace-declarations (fn source))
 
 (defgeneric klacks:current-line-number (source))
 (defgeneric klacks:current-column-number (source))

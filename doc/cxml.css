@@ -63,8 +63,13 @@ body {
   background-repeat: no-repeat;
 }
 
-h1,h2,h3 {
+h1 {
   margin-left: -30px;
+}
+
+h2,h3 {
+  margin-left: -30px;
+  margin-top: 2em;
 }
 
 pre {

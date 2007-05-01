@@ -37,6 +37,7 @@
 
 	   #:map-attributes
 	   #:list-attributes
+	   #:get-attribute
 	   #:current-uri
 	   #:current-lname
 	   #:current-qname

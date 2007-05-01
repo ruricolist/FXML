@@ -26,7 +26,8 @@
 (defclass klacks:tapping-source (klacks:source)
     ((upstream-source :initarg :upstream-source :accessor upstream-source)
      (dribble-handler :initarg :dribble-handler :accessor dribble-handler)
-     (seen-event-p :initform nil :accessor seen-event-p)))
+     (seen-event-p :initform nil :accessor seen-event-p)
+     (document-done-p :initform nil :accessor document-done-p)))
 
 (defmethod initialize-instance :after ((instance klacks:tapping-source) &key)
   (let ((s-p (make-instance 'klacksax :source (upstream-source instance))))
@@ -36,7 +37,9 @@
 ;;; event dribbling 
 
 (defun maybe-dribble (source)
-  (unless (seen-event-p source)
+  (unless (or (seen-event-p source) (document-done-p source))
+    (when (eq (klacks:peek (upstream-source source)) :end-document)
+      (setf (document-done-p source) t))
     (klacks:serialize-event (upstream-source source)
 			    (dribble-handler source)
 			    :consume nil)

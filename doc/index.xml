@@ -48,8 +48,15 @@
       information</a>).
     </p>
 
+    <h3>See also</h3>
+    <p>
+      Relax NG validation is available as a separate
+      project: <a href="">cxml-rng</a>.
+    </p>
+
+
     <a name="changes"/>
-    <h2>Recent Changes</h2>
+    <h3>Recent Changes</h3>
     <p class="nomargin"><tt>rel-2007-xx-yy</tt></p>
     <ul class="nomargin">
       <li>xml:base support (SAX and Klacks only, not yet used in DOM).

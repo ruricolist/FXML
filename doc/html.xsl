@@ -4,11 +4,11 @@
 	      doctype-public="-//W3C//DTD HTML 4.01 Transitional//EN"
 	      doctype-system="http://www.w3.org/TR/html4/loose.dtd"/>
 
-	      <xsl:template match="@*|node()">
-  <xsl:copy>
-    <xsl:apply-templates select="@*|node()"/>
-  </xsl:copy>	
-</xsl:template>
+  <xsl:template match="@*|node()">
+    <xsl:copy>
+      <xsl:apply-templates select="@*|node()"/>
+    </xsl:copy>	
+  </xsl:template>
 
   <xsl:template match="documentation">
     <html>
@@ -38,7 +38,7 @@
         <li>
           <ul class="hack">
             <li>
-              <a href="quickstart.html"><b>Quick-Start Example</b></a>
+              <a href="quickstart.html"><b>Quick-Start Example / FAQ</b></a>
             </li>
           </ul>
         </li>
@@ -85,4 +85,26 @@
     </html>
   </xsl:template>
 
+  <xsl:template match="page-index">
+    <ul>
+      <xsl:for-each select="//heading">
+	<li>
+	  <a href="#{generate-id()}">
+	    <xsl:copy>
+	      <xsl:apply-templates select="node()"/>
+	    </xsl:copy>
+	  </a>
+	</li>
+      </xsl:for-each>
+    </ul>
+  </xsl:template>
+
+  <xsl:template match="heading">
+    <a name="{generate-id()}"/>
+    <h3>
+      <xsl:copy>
+	<xsl:apply-templates select="node()"/>
+      </xsl:copy>	
+    </h3>
+  </xsl:template>
 </xsl:stylesheet>

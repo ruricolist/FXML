@@ -102,6 +102,13 @@
 	     (sax:attribute-value a)
 	     (sax:attribute-specified-p a))))
 
+(defmethod klacks:get-attribute
+    ((source cxml-source) lname &optional uri)
+  (dolist (a (slot-value source 'current-attributes))
+    (when (and (equal (sax:attribute-local-name a) lname)
+	       (equal (sax:attribute-namespace-uri a) uri))
+      (return (sax:attribute-value a)))))
+
 (defmethod klacks:list-attributes ((source cxml-source))
   (slot-value source 'current-attributes))
 
