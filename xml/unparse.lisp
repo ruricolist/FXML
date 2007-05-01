@@ -509,13 +509,17 @@
 
 (defvar *current-element*)
 (defvar *sink*)
+(defvar *unparse-namespace-bindings*)
+(defvar *current-namespace-bindings*)
 
 (defmacro with-xml-output (sink &body body)
   `(invoke-with-xml-output (lambda () ,@body) ,sink))
 
 (defun invoke-with-xml-output (fn sink)
   (let ((*sink* sink)
-        (*current-element* nil))
+        (*current-element* nil)
+	(*unparse-namespace-bindings* *initial-namespace-bindings*)
+	(*current-namespace-bindings* nil))
     (sax:start-document *sink*)
     (funcall fn)
     (sax:end-document *sink*)))
@@ -523,37 +527,86 @@
 (defmacro with-element (qname &body body)
   `(invoke-with-element (lambda () ,@body) ,qname))
 
+(defmacro with-element* ((prefix lname) &body body)
+  `(invoke-with-element* (lambda () ,@body) ,prefix ,lname))
+
+(defmacro with-namespace ((prefix uri) &body body)
+  `(invoke-with-namespace (lambda () ,@body) ,prefix ,uri))
+
 (defun maybe-emit-start-tag ()
   (when *current-element*
     ;; starting child node, need to emit opening tag of parent first:
-    (destructuring-bind (qname &rest attributes) *current-element*
-      (sax:start-element *sink* nil nil qname (reverse attributes)))
+    (destructuring-bind ((uri lname qname) &rest attributes) *current-element*
+      (sax:start-element *sink* uri lname qname (reverse attributes)))
     (setf *current-element* nil)))
+
+(defun invoke-with-namespace (fn prefix uri)
+  (let ((*unparse-namespace-bindings*
+	 (acons prefix uri *unparse-namespace-bindings*))
+	(*current-namespace-bindings*
+	 (acons prefix uri *current-namespace-bindings*)))
+    (sax:start-prefix-mapping *sink* prefix uri)
+    (multiple-value-prog1
+	(funcall fn)
+      (sax:end-prefix-mapping *sink* prefix))))
 
 (defun invoke-with-element (fn qname)
   (setf qname (rod qname))
+  (multiple-value-bind (prefix lname)
+      (split-qname qname)
+    (invoke-with-element* fn prefix lname qname)))
+
+(defun find-unparse-namespace (prefix)
+  (cdr (assoc prefix *unparse-namespace-bindings* :test 'equal)))
+
+(defun invoke-with-element* (fn prefix lname &optional qname)
+  (setf prefix (when prefix (rod prefix)))
+  (setf lname (rod lname))
   (maybe-emit-start-tag)
-  (let ((*current-element* (list qname)))
+  (let* ((qname (or qname
+		    (if prefix (concatenate 'rod prefix #":" lname) lname)))
+	 (uri (find-unparse-namespace (or prefix #"")))
+	 (*current-element*
+	  (cons (list uri lname qname)
+		(mapcar (lambda (x)
+			  (destructuring-bind (prefix &rest uri) x
+			    (sax:make-attribute
+			     :namespace-uri #"http://www.w3.org/2000/xmlns/"
+			     :local-name prefix
+			     :qname (if (zerop (length prefix))
+					#"xmlns"
+					(concatenate 'rod #"xmlns:" prefix))
+			     :value uri)))
+			*current-namespace-bindings*))))
     (multiple-value-prog1
-        (funcall fn)
+        (let ((*current-namespace-bindings* nil))
+	  (funcall fn))
       (maybe-emit-start-tag)
-      (sax:end-element *sink* nil nil qname))))
+      (sax:end-element *sink* uri lname qname))))
 
-(defun attribute-1 (name value)
-  (push (sax:make-attribute :qname (rod name) :value (rod value))
-        (cdr *current-element*))
-  value)
+(defgeneric unparse-attribute (value))
+(defmethod unparse-attribute ((value string)) value)
+(defmethod unparse-attribute ((value null)) nil)
+(defmethod unparse-attribute ((value integer)) (write-to-string value))
 
-(defgeneric attribute (name value))
+(defun attribute (qname value)
+  (setf qname (rod qname))
+  (multiple-value-bind (prefix lname)
+      (split-qname qname)
+    (attribute* prefix lname value qname)))
 
-(defmethod attribute (name (value string))
-  (attribute-1 name value))
-
-(defmethod attribute (name (value null))
-  (declare (ignore name)))
-
-(defmethod attribute (name (value integer))
-  (attribute-1 name (write-to-string value)))
+(defun attribute* (prefix lname value &optional qname)
+  (setf value (unparse-attribute value))
+  (when value
+    (setf prefix (when prefix (rod prefix)))
+    (setf lname (rod lname))
+    (push (sax:make-attribute
+	   :namespace-uri (find-unparse-namespace prefix)
+	   :local-name lname
+	   :qname (or qname
+		      (if prefix (concatenate 'rod prefix #":" lname) lname))
+	   :value (rod value))
+	  (cdr *current-element*))))
 
 (defun cdata (data)
   (maybe-emit-start-tag)

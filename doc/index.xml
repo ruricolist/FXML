@@ -69,7 +69,9 @@
       emitting them as SAX events to a user-specified handler at the
       same time.</li>
       <li>Changed attributes to carry an lname even when occurring
-      without a namespace.</li>
+      without a namespace.  Added new functions attribute*,
+      unparse-attribute, and macro with-element*, with-namespace* to
+      the SAX generation wrapper API.</li>
       <li>Klacks improvements: Incompatibly changed
       klacks:find-element and find-event to consider the current event
       as a result.  Added klacks-error, klacks:expect, klacks:skip,

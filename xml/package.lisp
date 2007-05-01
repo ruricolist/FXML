@@ -50,8 +50,12 @@
    #:make-character-stream-sink/utf8
 
    #:with-xml-output
+   #:with-namespace
    #:with-element
+   #:with-element*
    #:attribute
+   #:attribute*
+   #:unparse-attribute
    #:cdata
    #:text
 

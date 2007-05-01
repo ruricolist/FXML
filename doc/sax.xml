@@ -291,8 +291,12 @@
 
     <p>
       <div class="def">Macro CXML:WITH-XML-OUTPUT (sink &amp;body body) => sink-specific result</div>
+      <div class="def">Macro CXML:WITH-NAMESPACE ((prefix uri) &amp;body body) => result</div>
       <div class="def">Macro CXML:WITH-ELEMENT (qname &amp;body body) => result</div>
-      <div class="def">Function CXML:ATTRIBUTE (name value) => value</div>
+      <div class="def">Macro CXML:WITH-ELEMENT* ((prefix lname) &amp;body body) => result</div>
+      <div class="def">Function CXML:ATTRIBUTE (qname value) => value</div>
+      <div class="def">Generic Function CXML:UNPARSE-ATTRIBUTE (value) => string</div>
+      <div class="def">Function CXML:ATTRIBUTE* (prefix lname value) => value</div>
       <div class="def">Function CXML:TEXT (data) => data</div>
       <div class="def">Function CXML:CDATA (data) => data</div>
       Convenience syntax for event-based serialization.
