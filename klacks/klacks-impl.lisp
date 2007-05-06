@@ -285,7 +285,10 @@
   (with-source (source current-key current-values)
     (setf current-key nil)
     (setf current-values nil)
-    (labels ((klacks/done () #'klacks/done))
+    (labels ((klacks/done ()
+	       (setf current-key nil)
+	       (setf current-values nil)
+	       #'klacks/done))
       #'klacks/done)))
 
 (defun klacks/element (source input cont)
