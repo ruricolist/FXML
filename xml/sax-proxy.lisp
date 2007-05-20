@@ -8,7 +8,7 @@
 
 (in-package :cxml)
 
-(defclass broadcast-handler ()
+(defclass broadcast-handler (sax:sax-parser-mixin)
   ((handlers :initform nil
 	     :initarg :handlers
 	     :accessor broadcast-handler-handlers)))
@@ -59,6 +59,6 @@
   (define-proxy-method sax:entity-resolver (resolver))
   (define-proxy-method sax::dtd (dtd)))
 
-(defmethod sax:register-sax-parser :after ((handler sax-proxy) parser)
+(defmethod sax:register-sax-parser :after ((handler broadcast-handler) parser)
   (dolist (next (broadcast-handler-handlers handler))
     (sax:register-sax-parser next parser)))
