@@ -78,10 +78,14 @@
 
 (defmethod output-files ((operation compile-op) (c utf8dom-file))
   (let* ((normal (car (call-next-method)))
-	 (name (concatenate 'string (pathname-name normal) "-utf8"))
-	 (of (make-pathname :name name :defaults normal)))
-    (setf (slot-value c 'of) of)
-    (list of)))
+	 (name (concatenate 'string (pathname-name normal) "-utf8")))
+    (list (make-pathname :name name :defaults normal))))
+
+;; must be an extra method because of common-lisp-controller's :around method 
+(defmethod output-files :around ((operation compile-op) (c utf8dom-file))
+  (let ((x (call-next-method)))
+    (setf (slot-value c 'of) (car x))
+    x))
 
 (defmethod perform ((o load-op) (c utf8dom-file))
   (load (slot-value c 'of)))
