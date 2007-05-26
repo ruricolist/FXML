@@ -47,7 +47,8 @@
       <b>Compiling and loading CXML.</b>
       Register the .asd file, e.g. by symlinking it:
     </p>
-    <pre>$ ln -sf `pwd`/cxml.asd /path/to/your/registry/</pre>
+    <pre>$ ln -sf `pwd`/cxml.asd /path/to/your/registry/
+$ ln -sf `pwd`/runes.asd /path/to/your/registry/</pre>
     <p>Then compile CXML using:</p>
     <pre>* (asdf:operate 'asdf:load-op :cxml)</pre>
 

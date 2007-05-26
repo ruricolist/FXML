@@ -51,14 +51,19 @@
     <h3>See also</h3>
     <p>
       Relax NG validation is available as a separate
-      project: <a href="">cxml-rng</a>.
+      project: <a href="http://www.lichteblau.com/cxml-rng/">cxml-rng</a>.
     </p>
 
 
     <a name="changes"/>
     <h3>Recent Changes</h3>
-    <p class="nomargin"><tt>rel-2007-xx-yy</tt></p>
+    <p class="nomargin"><tt>rel-2007-05-26</tt></p>
     <ul class="nomargin">
+      <li><b>cxml.asd has been split up into <tt>cxml.asd</tt> for the
+      XML parser and <tt>runes.asd</tt> for the runes package, in
+      preparation of a complete split of the two systems.  Future CXML
+      releases will use separate tarballs for <tt>runes</tt>
+      and <tt>cxml</tt>.</b></li>
       <li>xml:base support (SAX and Klacks only, not yet used in DOM).
       See documentation <a href="sax.html#saxparser">here</a> and <a
       href="klacks.html#locator">here</a>.</li>
@@ -78,6 +83,7 @@
       klacks:expecting-element.  Fixed serialize-event to generate
       start-prefix-mapping and end-prefix-mapping events.  New function
       map-current-namespace-declarations.</li>
+      <li>fixed build with common-lisp-controller</li>
     </ul>
     <p class="nomargin"><tt>rel-2007-02-18</tt></p>
     <ul class="nomargin">
