@@ -110,10 +110,10 @@
   #+rune-is-character
   (define-maker make-character-stream-sink make-character-stream-ystream stream)
 
-  ;; #-rune-is-character
+  #-rune-is-character
   (define-maker make-string-sink/utf8 make-string-ystream/utf8)
 
-  ;; #-rune-is-character
+  #-rune-is-character
   (define-maker make-character-stream-sink/utf8
       make-character-stream-ystream/utf8
     stream))
