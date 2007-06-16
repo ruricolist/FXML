@@ -66,14 +66,14 @@
       (read-sequence result s )
       result)))
 
-(defun dribble-tests (directory)
+(defun dribble-tests (parser-fn directory)
   (let ((base (slot-value (asdf:find-system :cxml) 'asdf::relative-pathname)))
     (with-open-file (*standard-output*
 		     (merge-pathnames "XMLCONF" base)
 		     :direction :output
 		     :external-format :iso-8859-1
 		     :if-exists :supersede)
-      (run-all-tests directory))))
+      (run-all-tests parser-fn directory))))
 
 (defvar *parser-fn* 'sax-test)
 
