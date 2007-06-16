@@ -16,7 +16,28 @@
       DOM functions cannot be implemented on them.
     </p>
     <p>
-      <div class="def">Function CXML-XMLS:MAKE-XMLS-BUILDER (&amp;key include-default-values)</div>
+      <b>New namespace handling:</b>
+      XMLS compatibility is not <i>bug-for-bug</i>-compatible with
+      XMLS any more.  There is now a mode using pairs of local name
+      and namespace URI, and a second mode using qualified names
+      only.  The old behaviour using pairs of prefix and local names
+      was removed.
+    </p>
+    <p>
+      <strike>
+	fixme: It is unclear to me how namespaces are meant to
+	work in xmls, since xmls documentation differs from how xmls
+	actually works in current releases.  Usually applications need to
+	know both the namespace prefix <em>and</em> the namespace URI.  We
+	currently follow the xmls <em>implementation</em> and use the
+	namespace prefix instead of following its <em>documentation</em> which
+	shows the URI.  We do not follow xmls in munging xmlns attribute
+	values.  Attributes themselves have namespaces and it is not clear
+	to me how that works in xmls.
+      </strike>
+    </p>
+    <p>
+      <div class="def">Function CXML-XMLS:MAKE-XMLS-BUILDER (&amp;key include-default-values include-namespace-uri)</div>
       Create a SAX handler which builds XMLS list structures.&#160;
       If <tt>include-default-values</tt> is true, default values for
       attributes declared in a DTD are included as attributes in the
@@ -25,11 +46,18 @@
       values.
     </p>
     <p>
+      If <tt>include-namespace-uri</tt> is true (the default), node
+      names and attribute names are pairs of local name and namespace
+      URI. (Except for attributes without a namespace, which are named
+      using a string.) Otherwise, nodes and attributes are named by
+      their qualified name.
+    </p>
+    <p>
       Example:
     </p>
     <pre>(cxml:parse-file "test.xml" (cxml-xmls:make-xmls-builder))</pre>
     <p>
-      <div class="def">Function CXML-XMLS:MAP-NODE (handler node &amp;key include-xmlns-attributes)</div>
+      <div class="def">Function CXML-XMLS:MAP-NODE (handler node &amp;key include-xmlns-attributes include-namespace-uri)</div>
       Traverse an XMLS document/node and call SAX functions as if an XML
       representation of the document were processed by a SAX parser.
     </p>
@@ -50,17 +78,6 @@
     <p>
       The node list's <tt>car</tt> can also be a cons of local <tt>name</tt>
       and namespace prefix <tt>ns</tt>.
-    </p>
-    <p>
-      <em>fixme:</em> It is unclear to me how namespaces are meant to
-      work in xmls, since xmls documentation differs from how xmls
-      actually works in current releases.  Usually applications need to
-      know both the namespace prefix <em>and</em> the namespace URI.  We
-      currently follow the xmls <em>implementation</em> and use the
-      namespace prefix instead of following its <em>documentation</em> which
-      shows the URI.  We do not follow xmls in munging xmlns attribute
-      values.  Attributes themselves have namespaces and it is not clear
-      to me how that works in xmls.
     </p>
     <p>
       <div class="def">Accessor CXML-XMLS:NODE-NAME (node)</div>

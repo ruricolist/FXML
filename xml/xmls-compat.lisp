@@ -69,32 +69,50 @@
      (root :initform nil :accessor root)
      (include-default-values :initform t
                              :initarg :include-default-values
-                             :accessor include-default-values)))
+                             :accessor include-default-values)
+     (include-namespace-uri :initform t
+			    :initarg :include-namespace-uri
+			    :accessor include-namespace-uri)))
 
-(defun make-xmls-builder (&key (include-default-values t))
-  (make-instance 'xmls-builder :include-default-values include-default-values))
+(defun make-xmls-builder (&key (include-default-values t)
+		               (include-namespace-uri t))
+  "Make a XMLS style builder.  When 'include-namespace-uri is true a modified
+  XMLS tree is generated that includes the element namespace URI rather than
+  the qualified name prefix and also includes the namespace URI for attributes."
+  (make-instance 'xmls-builder
+		 :include-default-values include-default-values
+		 :include-namespace-uri include-namespace-uri))
 
 (defmethod sax:end-document ((handler xmls-builder))
   (root handler))
 
 (defmethod sax:start-element
     ((handler xmls-builder) namespace-uri local-name qname attributes)
-  (declare (ignore namespace-uri))
-  (setf local-name (or local-name qname))
-  (let* ((attributes
+  (let* ((include-default-values (include-default-values handler))
+	 (include-namespace-uri (include-namespace-uri handler))
+	 (attributes
           (loop
               for attr in attributes
-              when (or (sax:attribute-specified-p attr)
-                       (include-default-values handler))
+	      for attr-namespace-uri = (sax:attribute-namespace-uri attr)
+	      for attr-local-name = (sax:attribute-local-name attr)
+              when (and (or (sax:attribute-specified-p attr)
+			    include-default-values)
+			#+(or)
+			(or (not include-namespace-uri)
+			    (not attr-namespace-uri)
+			    attr-local-name))
               collect
-                (list (sax:attribute-qname attr)
+                (list (cond (include-namespace-uri
+			     (cond (attr-namespace-uri
+				    (cons attr-local-name attr-namespace-uri))
+				   (t
+				    (sax:attribute-qname attr))))
+                            (t
+                             (sax:attribute-qname attr)))
                       (sax:attribute-value attr))))
+	 (namespace (when include-namespace-uri namespace-uri))
          (node (make-node :name local-name
-                          :ns (let ((lq (length qname))
-                                    (ll (length local-name)))
-                                (if (eql lq ll)
-                                    nil
-                                    (subseq qname 0 (- lq ll 1))))
+                          :ns namespace
                           :attrs attributes))
          (parent (car (element-stack handler))))
     (if parent
@@ -129,34 +147,100 @@
 
 (defun map-node
     (handler node
-     &key (include-xmlns-attributes sax:*include-xmlns-attributes*))
+     &key (include-xmlns-attributes sax:*include-xmlns-attributes*)
+          (include-namespace-uri t))
+  (if include-namespace-uri
+      (map-node/lnames (cxml:make-namespace-normalizer handler)
+		       node
+		       include-xmlns-attributes)
+      (map-node/qnames handler node include-xmlns-attributes)))
+
+(defun map-node/lnames (handler node include-xmlns-attributes)
   (sax:start-document handler)
   (labels ((walk (node)
+	     (unless (node-ns node)
+	       (error "serializing with :INCLUDE-NAMESPACE-URI, but node ~
+                       was created without namespace URI"))
+	     (let* ((attlist
+		     (compute-attributes/lnames node include-xmlns-attributes))
+		    (uri (node-ns node))
+		    (lname (node-name node))
+		    (qname lname)	;let the normalizer fix it
+		    )
+	       (sax:start-element handler uri lname qname attlist)
+	       (dolist (child (node-children node))
+		 (typecase child
+		   (list (walk child))
+		   ((or string rod)
+		    (sax:characters handler (string-rod child)))))
+	       (sax:end-element handler uri lname qname))))
+    (walk node))
+  (sax:end-document handler))
+
+(defun map-node/qnames (handler node include-xmlns-attributes)
+  (sax:start-document handler)
+  (labels ((walk (node)
+	     (when (node-ns node)
+	       (error "serializing without :INCLUDE-NAMESPACE-URI, but node ~
+                       was created with a namespace URI"))
              (let* ((attlist
-                     (compute-attributes node include-xmlns-attributes))
-                    (lname (rod (node-name node)))
-                    (qname (if (node-ns node)
-			       (concatenate 'rod
-				 (rod (node-ns node))
-				 (rod ":")
-				 lname)
-			       lname)))
+		     (compute-attributes/qnames node include-xmlns-attributes))
+		    (qname (string-rod (node-name node)))
+                    (lname (nth-value 1 (cxml::split-qname qname))))
                (sax:start-element handler nil lname qname attlist)
                (dolist (child (node-children node))
                  (typecase child
                    (list (walk child))
-                   ((or string rod) (sax:characters handler (rod child)))))
+                   ((or string rod)
+		    (sax:characters handler (string-rod child)))))
                (sax:end-element handler nil lname qname))))
     (walk node))
   (sax:end-document handler))
 
-(defun compute-attributes (node xmlnsp)
+(defun compute-attributes/lnames (node xmlnsp)
   (remove nil
           (mapcar (lambda (a)
                     (destructuring-bind (name value) a
-                      (if (or xmlnsp (not (cxml::xmlns-attr-p (rod name))))
-                          (sax:make-attribute :qname (rod name)
-                                              :value (rod value)
+		      (unless (listp name)
+			(setf name (cons name nil)))
+                      (destructuring-bind (lname &rest uri) name
+			(cond
+			  ((not (equal uri "http://www.w3.org/2000/xmlns/"))
+			   (sax:make-attribute
+			    ;; let the normalizer fix the qname
+			    :qname (if uri
+				       (string-rod (concatenate 'string
+							 "dummy:"
+							 lname))
+				       (string-rod lname))
+			    :local-name (string-rod lname)
+			    :namespace-uri uri
+			    :value (string-rod value)
+			    :specified-p t))
+			  (xmlnsp
+			   (sax:make-attribute
+			    :qname (string-rod
+				    (if lname
+					(concatenate 'string "xmlns:" lname)
+					"xmlns"))
+			    :local-name (string-rod lname)
+			    :namespace-uri uri
+			    :value (string-rod value)
+			    :specified-p t))))))
+                  (node-attrs node))))
+
+(defun compute-attributes/qnames (node xmlnsp)
+  (remove nil
+          (mapcar (lambda (a)
+                    (destructuring-bind (name value) a
+		      (when (listp name)
+			(error "serializing without :INCLUDE-NAMESPACE-URI, ~
+                                but attribute was created with a namespace ~
+                                URI"))
+                      (if (or xmlnsp
+			      (not (cxml::xmlns-attr-p (string-rod name))))
+                          (sax:make-attribute :qname (string-rod name)
+                                              :value (string-rod value)
                                               :specified-p t)
                           nil)))
                   (node-attrs node))))

@@ -34,7 +34,7 @@
   (make-instance 'namespace-normalizer
     :xmlns-stack (list (mapcar (lambda (cons)
 				 (make-xmlns-attribute (car cons) (cdr cons)))
-			       *namespace-bindings*))
+			       *initial-namespace-bindings*))
     :chained-handler chained-handler))
 
 (defun normalizer-find-prefix (handler prefix)
@@ -74,7 +74,6 @@
 
 (defmethod sax:start-element
     ((handler namespace-normalizer) uri lname qname attrs)
-  (declare (ignore qname))
   (when (null uri)
     (setf uri #""))
   (let ((normal-attrs '()))
@@ -85,8 +84,12 @@
 	  (push a normal-attrs)))
     (flet ((push-namespace (prefix uri)
 	     (let ((new (make-xmlns-attribute prefix uri)))
-	       (push new (car (xmlns-stack handler)))
-	       (push new attrs))))
+	       (unless (find (sax:attribute-qname new)
+			     attrs
+			     :test #'rod=
+			     :key #'sax:attribute-qname)
+		 (push new (car (xmlns-stack handler)))
+		 (push new attrs)))))
       (multiple-value-bind (prefix local-name) (split-qname qname)
 	(setf lname local-name)
 	(let ((binding (normalizer-find-prefix handler prefix)))

@@ -61,6 +61,13 @@
     <ul class="nomargin">
       <li>Serialization no longer defaults to canonical form.</li>
       <li>Fixed octet array argument to make-source.</li>
+      <li>
+	XMLS compatibility is not <i>bug-for-bug</i>-compatible with
+	XMLS any more.  There is now a mode using pairs of local name
+	and namespace URI, and a second mode using qualified names
+	only.  The old behaviour using pairs of prefix and local names
+	was removed.  (Thanks to Douglas Crosher.)
+      </li>
     </ul>
     <p class="nomargin"><tt>rel-2007-05-26</tt></p>
     <ul class="nomargin">
