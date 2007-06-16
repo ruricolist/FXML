@@ -274,13 +274,6 @@
   (with-attributes (|type|) element 
    `(equal ,|type| "text/xml")))
 
-#-allegro
-(defun translate-uri-equals (element)
-  (declare (ignore element))
-  (warn "oops, assert-uri-equals needs Franz' URI package")
-  (throw 'give-up nil))
-
-#+allegro
 (defun translate-uri-equals (element)
   (with-attributes
       (|actual|
