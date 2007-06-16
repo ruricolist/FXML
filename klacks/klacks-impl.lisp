@@ -162,7 +162,9 @@
 	       :entity-name "main document"
 	       :entity-kind :main
 	       :uri nil))
-	(apply #'make-source xstream args)))))
+	(apply #'make-source xstream args)))
+    (array
+     (make-source (cxml::make-octet-input-stream input)))))
 
 (defun %make-source
     (input &key validate dtd root entity-resolver disallow-internal-subset
