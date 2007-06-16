@@ -72,7 +72,7 @@
 (defclass sink ()
     ((ystream :initarg :ystream :accessor sink-ystream)
      (width :initform 79 :initarg :width :accessor width)
-     (canonical :initform t :initarg :canonical :accessor canonical)
+     (canonical :initform nil :initarg :canonical :accessor canonical)
      (indentation :initform nil :initarg :indentation :accessor indentation)
      (current-indentation :initform 0 :accessor current-indentation)
      (notations :initform (make-buffer :element-type t) :accessor notations)
