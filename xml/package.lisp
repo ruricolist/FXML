@@ -6,7 +6,7 @@
 (in-package :cl-user)
 
 (defpackage :cxml
-  (:use :cl :runes :runes-encoding :trivial-gray-streams)
+  (:use :cl :runes :runes-encoding #-scl :trivial-gray-streams)
   (:export
    ;; xstreams
    #:make-xstream

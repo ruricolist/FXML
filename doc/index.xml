@@ -68,6 +68,12 @@
 	only.  The old behaviour using pairs of prefix and local names
 	was removed.  (Thanks to Douglas Crosher.)
       </li>
+      <li>
+	SCL support (thanks to Douglas Crosher).  Includes support for
+	implementations where URIs are valid namestrings, and a mode
+	where normal streams are used instead of xstreams and ystreams
+	(albeit both SCL-specific at this point).
+      </li>
     </ul>
     <p class="nomargin"><tt>rel-2007-05-26</tt></p>
     <ul class="nomargin">

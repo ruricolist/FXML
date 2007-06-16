@@ -248,3 +248,50 @@
 
   (defmethod close-ystream ((ystream string-ystream/utf8))
     (get-output-stream-string (ystream-os-stream ystream))))
+
+
+;;;; helper functions
+
+(defun rod-to-utf8-string (rod)
+  (let ((out (make-buffer :element-type 'character)))
+    (runes-to-utf8/adjustable-string out rod (length rod))
+    out))
+
+(defun utf8-string-to-rod (str)
+  (let* ((bytes (map '(vector (unsigned-byte 8)) #'char-code str))
+         (buffer (make-array (length bytes) :element-type '(unsigned-byte 16)))
+         (n (runes-encoding:decode-sequence
+	     :utf-8 bytes 0 (length bytes) buffer 0 0 nil))
+         (result (make-array n :element-type 'rune)))
+    (map-into result #'code-rune buffer)
+    result))
+
+(defclass octet-input-stream
+    (trivial-gray-stream-mixin fundamental-binary-input-stream)
+    ((octets :initarg :octets)
+     (pos :initform 0)))
+
+(defmethod close ((stream octet-input-stream) &key abort)
+  (declare (ignore abort))
+  (open-stream-p stream))
+
+(defmethod stream-read-byte ((stream octet-input-stream))
+  (with-slots (octets pos) stream
+    (if (>= pos (length octets))
+        :eof
+        (prog1
+            (elt octets pos)
+          (incf pos)))))
+
+(defmethod stream-read-sequence
+    ((stream octet-input-stream) sequence start end &key &allow-other-keys)
+  (with-slots (octets pos) stream
+    (let* ((length (min (- end start) (- (length octets) pos)))
+           (end1 (+ start length))
+           (end2 (+ pos length)))
+      (replace sequence octets :start1 start :end1 end1 :start2 pos :end2 end2)
+      (setf pos end2)
+      end1)))
+
+(defun make-octet-input-stream (octets)
+  (make-instance 'octet-input-stream :octets octets))

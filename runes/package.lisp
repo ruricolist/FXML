@@ -79,7 +79,11 @@
 	   #:make-string-ystream/utf8
            ;; #+rune-is-integer
 	   #:make-character-stream-ystream/utf8
-	   #:runes-to-utf8/adjustable-string))
+	   #:runes-to-utf8/adjustable-string
+
+	   #:rod-to-utf8-string
+	   #:utf8-string-to-rod
+	   #:make-octet-input-stream))
 
 (defpackage :utf8-runes
   (:use :cl)

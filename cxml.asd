@@ -4,6 +4,9 @@
 
 (defclass closure-source-file (cl-source-file) ())
 
+#+scl
+(pushnew 'uri-is-namestring *features*)
+
 #+sbcl
 (defmethod perform :around ((o compile-op) (s closure-source-file))
   ;; shut up already.  Correctness first.
@@ -30,7 +33,7 @@
      (:file "space-normalizer" :depends-on ("xml-parse"))
      (:file "catalog"         :depends-on ("xml-parse"))
      (:file "sax-proxy"       :depends-on ("xml-parse")))
-    :depends-on (:runes :puri :trivial-gray-streams))
+    :depends-on (:runes :puri #-scl :trivial-gray-streams))
 
 (defclass utf8dom-file (closure-source-file) ((of)))
 
