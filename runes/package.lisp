@@ -9,7 +9,7 @@
 (in-package :cl-user)
 
 (defpackage :runes
-  (:use :cl)
+  (:use :cl #-scl :trivial-gray-streams)
   (:export #:definline
 
            ;; runes.lisp
