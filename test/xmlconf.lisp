@@ -53,7 +53,7 @@
             (when (plusp (length output))
               (merge-pathnames output sub-directory)))))
 
-(defun serialize-document (document)
+(defmethod serialize-document ((document t))
   (dom:map-document (cxml:make-octet-vector-sink :canonical 2)
 		    document
 		    :include-doctype :canonical-notations
@@ -195,6 +195,10 @@
 		 :validate nil)
 	(error "well-formedness violation not detected")
       nil)
+    #+fixme-stp-test
+    (error ()
+      (format t " unexpected-error")
+      t)
     (cxml:well-formedness-violation ()
       (format t " not-wf")
       t))
@@ -207,6 +211,10 @@
 		 :validate t)
 	(error "well-formedness violation not detected")
       nil)
+    #+fixme-stp-test
+    (error ()
+      (format t " unexpected-error")
+      t)
     (cxml:well-formedness-violation ()
       (format t " not-wf")
       t)
