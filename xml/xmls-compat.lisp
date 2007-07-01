@@ -6,9 +6,6 @@
 ;;;; Developed 2004 for headcraft - http://headcraft.de/
 ;;;; Copyright: David Lichteblau
 
-;;;; XXX Der namespace-Support in xmls kommt mir zweifelhaft vor.
-;;;; Wir imitieren das soweit es gebraucht wurde bisher.
-
 (defpackage cxml-xmls
   (:use :cl :runes)
   (:export #:make-node #:node-name #:node-ns #:node-attrs #:node-children
