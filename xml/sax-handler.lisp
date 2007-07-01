@@ -73,6 +73,7 @@
 	   #:start-dtd
 	   #:end-dtd
 	   #:start-internal-subset
+	   #:unparsed-internal-subset
 	   #:end-internal-subset
            #:unparsed-entity-declaration
            #:external-entity-declaration
@@ -336,6 +337,11 @@ any definition from the internal subset is reported.")
   (:documentation "Called after processing of the internal subset has
 finished, if present.")
   (:method ((handler t)) nil))
+
+(defgeneric unparsed-internal-subset (handler str)
+  (:documentation "Reports that an internal subset is present, but has not
+been parsed and is available as a string.")
+  (:method ((handler t) str) nil))
 
 (defgeneric unparsed-entity-declaration
     (handler name public-id system-id notation-name)
