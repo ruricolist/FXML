@@ -58,6 +58,7 @@
    #:unparse-attribute
    #:cdata
    #:text
+   #:doctype
 
    #:xml-parse-error
    #:well-formedness-violation

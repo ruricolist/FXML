@@ -299,6 +299,7 @@
       <div class="def">Function CXML:ATTRIBUTE* (prefix lname value) => value</div>
       <div class="def">Function CXML:TEXT (data) => data</div>
       <div class="def">Function CXML:CDATA (data) => data</div>
+      <div class="def">Function CXML:doctype (name public-id system-id &amp;optional internal-subset)</div>
       Convenience syntax for event-based serialization.
     </p>
     <p>

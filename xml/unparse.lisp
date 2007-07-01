@@ -564,6 +564,12 @@
 (defmacro with-namespace ((prefix uri) &body body)
   `(invoke-with-namespace (lambda () ,@body) ,prefix ,uri))
 
+(defun doctype (name public-id system-id &optional internal-subset)
+  (sax:start-dtd *sink* name public-id system-id)
+  (when internal-subset
+    (sax:unparsed-internal-subset *sink* internal-subset))
+  (sax:end-dtd *sink*))
+
 (defun maybe-emit-start-tag ()
   (when *current-element*
     ;; starting child node, need to emit opening tag of parent first:
