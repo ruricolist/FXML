@@ -59,6 +59,10 @@
     <h3>Recent Changes</h3>
     <p class="nomargin"><tt>rel-2007-mm-dd</tt></p>
     <ul class="nomargin">
+      <li>
+	Fixed build on non-Unicode lisps.  Fixed parsing on
+	non-Unicode lisps.  Fixed Unicode detection on OpenMCL.
+      </li>
       <li>Serialization no longer defaults to canonical form.</li>
       <li>Fixed octet array argument to make-source.</li>
       <li>
@@ -74,6 +78,8 @@
 	where normal streams are used instead of xstreams and ystreams
 	(albeit both SCL-specific at this point).
       </li>
+      <li>new convenience serialization function cxml:doctype.  Various
+	DTD serialization fixes.</li>
     </ul>
     <p class="nomargin"><tt>rel-2007-05-26</tt></p>
     <ul class="nomargin">

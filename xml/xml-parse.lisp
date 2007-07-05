@@ -2771,7 +2771,7 @@
 		(write-char c out))))))
 
 (defun compute-base (attrs)
-  (let ((new (sax:find-attribute "xml:base" attrs))
+  (let ((new (sax:find-attribute #"xml:base" attrs))
 	(current (car (base-stack *ctx*))))
     (if new
 	(puri:merge-uris (escape-uri (sax:attribute-value new)) current)

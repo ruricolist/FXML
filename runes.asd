@@ -26,7 +26,9 @@
                       (progn
                         (format t " ok, characters have at least 16 bits.~%")
                         :rune-is-character))
-             (unless (and (< x char-code-limit) (code-char x))
+             (unless (or (<= #xD800 x #xDFFF)
+			 (and (< x char-code-limit) (code-char x)))
+	       (print (code-char x))
                (format t " no, reverting to octet strings.~%")
                (return :rune-is-integer)))
            *features*))

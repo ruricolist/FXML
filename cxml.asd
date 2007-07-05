@@ -2,6 +2,9 @@
   (:use :asdf :cl))
 (in-package :cxml-system)
 
+;; force loading of runes.asd, which installs *features* this file depends on
+(find-system :runes)
+
 (defclass closure-source-file (cl-source-file) ())
 
 #+scl

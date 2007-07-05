@@ -4,5 +4,4 @@ all:
 
 .PHONY: clean
 clean:
-	touch dummy.fasl
-	find . \( -name \*.fasl -o -name \*.x86f \) -print0 | xargs -0 rm
+	find . \( -name \*.fasl -o -name \*.x86f -o -name \*.lx64fsl \) -print0 | xargs -0 rm -f
