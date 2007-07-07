@@ -63,6 +63,7 @@
 	Fixed build on non-Unicode lisps.  Fixed parsing on
 	non-Unicode lisps.  Fixed Unicode detection on OpenMCL.
       </li>
+      <li>New function <tt>cxml:parse</tt>.</li>
       <li>Serialization no longer defaults to canonical form.</li>
       <li>Fixed octet array argument to make-source.</li>
       <li>
@@ -83,11 +84,11 @@
     </ul>
     <p class="nomargin"><tt>rel-2007-05-26</tt></p>
     <ul class="nomargin">
-      <li><b>cxml.asd has been split up into <tt>cxml.asd</tt> for the
+      <li>cxml.asd has been split up into <tt>cxml.asd</tt> for the
       XML parser and <tt>runes.asd</tt> for the runes package, in
       preparation of a complete split of the two systems.  Future CXML
       releases will use separate tarballs for <tt>runes</tt>
-      and <tt>cxml</tt>.</b></li>
+      and <tt>cxml</tt>.</li>
       <li>xml:base support (SAX and Klacks only, not yet used in DOM).
       See documentation <a href="sax.html#saxparser">here</a> and <a
       href="klacks.html#locator">here</a>.</li>

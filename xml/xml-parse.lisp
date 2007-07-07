@@ -3094,6 +3094,32 @@
       (setf (slot-value pathname 'lisp::host) "localhost"))
     pathname))
 
+(defun parse
+    (input handler &rest args
+     &key validate dtd root entity-resolver disallow-internal-subset
+          recode pathname)
+  (declare (ignore validate dtd root entity-resolver disallow-internal-subset
+		   recode))
+  (let ((args
+	 (loop
+	    for (name value) on args by #'cddr
+	    unless (eq name :pathname)
+	    append (list name value))))
+    (etypecase input
+      (xstream  (apply #'make-xstream input handler args))
+      (pathname (apply #'parse-file input handler args))
+      (rod      (apply #'parse-rod input handler args))
+      (array    (apply #'parse-octets input handler args))
+      (stream 
+       (let ((xstream (make-xstream input :speed 8192)))
+	 (setf (xstream-name xstream)
+	       (make-stream-name
+		:entity-name "main document"
+		:entity-kind :main
+		:uri (pathname-to-uri
+		      (merge-pathnames (or pathname (pathname input))))))
+	 (apply #'parse-xstream xstream handler args))))))
+
 (defun parse-xstream (xstream handler &rest args)
   (let ((*ctx* nil))
     (handler-case

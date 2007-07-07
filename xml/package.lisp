@@ -32,6 +32,7 @@
    #:attribute-qname
    #:attribute-value
    
+   #:parse
    #:parse-file
    #:parse-stream
    #:parse-rod
