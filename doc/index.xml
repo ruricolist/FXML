@@ -57,7 +57,7 @@
 
     <a name="changes"/>
     <h3>Recent Changes</h3>
-    <p class="nomargin"><tt>rel-2007-mm-dd</tt></p>
+    <p class="nomargin"><tt>rel-2007-07-07</tt></p>
     <ul class="nomargin">
       <li>
 	Fixed build on non-Unicode lisps.  Fixed parsing on
