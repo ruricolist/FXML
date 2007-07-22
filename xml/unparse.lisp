@@ -145,15 +145,15 @@
     (%write-rod #"<!DOCTYPE " sink)
     (%write-rod (name-for-dtd sink) sink)
     (cond
-      (public-id
+      ((not (zerop (length public-id)))
         (%write-rod #" PUBLIC \"" sink)
         (unparse-string public-id sink)
         (%write-rod #"\" \"" sink)
         (unparse-string system-id sink)
         (%write-rod #"\"" sink))
-      (system-id
+      ((not (zerop (length system-id)))
         (%write-rod #" SYSTEM \"" sink)
-        (unparse-string public-id sink)
+        (unparse-string system-id sink)
         (%write-rod #"\"" sink)))))
 
 (defmethod sax:start-internal-subset ((sink sink))
@@ -175,7 +175,7 @@
   (ensure-doctype sink)
   (%write-rod #" [" sink)
   (%write-rune #/U+000A sink)
-  (unparse-string str sink)
+  (%write-rod str sink)
   (%write-rod #"]" sink))
 
 ;; for the benefit of the XML test suite, prefer ' over "
@@ -383,14 +383,17 @@
     (start-indentation-block sink))
   (%write-rune #/< sink)
   (%write-rod qname sink)
-  (let ((atts (sort (copy-list attributes) #'rod< :key #'sax:attribute-qname)))
-    (dolist (a atts)
-      (%write-rune #/space sink)
-      (%write-rod (sax:attribute-qname a) sink)
-      (%write-rune #/= sink)
-      (%write-rune #/\" sink)
-      (unparse-string (sax:attribute-value a) sink)
-      (%write-rune #/\" sink)))
+  (dolist (a (if (canonical sink)
+		 (sort (copy-list attributes)
+		       #'rod<
+		       :key #'sax:attribute-qname)
+		 attributes))
+    (%write-rune #/space sink)
+    (%write-rod (sax:attribute-qname a) sink)
+    (%write-rune #/= sink)
+    (%write-rune #/\" sink)
+    (unparse-string (sax:attribute-value a) sink)
+    (%write-rune #/\" sink))
   (when (canonical sink)
     (maybe-close-tag sink)))
 
@@ -420,7 +423,7 @@
   (unless (rod-equal target '#.(string-rod "xml"))
     (%write-rod '#.(string-rod "<?") sink)
     (%write-rod target sink)
-    (when data
+    (unless (zerop (length data))
       (%write-rune #/space sink)
       (%write-rod data sink))
     (%write-rod '#.(string-rod "?>") sink)))
@@ -448,6 +451,14 @@
 	    (if (canonical sink)
 		(loop for c across data do (unparse-datachar c y))
 		(loop for c across data do (unparse-datachar-readable c y))))))))
+
+(defmethod sax:comment ((sink sink) data)
+  (maybe-close-tag sink)
+  (unless (canonical sink)
+    ;; XXX signal error if body is unprintable?
+    (%write-rod #"<!--" sink)
+    (map nil (lambda (c) (%write-rune c sink)) data)
+    (%write-rod #"-->" sink)))
 
 (defmethod sax:end-cdata ((sink sink))
   (unless (eq (pop (stack sink)) :cdata)
@@ -510,6 +521,7 @@
         ((rune= c #/<) (write-rod '#.(string-rod "&lt;") ystream))
         ((rune= c #/>) (write-rod '#.(string-rod "&gt;") ystream))
         ((rune= c #/\") (write-rod '#.(string-rod "&quot;") ystream))
+        ((rune= c #/U+000D) (write-rod '#.(string-rod "&#13;") ystream))
         (t
           (write-rune c ystream))))
 
