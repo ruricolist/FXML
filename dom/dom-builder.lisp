@@ -135,7 +135,7 @@
       (cond
         ((eq (dom:node-type parent) :cdata-section)
           (setf (dom:data parent) data))
-        ((and last-child (eq (dom:node-type last-child) :text))
+	((and last-child (eq (dom:node-type last-child) :text))
           ;; um entities herum wird SAX:CHARACTERS mehrfach aufgerufen fuer
           ;; den gleichen Textknoten.  Hier muessen wir den bestehenden Knoten
           ;; erweitern, sonst ist das Dokument nicht normalisiert.

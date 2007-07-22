@@ -250,7 +250,7 @@
                (setf rptr (%+ rptr 1)))
             
               ((%<= #|#b11000000|# byte0 #b11011111)
-               (cond ((< (%+ rptr 2) in-end)
+               (cond ((<= (%+ rptr 2) in-end)
                       (put
                        (dpb (ldb (byte 5 0) byte0) (byte 5 6)
                             (dpb (ldb (byte 6 0) (aref in (%+ rptr 1))) (byte 6 0)
@@ -260,7 +260,7 @@
                       (return))))
             
               ((%<= #|#b11100000|# byte0 #b11101111)
-               (cond ((< (%+ rptr 3) in-end)
+               (cond ((<= (%+ rptr 3) in-end)
                       (put
                        (dpb (ldb (byte 4 0) byte0) (byte 4 12)
                             (dpb (ldb (byte 6 0) (aref in (%+ 1 rptr))) (byte 6 6)
@@ -271,7 +271,7 @@
                       (return))))
             
               ((%<= #|#b11110000|# byte0 #b11110111)
-               (cond ((< (%+ rptr 4) in-end)
+               (cond ((<= (%+ rptr 4) in-end)
                       (put
                        (dpb (ldb (byte 3 0) byte0) (byte 3 18)
                             (dpb (ldb (byte 6 0) (aref in (%+ 1 rptr))) (byte 6 12)
@@ -283,7 +283,7 @@
                       (return))))
             
               ((%<= #|#b11111000|# byte0 #b11111011)
-               (cond ((< (%+ rptr 5) in-end)
+               (cond ((<= (%+ rptr 5) in-end)
                       (put
                        (dpb (ldb (byte 2 0) byte0) (byte 2 24)
                             (dpb (ldb (byte 6 0) (aref in (%+ 1 rptr))) (byte 6 18)
@@ -296,7 +296,7 @@
                       (return))))
             
               ((%<= #|#b11111100|# byte0 #b11111101)
-               (cond ((< (%+ rptr 6) in-end)
+               (cond ((<= (%+ rptr 6) in-end)
                       (put
                        (dpb (ldb (byte 1 0) byte0) (byte 1 30)
                             (dpb (ldb (byte 6 0) (aref in (%+ 1 rptr))) (byte 6 24)

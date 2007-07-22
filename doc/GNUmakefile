@@ -2,5 +2,5 @@ all: dom.html index.html installation.html klacks.html quickstart.html sax.html 
 
 %.html: %.xml html.xsl
 	xsltproc html.xsl $< >$@.tmp
-	chmod -w *.html
 	mv $@.tmp $@
+	chmod -w $@

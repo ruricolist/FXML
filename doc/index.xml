@@ -4,26 +4,13 @@
     <p>An XML parser written in Common Lisp.</p>
 
     <p>
-      Closure XML was written by <a
-      href="http://www.stud.uni-karlsruhe.de/~unk6/">Gilbert Baumann</a>
-      (unk6 at rz.uni-karlsruhe.de) as part of the Closure web
-      browser.<br/>
-      Contributions to the parser by
-    </p>
-    <ul>
-      <li>
-        Henrik Motakef (hmot at henrik-motakef.de)<br/>
-        (SAX layer; namespace support)
-      </li>
-      <li>
-        <a href="mailto:david@lichteblau.com">David Lichteblau</a> for <a
-        href="http://www.knowledgetools.de">knowledgeTools</a>
-        (conversion into an independent package; DOM bug fixing; validation)
-        and <a href="http://www.headcraft.de/">headcraft</a>
-        (most september/october 2004 changes) and privately (changes
-        since then).
-      </li>
-    </ul>
+      Closure XML was written
+      by <a href="http://www.stud.uni-karlsruhe.de/~unk6/">Gilbert
+      Baumann</a> as part of the Closure web browser and is now
+      maintained by
+      <a href="mailto:david@lichteblau.com">David Lichteblau</a>.
+      It is licensed under Lisp-LGPL.
+    </p>      
 
     <p>
       CXML implements a <a
@@ -37,10 +24,6 @@
     </p>
 
     <p>
-      CXML is licensed under Lisp-LGPL.
-    </p>
-
-    <p>
       Send bug reports to <a
       href="mailto:cxml-devel@common-lisp.net">cxml-devel@common-lisp.net</a>
       (<a
@@ -48,15 +31,31 @@
       information</a>).
     </p>
 
-    <h3>See also</h3>
+    <h3>Add-on features</h3>
     <p>
-      Relax NG validation is available as a separate
-      project: <a href="http://www.lichteblau.com/cxml-rng/">cxml-rng</a>.
+      The following libraries are available as separate downloads:
+    </p>
+    <p>
+      &#x2b17;&#160;
+      <a href="http://www.lichteblau.com/cxml-rng/">cxml-rng</a>
+      &#160;&#160;
+      Relax NG validation
+    </p>
+    <p>
+      &#x2b17;&#160;
+      <a href="http://www.lichteblau.com/cxml-stp/">cxml-stp</a>
+      &#160;&#160;
+      STP, an alternative to DOM
     </p>
 
 
     <a name="changes"/>
     <h3>Recent Changes</h3>
+    <p class="nomargin"><tt>rel-2007-xx-yy</tt></p>
+    <ul class="nomargin">
+      <li>Various DTD serialization fixes</li>
+      <li>UTF-8 fix, thanks to Francis Leboutte</li>
+    </ul>
     <p class="nomargin"><tt>rel-2007-07-07</tt></p>
     <ul class="nomargin">
       <li>
