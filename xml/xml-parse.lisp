@@ -1095,9 +1095,10 @@
   (let ((e (find-element element-name dtd)))
     (cond
       ((null e)
-        (setf (gethash element-name (dtd-elements dtd))
-              (make-elmdef :name element-name :content content-model))
-       (sax:element-declaration (handler *ctx*) element-name content-model))
+       (prog1
+	   (setf (gethash element-name (dtd-elements dtd))
+		 (make-elmdef :name element-name :content content-model))
+	 (sax:element-declaration (handler *ctx*) element-name content-model)))
       ((null content-model)
         e)
       (t
