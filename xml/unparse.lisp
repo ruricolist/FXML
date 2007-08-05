@@ -423,9 +423,12 @@
   (unless (rod-equal target '#.(string-rod "xml"))
     (%write-rod '#.(string-rod "<?") sink)
     (%write-rod target sink)
-    (unless (zerop (length data))
-      (%write-rune #/space sink)
-      (%write-rod data sink))
+    (cond
+      ((plusp (length data))
+       (%write-rune #/space sink)
+       (%write-rod data sink))
+      ((canonical sink)
+       (%write-rune #/space sink)))
     (%write-rod '#.(string-rod "?>") sink)))
 
 (defmethod sax:start-cdata ((sink sink))
