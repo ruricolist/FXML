@@ -51,7 +51,7 @@
 
     <a name="changes"/>
     <h3>Recent Changes</h3>
-    <p class="nomargin"><tt>rel-2007-xx-yy</tt></p>
+    <p class="nomargin"><tt>rel-2007-08-05</tt></p>
     <ul class="nomargin">
       <li>Various DTD serialization fixes</li>
       <li>UTF-8 fix, thanks to Francis Leboutte</li>
