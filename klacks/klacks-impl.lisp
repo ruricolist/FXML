@@ -137,8 +137,7 @@
 	      (make-stream-name
 	       :entity-name "main document"
 	       :entity-kind :main
-	       :uri (pathname-to-uri
-		     (merge-pathnames (or pathname (pathname input))))))
+	       :uri (safe-stream-sysid input)))
 	(apply #'make-source xstream args)))
     (pathname
       (let* ((xstream
