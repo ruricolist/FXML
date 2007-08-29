@@ -128,6 +128,7 @@
   
   ;; How much to read each time
   (speed         0 :type buffer-index)
+  (full-speed    0 :type buffer-index)
   
   ;; Some stream object obeying to a certain protcol
   os-stream
@@ -256,6 +257,8 @@
 
 ;;; Underflow
 
+(defconstant +default-buffer-size+ 100)
+
 (defmethod xstream-underflow ((input xstream))
   (declare (type xstream input))
   ;; we are about to fill new data into the buffer, so we need to
@@ -274,12 +277,11 @@
       ;; then we take care that the buffer is large enough to carry at
       ;; least 100 bytes (a random number)
       ;;
-      ;; david: was heisst da random?  ich nehme an, dass 100 einfach
-      ;; ausreichend sein soll, um die laengste utf-8 bytesequenz oder die
-      ;; beiden utf-16 surrogates zu halten?  dann ist 100 ja wohl dicke
-      ;; ausreichend und koennte in make-xstream ordentlich geprueft werden.
-      ;; oder was geht hier vor?
-      (unless (>= (length (xstream-os-buffer input)) 100)
+      ;; David: My understanding is that any number of octets large enough
+      ;; to record the longest UTF-8 sequence or UTF-16 sequence is okay,
+      ;; so 100 is plenty for this purpose.
+      (unless (>= (length (xstream-os-buffer input)) 
+		  +default-buffer-size+)
         (error "You lost")))
     (setf n
       (read-octets (xstream-os-buffer input) (xstream-os-stream input)
@@ -316,16 +318,18 @@
       (if (eq initial-encoding :guess)
           (figure-encoding os-stream)
           (values initial-encoding nil))
-    (let ((osbuf (make-array speed :element-type '(unsigned-byte 8))))
+    (let* ((bufsize (max speed +default-buffer-size+))
+	   (osbuf (make-array bufsize :element-type '(unsigned-byte 8))))
       (replace osbuf preread)
       (make-xstream/low
-       :buffer (let ((r (make-array speed :element-type 'buffer-byte)))
+       :buffer (let ((r (make-array bufsize :element-type 'buffer-byte)))
                  (setf (elt r 0) #xFFFF)
                  r)
        :read-ptr 0
        :fill-ptr 0
        :os-buffer osbuf
        :speed initial-speed
+       :full-speed speed
        :os-stream os-stream
        :os-left-start 0
        :os-left-end (length preread)
@@ -375,7 +379,7 @@
   (xstream/close (xstream-os-stream input)))
 
 (defun set-to-full-speed (xstream)
-  (setf (xstream-speed xstream) (length (xstream-os-buffer xstream))))
+  (setf (xstream-speed xstream) (xstream-full-speed xstream)))
 
 ;;; controller implementations
 
