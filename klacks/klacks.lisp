@@ -79,6 +79,12 @@
     (check-type key (member :characters))
     characters))
 
+(defun klacks:consume-characters (source)
+  (with-output-to-string (s)
+    (while (eq (klacks:peek source) :characters)
+      (write-string (klacks:current-characters source) s)
+      (klacks:consume source))))
+
 (defun klacks:serialize-event (source handler &key (consume t))
   (multiple-value-bind (key a b c) (klacks:peek source)
     (let ((result nil))

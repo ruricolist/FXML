@@ -21,8 +21,10 @@
   (:export #:source
 	   #:close-source
 	   #:with-open-source
+
 	   #:tapping-source
 	   #:make-tapping-source
+	   #:dribble-handler
 
 	   #:peek
 	   #:peek-value
@@ -42,6 +44,7 @@
 	   #:current-lname
 	   #:current-qname
 	   #:current-characters
+	   #:consume-characters
 	   #:current-cdata-section-p
 	   #:map-current-namespace-declarations
 	   
