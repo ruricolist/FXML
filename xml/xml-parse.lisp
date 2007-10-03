@@ -2800,45 +2800,39 @@
 
 (defun p/content (input)
   ;; [43] content ::= (element | CharData | Reference | CDSect | PI | Comment)*
-  (multiple-value-bind (cat sem) (peek-token input)
-    (case cat
-      ((:stag :ztag)
-       (p/element input)
-       (p/content input))
-      ((:CDATA)
-       (process-characters input sem)
-       (sax:characters (handler *ctx*) sem)
-       (p/content input))
-      ((:ENTITY-REF)
-       (let ((name sem))
-         (consume-token input)
-         (append
-          (recurse-on-entity input name :general
-                             (lambda (input)
-                               (prog1
-                                   (etypecase (checked-get-entdef name :general)
-                                     (internal-entdef (p/content input))
-                                     (external-entdef (p/ext-parsed-ent input)))
-                                 (unless (eq (peek-token input) :eof)
-                                   (wf-error input "Trailing garbage. - ~S"
-					     (peek-token input))))))
-          (p/content input))))
-      ((:<!\[)
-       (let ((data (process-cdata-section input)))
-	 (sax:start-cdata (handler *ctx*))
-	 (sax:characters (handler *ctx*) data)
-	 (sax:end-cdata (handler *ctx*)))
-       (p/content input))
-      ((:PI)
-       (consume-token input)
-       (sax:processing-instruction (handler *ctx*) (car sem) (cdr sem))
-       (p/content input))
-      ((:COMMENT)
-       (consume-token input)
-       (sax:comment (handler *ctx*) sem)
-       (p/content input))
-      (otherwise
-       nil))))
+  (loop
+     (multiple-value-bind (cat sem) (peek-token input)
+       (case cat
+	 ((:stag :ztag)
+	  (p/element input))
+	 ((:CDATA)
+	  (process-characters input sem)
+	  (sax:characters (handler *ctx*) sem))
+	 ((:ENTITY-REF)
+	  (let ((name sem))
+	    (consume-token input)
+	    (recurse-on-entity input name :general
+			       (lambda (input)
+				 (prog1
+				     (etypecase (checked-get-entdef name :general)
+				       (internal-entdef (p/content input))
+				       (external-entdef (p/ext-parsed-ent input)))
+				   (unless (eq (peek-token input) :eof)
+				     (wf-error input "Trailing garbage. - ~S"
+					       (peek-token input))))))))
+	 ((:<!\[)
+	  (let ((data (process-cdata-section input)))
+	    (sax:start-cdata (handler *ctx*))
+	    (sax:characters (handler *ctx*) data)
+	    (sax:end-cdata (handler *ctx*))))
+	 ((:PI)
+	  (consume-token input)
+	  (sax:processing-instruction (handler *ctx*) (car sem) (cdr sem)))
+	 ((:COMMENT)
+	  (consume-token input)
+	  (sax:comment (handler *ctx*) sem))
+	 (otherwise
+	  (return))))))
 
 ;; [78] extParsedEnt ::= TextDecl? contentw
 ;; [79]        extPE ::= TextDecl? extSubsetDecl
