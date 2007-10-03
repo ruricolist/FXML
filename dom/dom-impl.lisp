@@ -1247,7 +1247,8 @@
       (push instance (element-stack handler))
       #+cxml-system::utf8dom-file
       (setf handler (cxml:make-recoder handler #'cxml:rod-to-utf8-string))
-      (funcall resolver (real-rod (dom:name instance)) handler)))
+      (funcall resolver (real-rod (dom:name instance)) handler)
+      (flush-characters handler)))
   (labels ((walk (n)
              (setf (slot-value n 'read-only-p) t)
              (when (dom:element-p n)

@@ -18,7 +18,8 @@
 (defclass dom-builder ()
   ((document      :initform nil :accessor document)
    (element-stack :initform '() :accessor element-stack)
-   (internal-subset             :accessor internal-subset)))
+   (internal-subset             :accessor internal-subset)
+   (text-buffer   :initform nil :accessor text-buffer)))
 
 (defun make-dom-builder ()
   (make-instance 'dom-builder))
@@ -87,6 +88,7 @@
 (defmethod sax:start-element
     ((handler dom-builder) namespace-uri local-name qname attributes)
   (check-type qname rod)		;catch recoder/builder mismatch
+  (flush-characters handler)
   (with-slots (document element-stack) handler
     (let* ((nsp sax:*namespace-processing*)
 	   (element (make-instance 'element 
@@ -126,27 +128,45 @@
 
 (defmethod sax:end-element ((handler dom-builder) namespace-uri local-name qname)
   (declare (ignore namespace-uri local-name qname))
+  (flush-characters handler)
   (pop (element-stack handler)))
 
 (defmethod sax:characters ((handler dom-builder) data)
-  (with-slots (document element-stack) handler
-    (let* ((parent (car element-stack))
-           (last-child (dom:last-child parent)))
-      (cond
-        ((eq (dom:node-type parent) :cdata-section)
-          (setf (dom:data parent) data))
-	((and last-child (eq (dom:node-type last-child) :text))
-          ;; um entities herum wird SAX:CHARACTERS mehrfach aufgerufen fuer
-          ;; den gleichen Textknoten.  Hier muessen wir den bestehenden Knoten
-          ;; erweitern, sonst ist das Dokument nicht normalisiert.
-          ;; (XXX Oder sollte man besser den Parser entsprechend aendern?)
-          (dom:append-data last-child data))
-        (t
-          (let ((node (dom:create-text-node document data)))
-            (setf (slot-value node 'parent) parent)
-            (fast-push node (slot-value (car element-stack) 'children))))))))
+  (with-slots (text-buffer) handler
+    (cond
+      ((null text-buffer)
+       (setf text-buffer data))
+      (t
+       (unless (array-has-fill-pointer-p text-buffer)
+	 (setf text-buffer (make-array (length text-buffer)
+				       :element-type 'rune
+				       :adjustable t
+				       :fill-pointer t
+				       :initial-contents text-buffer)))
+       (let ((n (length text-buffer))
+	     (m (length data)))
+	 (adjust-vector-exponentially text-buffer (+ n m) t)
+	 (move data text-buffer 0 n m))))))
+
+(defun flush-characters (handler)
+  (with-slots (document element-stack text-buffer) handler
+    (let ((data text-buffer))
+      (when data
+	(when (array-has-fill-pointer-p data)
+	  (setf data
+		(make-array (length data)
+			    :element-type 'rune
+			    :initial-contents data)))
+	(let ((parent (car element-stack)))
+	  (if (eq (dom:node-type parent) :cdata-section)
+	      (setf (dom:data parent) data)
+	      (let ((node (dom:create-text-node document data)))
+		(setf (slot-value node 'parent) parent)
+		(fast-push node (slot-value (car element-stack) 'children)))))
+	(setf text-buffer nil)))))
 
 (defmethod sax:start-cdata ((handler dom-builder))
+  (flush-characters handler)
   (with-slots (document element-stack) handler
     (let ((node (dom:create-cdata-section document #""))
           (parent (car element-stack)))
@@ -155,10 +175,12 @@
       (push node element-stack))))
 
 (defmethod sax:end-cdata ((handler dom-builder))
+  (flush-characters handler)
   (let ((node (pop (slot-value handler 'element-stack))))
     (assert (eq (dom:node-type node) :cdata-section))))
 
 (defmethod sax:processing-instruction ((handler dom-builder) target data)
+  (flush-characters handler)
   (with-slots (document element-stack) handler
     (let ((node (dom:create-processing-instruction document target data))
           (parent (car element-stack)))
@@ -166,6 +188,7 @@
       (fast-push node (slot-value (car element-stack) 'children)))))
 
 (defmethod sax:comment ((handler dom-builder) data)
+  (flush-characters handler)
   (with-slots (document element-stack) handler
     (let ((node (dom:create-comment document data))
           (parent (car element-stack)))
