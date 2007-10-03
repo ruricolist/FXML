@@ -53,8 +53,18 @@
     <h3>Recent Changes</h3>
     <p class="nomargin"><tt>rel-2007-xx-yy</tt></p>
     <ul class="nomargin">
-      <li>fixed make-source :buffering nil, thanks to Magnus Henoch for
-      the report</li>
+      <li>
+	fixed make-source :buffering nil, thanks to Magnus Henoch for
+	the report
+      </li>
+      <li>
+	fixed time and space usage in cases where entity references
+	follow each other (thanks to Ivan Shvedunov for the report)
+      </li>
+      <li>
+	In the DOM builder, grow a buffer for string normalization
+	exponentially, fixing a long-standing speed issue.
+      </li>
     </ul>
     <p class="nomargin"><tt>rel-2007-08-05</tt></p>
     <ul class="nomargin">
