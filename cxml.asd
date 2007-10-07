@@ -2,8 +2,13 @@
   (:use :asdf :cl))
 (in-package :cxml-system)
 
-;; force loading of runes.asd, which installs *features* this file depends on
-(find-system :runes)
+;; force loading of closure-common.asd, which installs *FEATURES* this
+;; file depends on.  Use MISSING-DEPENDENCY for asdf-install.
+(unless (find-system :closure-common nil)
+  (error 'missing-dependency
+	 :required-by :cxml
+	 :version nil
+	 :requires :closure-common))
 
 (defclass closure-source-file (cl-source-file) ())
 
@@ -36,7 +41,7 @@
      (:file "space-normalizer" :depends-on ("xml-parse"))
      (:file "catalog"         :depends-on ("xml-parse"))
      (:file "sax-proxy"       :depends-on ("xml-parse")))
-    :depends-on (:runes :puri #-scl :trivial-gray-streams))
+    :depends-on (:closure-common :puri #-scl :trivial-gray-streams))
 
 (defclass utf8dom-file (closure-source-file) ((of)))
 
@@ -57,7 +62,8 @@
 (defmethod perform ((operation compile-op) (c utf8dom-file))
   (let ((*features* (cons 'utf8dom-file *features*))
 	(*readtable*
-	 (symbol-value (find-symbol "*UTF8-RUNES-READTABLE*" :runes-system))))
+	 (symbol-value (find-symbol "*UTF8-RUNES-READTABLE*"
+				    :closure-common-system))))
     (call-next-method)))
 
 (asdf:defsystem :cxml-dom
