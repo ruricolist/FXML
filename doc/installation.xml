@@ -5,12 +5,14 @@
     <h2>Download</h2>
     <ul>
       <li>
-        <div><a href="http://common-lisp.net/project/cxml/download/">tarballs</a></div>
+        <div>Download <a href="http://common-lisp.net/project/cxml/download/">tarballs</a> for both cxml itself and closure-common.</div>
       </li>
       <li>
         <div>
-      Anoncvs (<a href="http://common-lisp.net/cgi-bin/viewcvs.cgi/cxml/?cvsroot=cxml">browse</a>):
-      <pre>cvs -d :pserver:anonymous:anonymous@common-lisp.net:/project/cxml/cvsroot co cxml</pre>
+      Or use anonymous CVS (<a href="http://common-lisp.net/cgi-bin/viewcvs.cgi/cxml/?cvsroot=cxml">browse</a>):
+      <pre>export CVSROOT=:pserver:anonymous:anonymous@common-lisp.net:/project/cxml/cvsroot
+cvs co cxml
+cvs co closure-common</pre>
         </div>
       </li>
     </ul>
@@ -39,16 +41,20 @@
 
     <p>
       <b>Prerequisites.</b>
-      CXML needs the <a href="http://www.cliki.net/Puri">puri</a> library
-      as well as <a href="http://www.common-lisp.net/project/cl-plus-ssl/#trivial-gray-streams">trivial-gray-streams</a>.
+      CXML needs <a href="http://www.cliki.net/Puri">puri</a> and
+      <a href="http://www.common-lisp.net/project/cl-plus-ssl/#trivial-gray-streams">trivial-gray-streams</a>.
+      In addition,
+      <a href="http://www.cliki.net/closure-common">closure-common</a>
+      is required, which is a separate module in cxml CVS (see above for
+      check-out instructions).
     </p>
 
     <p>
       <b>Compiling and loading CXML.</b>
       Register the .asd file, e.g. by symlinking it:
     </p>
-    <pre>$ ln -sf `pwd`/cxml.asd /path/to/your/registry/
-$ ln -sf `pwd`/runes.asd /path/to/your/registry/</pre>
+    <pre>$ ln -sf `pwd`/cxml/cxml.asd /path/to/your/registry/
+$ ln -sf `pwd`/closure-common/closure-common.asd /path/to/your/registry/</pre>
     <p>Then compile CXML using:</p>
     <pre>* (asdf:operate 'asdf:load-op :cxml)</pre>
 

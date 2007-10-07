@@ -51,6 +51,18 @@
 
     <a name="changes"/>
     <h3>Recent Changes</h3>
+    <div style="background-color: #f7f7f7;
+		width: 60%;
+		border: solid #9c0000;
+		margin: 0em 2pt 1em 2em;
+		padding: 1em">
+      Runes have now been moved into
+      a <b>separate CVS module</b> unter the
+      name <b>closure-common</b>.  Releases will be available
+      as <b>separate tarballs</b> in the download directory.  Please
+      refer to the <a href="installation.html#download">
+	installation instructions</a> for details.
+    </div>
     <p class="nomargin"><tt>rel-2007-xx-yy</tt></p>
     <ul class="nomargin">
       <li>
