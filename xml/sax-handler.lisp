@@ -3,11 +3,12 @@
 ;;;     Title: A SAX2-like API for the xml parser
 ;;;   Created: 2003-06-30
 ;;;    Author: Henrik Motakef <hmot@henrik-motakef.de>
-;;;    Author: David Lichteblau (DTD-related changes)
+;;;    Author: David Lichteblau
 ;;;   License: BSD
 ;;; ---------------------------------------------------------------------------
 ;;;  (c) copyright 2003 by Henrik Motakef
 ;;;  (c) copyright 2004 knowledgeTools Int. GmbH
+;;;  (c) copyright 2005-2007 David Lichteblau
 
 ;;; Redistribution and use  in source and binary   forms, with or  without
 ;;; modification, are permitted provided that the following conditions are
@@ -34,21 +35,21 @@
 
 ;;; TODO/ Open Questions:
 
-;; o Should there be a predefined "handler" class, or even several
-;;   (like Java SAX' ContentHandler, DTDHandler, LexicalHandler etc? I
-;;   don't really see why.
 ;; o Missing stuff from Java SAX2:
 ;;   * ignorable-whitespace
 ;;   * skipped-entity
 ;;   * The whole ErrorHandler class, this is better handled using
 ;;     conditions (but isn't yet)
-;;   * The LexicalHandler (start-cdata etc) would be nice  [-- partly done]
 
 (defpackage :sax
   (:use :common-lisp)
   (:export #:*namespace-processing*
 	   #:*include-xmlns-attributes*
 	   #:*use-xmlns-namespace*
+
+	   #:abstract-handler
+	   #:content-handler
+	   #:default-handler
 
            #:make-attribute
            #:find-attribute
@@ -98,7 +99,7 @@
 
 (defclass sax-parser () ())
 
-(defclass sax-parser-mixin ()
+(defclass sax-parser-mixin ()		;deprecated
     ((sax-parser :initform nil :reader sax-parser)))
 
 (defgeneric line-number (sax-parser)
@@ -185,12 +186,74 @@ qname:                 #\"xmlns:ex\"
 Setting this variable has no effect unless both
 `*namespace-processing*' and `*include-xmlns-attributes*' are non-nil.")
 
-(defstruct attribute
+
+;;;; ATTRIBUTE
+
+(defstruct (standard-attribute (:constructor make-attribute))
   namespace-uri
   local-name
   qname
   value
   specified-p)
+
+(defmethod (setf attribute-namespace-uri)
+    (newval (attribute standard-attribute))
+  (setf (standard-attribute-namespace-uri attribute) newval))
+
+(defmethod (setf attribute-local-name)
+    (newval (attribute standard-attribute))
+  (setf (standard-attribute-local-name attribute) newval))
+
+(defmethod (setf attribute-qname)
+    (newval (attribute standard-attribute))
+  (setf (standard-attribute-qname attribute) newval))
+
+(defmethod (setf attribute-value)
+    (newval (attribute standard-attribute))
+  (setf (standard-attribute-value attribute) newval))
+
+(defmethod (setf attribute-specified-p)
+    (newval (attribute standard-attribute))
+  (setf (standard-attribute-specified-p attribute) newval))
+
+(defgeneric attribute-namespace-uri (attribute)
+  (:method ((attribute standard-attribute))
+    (standard-attribute-namespace-uri attribute))
+  (:method ((attribute hax:standard-attribute))
+    ""))
+
+(defgeneric attribute-local-name (attribute)
+  (:method ((attribute standard-attribute))
+    (standard-attribute-local-name attribute))
+  (:method ((attribute hax:standard-attribute))
+    (runes:rod-downcase (hax:attribute-name attribute))))
+
+(defgeneric attribute-qname (attribute)
+  (:method ((attribute standard-attribute))
+    (standard-attribute-qname attribute))
+  (:method ((attribute hax:standard-attribute))
+    (runes:rod-downcase (hax:attribute-name attribute))))
+
+(defgeneric attribute-value (attribute)
+  (:method ((attribute standard-attribute))
+    (standard-attribute-value attribute))
+  (:method ((attribute hax:standard-attribute))
+    (hax:attribute-value attribute)))
+
+(defgeneric attribute-specified-p (attribute)
+  (:method ((attribute standard-attribute))
+    (standard-attribute-specified-p attribute))
+  (:method ((attribute hax:standard-attribute))
+    (hax:attribute-specified-p attribute)))
+
+(defmethod hax:attribute-name ((attribute standard-attribute))
+  (attribute-local-name attribute))
+
+(defmethod hax:attribute-value ((attribute standard-attribute))
+  (attribute-value attribute))
+
+(defmethod hax:attribute-specified-p ((attribute standard-attribute))
+  (attribute-specified-p attribute))
 
 (defun %rod= (x y)
   ;; allow rods *and* strings *and* null
@@ -209,16 +272,197 @@ Setting this variable has no effect unless both
 		  (%rod= lname (sax:attribute-local-name attr))))
 	   attrs))
 
-(defgeneric start-document (handler)
-  (:documentation "Called at the beginning of the parsing process,
+
+;;;; ABSTRACT-HANDLER and DEFAULT-HANDLER
+
+(defclass abstract-handler (sax-parser-mixin) ())
+(defclass content-handler (abstract-handler) ())
+(defclass default-handler (content-handler) ())
+
+
+;;;; EVENTS
+
+(macrolet ((define-event ((name default-handler-class)
+			  (&rest args)
+			  &body hax-body)
+	     `(defgeneric ,name (handler ,@args)
+		(:method ((handler null) ,@args)
+		  (declare (ignore ,@args))
+		  nil)
+		(:method ((handler t) ,@args)
+		  (declare (ignore ,@args))
+		  (error "deprecated SAX default method used by a handler ~
+                          that is not a subclass of SAX:ABSTRACT-HANDLER ~
+                          or HAX:ABSTRACT-HANDLER")
+		  nil)
+		(:method ((handler abstract-handler) ,@args)
+		  (declare (ignore ,@args))
+		  (error "SAX event ~A not implemented by this handler"
+			 ',name))
+		(:method ((handler ,default-handler-class) ,@args)
+		  (declare (ignore ,@args))
+		  nil)
+		(:method ((handler hax:abstract-handler) ,@args)
+		  (declare (ignorable ,@args))
+		  ,@hax-body))))
+  (define-event (start-document default-handler)
+      ()
+    nil)
+
+  (define-event (start-element default-handler)
+      (namespace-uri local-name qname attributes)
+    (hax:start-element handler local-name attributes))
+
+  (define-event (start-prefix-mapping content-handler)
+      (prefix uri)
+    nil)
+
+  (define-event (characters default-handler)
+      (data)
+    (hax:characters handler data))
+
+  (define-event (processing-instruction default-handler)
+      (target data)
+    nil)
+
+  (define-event (end-prefix-mapping content-handler)
+      (prefix)
+    nil)
+
+  (define-event (end-element default-handler)
+      (namespace-uri local-name qname)
+    (hax:end-element handler local-name))
+
+  (define-event (end-document default-handler)
+      ()
+    (hax:end-document handler))
+
+  (define-event (comment content-handler)
+      (data)
+    (hax:comment handler data))
+
+  (define-event (start-cdata content-handler)
+      ()
+    nil)
+
+  (define-event (end-cdata content-handler)
+      ()
+    nil)
+
+  (define-event (start-dtd content-handler)
+      (name public-id system-id)
+    (hax:start-document handler name public-id system-id))
+
+  (define-event (end-dtd content-handler)
+      ()
+    nil)
+
+  (define-event (start-internal-subset content-handler)
+      ()
+    nil)
+
+  (define-event (end-internal-subset content-handler)
+      ()
+    nil)
+
+  (define-event (unparsed-internal-subset content-handler)
+      (str)
+    nil)
+
+  (define-event (unparsed-entity-declaration content-handler)
+      (name public-id system-id notation-name)
+    nil)
+
+  (define-event (external-entity-declaration content-handler)
+      (kind name public-id system-id)
+    nil)
+
+  (define-event (internal-entity-declaration content-handler)
+      (kind name value)
+    nil)
+
+  (define-event (notation-declaration content-handler)
+      (name public-id system-id)
+    nil)
+
+  (define-event (element-declaration content-handler)
+      (name model)
+    nil)
+
+  (define-event (attribute-declaration content-handler)
+      (element-name attribute-name type default)
+    nil)
+
+  (define-event (entity-resolver content-handler)
+      (resolver)
+    nil)
+
+  (define-event (dtd content-handler)
+      (dtd)
+    nil))
+
+;;; special case: this method is defined on abstract-handler through
+;;; sax-parser-mixin
+(defgeneric register-sax-parser (handler sax-parser)
+  (:method ((handler null) sax-parser)
+    (declare (ignore sax-parser))
+    nil)
+  (:method ((handler sax-parser-mixin) sax-parser)
+    (setf (slot-value handler 'sax-parser) sax-parser))
+  (:method ((handler t) sax-parser)
+    (declare (ignore sax-parser))
+    (error "deprecated sax default method used by a handler ~
+                          that is not a subclass of sax:abstract-handler ~
+                          or hax:abstract-handler")
+    nil)
+  (:method ((handler hax:abstract-handler) sax-parser)
+    (declare (ignorable sax-parser)) nil))
+
+
+;;;; HAX to SAX
+
+(defmethod hax:start-document ((handler abstract-handler) name pubid sysid)
+  (sax:start-document handler)
+  (sax:start-dtd handler name pubid sysid)
+  (sax:end-dtd handler name pubid sysid))
+
+(defmethod hax:start-element ((handler abstract-handler) name attributes)
+  (setf name (runes:rod-downcase name))
+  (sax:start-element handler
+		     "http://www.w3.org/1999/xhtml"
+		     name
+		     name
+		     attributes))
+
+(defmethod hax:end-element ((handler abstract-handler) name)
+  (setf name (runes:rod-downcase name))
+  (sax:end-element handler
+		   "http://www.w3.org/1999/xhtml"
+		   name
+		   name))
+
+(defmethod hax:characters ((handler abstract-handler) data)
+  (sax:characters handler data))
+
+(defmethod hax:comment ((handler abstract-handler) str)
+  (sax:comment handler str))
+
+(defmethod hax:end-document ((handler abstract-handler))
+  (sax:end-document handler))
+
+
+
+;;;; Documentation
+
+(setf (documentation 'start-document 'function)
+      "Called at the beginning of the parsing process,
 before any element, processing instruction or comment is reported.
 
 Handlers that need to maintain internal state may use this to perform
 any neccessary initializations.")
-  (:method ((handler t)) nil))
 
-(defgeneric start-element (handler namespace-uri local-name qname attributes)
-  (:documentation "Called to report the beginning of an element.
+(setf (documentation 'start-element 'function)
+      "Called to report the beginning of an element.
 
 There will always be a corresponding call to end-element, even in the
 case of an empty element (i.e. <foo/>).
@@ -235,12 +479,9 @@ local-name properties, the same rules as for the element name
 apply. Additionally, namespace-declaring attributes (those whose name
 is \"xmlns\" or starts with \"xmlns:\") are only included if
 *include-xmlns-attributes* is non-nil.")
-  (:method ((handler t) namespace-uri local-name qname attributes)
-    (declare (ignore namespace-uri local-name qname attributes))
-    nil))
 
-(defgeneric start-prefix-mapping (handler prefix uri)
-  (:documentation "Called when the scope of a new prefix -> namespace-uri mapping begins.
+(setf (documentation 'start-prefix-mapping 'function)
+      "Called when the scope of a new prefix -> namespace-uri mapping begins.
 
 This will always be called immediatly before the `start-element' event
 for the element on which the namespaces are declared.
@@ -249,24 +490,21 @@ Clients don't usually have to implement this except under special
 circumstances, for example when they have to deal with qualified names
 in textual content. The parser will handle namespaces of elements and
 attributes on its own.")
-  (:method ((handler t) prefix uri) (declare (ignore prefix uri)) nil))
 
-(defgeneric characters (handler data)
-  (:documentation "Called for textual element content.
+(setf (documentation 'characters 'function)
+      "Called for textual element content.
 
 The data is passed as a rod, with all entity references resolved.
 It is possible that the character content of an element is reported
 via multiple subsequent calls to this generic function.")
-  (:method ((handler t) data) (declare (ignore data)) nil))
 
-(defgeneric processing-instruction (handler target data)
-  (:documentation "Called when a processing instruction is read.
+(setf (documentation 'processing-instruction 'function)
+      "Called when a processing instruction is read.
 
 Both target and data are rods.")
-  (:method ((handler t) target data) (declare (ignore target data)) nil))
 
-(defgeneric end-prefix-mapping (handler prefix)
-  (:documentation "Called when a prefix -> namespace-uri mapping goes out of scope.
+(setf (documentation 'end-prefix-mapping 'function)
+      "Called when a prefix -> namespace-uri mapping goes out of scope.
 
 This will always be called immediatly after the `end-element' event
 for the element on which the namespace is declared. The order of the
@@ -276,147 +514,83 @@ Clients don't usually have to implement this except under special
 circumstances, for example when they have to deal with qualified names
 in textual content. The parser will handle namespaces of elements and
 attributes on its own.")
-  (:method ((handler t) prefix) prefix nil))
 
-(defgeneric end-element (handler namespace-uri local-name qname)
-  (:documentation "Called to report the end of an element.
+(setf (documentation 'end-element 'function)
+      "Called to report the end of an element.
 
 See the documentation for `start-element' for a description of the
 parameters.")
-  (:method ((handler t) namespace-uri local-name qname)
-    (declare (ignore namespace-uri local-name qname))
-    nil))
 
-(defgeneric end-document (handler)
-  (:documentation "Called at the end of parsing a document.
+(setf (documentation 'end-document 'function)
+      "Called at the end of parsing a document.
 This is always the last function called in the parsing process.
 
 In contrast to all of the other methods, the return value of this gf
 is significant, it will be returned by the parse-file/stream/string function.")
-  (:method ((handler t)) nil))
 
-;; LexicalHandler
-
-(defgeneric comment (handler data)
-  (:method ((handler t) data) data nil))
-
-(defgeneric start-cdata (handler)
-  (:documentation "Called at the beginning of parsing a CDATA section.
+(setf (documentation 'start-cdata 'function)
+      "Called at the beginning of parsing a CDATA section.
 
 Handlers only have to implement this if they are interested in the
 lexical structure of the parsed document. The content of the CDATA
 section is reported via the `characters' generic function like all
 other textual content.")
-  (:method ((handler t)) nil))
 
-(defgeneric end-cdata (handler)
-  (:documentation "Called at the end of parsing a CDATA section.
+(setf (documentation 'end-cdata 'function)
+      "Called at the end of parsing a CDATA section.
 
 Handlers only have to implement this if they are interested in the
 lexical structure of the parsed document. The content of the CDATA
 section is reported via the `characters' generic function like all
 other textual content.")
-  (:method ((handler t)) nil))
 
-(defgeneric start-dtd (handler name public-id system-id)
-  (:documentation "Called at the beginning of parsing a DTD.")
-  (:method ((handler t) name public-id system-id)
-    (declare (ignore name public-id system-id))
-    nil))
+(setf (documentation 'start-dtd 'function)
+      "Called at the beginning of parsing a DTD.")
 
-(defgeneric end-dtd (handler)
-  (:documentation "Called at the end of parsing a DTD.")
-  (:method ((handler t)) nil))
+(setf (documentation 'end-dtd 'function)
+      "Called at the end of parsing a DTD.")
 
-(defgeneric start-internal-subset (handler)
-  (:documentation "Reports that an internal subset is present.  Called before
+(setf (documentation 'start-internal-subset 'function)
+      "Reports that an internal subset is present.  Called before
 any definition from the internal subset is reported.")
-  (:method ((handler t)) nil))
 
-(defgeneric end-internal-subset (handler)
-  (:documentation "Called after processing of the internal subset has
+(setf (documentation 'end-internal-subset 'function)
+      "Called after processing of the internal subset has
 finished, if present.")
-  (:method ((handler t)) nil))
 
-(defgeneric unparsed-internal-subset (handler str)
-  (:documentation "Reports that an internal subset is present, but has not
+(setf (documentation 'unparsed-internal-subset 'function)
+      "Reports that an internal subset is present, but has not
 been parsed and is available as a string.")
-  (:method ((handler t) str) nil))
 
-(defgeneric unparsed-entity-declaration
-    (handler name public-id system-id notation-name)
-  (:documentation
-   "Called when an unparsed entity declaration is seen in a DTD.")
-  (:method ((handler t) name public-id system-id notation-name)
-    (declare (ignore name public-id system-id notation-name))
-    nil))
+(setf (documentation 'unparsed-entity-declaration 'function)
+      "Called when an unparsed entity declaration is seen in a DTD.")
 
-(defgeneric external-entity-declaration
-    (handler kind name public-id system-id)
-  (:documentation
-   "Called when a parsed external entity declaration is seen in a DTD.")
-  (:method ((handler t) kind name public-id system-id)
-    (declare (ignore kind name public-id system-id))
-    nil))
+(setf (documentation 'external-entity-declaration 'function)
+      "Called when a parsed external entity declaration is seen in a DTD.")
 
-(defgeneric internal-entity-declaration
-    (handler kind name value)
-  (:documentation
-   "Called when an internal entity declaration is seen in a DTD.")
-  (:method ((handler t) kind name value)
-    (declare (ignore kind name value))
-    nil))
+(setf (documentation 'internal-entity-declaration 'function)
+      "Called when an internal entity declaration is seen in a DTD.")
 
-(defgeneric notation-declaration
-    (handler name public-id system-id)
-  (:documentation
-   "Called when a notation declaration is seen while parsing a DTD.")
-  (:method ((handler t) name public-id system-id)
-    (declare (ignore name public-id system-id))
-    nil))
+(setf (documentation 'notation-declaration 'function)
+      "Called when a notation declaration is seen while parsing a DTD.")
 
-(defgeneric element-declaration (handler name model)
-  (:documentation
-   "Called when a element declaration is seen in a DTD.  Model is not a string,
+(setf (documentation 'element-declaration 'function)
+      "Called when a element declaration is seen in a DTD.  Model is not a string,
     but a nested list, with *, ?, +, OR, and AND being the operators, rods
     as names, :EMPTY and :PCDATA as special tokens.  (AND represents
     sequences.)")
-  (:method ((handler t) name model)
-    (declare (ignore name model))
-    nil))
 
-(defgeneric attribute-declaration
-    (handler element-name attribute-name type default)
-  (:documentation
-   "Called when an attribute declaration is seen in a DTD.
+(setf (documentation 'attribute-declaration 'function)
+      "Called when an attribute declaration is seen in a DTD.
     type        one of :CDATA, :ID, :IDREF, :IDREFS,
                 :ENTITY, :ENTITIES, :NMTOKEN, :NMTOKENS,
                 (:NOTATION <name>*), or (:ENUMERATION <name>*)
     default     :REQUIRED, :IMPLIED, (:FIXED content), or (:DEFAULT content)")
-  (:method ((handler t) element-name attribute-name type value)
-    (declare (ignore element-name attribute-name type value))
-    nil))
 
-(defgeneric entity-resolver
-    (handler resolver)
-  (:documentation
-   "Called between sax:end-dtd and sax:end-document to register an entity
+(setf (documentation 'entity-resolver 'function)
+      "Called between sax:end-dtd and sax:end-document to register an entity
     resolver, a function of two arguments: An entity name and SAX handler.
     When called, the resolver function will parse the named entity's data.")
-  (:method ((handler t) resolver)
-    (declare (ignore resolver))
-    nil))
 
-(defgeneric register-sax-parser
-    (handler sax-parser)
-  (:documentation
-   "Set the SAX-PARSER instance of this handler.")
-  (:method ((handler t) sax-parser)
-    (declare (ignore sax-parser))
-    nil)
-  (:method ((handler sax-parser-mixin) sax-parser)
-    (setf (slot-value handler 'sax-parser) sax-parser)))
-
-;; internal for now
-(defgeneric dtd (handler dtd)
-  (:method ((handler t) dtd) (declare (ignore dtd)) nil))
+(setf (documentation 'register-sax-parser 'function)
+      "Set the SAX-PARSER instance of this handler.")

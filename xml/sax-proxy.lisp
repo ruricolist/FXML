@@ -8,7 +8,7 @@
 
 (in-package :cxml)
 
-(defclass broadcast-handler (sax:sax-parser-mixin)
+(defclass broadcast-handler (sax:abstract-handler)
   ((handlers :initform nil
 	     :initarg :handlers
 	     :accessor broadcast-handler-handlers)))

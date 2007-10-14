@@ -51,6 +51,7 @@
    #:make-character-stream-sink/utf8
 
    #:with-xml-output
+   #:with-output-sink
    #:with-namespace
    #:with-element
    #:with-element*

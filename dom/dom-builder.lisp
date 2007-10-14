@@ -15,7 +15,7 @@
 (in-package :utf8-dom)
 
 
-(defclass dom-builder ()
+(defclass dom-builder (sax:content-handler)
   ((document      :initform nil :accessor document)
    (element-stack :initform '() :accessor element-stack)
    (internal-subset             :accessor internal-subset)

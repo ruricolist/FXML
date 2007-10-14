@@ -96,9 +96,9 @@
 	(:characters
 	  (cond
 	    ((klacks:current-cdata-section-p source)
-	      (sax:start-cdata source)
+	      (sax:start-cdata handler)
 	      (sax:characters handler a)
-	      (sax:end-cdata source))
+	      (sax:end-cdata handler))
 	    (T
 	      (sax:characters handler a))))
 	(:processing-instruction

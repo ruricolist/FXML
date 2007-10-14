@@ -413,7 +413,7 @@
 
 ;;;; terrible kludges
 
-(defclass klacks-dtd-handler ()
+(defclass klacks-dtd-handler (sax:default-handler)
     ((handler-source :initarg :source :reader handler-source)
      (internal-subset-p :initform nil :accessor handler-internal-subset-p)))
 

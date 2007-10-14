@@ -69,7 +69,7 @@
 
 ;;;; SINK: an xml output sink
 
-(defclass sink ()
+(defclass sink (sax:content-handler)
     ((ystream :initarg :ystream :accessor sink-ystream)
      (width :initform 79 :initarg :width :accessor width)
      (canonical :initform nil :initarg :canonical :accessor canonical)
@@ -561,6 +561,9 @@
 (defmacro with-xml-output (sink &body body)
   `(invoke-with-xml-output (lambda () ,@body) ,sink))
 
+(defmacro with-output-sink ((var) &body body)
+  `(invoke-with-output-sink (lambda (,var) ,@body)))
+
 (defun invoke-with-xml-output (fn sink)
   (let ((*sink* sink)
         (*current-element* nil)
@@ -569,6 +572,10 @@
     (sax:start-document *sink*)
     (funcall fn)
     (sax:end-document *sink*)))
+
+(defun invoke-with-output-sink (fn)
+  (maybe-emit-start-tag)
+  (funcall fn *sink*))
 
 (defmacro with-element (qname &body body)
   `(invoke-with-element (lambda () ,@body) ,qname))
