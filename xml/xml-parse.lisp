@@ -3102,7 +3102,7 @@
 	    unless (eq name :pathname)
 	    append (list name value))))
     (etypecase input
-      (xstream  (apply #'make-xstream input handler args))
+      (xstream  (apply #'parse-xstream input handler args))
       (pathname (apply #'parse-file input handler args))
       (rod      (apply #'parse-rod input handler args))
       (array    (apply #'parse-octets input handler args))
