@@ -429,6 +429,15 @@ Setting this variable has no effect unless both
 
 (defmethod hax:start-element ((handler abstract-handler) name attributes)
   (setf name (runes:rod-downcase name))
+  (when (equal name "html")
+    (sax:start-prefix-mapping handler "" "http://www.w3.org/1999/xhtml")
+    (when *include-xmlns-attributes*
+      (push (make-attribute :namespace-uri "http://www.w3.org/2000/xmlns/"
+			    :local-name nil
+			    :qname "xmlns"
+			    :value "http://www.w3.org/1999/xhtml"
+			    :specified-p t)
+	    attributes)))
   (sax:start-element handler
 		     "http://www.w3.org/1999/xhtml"
 		     name
@@ -440,7 +449,9 @@ Setting this variable has no effect unless both
   (sax:end-element handler
 		   "http://www.w3.org/1999/xhtml"
 		   name
-		   name))
+		   name)
+  (when (equal name "html")
+    (sax:end-prefix-mapping handler "")))
 
 (defmethod hax:characters ((handler abstract-handler) data)
   (sax:characters handler data))
