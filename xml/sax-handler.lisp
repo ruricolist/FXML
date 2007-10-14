@@ -423,8 +423,9 @@ Setting this variable has no effect unless both
 
 (defmethod hax:start-document ((handler abstract-handler) name pubid sysid)
   (sax:start-document handler)
-  (sax:start-dtd handler name pubid sysid)
-  (sax:end-dtd handler name pubid sysid))
+  (when sysid
+    (sax:start-dtd handler name pubid sysid)
+    (sax:end-dtd handler)))
 
 (defmethod hax:start-element ((handler abstract-handler) name attributes)
   (setf name (runes:rod-downcase name))
