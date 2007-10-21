@@ -82,6 +82,10 @@
      (have-internal-subset :initform nil :accessor have-internal-subset)
      (stack :initform nil :accessor stack)))
 
+#-rune-is-character
+(defmethod hax:%want-strings-p ((handler sink))
+  nil)
+
 (defmethod initialize-instance :after ((instance sink) &key)
   (when (eq (canonical instance) t)
     (setf (canonical instance) 1))

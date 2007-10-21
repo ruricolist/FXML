@@ -21,6 +21,10 @@
    (internal-subset             :accessor internal-subset)
    (text-buffer   :initform nil :accessor text-buffer)))
 
+#+(and rune-is-integer (not cxml-system::utf8dom-file))
+(defmethod hax:%want-strings-p ((handler dom-builder))
+  nil)
+
 (defun make-dom-builder ()
   (make-instance 'dom-builder))
 
