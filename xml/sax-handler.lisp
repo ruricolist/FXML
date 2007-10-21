@@ -416,7 +416,7 @@ Setting this variable has no effect unless both
     (setf (slot-value handler 'sax-parser) sax-parser))
   (:method ((handler t) sax-parser)
     (declare (ignore sax-parser))
-    (error "deprecated sax default method used by a handler ~
+    (warn "deprecated sax default method used by a handler ~
                           that is not a subclass of sax:abstract-handler ~
                           or hax:abstract-handler")
     nil)
