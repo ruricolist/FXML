@@ -47,6 +47,12 @@
       &#160;&#160;
       STP, an alternative to DOM
     </p>
+    <p>
+      &#x2b17;&#160;
+      <a href="http://common-lisp.net/project/closure/closure-html/">Closure
+      HTML</a>: cxml can be used together with its sister project
+      Closure HTML to convert between HTML and XHTML.
+    </p>
 
 
     <a name="changes"/>
@@ -65,6 +71,15 @@
     </div>
     <p class="nomargin"><tt>rel-2007-xx-yy</tt></p>
     <ul class="nomargin">
+      <li>
+	Moved runes into a separate project.
+      </li>
+      <li>
+	Incompatible SAX changes: Added new classes
+	sax:abstract-handler, sax:content-handler, sax:default-handler.
+	Implementations of SAX handlers should now subclass one of
+	these classes.
+      </li>
       <li>
 	fixed make-source :buffering nil, thanks to Magnus Henoch for
 	the report

@@ -291,9 +291,9 @@ Setting this variable has no effect unless both
 		  nil)
 		(:method ((handler t) ,@args)
 		  (declare (ignore ,@args))
-		  (error "deprecated SAX default method used by a handler ~
-                          that is not a subclass of SAX:ABSTRACT-HANDLER ~
-                          or HAX:ABSTRACT-HANDLER")
+		  (warn "deprecated SAX default method used by a handler ~
+                         that is not a subclass of SAX:ABSTRACT-HANDLER ~
+                         or HAX:ABSTRACT-HANDLER")
 		  nil)
 		(:method ((handler abstract-handler) ,@args)
 		  (declare (ignore ,@args))
@@ -311,6 +311,11 @@ Setting this variable has no effect unless both
 
   (define-event (start-element default-handler)
       (namespace-uri local-name qname attributes)
+    (setf attributes
+	  (remove "http://www.w3.org/2000/xmlns/"
+		  attributes
+		  :key #'attribute-namespace-uri
+		  :test #'equal))
     (hax:start-element handler local-name attributes))
 
   (define-event (start-prefix-mapping content-handler)

@@ -79,13 +79,11 @@
 	<ul>
 	  <li>
 	    <tt>pathname</tt> -- a Common Lisp pathname.  
-	    Open the file specified by the pathname and create a source for
-	    the resulting stream.  See below for information on how to
-            close the stream.
+	    Open the file specified by the pathname and parse its
+	    contents as an XML document. 
 	  </li>
 	  <li><tt>stream</tt> -- a Common Lisp stream with element-type
-            <tt>(unsigned-byte 8)</tt>.  See below for information on how to
-            close the stream.
+            <tt>(unsigned-byte 8)</tt>.
 	  </li>
 	  <li>
 	    <tt>octets</tt> -- an <tt>(unsigned-byte 8)</tt> array.
