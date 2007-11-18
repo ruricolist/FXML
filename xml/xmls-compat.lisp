@@ -61,7 +61,7 @@
 
 ;;;; SAX-Handler (Parser)
 
-(defclass xmls-builder ()
+(defclass xmls-builder (sax:default-handler)
     ((element-stack :initform nil :accessor element-stack)
      (root :initform nil :accessor root)
      (include-default-values :initform t
