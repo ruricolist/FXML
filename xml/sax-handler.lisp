@@ -64,6 +64,7 @@
 	   #:start-prefix-mapping
 	   #:start-element
 	   #:characters
+	   #:unescaped
 	   #:processing-instruction
 	   #:end-element
 	   #:end-prefix-mapping
@@ -326,6 +327,10 @@ Setting this variable has no effect unless both
       (data)
     (hax:characters handler data))
 
+  (define-event (unescaped default-handler)
+      (data)
+    (hax:unescaped handler data))
+
   (define-event (processing-instruction default-handler)
       (target data)
     nil)
@@ -461,6 +466,9 @@ Setting this variable has no effect unless both
 (defmethod hax:characters ((handler abstract-handler) data)
   (sax:characters handler data))
 
+(defmethod hax:unescaped ((handler abstract-handler) data)
+  (sax:unescaped handler data))
+
 (defmethod hax:comment ((handler abstract-handler) str)
   (sax:comment handler str))
 
@@ -514,6 +522,9 @@ attributes on its own.")
 The data is passed as a rod, with all entity references resolved.
 It is possible that the character content of an element is reported
 via multiple subsequent calls to this generic function.")
+
+(setf (documentation 'unescaped 'function)
+      "Called for unescaped element content.  Beware dragons.")
 
 (setf (documentation 'processing-instruction 'function)
       "Called when a processing instruction is read.

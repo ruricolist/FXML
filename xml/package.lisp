@@ -61,6 +61,9 @@
    #:cdata
    #:text
    #:doctype
+   #:processing-instruction
+   #:comment
+   #:unescaped
 
    #:xml-parse-error
    #:well-formedness-violation

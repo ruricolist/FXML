@@ -459,6 +459,10 @@
 		(loop for c across data do (unparse-datachar c y))
 		(loop for c across data do (unparse-datachar-readable c y))))))))
 
+(defmethod sax:unescaped ((sink sink) data)
+  (maybe-close-tag sink)
+  (%write-rod data sink))
+
 (defmethod sax:comment ((sink sink) data)
   (maybe-close-tag sink)
   (unless (canonical sink)
@@ -682,3 +686,17 @@
   (maybe-emit-start-tag)
   (sax:characters *sink* (rod data))
   data)
+
+(defun comment (data)
+  (maybe-emit-start-tag)
+  (sax:comment *sink* (rod data))
+  data)
+
+(defun processing-instruction (target data)
+  (maybe-emit-start-tag)
+  (sax:processing-instruction *sink* (rod target) (rod data))
+  data)
+
+(defun unescaped (str)
+  (maybe-emit-start-tag)
+  (sax:unescaped *sink* (rod str)))
