@@ -286,6 +286,8 @@
 		 (%write-rod "EMPTY" sink))
 	       ((eq m :PCDATA)
 		 (%write-rod "#PCDATA" sink))
+	       ((eq m :ANY)
+		 (%write-rod "ANY" sink))
 	       ((atom m)
 		 (unparse-string m sink))
 	       (t
@@ -306,13 +308,13 @@
 		     (%write-rune #/\) sink))
 		   (*
 		     (walk (second m))
-		     (%write-rod #/* sink))
+		     (%write-rune #/* sink))
 		   (+
 		     (walk (second m))
-		     (%write-rod #/+ sink))
+		     (%write-rune #/+ sink))
 		   (?
 		     (walk (second m))
-		     (%write-rod #/? sink)))))))
+		     (%write-rune #/? sink)))))))
     (walk model))
   (%write-rune #/> sink)
   (%write-rune #/U+000A sink))

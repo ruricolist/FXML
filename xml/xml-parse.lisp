@@ -1098,7 +1098,8 @@
        (prog1
 	   (setf (gethash element-name (dtd-elements dtd))
 		 (make-elmdef :name element-name :content content-model))
-	 (sax:element-declaration (handler *ctx*) element-name content-model)))
+	 (when content-model
+	   (sax:element-declaration (handler *ctx*) element-name content-model))))
       ((null content-model)
         e)
       (t
@@ -2101,8 +2102,7 @@
       (wf-error input "Malformed or invalid content model: ~S." (mu content)))
     (p/S? input)
     (expect input :\>)
-    (when *validate*
-      (define-element (dtd *ctx*) name content))
+    (define-element (dtd *ctx*) name content)
     (list :element name content)))
 
 (defun maybe-compile-cspec (e)
