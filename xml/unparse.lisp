@@ -80,7 +80,10 @@
      (previous-notation :initform nil :accessor previous-notation)
      (have-doctype :initform nil :accessor have-doctype)
      (have-internal-subset :initform nil :accessor have-internal-subset)
-     (stack :initform nil :accessor stack)))
+     (stack :initform nil :accessor stack)
+     (omit-xml-declaration-p :initform nil
+			     :initarg :omit-xml-declaration-p
+			     :accessor omit-xml-declaration-p)))
 
 #-rune-is-character
 (defmethod hax:%want-strings-p ((handler sink))
@@ -134,7 +137,8 @@
 ;;;; doctype and notations
 
 (defmethod sax:start-document ((sink sink))
-  (unless (canonical sink)
+  (unless (or (canonical sink)
+	      (omit-xml-declaration-p sink))
     (%write-rod #"<?xml version=\"1.0\" encoding=\"UTF-8\"?>" sink)
     (%write-rune #/U+000A sink)))
 
