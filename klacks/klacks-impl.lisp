@@ -51,12 +51,12 @@
     `(let* ((,s ,source)
 	    (*ctx* (slot-value ,s 'context))
 	    (*validate* (slot-value ,s 'validate))
-	    (*data-behaviour* (slot-value source 'data-behaviour))
-	    (*namespace-bindings* (car (slot-value source 'namespace-stack)))
-	    (*scratch-pad* (slot-value source 'scratch-pad))
-	    (*scratch-pad-2* (slot-value source 'scratch-pad-2))
-	    (*scratch-pad-3* (slot-value source 'scratch-pad-3))
-	    (*scratch-pad-4* (slot-value source 'scratch-pad-4)))
+	    (*data-behaviour* (slot-value ,s 'data-behaviour))
+	    (*namespace-bindings* (car (slot-value ,s 'namespace-stack)))
+	    (*scratch-pad* (slot-value ,s 'scratch-pad))
+	    (*scratch-pad-2* (slot-value ,s 'scratch-pad-2))
+	    (*scratch-pad-3* (slot-value ,s 'scratch-pad-3))
+	    (*scratch-pad-4* (slot-value ,s 'scratch-pad-4)))
        (handler-case
 	   (with-slots (,@slots) ,s
 	     ,@body)
