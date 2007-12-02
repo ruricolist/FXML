@@ -2,11 +2,16 @@
   (:use :asdf :cl))
 (in-package :cxml-system)
 
+(defclass dummy-cxml-component () ())
+
+(defmethod asdf:component-name ((c dummy-cxml-component))
+  :cxml)
+
 ;; force loading of closure-common.asd, which installs *FEATURES* this
 ;; file depends on.  Use MISSING-DEPENDENCY for asdf-install.
 (unless (find-system :closure-common nil)
   (error 'missing-dependency
-	 :required-by :cxml
+	 :required-by (make-instance 'dummy-cxml-component)
 	 :version nil
 	 :requires :closure-common))
 
