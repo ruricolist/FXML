@@ -138,6 +138,12 @@
                          pathname
                          (rune-dom:make-dom-builder)
                          args)))
+    ;; If we got here, parsing worked.  Let's try to serialize the same
+    ;; document.  (We do the same thing in canonical mode below to check the
+    ;; content model of the output, but that doesn't even catch obvious
+    ;; errors in DTD serialization, so even a simple here is an
+    ;; improvement.)
+    (apply *parser-fn* pathname (cxml:make-rod-sink) args)
     (cond
       ((null output)
         (format t " input"))
