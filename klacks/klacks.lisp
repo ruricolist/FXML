@@ -219,10 +219,10 @@
 	  (return (values this a b c))))
       (klacks:consume source))))
 
-(define-condition klacks-error (xml-parse-error) ())
+(define-condition klacks:klacks-error (xml-parse-error) ())
 
 (defun klacks-error (fmt &rest args)
-  (%error 'klacks-error
+  (%error 'klacks:klacks-error
 	  nil
 	  (format nil "Klacks assertion failed: ~?" fmt args)))
 
