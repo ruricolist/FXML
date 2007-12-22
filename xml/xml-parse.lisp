@@ -458,7 +458,8 @@
 
 (defmacro %put-unicode-char (code-var put)
   `(progn
-     (cond ((%> ,code-var #xFFFF)
+     (cond #+rune-is-utf-16
+           ((%> ,code-var #xFFFF)
           (,put (the rune (code-rune (%+ #xD7C0 (%ash ,code-var -10)))))
           (,put (the rune (code-rune (%ior #xDC00 (%and ,code-var #x03FF))))))
          (t
@@ -1489,19 +1490,14 @@
            value))))
 
 (definline data-rune-p (rune)
-  ;; any Unicode character, excluding the surrogate blocks, FFFE, and FFFF.
-  ;;
-  ;; FIXME: das halte ich fuer verkehrt.  Surrogates als Unicode-Zeichen
-  ;; sind verboten.  Das liegt hier aber nicht vor, denn wir arbeiten
-  ;; ja tatsaechlich mit UTF-16.  Verboten ist es nur, wenn wir ein
-  ;; solches Zeichen beim Dekodieren finden, das wird aber eben
-  ;; in encodings.lisp bereits geprueft.  --david
+  ;; Any Unicode character, excluding FFFE, and FFFF.
+  ;; Allow surrogates if using UTF-16, else allow >= 0x10000.
   (let ((c (rune-code rune)))
     (or (= c #x9) (= c #xA) (= c #xD)
         (<= #x20 c #xD7FF)
+	#+rune-is-utf-16 (<= #xD800 c #xDFFF)
         (<= #xE000 c #xFFFD)
-        (<= #xD800 c #xDBFF)
-        (<= #xDC00 c #xDFFF))))
+	#-rune-is-utf-16 (<= #x10000 c #x10FFFF))))
 
 (defun read-att-value (zinput input mode &optional canon-space-p (delim nil))
   (with-rune-collector-2 (collect)
@@ -1761,11 +1757,13 @@
       (rune= rune #/U+000D)))
 
 (defun code-data-char-p (c)
-  ;; any Unicode character, excluding the surrogate blocks, FFFE, and FFFF.
+  ;; Any Unicode character, excluding FFFE, and FFFF.
+  ;; Allow surrogates if using UTF-16, else allow >= 0x10000.
   (or (= c #x9) (= c #xA) (= c #xD)
       (<= #x20 c #xD7FF)
+      #+rune-is-utf-16 (<= #xD800 c #xDFFF)
       (<= #xE000 c #xFFFD)
-      (<= #x10000 c #x10FFFF)))
+      #-rune-is-utf-16 (<= #x10000 c #x10FFFF)))
 
 (defun pubid-char-p (c)
   (or (rune= c #/u+0020) (rune= c #/u+000D) (rune= c #/u+000A)

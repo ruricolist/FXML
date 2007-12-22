@@ -24,12 +24,13 @@ cvs co closure-common</pre>
       supported by <a
       href="http://common-lisp.net/project/cl-plus-ssl/#trivial-gray-streams">trivial-gray-streams</a>.
     </p>
-    <ul>
-      <li>
-	The SBCL port uses 16 bit surrogate characters instead of taking
-	advantage of SBCL's full 21 bit character support.
-      </li>
-    </ul>
+    <p>
+      On Lisps without Unicode support, cxml uses integers instead of
+      characters to represent code points internally.  By default,
+      however, the parser will recode all data to strings containing
+      characters representing UTF-8 bytes before passing it to user
+      code.
+    </p>
 
     <a name="compilation"/>
     <h2>Compilation</h2>
