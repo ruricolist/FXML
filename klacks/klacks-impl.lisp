@@ -490,7 +490,10 @@
 	nil)))
 
 (defmethod klacks:current-xml-base ((source cxml-source))
-  (car (base-stack (slot-value source 'context))))
+  (let ((x (car (base-stack (slot-value source 'context)))))
+    (if (stringp x)
+	x
+	(puri:render-uri x nil))))
 
 (defmethod klacks:map-current-namespace-declarations (fn (source cxml-source))
   (loop

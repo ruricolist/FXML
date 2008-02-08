@@ -692,7 +692,10 @@
 	nil)))
 
 (defmethod sax:xml-base ((parser cxml-parser))
-  (car (base-stack (slot-value parser 'ctx))))
+  (let ((uri (car (base-stack (slot-value parser 'ctx)))))
+    (if (stringp uri)
+	uri
+	(puri:render-uri uri nil))))
 
 (defvar *validate* t)
 (defvar *external-subset-p* nil)
