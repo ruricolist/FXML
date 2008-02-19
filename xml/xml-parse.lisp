@@ -3113,8 +3113,9 @@
 	       (make-stream-name
 		:entity-name "main document"
 		:entity-kind :main
-		:uri (pathname-to-uri
-		      (merge-pathnames (or pathname (pathname input))))))
+		:uri (if pathname
+			 (pathname-to-uri (merge-pathnames pathname))
+			 (safe-stream-sysid input))))
 	 (apply #'parse-xstream xstream handler args))))))
 
 (defun parse-xstream (xstream handler &rest args)
