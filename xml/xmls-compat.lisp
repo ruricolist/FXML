@@ -9,7 +9,7 @@
 (defpackage cxml-xmls
   (:use :cl :runes)
   (:export #:make-node #:node-name #:node-ns #:node-attrs #:node-children
-           #:make-xmls-builder #:map-node))
+           #:make-xmls-builder #:map-node #:make-xpath-navigator))
 
 (in-package :cxml-xmls)
 
@@ -241,3 +241,20 @@
                                               :specified-p t)
                           nil)))
                   (node-attrs node))))
+
+;;;; XPath
+
+(defun make-xpath-navigator ()
+  (make-instance 'xpath-navigator))
+
+(defclass xpath-navigator ()
+  ((parents :initform (make-hash-table))
+   (prefixes :initform (make-hash-table))
+   (children :initform (make-hash-table))
+   (attributes :initform (make-hash-table))
+   (namespaces :initform (make-hash-table))))
+
+(defmethod initialize-instance :after ((instance xpath-navigator) &key)
+  (with-slots (prefixes) instance
+    (setf (gethash "http://www.w3.org/XML/1998/namespace" prefixes)
+	  "xml")))
