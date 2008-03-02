@@ -23,6 +23,7 @@
       only.  The old behaviour using pairs of prefix and local names
       was removed.
     </p>
+<!--
     <p>
       <strike>
 	fixme: It is unclear to me how namespaces are meant to
@@ -36,6 +37,7 @@
 	to me how that works in xmls.
       </strike>
     </p>
+-->
     <p>
       <div class="def">Function CXML-XMLS:MAKE-XMLS-BUILDER (&amp;key include-default-values include-namespace-uri)</div>
       Create a SAX handler which builds XMLS list structures.&#160;
@@ -87,5 +89,31 @@
       Accessors for xmls node data.
     </p>
     <p>
+      <div class="def">Accessor CXML-XMLS:MAKE-XPATH-NAVIGATOR ()</div>
+      Creates a navigator object for use with Plexippus XPath.
     </p>
+    <p>
+      Note that the navigator object caches parts of the document
+      structure, so when re-using a navigator across XPath evalutions,
+      make sure not to modify the list structure.
+    </p>
+    <p>
+      Example:
+    </p>
+    <pre>CL-USER> (defparameter *test-document*
+	   (cxml:parse
+            "&lt;foo a='b'>
+               &lt;a id='1'/> &lt;b id='2'/> &lt;c id='3'/>
+               &lt;a id='4'/> &lt;b id='5'/> &lt;c id='6'/>
+               &lt;a id='7'/> &lt;b id='8'/> &lt;c id='9'/>
+               &lt;last/>
+             &lt;/foo>"
+	    (cxml-xmls:make-xmls-builder)))
+*TEST-DOCUMENT*</pre>
+<pre>CL-USER> (let ((xpath:*navigator* (cxml-xmls:make-xpath-navigator)))
+	   (xpath:evaluate "//c[position()=2]|//a[@id='1']"
+			   *test-document*))
+#&lt;XPATH:NODE-SET (a ((id 1))), ... {27C751F1}></pre>
+<pre>CL-USER> (xpath:all-nodes *)
+(("a" (("id" "1"))) ("c" (("id" "6"))))</pre>
 </documentation>

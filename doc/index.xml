@@ -48,10 +48,12 @@
 	<a href="http://common-lisp.net/project/plexippus-xpath/">Plexippus</a>:
 	XPath 1.0
       </li>
+<!--
       <li>
 	<a href="http://repo.or.cz/w/xuriella.git">Xuriella</a>:
 	XSLT 1.0 (work in progress)
       </li>
+-->
       <li>
 	<a href="http://common-lisp.net/project/closure/closure-html/">Closure
 	  HTML</a>:
@@ -77,9 +79,13 @@
 	and sax:unescaped.
       </li>
       <li>
+	Added XPath support to the XMLS compatibility model.
+      </li>
+      <li>
 	Fixed various DTD serialization bugs.  Fixed xmls compatibility
 	bugs.  Fixed variable names in with-source.  Fixed
-	klacks-error export. 
+	klacks-error export.  Consistently use strings as base URIs.
+	Fixed PARSE for non-file-streams.
       </li>
     </ul>
     <div style="background-color: #f7f7f7;
