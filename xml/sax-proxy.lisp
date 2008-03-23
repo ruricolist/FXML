@@ -43,6 +43,7 @@
   (define-proxy-method sax:start-element (uri lname qname attributes))
   (define-proxy-method sax:start-prefix-mapping (prefix uri))
   (define-proxy-method sax:characters (data))
+  (define-proxy-method sax:unescaped (data))
   (define-proxy-method sax:processing-instruction (target data))
   (define-proxy-method sax:end-prefix-mapping (prefix))
   (define-proxy-method sax:end-element (namespace-uri local-name qname))
