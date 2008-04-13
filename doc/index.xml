@@ -61,21 +61,33 @@
       </li>
     </ul>
 
-
     <a name="changes"/>
     <h3>Recent Changes</h3>
-    <p class="nomargin"><tt>rel-2007-10-21</tt></p>
+    <div style="background-color: #f7f7f7;
+		width: 60%;
+		border: solid #9c0000;
+		margin: 0em 2pt 1em 2em;
+		padding: 1em">
+      cxml and closure-common are now available from <b>git</b> instead of CVS.
+      Please refer to the <a href="installation.html#download">
+      installation instructions</a> for details.
+    </div>
+    <p class="nomargin"><tt>rel-2008-xx-yy</tt></p>
     <ul class="nomargin">
+      <li>
+	Support for user-specified output encodings
+	using <a href="http://common-lisp.net/project/babel/">Babel</a>.
+      </li>
       <li>
 	Lisps using full 21 bit code points as characters are now fully
 	supported (including SBCL and Clozure CL) addition to the
 	existing support for 16 bit characters using UTF-16 (including
 	Allegro and LispWorks).  The feature <tt>rune-is-utf-16</tt> is
-	now set on 16 bit Lisps.<br/><br/> Make sure to update and
+	now set on 16 bit Lisps. Make sure to update and
 	recompile both cxml and closure-common when upgrading.
       </li>
       <li>
-	New sink slot omit-xml-declaration-p; functions cxml:unescaped
+	New sink slot sink-omit-xml-declaration-p; functions cxml:unescaped
 	and sax:unescaped.
       </li>
       <li>
@@ -83,22 +95,23 @@
       </li>
       <li>
 	Fixed various DTD serialization bugs.  Fixed xmls compatibility
-	bugs.  Fixed variable names in with-source.  Fixed
-	klacks-error export.  Consistently use strings as base URIs.
-	Fixed PARSE for non-file-streams.
+	bugs.  Fixed variable names in with-source.  Fixed klacks-error
+	export.  Consistently use strings as base URIs.  Fixed PARSE for
+	non-file-streams.  Added support for the UTF-8 "BOM", thanks to
+	Ivan Shvedunov.
       </li>
     </ul>
+    <br/><br/>
     <div style="background-color: #f7f7f7;
 		width: 60%;
 		border: solid #9c0000;
 		margin: 0em 2pt 1em 2em;
 		padding: 1em">
-      Runes have now been moved into
-      a <b>separate CVS module</b> unter the
-      name <b>closure-common</b>.  Releases will be available
+      Runes have been moved into a <b>separate project</b>,
+      named <b>closure-common</b>.  Releases will be available
       as <b>separate tarballs</b> in the download directory.  Please
-      refer to the <a href="installation.html#download">
-	installation instructions</a> for details.
+      refer to the <a href="installation.html#download"> installation
+      instructions</a> for details.
     </div>
     <p class="nomargin"><tt>rel-2007-10-21</tt></p>
     <ul class="nomargin">

@@ -50,7 +50,8 @@
    ;; #-rune-is-character
    #:make-character-stream-sink/utf8
 
-   #:omit-xml-declaration-p
+   #:sink-encoding
+   #:sink-omit-xml-declaration-p
 
    #:with-xml-output
    #:with-output-sink

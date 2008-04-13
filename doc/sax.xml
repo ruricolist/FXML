@@ -297,6 +297,14 @@
       <li>
         <tt>indentation</tt> -- indentation level.  An integer or <tt>nil</tt>.
       </li>
+      <li>
+        <tt>encoding</tt> -- the character encoding to use.  A string or
+	keyword.  <tt>nil</tt> is also allowed and means UTF-8.
+      </li>
+      <li>
+        <tt>omit-xml-declaration-p</tt> -- Boolean.  Don't write an XML
+	declaration.
+      </li>
     </ul>
     <p>
       The following <tt>canonical</tt> values are allowed:

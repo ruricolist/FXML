@@ -3,19 +3,21 @@
 
     <a name="download"/>
     <h2>Download</h2>
-    <ul>
-      <li>
-        <div>Download <a href="http://common-lisp.net/project/cxml/download/">tarballs</a> for both cxml itself and closure-common.</div>
-      </li>
-      <li>
-        <div>
-      Or use anonymous CVS (<a href="http://common-lisp.net/cgi-bin/viewcvs.cgi/cxml/?cvsroot=cxml">browse</a>):
-      <pre>export CVSROOT=:pserver:anonymous:anonymous@common-lisp.net:/project/cxml/cvsroot
-cvs co cxml
-cvs co closure-common</pre>
-        </div>
-      </li>
-    </ul>
+    <p>
+      Download <a href="http://common-lisp.net/project/cxml/download/">tarballs</a> for both cxml itself and closure-common.
+    </p>
+    <p>
+      Or get it from git:
+    </p>
+    <p>
+      <tt>git clone git://repo.or.cz/cxml.git</tt>
+      (<a href="http://repo.or.cz/w/cxml.git">gitweb</a>)
+      <br/>
+      
+      <tt>git clone git://repo.or.cz/closure-common.git</tt>
+      (<a href="http://repo.or.cz/w/closure-common.git">gitweb</a>)
+      <br/>
+    </p>
 
     <a name="implementations"/>
     <h2>Implementation-specific notes</h2>
@@ -42,12 +44,20 @@ cvs co closure-common</pre>
 
     <p>
       <b>Prerequisites.</b>
-      CXML needs <a href="http://www.cliki.net/Puri">puri</a> and
-      <a href="http://www.common-lisp.net/project/cl-plus-ssl/#trivial-gray-streams">trivial-gray-streams</a>.
-      In addition,
-      <a href="http://www.cliki.net/closure-common">closure-common</a>
-      is required, which is a separate module in cxml CVS (see above for
-      check-out instructions).
+      CXML needs:
+      <ul>
+	<li><a href="http://www.cliki.net/Puri">puri</a></li>
+	<li><a href="http://www.common-lisp.net/project/cl-plus-ssl/#trivial-gray-streams">trivial-gray-streams</a></li>
+	<li>
+	  <a href="http://common-lisp.net/project/babel/">Babel</a>
+	  (on Unicode-capable Lisps only)
+	</li>
+	<li>
+	  <a href="http://www.cliki.net/closure-common">closure-common</a>
+	  is maintained together with cxml but available as a separate
+	  download (see above for check-out instructions).
+	</li>
+      </ul>
     </p>
 
     <p>
