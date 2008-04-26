@@ -693,7 +693,7 @@
 
 (defmethod sax:xml-base ((parser cxml-parser))
   (let ((uri (car (base-stack (slot-value parser 'ctx)))))
-    (if (stringp uri)
+    (if (or (null uri) (stringp uri))
 	uri
 	(puri:render-uri uri nil))))
 
