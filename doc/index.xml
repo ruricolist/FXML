@@ -48,12 +48,10 @@
 	<a href="http://common-lisp.net/project/plexippus-xpath/">Plexippus</a>:
 	XPath 1.0
       </li>
-<!--
       <li>
-	<a href="http://repo.or.cz/w/xuriella.git">Xuriella</a>:
-	XSLT 1.0 (work in progress)
+	<a href="http://common-lisp.net/project/xuriella/">Xuriella</a>:
+	XSLT 1.0
       </li>
--->
       <li>
 	<a href="http://common-lisp.net/project/closure/closure-html/">Closure
 	  HTML</a>:

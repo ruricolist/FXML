@@ -27,3 +27,19 @@
       (doit 32 #xD800)
       (doit #x10000 char-code-limit)
       (values)))
+
+;; <4824D34F.5000002@acceleration.net>
+(deftest chtml-encoding
+  (with-output-to-string (stream)
+   (let ((doc (dom:create-document
+             'rune-dom:implementation
+             nil nil
+             (dom:create-document-type
+              'rune-dom:implementation
+              "html"
+              "-//W3C//DTD XHTML 1.0 Transitional//EN"
+              "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"))))
+     (dom:map-document (chtml:make-character-stream-sink stream)
+           doc
+           :include-xmlns-attributes nil
+           :include-doctype :full-internal-subset))))
