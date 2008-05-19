@@ -112,27 +112,6 @@
               :adjustable t
               :fill-pointer 0))
 
-(defun find-output-encoding (name)
-  (when (stringp name)
-    (setf name (find-symbol (string-upcase name) :keyword)))
-  (cond
-    ((null name)
-     (warn "Unknown encoding ~A, falling back to UTF-8" name)
-     :utf-8)
-    ((find name '(:utf-8 :utf_8 :utf8))
-     :utf-8)
-    #-rune-is-character
-    (t
-     (warn "Unknown encoding ~A, falling back to UTF-8" name)
-     :utf-8)
-    #+rune-is-character
-    (t
-     (handler-case
-	 (babel-encodings:get-character-encoding name)
-       (error ()
-	 (warn "Unknown encoding ~A, falling back to UTF-8" name)
-	 :utf-8)))))
-
 ;; bisschen unschoen hier die ganze api zu duplizieren, aber die
 ;; ystreams sind noch undokumentiert
 (macrolet ((define-maker (make-sink make-ystream &rest args)
@@ -141,7 +120,7 @@
 		(let* ((encoding (or encoding "UTF-8"))
 		       (ystream (,make-ystream ,@args)))
 		  (setf (ystream-encoding ystream)
-			(find-output-encoding encoding))
+			(runes:find-output-encoding encoding))
 		  (apply #'make-instance
 			 'sink
 			 :ystream ystream
