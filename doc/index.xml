@@ -77,6 +77,9 @@
 	using <a href="http://common-lisp.net/project/babel/">Babel</a>.
       </li>
       <li>
+	More support for input encodings, thanks to Pierre Mai.
+      </li>
+      <li>
 	Lisps using full 21 bit code points as characters are now fully
 	supported (including SBCL and Clozure CL) addition to the
 	existing support for 16 bit characters using UTF-16 (including
