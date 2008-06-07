@@ -3030,7 +3030,11 @@
 #-cxml-system::uri-is-namestring
 (defun pathname-to-uri (pathname)
   (let ((path
-         (append (pathname-directory pathname)
+	 ;; FIXME: should we really leave ".." in base URIs?
+         (append (mapcar (lambda (x)
+			   (cond ((member x '(:up :back)) "..")
+				 (t x)))
+			 (pathname-directory pathname))
                  (list
                   (if (specific-or (pathname-type pathname))
                       (concatenate 'string
