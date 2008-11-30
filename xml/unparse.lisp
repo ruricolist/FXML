@@ -142,11 +142,106 @@
     stream))
 
 #+rune-is-character
-(defun make-string-sink (&rest args) (apply #'make-rod-sink args))
+(defun make-string-sink (&rest args)
+  "@return{A serialization sink, i.e. a @class{SAX handler}}
+
+   Returns a handler that writes processes SAX events by writing an
+   equivalent XML document to a newly allocated string of unicode
+   characters.
+
+   The sink will return the string as a result from
+   @fun{sax:end-document}.
+
+   All sink creation functions share the same keyword arguments.
+   Refer to @fun{make-octet-vector-sink} for details on keyword
+   arguments."
+  (apply #'make-rod-sink args))
 
 
 (defmethod sax:end-document ((sink sink))
   (close-ystream (sink-ystream sink)))
+
+
+(setf (documentation #'make-octet-vector-sink 'function)
+      "@arg[canonical]{canonical form, one of NIL, T, 1, 2.  If specified,
+         serialization in canonical form is enabled.  The two canonical
+         forms are useful to allow comparisons of XML documents and their
+         content model by character-by-character comparisons of
+         their serialized representation.}
+       @arg[indentation]{indentation level.  An integer or nil.  If
+         specified, a pretty-printing indentation mode is enabled.  Note
+         that indentation as implemented currently changes the content model
+         unconditionally, and is usually helpful only for debugging purposes.}
+       @arg[encoding]{the character encoding to use.  A string or
+	 keyword.  Values are interpreted by Babel.  nil is also allowed
+         and means UTF-8.}
+       @arg[omit-xml-declaration]{Boolean.  If true, no XML declaration
+         is written.}
+       @return{A serialization sink, i.e. a @class{SAX handler}}
+
+       Returns a handler that writes processes SAX events by writing an
+       equivalent XML document to a newly allocated vector of
+       @code{(unsigned-byte 8)}.
+
+       The following values for @code{canonical} are allowed:
+
+       @begin{itemize}
+       @item{t or 1: Canonical XML}
+       @item{2: Second Canonical Form}
+       @item{NIL: Use a more readable non-canonical representation.}
+       @end{itemize}
+
+       The sink will return the vector as a result from
+       @fun{sax:end-document}.
+
+       An internal subset will be included in the result regardless of the
+       canonical setting. It is the responsibility of the caller to not
+       report an internal subset for canonical <= 1, or only notations as
+       required for canonical = 2. For example, the include-doctype argument
+       to dom:map-document should be set to nil for the former behaviour and
+       :canonical-notations for the latter. ")
+
+(setf (documentation #'make-octet-stream-sink 'function)
+      "@arg[stream]{An (unsigned-byte 8) stream.}
+       @return{A serialization sink, i.e. a @class{SAX handler}}
+
+       Returns a handler that writes processes SAX events by writing an
+       equivalent XML document to @var{stream}.
+
+       The sink will return @var{stream} as a result from
+       @fun{sax:end-document}.
+
+       All sink creation functions share the same keyword arguments.
+       Refer to @fun{make-octet-vector-sink} for details on keyword
+       arguments.")
+
+(setf (documentation #'make-rod-sink 'function)
+      "@return{A serialization sink, i.e. a @class{SAX handler}}
+
+       Returns a handler that writes processes SAX events by writing an
+       equivalent XML document to a newly allocated string of unicode
+       characters (or on implementations without unicode support: a rod).
+
+       The sink will return the string (or rod) as a result from
+       @fun{sax:end-document}.
+
+       All sink creation functions share the same keyword arguments.
+       Refer to @fun{make-octet-vector-sink} for details on keyword
+       arguments.")
+
+(setf (documentation #'make-character-stream-sink 'function)
+      "@arg[stream]{A character stream.}
+       @return{A serialization sink, i.e. a @class{SAX handler}}
+
+       Returns a handler that writes processes SAX events by writing an
+       equivalent XML document to @var{stream}.
+
+       The sink will return @var{stream} as a result from
+       @fun{sax:end-document}.
+
+       All sink creation functions share the same keyword arguments.
+       Refer to @fun{make-octet-vector-sink} for details on keyword
+       arguments.")
 
 
 ;;;; doctype and notations
@@ -627,9 +722,54 @@
 (defvar *current-namespace-bindings*)
 
 (defmacro with-xml-output (sink &body body)
+  "@arg[sink]{A @class{SAX handler}, evaluated}
+   @arg[body]{forms}
+   @return{The result of calling @code{sax:end-document} on @code{sink}.}
+   
+   Evaluates sink and establishes it as the current output sink for
+   the following \"convenience serialization\" macros and functions:
+   @fun{with-element}, @fun{with-namespace}, @fun{doctype},
+   @fun{with-element*}, @fun{attribute}, @fun{attribute*}, @fun{text}
+   @fun{comment}, @fun{processing-instruction}, @fun{unescaped}.
+
+   Before @code{body} is evaluated, @fun{sax:start-document} is signalled
+   to the @code{sink}.  Afterwards, @fun{sax:end-document} is signalled.
+
+   Note that convenience serialization delays some serialization events.
+   For example, @fun{with-element} delays signalling an opening tag
+   using @fun{sax:start-element} until it has information about all
+   possible attributes of the element.  Because of this delay, it is
+   not usually safe to signal SAX events to the sink during the extent
+   of @code{with-xml-output}.  However, @fun{with-output-sink} can be
+   used to force output of delayed events, allowing direct use of the
+   sink.
+
+   Example:
+   @pre{(with-xml-output (make-octet-stream-sink stream)
+  (with-element \"foo\"
+    (attribute \"xyz\" \"abc\")
+    (with-element \"bar\"
+      (attribute \"blub\" \"bla\"))
+    (text \"Hi there.\")))}"
   `(invoke-with-xml-output (lambda () ,@body) ,sink))
 
 (defmacro with-output-sink ((var) &body body)
+  "@arg[var]{A symbol, not evaluated.}
+   @arg[body]{forms, an implicit progn}
+   @return{The result of @code{body}.}
+
+   Allows safe use of manual calls to SAX functions during the extent
+   of @fun{with-xml-output},
+   
+   Determines the current output sink established by @fun{with-xml-output},
+   as used by convenience serialization functions.  Writes delayed
+   serialization events to the sink. Binds local variable @code{var} to the
+   sink and evaluates @code{body} as an implicit progn.
+
+   The consequences are undefined if this macro is used outside of the
+   extent of a call to @fun{with-xml-output}.
+
+   See @fun{with-xml-output} for details on delayed events."
   `(invoke-with-output-sink (lambda (,var) ,@body)))
 
 (defun invoke-with-xml-output (fn sink)
@@ -646,15 +786,74 @@
   (funcall fn *sink*))
 
 (defmacro with-element (qname &body body)
+  "@arg[qname]{A string, evaluated.}
+   @arg[body]{forms, an implicit progn}
+   @return{The result of @code{body}.}
+
+   Writes an element to the current output sink.
+
+   This macro is a convenience wrapper around @fun{with-element*}.
+   
+   @var{qname} is parsed to determine the element's namespace prefix
+   and local name.  Then @fun{with-element*} is called on @var{body} using
+   the resulting values."
   `(invoke-with-element (lambda () ,@body) ,qname))
 
 (defmacro with-element* ((prefix lname) &body body)
+  "@arg[prefix]{Namespace prefix, a string (evaluated).}
+   @arg[lname]{Local name, a string (evaluated).}
+   @arg[body]{forms, an implicit progn}
+   @return{The result of @code{body}.}
+
+   Writes an element to the current output sink.
+
+   First, @var{prefix} is resolved to a namespace URI using the bindings
+   established by @fun{with-namespace}.
+
+   Next, body is evaluated as an implicit progn.  During this time,
+   attributes for the element can be specified using @fun{attribute}.
+
+   Once information on the start tag is complete, @fun{start-element}
+   on the current output sink, using the specified namespace prefix and
+   local name specified by the arguments, the namespace URI computed as
+   described above,and including all attributes collected so far.
+
+   Information on the start tag is considered complete once the first of
+   the following situations occurs:
+   @begin{itemize}
+   @item{Before any child node of the element is written, e.g. using an
+     inner call of @fun{with-element},}
+   @item{Before the body of @fun{with-ouptut-sink} is evaluated.}
+   @item{After the end of @var{body} has been reached.}
+   @end{itemize}
+
+   Finally, sax:end-element is used to write an end tag, using the same
+   qualified name and namespace information as above."
   `(invoke-with-element* (lambda () ,@body) ,prefix ,lname))
 
 (defmacro with-namespace ((prefix uri) &body body)
+  "@arg[prefix]{Namespace prefix, a string (evaluated).}
+   @arg[uri]{Namespace URI, a string (evaluated).}
+   @arg[body]{forms, an implicit progn}
+   @return{The result of @code{body}.}
+
+   Registers @code{prefix} as a name for the namespace URI @code{uri}
+   for the extent of body.
+
+   Namespace bindings established by @code{with-namespace} are used by
+   @fun{with-element} and @fun{with-element*} as well as @fun{attribute}
+   and @fun{attribute*}."
   `(invoke-with-namespace (lambda () ,@body) ,prefix ,uri))
 
 (defun doctype (name public-id system-id &optional internal-subset)
+  "@arg[name]{Element name, a string.}
+   @arg[public-id]{String}
+   @arg[system-id]{A system ID as a @class{puri:uri}.}
+   @arg[internal-subset]{nil or a string}
+   @return{undocumented}
+
+   Writes a doctype declaration to the current output sink, using the
+   specified name, public ID, system ID, and optionally an internal subset."
   (sax:start-dtd *sink* name public-id system-id)
   (when internal-subset
     (sax:unparsed-internal-subset *sink* internal-subset))
@@ -717,12 +916,43 @@
 (defmethod unparse-attribute ((value integer)) (write-to-string value))
 
 (defun attribute (qname value)
+  "@arg[qname]{Qualified name, a string.}
+   @arg[value]{Any value understood by @fun{unparse-attribute}, in particular
+     strings.}
+   @return{undocumented}
+
+   Collects an attribute for the start tag that is currently being written.
+
+   This function may only be called during the extent of a use of
+   @fun{with-element} or @fun{with-element*}, and only before the first
+   child node has been written.
+   
+   An attribute for the current element is recorded using the namespace prefix
+   and local name specified by @var{qname}.  The attribute's namespace prefix
+    is resolved to a namespace URI using the bindings established by
+   @fun{with-namespace},and that namespace URI is used for the attribute."
   (setf qname (rod qname))
   (multiple-value-bind (prefix lname)
       (split-qname qname)
     (attribute* prefix lname value qname)))
 
 (defun attribute* (prefix lname value &optional qname)
+  "@arg[prefix]{Namespace prefix, a string.}
+   @arg[lname]{Local name, a string.}
+   @arg[value]{Any value understood by @fun{unparse-attribute}, in particular
+     strings.}
+   @return{undocumented}
+
+   Collects an attribute for the start tag that is currently being written.
+
+   This function may only be called during the extent of a use of
+   @fun{with-element} or @fun{with-element*}, and only before the first
+   child node has been written.
+   
+   An attribute for the current element is recorded using the namespace prefix
+   and local name specified by arguments.  @var{prefix} is resolved to a
+   namespace URI using the bindings established by @fun{with-namespace},
+   and that namespace URI is used for the attribute."
   (setf value (unparse-attribute value))
   (when value
     (setf prefix (when prefix (rod prefix)))
@@ -736,6 +966,14 @@
 	  (cdr *current-element*))))
 
 (defun cdata (data)
+  "@arg[data]{String.}
+   @return{undocumented}
+
+   Writes a CDATA section to the current output sink, using @code{data} as
+   its contents.
+
+   Note: It is currently the caller's responsibily to ensure that the CDATA
+   section will not contain forbidden character sequences."
   (maybe-emit-start-tag)
   (sax:start-cdata *sink*)
   (sax:characters *sink* (rod data))
@@ -743,20 +981,55 @@
   data)
 
 (defun text (data)
+  "@arg[data]{String.}
+   @return{undocumented}
+
+   Writes a text node to the current output sink, using @code{data} as
+   its contents.
+
+   Note: It is currently the caller's responsibily to ensure that @code{data}
+   does not contain characters forbidden for character data."
   (maybe-emit-start-tag)
   (sax:characters *sink* (rod data))
   data)
 
 (defun comment (data)
+  "@arg[data]{String.}
+   @return{undocumented}
+
+   Writes a comment to the current output sink, using @code{data} as
+   its contents.
+
+   Note: It is currently the caller's responsibily to ensure that @code{data}
+   does not contain character sequences forbidden for comments."
   (maybe-emit-start-tag)
   (sax:comment *sink* (rod data))
   data)
 
 (defun processing-instruction (target data)
+  "@arg[target]{String.}
+   @arg[data]{String.}
+   @return{undocumented}
+
+   Writes a processing instruction to the current output sink, using
+   @code{target} and @code{data} as its contents.
+
+   Note: It is currently the caller's responsibily to ensure that
+   @code{target} and @code{data} do not contain character sequences
+   forbidden for processing instruction contents."
   (maybe-emit-start-tag)
   (sax:processing-instruction *sink* (rod target) (rod data))
   data)
 
 (defun unescaped (str)
+  "@arg[data]{String.}
+   @return{undocumented}
+
+   If supported by the current output sink, writes character data directly
+   to the sink's target.
+
+   Use of this function is often an indicator of bad design.  Avoid it
+   if you can. (Implementation note: This function is supported because
+   XSLT's XML output method requires it.)"
   (maybe-emit-start-tag)
   (sax:unescaped *sink* (rod str)))

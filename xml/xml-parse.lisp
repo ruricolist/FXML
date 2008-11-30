@@ -598,9 +598,22 @@
 ;;;;  DTD
 ;;;;
 
-(define-condition xml-parse-error (simple-error) ())
-(define-condition well-formedness-violation (xml-parse-error) ())
-(define-condition validity-error (xml-parse-error) ())
+(define-condition xml-parse-error (simple-error) ()
+  (:documentation
+   "Superclass of all conditions signalled by the CXML parser."))
+
+(define-condition well-formedness-violation (xml-parse-error) ()
+  (:documentation
+   "This condition is signalled for all well-formedness violations.
+
+    Note for validating mode: Sometimes violations of well-formedness are
+    first detected as validity errors by the parser and signalled as
+    instances of @class{validity-error} rather
+    than well-formedness-violation."))
+
+(define-condition validity-error (xml-parse-error) ()
+  (:documentation
+   "Reports the violation of a validity constraint."))
 
 ;; We make some effort to signal end of file as a special condition, but we
 ;; don't actually try very hard.  Not sure whether we should.  Right now I
@@ -911,6 +924,33 @@
 (defstruct (extid (:constructor make-extid (public system)))
   (public nil :type (or rod null))
   (system (error "missing argument") :type (or puri:uri null)))
+
+(setf (documentation 'extid 'type)
+      "Represents an External ID, consisting of a Public ID and a System ID.
+
+       @see-constructor{make-extiid}
+       @see-slot{exitid-system}
+       @see-slot{exitid-public}")
+
+(setf (documentation #'make-extid 'function)
+      "@arg[publicid]{string or nil}
+       @arg[systemid]{@class{puri:uri} or nil}
+       @return{an instance of @class{extid}}
+
+       Create an object representing the External ID composed
+       of the specified Public ID and System ID.")
+
+(setf (documentation #'extid-public 'function)
+      "@arg[extid]{A @class{extid}}
+       @return[publicid]{string or nil}
+
+       Returns the Public ID part of this External ID.")
+
+(setf (documentation #'extid-system 'function)
+      "@arg[extid]{A @class{extid}}
+       @return[sytemid]{puri:uri or nil}
+
+       Returns the System ID part of this External ID.")
 
 (defun absolute-extid (source-stream extid)
   (let ((sysid (extid-system extid))
@@ -3099,6 +3139,49 @@
     (input handler &rest args
      &key validate dtd root entity-resolver disallow-internal-subset
           recode pathname)
+  "@arg[input]{A string, pathname, octet vector, or stream.}
+   @arg[handler]{A @class{SAX handler}}
+   @arg[validate]{Boolean.  Defaults to @code{nil}.  If true, parse in
+     validating mode, i.e. assert that the document contains a DOCTYPE
+     declaration and conforms to the DTD declared.}
+   @arg[dtd]{unless @code{nil}, an extid instance specifying the external
+     subset to load.  This options overrides the extid specified in the
+     document type declaration, if any.  See below for @fun{make-extid}.
+     This option is useful for verification purposes together with the
+     @var{root} and @var{disallow-internal-subset} arguments.}
+   @arg[root]{The expected root element name, or @code{nil} (the default).
+     If specified, this argument overrides the name stated in the input's
+     DOCTYPE (if any).}
+   @arg[entity-resolver]{@code{nil} or a function of two arguments which
+     is invoked for every entity referenced by the document with the
+     entity's Public ID (a rod) and System ID (an URI object) as arguments.
+     The function may either return nil, CXML will then try to resolve the
+     entity as usual. Alternatively it may return a Common Lisp stream
+     specialized on @code{(unsigned-byte 8)} which will be used instead.
+     (It may also signal an error, of course, which can be useful to prohibit
+     parsed XML documents from including arbitrary files readable by
+     the parser.)}
+   @arg[disallow-internal-subset]{Boolean.  If true, signal
+     an error if the document contains an internal subset.}
+   @arg[recode]{Boolean.  (Ignored on Lisps with Unicode
+     support.)  Recode rods to UTF-8 strings.  Defaults to true.
+     Make sure to use @fun{utf8-dom:make-dom-builder} if this
+     option is enabled and @fun{rune-dom:make-dom-builder}
+     otherwise.}
+   @return{The value returned by @fun{sax:end-document} on @var{handler}.}
+
+   Parse an XML document from @var{input}, which can be a string, pathname,
+   octet vector, or stream.
+
+   Return values from this function depend on the SAX handler used.
+   This is an old-style convenience wrapper around the new-style interface
+   @fun{parse}.
+
+   Parse an XML document from @var{filename}, and signal SAX events to
+   @var{handler} while doing so.
+
+   All SAX parsing functions share the same keyword arguments.  Refer to
+   @fun{parse} for details on keyword arguments."
   (declare (ignore validate dtd root entity-resolver disallow-internal-subset
 		   recode))
   (let ((args
@@ -3133,6 +3216,18 @@
 	(wf-error xstream "~A" c)))))
 
 (defun parse-file (filename handler &rest args)
+  "@arg[filename]{An pathname designator.}
+   @arg[handler]{A @class{SAX handler}}
+   @return{The value returned by @fun{sax:end-document} on @var{handler}.}
+
+   This is an old-style convenience wrapper around the new-style interface
+   @fun{parse}.
+
+   Parse an XML document from @var{filename}, and signal SAX events to
+   @var{handler} while doing so.
+
+   All SAX parsing functions share the same keyword arguments.  Refer to
+   @fun{parse} for details on keyword arguments."
   (with-open-xfile (input filename)
     (setf (xstream-name input)
       (make-stream-name
@@ -3154,7 +3249,46 @@
       (pathname-to-uri (merge-pathnames (pathname stream)))
       nil))
 
+(deftype |SAX HANDLER| ()
+  'sax:abstract-handler
+  "Historically, any object has been usable as a SAX handler with CXML,
+   as long as it implemented all SAX events, i.e. had methods
+   for the generic functions defined in the SAX package.
+
+   While this approach still works, it is now recommended that SAX handlers
+   should be implemented by subclassing @class{abstract-handler} or one
+   of its subclasses.  Useful subclasses are @class{content-handler}
+   and @class{default-handler}.
+
+   (In addition, the value @code{nil} is valid SAX handler, which discards
+   all events it receives.)
+
+   As a rule of thumb, write a subclass of @class{default-handler} if
+   you want to handle only a few special SAX events and ignore the rest,
+   because this class has no-op default methods for all events.
+
+   If, however, you want to make certain that your class implements all
+   important SAX events explicitly, a good choice is @class{content-handler},
+   which has no-op default methods only for less important, DTD-related
+   events, and requires subclasses to implement all events related to the
+   content model.
+
+   In some cases, it might be helpful to implement @class{abstract-handler}
+   directly, which has no default event methods at all.")
+
 (defun parse-stream (stream handler &rest args)
+  "@arg[stream]{An (unsigned-byte 8) stream}
+   @arg[handler]{A @class{SAX handler}}
+   @return{The value returned by @fun{sax:end-document} on @var{handler}.}
+
+   This is an old-style convenience wrapper around the new-style interface
+   @fun{parse}.
+
+   Parse an XML document from @var{stream}, and signal SAX events to
+   @var{handler} while doing so.
+
+   All SAX parsing functions share the same keyword arguments.  Refer to
+   @fun{parse} for details on keyword arguments."
   (let ((xstream
          (make-xstream
           stream
@@ -3167,6 +3301,33 @@
 
 (defun parse-empty-document
     (uri qname handler &key public-id system-id entity-resolver (recode t))
+  "@arg[uri]{a string or nil}
+   @arg[qname]{a string or nil}
+   @arg[handler]{a @class{SAX handler}}
+   @arg[public-id]{a string or nil}
+   @arg[system-id]{a @type{puri:uri} or nil}
+   @arg[entity-resolver]{@code{nil} or a function of two arguments which
+     is invoked for every entity referenced by the document with the
+     entity's Public ID (a rod) and System ID (an URI object) as arguments.
+     The function may either return nil, CXML will then try to resolve the
+     entity as usual. Alternatively it may return a Common Lisp stream
+     specialized on @code{(unsigned-byte 8)} which will be used instead.
+     (It may also signal an error, of course, which can be useful to prohibit
+     parsed XML documents from including arbitrary files readable by
+     the parser.)}
+   @arg[recode]{Boolean.  (Ignored on Lisps with Unicode
+     support.)  Recode rods to UTF-8 strings.  Defaults to true.
+     Make sure to use @fun{utf8-dom:make-dom-builder} if this
+     option is enabled and @fun{rune-dom:make-dom-builder}
+     otherwise.}
+   @return{The value returned by @fun{sax:end-document} on @var{handler}.}
+
+   Simulate parsing of a document with a document element @var{qname}
+   having no attributes except for an optional namespace
+   declaration to @var{uri}.  If an external ID is specified
+   (@var{system-id}, @var{public-id}), find, parse, and report
+   this DTD as if with @fun{parse-file}, using the specified
+   entity resolver."
   (check-type uri (or null rod))
   (check-type qname (or null rod))
   (check-type public-id (or null rod))
@@ -3224,10 +3385,24 @@
     (sax:end-document handler)))
 
 (defun parse-dtd-file (filename &optional handler)
+  "@arg[filename]{An pathname designator.}
+   @arg[handler]{A @class{SAX handler}}
+   @return{A @class{dtd} instance.}
+
+   Parse @a[http://www.w3.org/TR/2000/REC-xml-20001006#NT-extSubset]{declarations}
+   from @var{filename} and return an object representing the DTD,
+   suitable as an argument to @code{validate} with @fun{parse}."
   (with-open-file (s filename :element-type '(unsigned-byte 8))
     (parse-dtd-stream s handler)))
 
 (defun parse-dtd-stream (stream &optional handler)
+  "@arg[stream]{An (unsigned-byte 8) stream.}
+   @arg[handler]{A @class{SAX handler}}
+   @return{A @class{dtd} instance.}
+
+   Parse @a[http://www.w3.org/TR/2000/REC-xml-20001006#NT-extSubset]{declarations}
+   from @var{stream} and return an object representing the DTD,
+   suitable as an argument to @code{validate} with @fun{parse}."
   (let ((input (make-xstream stream)))
     (setf (xstream-name input)
           (make-stream-name
@@ -3245,6 +3420,22 @@
 	  (dtd *ctx*))))))
 
 (defun parse-rod (string handler &rest args)
+  "@arg[string]{An string of unicode characters.}
+   @arg[handler]{A @class{SAX handler}}
+   @return{The value returned by @fun{sax:end-document} on @var{handler}.}
+
+   This is an old-style convenience wrapper around the new-style interface
+   @fun{parse}.
+
+   Parse an XML document from @var{string}, and signal SAX events to
+   @var{handler} while doing so.
+
+   Note: This function assumes that @var{string} has already been decoded into
+   Unicode runes and ignores the encoding specified in the XML declaration,
+   if any.
+
+   All SAX parsing functions share the same keyword arguments.  Refer to
+   @fun{parse} for details on keyword arguments."
   (let ((xstream (string->xstream string)))
     (setf (xstream-name xstream)
 	  (make-stream-name
@@ -3257,6 +3448,18 @@
   (make-rod-xstream (string-rod string)))
 
 (defun parse-octets (octets handler &rest args)
+  "@arg[octets]{An (unsigned-byte 8) vector.}
+   @arg[handler]{A @class{SAX handler}}
+   @return{The value returned by @fun{sax:end-document} on @var{handler}.}
+
+   This is an old-style convenience wrapper around the new-style interface
+   @fun{parse}.
+
+   Parse an XML document from @var{octets}, and signal SAX events to
+   @var{handler} while doing so.
+
+   All SAX parsing functions share the same keyword arguments.  Refer to
+   @fun{parse} for details on keyword arguments."
   (apply #'parse-stream (make-octet-input-stream octets) handler args))
 
 ;;;;
@@ -3705,6 +3908,22 @@
      (cdatap :initform nil :accessor cdatap)))
 
 (defun make-validator (dtd root)
+  "@arg[dtd]{An @class{dtd} instance.}
+   @arg[root]{Element name, a string.}
+   @return{A @class{SAX handler}.}
+
+   Create a SAX handler which validates against a DTD instance.
+   The document's root element must be named @code{root}. 
+   Used with @fun{dom:map-document}, this validates a document
+   object as if by re-reading it with a validating parser, except
+   that declarations recorded in the document instance are completely
+   ignored.
+
+   Example:
+
+   @pre{(let ((d (parse-file \"~/test.xml\" (cxml-dom:make-dom-builder)))
+      (x (parse-dtd-file \"~/test.dtd\")))
+  (dom:map-document (cxml:make-validator x #\"foo\") d))}"
   (make-instance 'validator
     :context (make-context
               :handler nil

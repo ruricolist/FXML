@@ -70,7 +70,7 @@
       Please refer to the <a href="installation.html#download">
       installation instructions</a> for details.
     </div>
-    <p class="nomargin"><tt>rel-2008-xx-yy</tt></p>
+    <p class="nomargin"><tt>rel-2008-11-30</tt></p>
     <ul class="nomargin">
       <li>
 	Support for user-specified output encodings

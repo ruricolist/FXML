@@ -31,6 +31,12 @@
 (defvar *xmlns-namespace* #"http://www.w3.org/2000/xmlns/")
 
 (defun make-namespace-normalizer (chained-handler)
+  "@arg[chained-handler]{A @class{SAX handler}.}
+   @return{A @class{SAX handler}.}
+
+   Return a SAX handler that performs @a[http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407/namespaces-algorithms.html#normalizeDocumentAlgo]{DOM
+     3-style namespace normalization} on attribute lists in
+   @fun{sax:start-element} events before passing them on the next handler."
   (make-instance 'namespace-normalizer
     :xmlns-stack (list (mapcar (lambda (cons)
 				 (make-xmlns-attribute (car cons) (cdr cons)))

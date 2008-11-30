@@ -1,8 +1,10 @@
-#!/bin/sh
+#!/bin/sh -e
+set -x
+
 cd $(dirname $0)
 home=$(pwd)
 name=$(basename $home)
-dir=${name}-$(date --iso)
+name_and_date=${name}-$(date --iso)
 
 TMPDIR=`mktemp -d /tmp/dist.XXXXXXXXXX`
 cleanup() {
@@ -11,13 +13,36 @@ cleanup() {
 }
 trap cleanup exit
 
+make -C doc
+
+git tag -f $name_and_date
+git archive --prefix=$name_and_date/ $name_and_date | \
+    ( cd $TMPDIR && tar xvf - )
+
+# echo '(progn (load "dist.lisp") (quit))' | clbuild lisp 
+
+rsync -a doc $TMPDIR/$name_and_date
+
 cd $TMPDIR
-cvs -d "`cat $home/CVS/Root`" export -r HEAD -d "$dir" "$name"
 
-make -C $dir/doc
-
-tgz=$TMPDIR/${dir}.tgz
-tar czf $tgz $dir
+tgz=$TMPDIR/${name_and_date}.tgz
+tar czf $tgz $name_and_date
 gpg -b -a $tgz
 
-mv $tgz $tgz.asc $home/
+mkdir -p ~/clnet/project/cxml/public_html/
+
+rsync -av \
+    $name_and_date/doc/ \
+    ~/clnet/project/cxml/public_html/
+
+rsync $tgz $tgz.asc ~/clnet/project/cxml/public_html/download/
+
+rm -f ~/clnet/project/cxml/public_html/download/cxml.tar.gz 
+rm -f ~/clnet/project/cxml/public_html/download/cxml.tar.gz.asc
+
+ln -sf ${name_and_date}.tgz ~/clnet/project/cxml/public_html/download/cxml.tar.gz
+ln -sf ${name_and_date}.tgz.asc ~/clnet/project/cxml/public_html/download/cxml.tar.gz.asc
+
+echo done
+exit 0
+rsync -av ~/bob/public_html bob.askja.de
