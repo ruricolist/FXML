@@ -106,7 +106,7 @@
 	(:comment
 	  (sax:comment handler a))
 	(:dtd
-	  (sax:start-dtd handler a b c)
+	  (sax:start-dtd handler a b (and c (uri-rod c)))
 	  (when (slot-boundp source 'internal-declarations)
 	    (sax:start-internal-subset handler)
 	    (serialize-declaration-kludge
