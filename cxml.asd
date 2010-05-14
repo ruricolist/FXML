@@ -133,4 +133,4 @@
 
 (asdf:defsystem :cxml
     :components ()
-    :depends-on (:cxml-dom :cxml-klacks :cxml-test))
+    :depends-on (:cxml-dom :cxml-klacks #-allegro :cxml-test))
