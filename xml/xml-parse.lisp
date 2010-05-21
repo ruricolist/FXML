@@ -3107,7 +3107,10 @@
 #-cxml-system::uri-is-namestring
 (defun uri-to-pathname (uri)
   (let ((scheme (puri:uri-scheme uri))
-        (path (puri:uri-parsed-path uri)))
+        (path (loop for e in (puri:uri-parsed-path uri)
+		 collect (if (stringp e)
+			     (puri::decode-escaped-encoding e t nil)
+			     e))))
     (unless (member scheme '(nil :file))
       (error 'xml-parse-error
              :format-control "URI scheme ~S not supported"
