@@ -137,6 +137,5 @@
   (sax:start-element (proxy-chained-handler handler) uri lname qname attrs))
 
 (defmethod sax:end-element ((handler namespace-normalizer) uri lname qname)
-  (declare (ignore qname))
   (pop (xmlns-stack handler))
   (sax:end-element (proxy-chained-handler handler) (or uri #"") lname qname))
