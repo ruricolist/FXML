@@ -254,7 +254,7 @@
                       :root #"catalog"
                       :entity-resolver #'entity-resolver)))))
 
-(defclass catalog-parser ()
+(defclass catalog-parser (sax:default-handler)
   ((result :initform (make-entry-file) :accessor result)
    (next :initform '() :accessor next)
    (prefer-stack :initform (list *prefer*) :accessor prefer-stack)
