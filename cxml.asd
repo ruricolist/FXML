@@ -18,7 +18,7 @@
        #+rune-is-character
        (error "conflicting unicode configuration.  Please recompile.")
        (pushnew :rune-is-integer *features*))
-      ((code-char 70000)
+      ((test 70000)
        (when (test #xD800)
 	 (format t " WARNING: Lisp implementation doesn't use UTF-16, ~
                      but accepts surrogate code points.~%"))
