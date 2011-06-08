@@ -209,7 +209,18 @@
      Only valid for :start-element.
     </p>
     <p>
+      <div class="def">Function KLACKS:LIST-ATTRIBUTES (source)</div>
+    </p>
+    <p>
      Return a list of SAX attribute structures for the current start tag.
+     Only valid for :start-element.
+    </p>
+    <p>
+      <div class="def">Function KLACKS:GET-ATTRIBUTE (source lname
+      &amp;optional uri)</div>
+    </p>
+    <p>
+     Return a SAX attribute structures for the current start tag.
      Only valid for :start-element.
     </p>
 
