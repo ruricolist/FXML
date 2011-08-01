@@ -99,7 +99,7 @@
 	      (sax:start-cdata handler)
 	      (sax:characters handler a)
 	      (sax:end-cdata handler))
-	    (T
+	    (t
 	      (sax:characters handler a))))
 	(:processing-instruction
 	  (sax:processing-instruction handler a b))
