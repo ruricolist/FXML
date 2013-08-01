@@ -226,9 +226,11 @@
       (warn "ignoring catalog error: ~A" c))))
 
 (defparameter *catalog-dtd*
-    (let* ((cxml
-            (slot-value (asdf:find-system :cxml) 'asdf::relative-pathname))
-           (dtd (merge-pathnames "catalog.dtd" cxml)))
+    (let* ((load-truename #.(or *compile-file-truename* *load-truename*))
+           (dtd (make-pathname :name "catalog"
+                               :directory (butlast (pathname-directory load-truename))
+                               :type "dtd"
+                               :defaults load-truename)))
       (with-open-file (s dtd :element-type '(unsigned-byte 8))
         (let ((bytes
                (make-array (file-length s) :element-type '(unsigned-byte 8))))
