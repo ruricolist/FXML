@@ -23,26 +23,26 @@
 ;;; Library General Public License for more details.
 ;;;
 ;;; You should have received a copy of the GNU Library General Public
-;;; License along with this library; if not, write to the 
-;;; Free Software Foundation, Inc., 59 Temple Place - Suite 330, 
+;;; License along with this library; if not, write to the
+;;; Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 ;;; Boston, MA  02111-1307  USA.
 
 (in-package :cxml)
 
-;; 
+;;
 ;; | Canonical XML
 ;; | =============
-;; |                                      
+;; |
 ;; | This document defines a subset of XML called canonical XML. The
 ;; | intended use of canonical XML is in testing XML processors, as a
 ;; | representation of the result of parsing an XML document.
-;; | 
+;; |
 ;; | Every well-formed XML document has a unique structurally equivalent
 ;; | canonical XML document. Two structurally equivalent XML documents have
 ;; | a byte-for-byte identical canonical XML document. Canonicalizing an
 ;; | XML document requires only information that an XML processor is
 ;; | required to make available to an application.
-;; | 
+;; |
 ;; | A canonical XML document conforms to the following grammar:
 ;; |
 ;; |    CanonXML    ::= Pi* element Pi*
@@ -59,9 +59,9 @@
 ;; |    S           ::= (see XML spec)
 ;; |
 ;; | Attributes are in lexicographical order (in Unicode bit order).
-;; |  
+;; |
 ;; | A canonical XML document is encoded in UTF-8.
-;; |  
+;; |
 ;; | Ignorable white space is considered significant and is treated
 ;; | equivalently to data.
 ;;
@@ -83,8 +83,8 @@
      (have-internal-subset :initform nil :accessor have-internal-subset)
      (stack :initform nil :accessor stack)
      (sink-omit-xml-declaration-p :initform nil
-				  :initarg :omit-xml-declaration-p
-				  :accessor sink-omit-xml-declaration-p)
+                                  :initarg :omit-xml-declaration-p
+                                  :accessor sink-omit-xml-declaration-p)
      (encoding :initarg :encoding :reader sink-encoding)))
 
 #-rune-is-character
@@ -99,11 +99,11 @@
   (when (and (canonical instance) (indentation instance))
     (error "Cannot indent XML in canonical mode"))
   (when (and (canonical instance)
-	     (not (eq (ystream-encoding (sink-ystream instance)) :utf-8)))
+             (not (eq (ystream-encoding (sink-ystream instance)) :utf-8)))
     (error "Cannot use non-UTF-8 encoding in canonical mode"))
   (when (let ((encoding (ystream-encoding (sink-ystream instance))))
-	  (and (not (symbolp encoding))
-	       (eq (babel-encodings:enc-name encoding) :utf-16)))
+          (and (not (symbolp encoding))
+               (eq (babel-encodings:enc-name encoding) :utf-16)))
     (sink-write-rune #/U+FEFF instance)))
 
 (defun make-buffer (&key (element-type '(unsigned-byte 8)))
@@ -115,17 +115,17 @@
 ;; bisschen unschoen hier die ganze api zu duplizieren, aber die
 ;; ystreams sind noch undokumentiert
 (macrolet ((define-maker (make-sink make-ystream &rest args)
-	     `(defun ,make-sink (,@args &rest initargs
-				        &key encoding &allow-other-keys)
-		(let* ((encoding (or encoding "UTF-8"))
-		       (ystream (,make-ystream ,@args)))
-		  (setf (ystream-encoding ystream)
-			(runes:find-output-encoding encoding))
-		  (apply #'make-instance
-			 'sink
-			 :ystream ystream
-			 :encoding encoding
-			 initargs)))))
+             `(defun ,make-sink (,@args &rest initargs
+                                        &key encoding &allow-other-keys)
+                (let* ((encoding (or encoding "UTF-8"))
+                       (ystream (,make-ystream ,@args)))
+                  (setf (ystream-encoding ystream)
+                        (runes:find-output-encoding encoding))
+                  (apply #'make-instance
+                         'sink
+                         :ystream ystream
+                         :encoding encoding
+                         initargs)))))
   (define-maker make-octet-vector-sink make-octet-vector-ystream)
   (define-maker make-octet-stream-sink make-octet-stream-ystream stream)
   (define-maker make-rod-sink make-rod-ystream)
@@ -173,7 +173,7 @@
          that indentation as implemented currently changes the content model
          unconditionally, and is usually helpful only for debugging purposes.}
        @arg[encoding]{the character encoding to use.  A string or
-	 keyword.  Values are interpreted by Babel.  nil is also allowed
+         keyword.  Values are interpreted by Babel.  nil is also allowed
          and means UTF-8.}
        @arg[omit-xml-declaration]{Boolean.  If true, no XML declaration
          is written.}
@@ -248,7 +248,7 @@
 
 (defmethod sax:start-document ((sink sink))
   (unless (or (canonical sink)
-	      (sink-omit-xml-declaration-p sink))
+              (sink-omit-xml-declaration-p sink))
     (sink-write-rod #"<?xml version=\"1.0\" encoding=\"" sink)
     (sink-write-rod (rod (sink-encoding sink)) sink)
     (sink-write-rod #"\"?>" sink)
@@ -302,7 +302,7 @@
 (defun write-quoted-rod (x sink)
   (let ((q (if (find #/' x) #/" #/'
                ;; '" (thanks you Emacs indentation, the if ends here)
-		     )))
+                     )))
     (sink-write-rune q sink)
     (sink-write-rod x sink)
     (sink-write-rune q sink)))
@@ -310,10 +310,10 @@
 (defmethod sax:notation-declaration ((sink sink) name public-id system-id)
   (let ((prev (previous-notation sink)))
     (when (and (and (canonical sink) (>= (canonical sink) 2))
-	       prev
-	       (not (rod< prev name)))
+               prev
+               (not (rod< prev name)))
       (error "misordered notations; cannot unparse canonically"))
-    (setf (previous-notation sink) name)) 
+    (setf (previous-notation sink) name))
   (sink-write-rod #"<!NOTATION " sink)
   (sink-write-rod name sink)
   (cond
@@ -323,7 +323,7 @@
     ((zerop (length system-id))
       (sink-write-rod #" PUBLIC " sink)
       (write-quoted-rod public-id sink))
-    (t 
+    (t
       (sink-write-rod #" PUBLIC " sink)
       (write-quoted-rod public-id sink)
       (sink-write-rod #" " sink)
@@ -338,16 +338,16 @@
     (sink-write-rod name sink)
     (cond
       ((zerop (length public-id))
-	(sink-write-rod #" SYSTEM " sink)
-	(write-quoted-rod system-id sink))
+        (sink-write-rod #" SYSTEM " sink)
+        (write-quoted-rod system-id sink))
       ((zerop (length system-id))
-	(sink-write-rod #" PUBLIC " sink)
-	(write-quoted-rod public-id sink))
-      (t 
-	(sink-write-rod #" PUBLIC " sink)
-	(write-quoted-rod public-id sink)
-	(sink-write-rod #" " sink)
-	(write-quoted-rod system-id sink)))
+        (sink-write-rod #" PUBLIC " sink)
+        (write-quoted-rod public-id sink))
+      (t
+        (sink-write-rod #" PUBLIC " sink)
+        (write-quoted-rod public-id sink)
+        (sink-write-rod #" " sink)
+        (write-quoted-rod system-id sink)))
     (sink-write-rod #" NDATA " sink)
     (sink-write-rod notation-name sink)
     (sink-write-rune #/> sink)
@@ -368,7 +368,7 @@
     ((zerop (length system-id))
       (sink-write-rod #" PUBLIC " sink)
       (write-quoted-rod public-id sink))
-    (t 
+    (t
       (sink-write-rod #" PUBLIC " sink)
       (write-quoted-rod public-id sink)
       (sink-write-rod #" " sink)
@@ -397,40 +397,40 @@
   (sink-write-rod name sink)
   (sink-write-rune #/U+0020 sink)
   (labels ((walk (m)
-	     (cond
-	       ((eq m :EMPTY)
-		 (sink-write-rod "EMPTY" sink))
-	       ((eq m :PCDATA)
-		 (sink-write-rod "#PCDATA" sink))
-	       ((eq m :ANY)
-		 (sink-write-rod "ANY" sink))
-	       ((atom m)
-		 (sink-write-escapable-rod m sink))
-	       (t
-		 (ecase (car m)
-		   (and
-		     (sink-write-rune #/\( sink)
-		     (loop for (n . rest) on (cdr m) do
-			   (walk n)
-			   (when rest
-			     (sink-write-rune #\, sink)))
-		     (sink-write-rune #/\) sink))
-		   (or
-		     (sink-write-rune #/\( sink)
-		     (loop for (n . rest) on (cdr m) do
-			   (walk n)
-			   (when rest
-			     (sink-write-rune #\| sink)))
-		     (sink-write-rune #/\) sink))
-		   (*
-		     (walk (second m))
-		     (sink-write-rune #/* sink))
-		   (+
-		     (walk (second m))
-		     (sink-write-rune #/+ sink))
-		   (?
-		     (walk (second m))
-		     (sink-write-rune #/? sink)))))))
+             (cond
+               ((eq m :EMPTY)
+                 (sink-write-rod "EMPTY" sink))
+               ((eq m :PCDATA)
+                 (sink-write-rod "#PCDATA" sink))
+               ((eq m :ANY)
+                 (sink-write-rod "ANY" sink))
+               ((atom m)
+                 (sink-write-escapable-rod m sink))
+               (t
+                 (ecase (car m)
+                   (and
+                     (sink-write-rune #/\( sink)
+                     (loop for (n . rest) on (cdr m) do
+                           (walk n)
+                           (when rest
+                             (sink-write-rune #\, sink)))
+                     (sink-write-rune #/\) sink))
+                   (or
+                     (sink-write-rune #/\( sink)
+                     (loop for (n . rest) on (cdr m) do
+                           (walk n)
+                           (when rest
+                             (sink-write-rune #\| sink)))
+                     (sink-write-rune #/\) sink))
+                   (*
+                     (walk (second m))
+                     (sink-write-rune #/* sink))
+                   (+
+                     (walk (second m))
+                     (sink-write-rune #/+ sink))
+                   (?
+                     (walk (second m))
+                     (sink-write-rune #/? sink)))))))
     (walk model))
   (sink-write-rune #/> sink)
   (sink-write-rune #/U+000A sink))
@@ -448,12 +448,12 @@
       (sink-write-rod (rod (string-upcase (symbol-name type))) sink))
     (t
       (when (eq :NOTATION (car type))
-	(sink-write-rod #"NOTATION " sink))
+        (sink-write-rod #"NOTATION " sink))
       (sink-write-rune #/\( sink)
       (loop for (n . rest) on (cdr type) do
-	    (sink-write-rod n sink)
-	    (when rest
-	      (sink-write-rune #\| sink)))
+            (sink-write-rod n sink)
+            (when rest
+              (sink-write-rune #\| sink)))
       (sink-write-rune #/\) sink)))
   (sink-write-rune #/U+0020 sink)
   (cond
@@ -462,7 +462,7 @@
       (sink-write-rod (rod (string-upcase (symbol-name default))) sink))
     (t
       (when (eq :FIXED (car default))
-	(sink-write-rod #"#FIXED " sink))
+        (sink-write-rod #"#FIXED " sink))
       (sink-write-rune #/\" sink)
       (sink-write-escapable-rod (second default) sink)
       (sink-write-rune #/\" sink)))
@@ -506,17 +506,17 @@
   (sink-write-rune #/< sink)
   (sink-write-rod qname sink)
   (dolist (a (if (canonical sink)
-		 (sort (copy-list attributes)
-		       #'rod<
-		       :key #'sax:attribute-qname)
-		 attributes))
+                 (sort (copy-list attributes)
+                       #'rod<
+                       :key #'sax:attribute-qname)
+                 attributes))
     (sink-write-rune #/space sink)
     (sink-write-rod (sax:attribute-qname a) sink)
     (sink-write-rune #/= sink)
     (sink-write-rune #/\" sink)
     (if (canonical sink)
-	(sink-write-escapable-rod/canonical (sax:attribute-value a) sink)
-	(sink-write-escapable-rod/attribute (sax:attribute-value a) sink))
+        (sink-write-escapable-rod/canonical (sax:attribute-value a) sink)
+        (sink-write-escapable-rod/attribute (sax:attribute-value a) sink))
     (sink-write-rune #/\" sink))
   (when (canonical sink)
     (maybe-close-tag sink)))
@@ -575,9 +575,9 @@
     (t
       (if (indentation sink)
           (unparse-indented-text data sink)
-	  (if (canonical sink)
-	      (sink-write-escapable-rod/canonical data sink)
-	      (sink-write-escapable-rod data sink))))))
+          (if (canonical sink)
+              (sink-write-escapable-rod/canonical data sink)
+              (sink-write-escapable-rod data sink))))))
 
 (defmethod sax:unescaped ((sink sink) data)
   (maybe-close-tag sink)
@@ -620,10 +620,10 @@
                    (next (or (position-if-not #'whitespacep data :start w) n)))
               (when need-whitespace-p
                 (if (< (+ (ystream-column (sink-ystream sink)) w (- pos))
-		       (width sink))
+                       (width sink))
                     (sink-write-rune #/U+0020 sink)
                     (sink-fresh-line sink)))
-	      (sink-write-escapable-rod data sink :start pos :end w)
+              (sink-write-escapable-rod data sink :start pos :end w)
               (setf need-whitespace-p (< w n))
               (setf pos next))))
         (t
@@ -638,14 +638,14 @@
        for i from start below end
        for c = (rune rod i)
        do
-	 (case c
-	   (#/& (ystream-write-escapable-rod #.(string-rod "&amp;") y))
-	   (#/< (ystream-write-escapable-rod #.(string-rod "&lt;") y))
-	   ;; there's no need to escape > per se, but we're supposed to
-	   ;; escape -->, which is harder to check for
-	   (#/> (ystream-write-escapable-rod #.(string-rod "&gt;") y))
-	   (#/U+000D (ystream-write-escapable-rod #.(string-rod "&#13;") y))
-	   (t (ystream-write-escapable-rune c y))))))
+         (case c
+           (#/& (ystream-write-escapable-rod #.(string-rod "&amp;") y))
+           (#/< (ystream-write-escapable-rod #.(string-rod "&lt;") y))
+           ;; there's no need to escape > per se, but we're supposed to
+           ;; escape -->, which is harder to check for
+           (#/> (ystream-write-escapable-rod #.(string-rod "&gt;") y))
+           (#/U+000D (ystream-write-escapable-rod #.(string-rod "&#13;") y))
+           (t (ystream-write-escapable-rune c y))))))
 
 (defun sink-write-escapable-rod/attribute
     (rod sink &key (start 0) (end (length rod)))
@@ -657,17 +657,17 @@
        for i from start below end
        for c = (rune rod i)
        do
-	 (case c
-	   (#/& (ystream-write-escapable-rod #.(string-rod "&amp;") y))
-	   (#/< (ystream-write-escapable-rod #.(string-rod "&lt;") y))
-	   ;; there's no need to escape > per se, but we're supposed to
-	   ;; escape -->, which is harder to check for
-	   (#/> (ystream-write-escapable-rod #.(string-rod "&gt;") y))
-	   (#/\" (ystream-write-escapable-rod #.(string-rod "&quot;") y))
-	   (#/U+0009 (ystream-write-escapable-rod #.(string-rod "&#9;") y))
-	   (#/U+000A (ystream-write-escapable-rod #.(string-rod "&#10;") y))
-	   (#/U+000D (ystream-write-escapable-rod #.(string-rod "&#13;") y))
-	   (t (ystream-write-escapable-rune c y))))))
+         (case c
+           (#/& (ystream-write-escapable-rod #.(string-rod "&amp;") y))
+           (#/< (ystream-write-escapable-rod #.(string-rod "&lt;") y))
+           ;; there's no need to escape > per se, but we're supposed to
+           ;; escape -->, which is harder to check for
+           (#/> (ystream-write-escapable-rod #.(string-rod "&gt;") y))
+           (#/\" (ystream-write-escapable-rod #.(string-rod "&quot;") y))
+           (#/U+0009 (ystream-write-escapable-rod #.(string-rod "&#9;") y))
+           (#/U+000A (ystream-write-escapable-rod #.(string-rod "&#10;") y))
+           (#/U+000D (ystream-write-escapable-rod #.(string-rod "&#13;") y))
+           (t (ystream-write-escapable-rune c y))))))
 
 (defun sink-write-escapable-rod/canonical
     (rod sink &key (start 0) (end (length rod)))
@@ -679,15 +679,15 @@
        for i from start below end
        for c = (rune rod i)
        do
-	 (case c
-	   (#/& (ystream-write-escapable-rod #.(string-rod "&amp;") y))
-	   (#/< (ystream-write-escapable-rod #.(string-rod "&lt;") y))
-	   (#/> (ystream-write-escapable-rod #.(string-rod "&gt;") y))
-	   (#/\" (ystream-write-escapable-rod #.(string-rod "&quot;") y))
-	   (#/U+0009 (ystream-write-escapable-rod #.(string-rod "&#9;") y))
-	   (#/U+000A (ystream-write-escapable-rod #.(string-rod "&#10;") y))
-	   (#/U+000D (ystream-write-escapable-rod #.(string-rod "&#13;") y))
-	   (t (ystream-write-escapable-rune c y))))))
+         (case c
+           (#/& (ystream-write-escapable-rod #.(string-rod "&amp;") y))
+           (#/< (ystream-write-escapable-rod #.(string-rod "&lt;") y))
+           (#/> (ystream-write-escapable-rod #.(string-rod "&gt;") y))
+           (#/\" (ystream-write-escapable-rod #.(string-rod "&quot;") y))
+           (#/U+0009 (ystream-write-escapable-rod #.(string-rod "&#9;") y))
+           (#/U+000A (ystream-write-escapable-rod #.(string-rod "&#10;") y))
+           (#/U+000D (ystream-write-escapable-rod #.(string-rod "&#13;") y))
+           (t (ystream-write-escapable-rune c y))))))
 
 (defun sink-write-escapable-rod/dtd
     (rod sink &key (start 0) (end (length rod)))
@@ -696,16 +696,16 @@
        for i from start below end
        for c = (rune rod i)
        do
-	 (case c
-	   (#/% (ystream-write-escapable-rod #.(string-rod "&#37;") y))
-	   (#/& (ystream-write-escapable-rod #.(string-rod "&amp;") y))
-	   (#/< (ystream-write-escapable-rod #.(string-rod "&lt;") y))
-	   (#/> (ystream-write-escapable-rod #.(string-rod "&gt;") y))
-	   (#/\" (ystream-write-escapable-rod #.(string-rod "&quot;") y))
-	   (#/U+0009 (ystream-write-escapable-rod #.(string-rod "&#9;") y))
-	   (#/U+000A (ystream-write-escapable-rod #.(string-rod "&#10;") y))
-	   (#/U+000D (ystream-write-escapable-rod #.(string-rod "&#13;") y))
-	   (t (ystream-write-escapable-rune c y))))))
+         (case c
+           (#/% (ystream-write-escapable-rod #.(string-rod "&#37;") y))
+           (#/& (ystream-write-escapable-rod #.(string-rod "&amp;") y))
+           (#/< (ystream-write-escapable-rod #.(string-rod "&lt;") y))
+           (#/> (ystream-write-escapable-rod #.(string-rod "&gt;") y))
+           (#/\" (ystream-write-escapable-rod #.(string-rod "&quot;") y))
+           (#/U+0009 (ystream-write-escapable-rod #.(string-rod "&#9;") y))
+           (#/U+000A (ystream-write-escapable-rod #.(string-rod "&#10;") y))
+           (#/U+000D (ystream-write-escapable-rod #.(string-rod "&#13;") y))
+           (t (ystream-write-escapable-rune c y))))))
 
 (defun sink-write-rune (c sink)
   (ystream-write-rune c (sink-ystream sink)))
@@ -725,7 +725,7 @@
   "@arg[sink]{A @class{SAX handler}, evaluated}
    @arg[body]{forms}
    @return{The result of calling @code{sax:end-document} on @code{sink}.}
-   
+
    Evaluates sink and establishes it as the current output sink for
    the following \"convenience serialization\" macros and functions:
    @fun{with-element}, @fun{with-namespace}, @fun{doctype},
@@ -760,7 +760,7 @@
 
    Allows safe use of manual calls to SAX functions during the extent
    of @fun{with-xml-output},
-   
+
    Determines the current output sink established by @fun{with-xml-output},
    as used by convenience serialization functions.  Writes delayed
    serialization events to the sink. Binds local variable @code{var} to the
@@ -775,8 +775,8 @@
 (defun invoke-with-xml-output (fn sink)
   (let ((*sink* sink)
         (*current-element* nil)
-	(*unparse-namespace-bindings* *initial-namespace-bindings*)
-	(*current-namespace-bindings* nil))
+        (*unparse-namespace-bindings* *initial-namespace-bindings*)
+        (*current-namespace-bindings* nil))
     (sax:start-document *sink*)
     (funcall fn)
     (sax:end-document *sink*)))
@@ -793,7 +793,7 @@
    Writes an element to the current output sink.
 
    This macro is a convenience wrapper around @fun{with-element*}.
-   
+
    @var{qname} is parsed to determine the element's namespace prefix
    and local name.  Then @fun{with-element*} is called on @var{body} using
    the resulting values."
@@ -863,17 +863,17 @@
   (when *current-element*
     ;; starting child node, need to emit opening tag of parent first:
     (destructuring-bind ((uri lname qname) &rest attributes) *current-element*
-      (sax:start-element *sink* uri lname qname (reverse attributes)))
+      (sax:start-element *sink* uri lname qname (nreverse attributes)))
     (setf *current-element* nil)))
 
 (defun invoke-with-namespace (fn prefix uri)
   (let ((*unparse-namespace-bindings*
-	 (acons prefix uri *unparse-namespace-bindings*))
-	(*current-namespace-bindings*
-	 (acons prefix uri *current-namespace-bindings*)))
+         (acons prefix uri *unparse-namespace-bindings*))
+        (*current-namespace-bindings*
+         (acons prefix uri *current-namespace-bindings*)))
     (sax:start-prefix-mapping *sink* prefix uri)
     (multiple-value-prog1
-	(funcall fn)
+        (funcall fn)
       (sax:end-prefix-mapping *sink* prefix))))
 
 (defun invoke-with-element (fn qname)
@@ -890,23 +890,23 @@
   (setf lname (rod lname))
   (maybe-emit-start-tag)
   (let* ((qname (or qname
-		    (if prefix (concatenate 'rod prefix #":" lname) lname)))
-	 (uri (find-unparse-namespace (or prefix #"")))
-	 (*current-element*
-	  (cons (list uri lname qname)
-		(mapcar (lambda (x)
-			  (destructuring-bind (prefix &rest uri) x
-			    (sax:make-attribute
-			     :namespace-uri #"http://www.w3.org/2000/xmlns/"
-			     :local-name prefix
-			     :qname (if (zerop (length prefix))
-					#"xmlns"
-					(concatenate 'rod #"xmlns:" prefix))
-			     :value uri)))
-			*current-namespace-bindings*))))
+                    (if prefix (concatenate 'rod prefix #":" lname) lname)))
+         (uri (find-unparse-namespace (or prefix #"")))
+         (*current-element*
+          (cons (list uri lname qname)
+                (mapcar (lambda (x)
+                          (destructuring-bind (prefix &rest uri) x
+                            (sax:make-attribute
+                             :namespace-uri #"http://www.w3.org/2000/xmlns/"
+                             :local-name prefix
+                             :qname (if (zerop (length prefix))
+                                        #"xmlns"
+                                        (concatenate 'rod #"xmlns:" prefix))
+                             :value uri)))
+                        *current-namespace-bindings*))))
     (multiple-value-prog1
         (let ((*current-namespace-bindings* nil))
-	  (funcall fn))
+          (funcall fn))
       (maybe-emit-start-tag)
       (sax:end-element *sink* uri lname qname))))
 
@@ -926,7 +926,7 @@
    This function may only be called during the extent of a use of
    @fun{with-element} or @fun{with-element*}, and only before the first
    child node has been written.
-   
+
    An attribute for the current element is recorded using the namespace prefix
    and local name specified by @var{qname}.  The attribute's namespace prefix
     is resolved to a namespace URI using the bindings established by
@@ -948,7 +948,7 @@
    This function may only be called during the extent of a use of
    @fun{with-element} or @fun{with-element*}, and only before the first
    child node has been written.
-   
+
    An attribute for the current element is recorded using the namespace prefix
    and local name specified by arguments.  @var{prefix} is resolved to a
    namespace URI using the bindings established by @fun{with-namespace},
@@ -958,12 +958,12 @@
     (setf prefix (when prefix (rod prefix)))
     (setf lname (rod lname))
     (push (sax:make-attribute
-	   :namespace-uri (find-unparse-namespace prefix)
-	   :local-name lname
-	   :qname (or qname
-		      (if prefix (concatenate 'rod prefix #":" lname) lname))
-	   :value (rod value))
-	  (cdr *current-element*))))
+           :namespace-uri (find-unparse-namespace prefix)
+           :local-name lname
+           :qname (or qname
+                      (if prefix (concatenate 'rod prefix #":" lname) lname))
+           :value (rod value))
+          (cdr *current-element*))))
 
 (defun cdata (data)
   "@arg[data]{String.}
