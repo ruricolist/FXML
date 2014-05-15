@@ -22,7 +22,7 @@
    #:xstream-column-number
    #:xstream-plist
    #:xstream-encoding
-   
+
    ;; xstream controller protocol
    #:read-octects
    #:xstream/close
@@ -31,7 +31,7 @@
    #:attribute-local-name
    #:attribute-qname
    #:attribute-value
-   
+
    #:parse
    #:parse-file
    #:parse-stream
@@ -69,8 +69,14 @@
    #:unescaped
 
    #:xml-parse-error
-   #:well-formedness-violation
    #:validity-error
+   #:well-formedness-violation
+
+   #:undefined-entity
+   #:undefined-entity-name
+   #:expand-as-html
+   #:undeclared-namespace
+   #:undeclared-namespace-prefix
 
    #:parse-dtd-file
    #:parse-dtd-stream
@@ -89,7 +95,7 @@
    #:make-catalog
    #:resolve-uri
    #:resolve-extid
-   
+
    #:make-recoder
    #:make-namespace-normalizer
    #:make-whitespace-normalizer
