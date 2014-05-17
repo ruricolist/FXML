@@ -66,7 +66,7 @@
      (:file "catalog"         :depends-on ("xml-parse"))
      (:file "sax-proxy"       :depends-on ("xml-parse"))
      (:file "atdoc-configuration" :depends-on ("package")))
-    :depends-on (:closure-common :puri #-scl :trivial-gray-streams))
+    :depends-on (:closure-common :puri #-scl :trivial-gray-streams :flexi-streams))
 
 (defclass utf8dom-file (closure-source-file) ((of)))
 
