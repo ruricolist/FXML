@@ -777,9 +777,9 @@
         (*current-element* nil)
         (*unparse-namespace-bindings* *initial-namespace-bindings*)
         (*current-namespace-bindings* nil))
-    (sax:start-document *sink*)
+    (sax:start-document sink)
     (funcall fn)
-    (sax:end-document *sink*)))
+    (sax:end-document sink)))
 
 (defun invoke-with-output-sink (fn)
   (maybe-emit-start-tag)
@@ -845,7 +845,7 @@
    and @fun{attribute*}."
   `(invoke-with-namespace (lambda () ,@body) ,prefix ,uri))
 
-(defun doctype (name public-id system-id &optional internal-subset)
+(defun doctype (name public-id system-id &optional internal-subset &aux (sink *sink*))
   "@arg[name]{Element name, a string.}
    @arg[public-id]{String}
    @arg[system-id]{A system ID as a @class{puri:uri}.}
@@ -854,27 +854,27 @@
 
    Writes a doctype declaration to the current output sink, using the
    specified name, public ID, system ID, and optionally an internal subset."
-  (sax:start-dtd *sink* name public-id system-id)
+  (sax:start-dtd sink name public-id system-id)
   (when internal-subset
-    (sax:unparsed-internal-subset *sink* internal-subset))
-  (sax:end-dtd *sink*))
+    (sax:unparsed-internal-subset sink internal-subset))
+  (sax:end-dtd sink))
 
-(defun maybe-emit-start-tag ()
-  (when *current-element*
+(defun maybe-emit-start-tag (&aux (current-element *current-element*))
+  (when current-element
     ;; starting child node, need to emit opening tag of parent first:
-    (destructuring-bind ((uri lname qname) &rest attributes) *current-element*
+    (destructuring-bind ((uri lname qname) &rest attributes) current-element
       (sax:start-element *sink* uri lname qname (nreverse attributes)))
     (setf *current-element* nil)))
 
-(defun invoke-with-namespace (fn prefix uri)
+(defun invoke-with-namespace (fn prefix uri &aux (sink *sink*))
   (let ((*unparse-namespace-bindings*
          (acons prefix uri *unparse-namespace-bindings*))
         (*current-namespace-bindings*
          (acons prefix uri *current-namespace-bindings*)))
-    (sax:start-prefix-mapping *sink* prefix uri)
+    (sax:start-prefix-mapping sink prefix uri)
     (multiple-value-prog1
         (funcall fn)
-      (sax:end-prefix-mapping *sink* prefix))))
+      (sax:end-prefix-mapping sink prefix))))
 
 (defun invoke-with-element (fn qname)
   (setf qname (rod qname))
@@ -965,7 +965,7 @@
            :value (rod value))
           (cdr *current-element*))))
 
-(defun cdata (data)
+(defun cdata (data &aux (sink *sink*))
   "@arg[data]{String.}
    @return{undocumented}
 
@@ -975,9 +975,9 @@
    Note: It is currently the caller's responsibily to ensure that the CDATA
    section will not contain forbidden character sequences."
   (maybe-emit-start-tag)
-  (sax:start-cdata *sink*)
-  (sax:characters *sink* (rod data))
-  (sax:end-cdata *sink*)
+  (sax:start-cdata sink)
+  (sax:characters sink (rod data))
+  (sax:end-cdata sink)
   data)
 
 (defun text (data)
