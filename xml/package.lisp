@@ -74,7 +74,6 @@
 
    #:undefined-entity
    #:undefined-entity-name
-   #:expand-as-html
    #:undeclared-namespace
    #:undeclared-namespace-prefix
 

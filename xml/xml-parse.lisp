@@ -1022,15 +1022,12 @@
     (or def
         (when errorp
           (restart-case
-              (restart-case
-                  (undefined-entity nil entity-name)
-                (expand-as-html ()
-                  :report "Try to expand the entity using the HTML DTD."
-                  :test (lambda () (find-package :chtml))
-                  (let ((match (sgml::find-named-entity chtml:*html-dtd* entity-name)))
-                    (if match
-                        (make-internal-entdef match)
-                        (undefined-entity nil entity-name)))))
+              (undefined-entity nil entity-name)
+            (continue ()
+              :report "Back up and include a literal ampersand."
+              (make-internal-entdef
+               (rod (format nil "&amp;~a"
+                            (rod-string entity-name)))))
             (use-value (value)
               :report "Supply the expansion"
               (check-type value string)
@@ -2856,6 +2853,7 @@
                     (decode-qname name)
                   (store-value (uri)
                     :report "Provide a URI for the namespace."
+                    (check-type uri string)
                     (let* ((prefix (split-qname name))
                            (uri (rod uri))
                            (decls (cons prefix uri)))
