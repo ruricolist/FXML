@@ -104,6 +104,7 @@
    #:broadcast-handler
    #:broadcast-handler-handlers
    #:make-broadcast-handler
+   #:make-values-handler
    #:sax-proxy
    #:proxy-chained-handler
 

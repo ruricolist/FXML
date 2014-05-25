@@ -4,14 +4,15 @@
 ;;;; See file COPYING for details.
 ;;;;
 ;;;; Copyright (c) 2004 David Lichteblau
+;;;; Copyright (c) 2014 Paul M. Rodriguez
 ;;;; Author: David Lichteblau
 
 (in-package :cxml)
 
 (defclass broadcast-handler (sax:abstract-handler)
   ((handlers :initform nil
-	     :initarg :handlers
-	     :accessor broadcast-handler-handlers))
+             :initarg :handlers
+             :accessor broadcast-handler-handlers))
   (:documentation
    "A SAX handler which passes every event it receives on to each of several
     chained handlers, somewhat similar to the way a @foo{broadcast-stream}
@@ -36,6 +37,17 @@
        Returns the list of SAX handlers that arechained to this broadcast
        handler.")
 
+(defclass values-handler (broadcast-handler)
+  ()
+  (:documentation
+   "@class{values-handler} is a subclass of @class{broadcast-handler},
+   which finally returns, as the overall result from
+   @foo{sax:end-document}, a set of multiple values, one per
+   handler."))
+
+(defmethod sax:end-document ((self values-handler))
+  (values-list (mapcar #'sax:end-document (broadcast-handler-handlers self))))
+
 (defun make-broadcast-handler (&rest handlers)
   "@arg[handlers]{A list of @class{SAX handler}s.}
    @return{A @class{broadcast-handler}.}
@@ -45,6 +57,18 @@
 
    See @class{broadcast-handler} for details. "
   (make-instance 'broadcast-handler :handlers handlers))
+
+(defun make-values-handler (&rest handlers)
+  "@arg[handlers]{A list of @class{SAX handler}s.}
+   @return{A @class{values-handler}.}
+
+   Creates a SAX handler which passes every event it receives on to
+   each handler specified as an argument to this function, and finally
+   returns, as multiple values, the result of calling
+   @fun{sax:end-document} on each.
+
+   See @class{broadcast-handler} for details."
+  (make-instance 'values-handler :handlers handlers))
 
 (defclass sax-proxy (broadcast-handler)
   ()
@@ -79,9 +103,9 @@
 (macrolet ((define-proxy-method (name (&rest args))
              `(defmethod ,name ((handler broadcast-handler) ,@args)
                 (let (result)
-		  (dolist (next (broadcast-handler-handlers handler))
-		    (setf result (,name next ,@args)))
-		  result))))
+                  (dolist (next (broadcast-handler-handlers handler))
+                    (setf result (,name next ,@args)))
+                  result))))
   (define-proxy-method sax:start-document ())
   (define-proxy-method sax:start-element (uri lname qname attributes))
   (define-proxy-method sax:start-prefix-mapping (prefix uri))
