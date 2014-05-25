@@ -9,18 +9,19 @@
 ;;;  (c) copyright 2003 by Henrik Motakef
 ;;;  (c) copyright 2004 knowledgeTools Int. GmbH
 ;;;  (c) copyright 2005-2007 David Lichteblau
+;;;  (c) copyright 2014 Paul M. Rodriguez
 
 ;;; Redistribution and use  in source and binary   forms, with or  without
 ;;; modification, are permitted provided that the following conditions are
-;;; met:                                                                  
-;;; 								      
+;;; met:
+;;;
 ;;; 1. Redistributions  of  source  code  must retain  the above copyright
-;;;    notice, this list of conditions and the following disclaimer.      
-;;; 								      
+;;;    notice, this list of conditions and the following disclaimer.
+;;;
 ;;; 2. Redistributions in  binary form must reproduce  the above copyright
 ;;;    notice, this list of conditions and the following disclaimer in the
 ;;;    documentation and/or other materials provided with the distribution
-;;; 								      
+;;;
 ;;; THIS  SOFTWARE   IS PROVIDED ``AS  IS''   AND ANY  EXPRESS  OR IMPLIED
 ;;; WARRANTIES, INCLUDING, BUT NOT LIMITED  TO, THE IMPLIED WARRANTIES  OF
 ;;; MERCHANTABILITY  AND FITNESS FOR A  PARTICULAR PURPOSE ARE DISCLAIMED.
@@ -44,12 +45,15 @@
 (defpackage :sax
   (:use :common-lisp)
   (:export #:*namespace-processing*
-	   #:*include-xmlns-attributes*
-	   #:*use-xmlns-namespace*
+           #:*include-xmlns-attributes*
+           #:*use-xmlns-namespace*
 
-	   #:abstract-handler
-	   #:content-handler
-	   #:default-handler
+           #:abstract-handler
+           #:content-handler
+           #:default-handler
+
+           #:callback-handler
+           #:make-callback-handler
 
            #:make-attribute
            #:find-attribute
@@ -59,24 +63,24 @@
            #:attribute-qname
            #:attribute-value
            #:attribute-specified-p
-	   
-	   #:start-document
-	   #:start-prefix-mapping
-	   #:start-element
-	   #:characters
-	   #:unescaped
-	   #:processing-instruction
-	   #:end-element
-	   #:end-prefix-mapping
-	   #:end-document
-	   #:comment
-	   #:start-cdata
-	   #:end-cdata
-	   #:start-dtd
-	   #:end-dtd
-	   #:start-internal-subset
-	   #:unparsed-internal-subset
-	   #:end-internal-subset
+
+           #:start-document
+           #:start-prefix-mapping
+           #:start-element
+           #:characters
+           #:unescaped
+           #:processing-instruction
+           #:end-element
+           #:end-prefix-mapping
+           #:end-document
+           #:comment
+           #:start-cdata
+           #:end-cdata
+           #:start-dtd
+           #:end-dtd
+           #:start-internal-subset
+           #:unparsed-internal-subset
+           #:end-internal-subset
            #:unparsed-entity-declaration
            #:external-entity-declaration
            #:internal-entity-declaration
@@ -85,18 +89,18 @@
            #:attribute-declaration
            #:entity-resolver
 
-	   #:sax-parser
-	   #:sax-parser-mixin
-	   #:register-sax-parser
-	   #:line-number
-	   #:column-number
-	   #:system-id
-	   #:xml-base))
+           #:sax-parser
+           #:sax-parser-mixin
+           #:register-sax-parser
+           #:line-number
+           #:column-number
+           #:system-id
+           #:xml-base))
 
 (in-package :sax)
 
 
-;;;; SAX-PARSER interface 
+;;;; SAX-PARSER interface
 
 (defclass sax-parser () ())
 
@@ -108,16 +112,16 @@
    "Return an approximation of the current line number, or NIL.")
   (:method ((handler sax-parser-mixin))
     (if (sax-parser handler)
-	(line-number (sax-parser handler))
-	nil)))
+        (line-number (sax-parser handler))
+        nil)))
 
 (defgeneric column-number (sax-parser)
   (:documentation
    "Return an approximation of the current column number, or NIL.")
   (:method ((handler sax-parser-mixin))
     (if (sax-parser handler)
-	(column-number (sax-parser handler))
-	nil)))
+        (column-number (sax-parser handler))
+        nil)))
 
 (defgeneric system-id (sax-parser)
   (:documentation
@@ -126,8 +130,8 @@
     general external entity are being processed.")
   (:method ((handler sax-parser-mixin))
     (if (sax-parser handler)
-	(system-id (sax-parser handler))
-	nil)))
+        (system-id (sax-parser handler))
+        nil)))
 
 (defgeneric xml-base (sax-parser)
   (:documentation
@@ -135,8 +139,8 @@
    the value returned by SAX:SYSTEM-ID if xml:base attributes are present.")
   (:method ((handler sax-parser-mixin))
     (if (sax-parser handler)
-	(xml-base (sax-parser handler))
-	nil)))
+        (xml-base (sax-parser handler))
+        nil)))
 
 
 ;;;; Configuration variables
@@ -269,9 +273,9 @@ Setting this variable has no effect unless both
 
 (defun find-attribute-ns (uri lname attrs)
   (find-if (lambda (attr)
-	     (and (%rod= uri (sax:attribute-namespace-uri attr))
-		  (%rod= lname (sax:attribute-local-name attr))))
-	   attrs))
+             (and (%rod= uri (sax:attribute-namespace-uri attr))
+                  (%rod= lname (sax:attribute-local-name attr))))
+           attrs))
 
 
 ;;;; ABSTRACT-HANDLER and DEFAULT-HANDLER
@@ -280,136 +284,164 @@ Setting this variable has no effect unless both
 (defclass content-handler (abstract-handler) ())
 (defclass default-handler (content-handler) ())
 
+(defun void (&rest args)
+  "Do nothing and return nil."
+  (declare (ignore args)))
+
+(defclass callback-handler (content-handler)
+  ((on-start-element :initarg :start-element :type function :accessor on-start-element)
+   (on-end-element :initarg :end-element :type function :accessor on-end-element)
+   (on-start-document :initarg :start-document :type function :accessor on-start-document)
+   (on-end-document :initarg :end-document :type function :accessor on-end-document)
+   (on-characters :initarg :characters :type function :accessor on-characters)
+   (on-unescaped :initarg :unescaped :type function :accessor on-unescaped)
+   (on-comment :initarg :comment :type function :accessor on-comment)
+   (on-processing-instruction :initarg :processing-instruction :type function
+                              :accessor on-processing-instruction))
+  (:default-initargs
+   :start-element #'void
+   :end-element #'void
+   :start-document #'void
+   :end-document #'void
+   :characters #'void
+   :comment #'void
+   :unescaped #'void
+   :processing-instruction #'void))
+
+(declaim (inline make-callback-handler))
+(defun make-callback-handler (&rest args)
+  (apply #'make-instance 'callback-handler args))
 
 ;;;; EVENTS
 
-(macrolet ((define-event ((name default-handler-class)
-			  (&rest args)
-			  &body hax-body)
-	     `(defgeneric ,name (handler ,@args)
-		(:method ((handler null) ,@args)
-		  (declare (ignore ,@args))
-		  nil)
-		(:method ((handler t) ,@args)
-		  (declare (ignore ,@args))
-		  (warn "deprecated SAX default method used by a handler ~
+(defmacro define-event ((name default-handler-class)
+                        (&rest args)
+                        &body hax-body)
+  `(defgeneric ,name (handler ,@args)
+     (:method ((handler null) ,@args)
+       (declare (ignore ,@args))
+       nil)
+     (:method ((handler t) ,@args)
+       (declare (ignore ,@args))
+       (warn "deprecated SAX default method used by a handler ~
                          that is not a subclass of SAX:ABSTRACT-HANDLER ~
                          or HAX:ABSTRACT-HANDLER")
-		  nil)
-		(:method ((handler abstract-handler) ,@args)
-		  (declare (ignore ,@args))
-		  (error "SAX event ~A not implemented by this handler"
-			 ',name))
-		(:method ((handler ,default-handler-class) ,@args)
-		  (declare (ignore ,@args))
-		  nil)
-		(:method ((handler hax:abstract-handler) ,@args)
-		  (declare (ignorable ,@args))
-		  ,@hax-body))))
-  (define-event (start-document default-handler)
-      ()
-    nil)
+       nil)
+     (:method ((handler abstract-handler) ,@args)
+       (declare (ignore ,@args))
+       (error "SAX event ~A not implemented by this handler"
+              ',name))
+     (:method ((handler ,default-handler-class) ,@args)
+       (declare (ignore ,@args))
+       nil)
+     ,@(when (eql default-handler-class 'default-handler)
+         (let ((accessor (read-from-string (format nil "on-~a" name))))
+           `((:method ((handler callback-handler) ,@args)
+               (funcall (,accessor handler) ,@args)))))
+     (:method ((handler hax:abstract-handler) ,@args)
+       (declare (ignorable ,@args))
+       ,@hax-body)))
 
-  (define-event (start-element default-handler)
-      (namespace-uri local-name qname attributes)
-    (setf attributes
-	  (remove "http://www.w3.org/2000/xmlns/"
-		  attributes
-		  :key #'attribute-namespace-uri
-		  :test #'equal))
-    (hax:start-element handler local-name attributes))
+(define-event (start-element default-handler)
+    (namespace-uri local-name qname attributes)
+  (setf attributes
+        (remove "http://www.w3.org/2000/xmlns/"
+                attributes
+                :key #'attribute-namespace-uri
+                :test #'equal))
+  (hax:start-element handler local-name attributes))
 
-  (define-event (start-prefix-mapping content-handler)
-      (prefix uri)
-    nil)
+(define-event (start-prefix-mapping content-handler)
+    (prefix uri)
+  nil)
 
-  (define-event (characters default-handler)
-      (data)
-    (hax:characters handler data))
+(define-event (characters default-handler)
+    (data)
+  (hax:characters handler data))
 
-  (define-event (unescaped default-handler)
-      (data)
-    (hax:unescaped handler data))
+(define-event (unescaped default-handler)
+    (data)
+  (hax:unescaped handler data))
 
-  (define-event (processing-instruction default-handler)
-      (target data)
-    nil)
+(define-event (processing-instruction default-handler)
+    (target data)
+  nil)
 
-  (define-event (end-prefix-mapping content-handler)
-      (prefix)
-    nil)
+(define-event (end-prefix-mapping content-handler)
+    (prefix)
+  nil)
 
-  (define-event (end-element default-handler)
-      (namespace-uri local-name qname)
-    (hax:end-element handler local-name))
+(define-event (end-element default-handler)
+    (namespace-uri local-name qname)
+  (hax:end-element handler local-name))
 
-  (define-event (end-document default-handler)
-      ()
-    (hax:end-document handler))
+(define-event (end-document default-handler)
+    ()
+  (hax:end-document handler))
 
-  (define-event (comment content-handler)
-      (data)
-    (hax:comment handler data))
+(define-event (comment content-handler)
+    (data)
+  (hax:comment handler data))
 
-  (define-event (start-cdata content-handler)
-      ()
-    nil)
+(define-event (start-cdata content-handler)
+    ()
+  nil)
 
-  (define-event (end-cdata content-handler)
-      ()
-    nil)
+(define-event (end-cdata content-handler)
+    ()
+  nil)
 
-  (define-event (start-dtd content-handler)
-      (name public-id system-id)
-    (hax:start-document handler name public-id system-id))
+(define-event (start-dtd content-handler)
+    (name public-id system-id)
+  (hax:start-document handler name public-id system-id))
 
-  (define-event (end-dtd content-handler)
-      ()
-    nil)
+(define-event (end-dtd content-handler)
+    ()
+  nil)
 
-  (define-event (start-internal-subset content-handler)
-      ()
-    nil)
+(define-event (start-internal-subset content-handler)
+    ()
+  nil)
 
-  (define-event (end-internal-subset content-handler)
-      ()
-    nil)
+(define-event (end-internal-subset content-handler)
+    ()
+  nil)
 
-  (define-event (unparsed-internal-subset content-handler)
-      (str)
-    nil)
+(define-event (unparsed-internal-subset content-handler)
+    (str)
+  nil)
 
-  (define-event (unparsed-entity-declaration content-handler)
-      (name public-id system-id notation-name)
-    nil)
+(define-event (unparsed-entity-declaration content-handler)
+    (name public-id system-id notation-name)
+  nil)
 
-  (define-event (external-entity-declaration content-handler)
-      (kind name public-id system-id)
-    nil)
+(define-event (external-entity-declaration content-handler)
+    (kind name public-id system-id)
+  nil)
 
-  (define-event (internal-entity-declaration content-handler)
-      (kind name value)
-    nil)
+(define-event (internal-entity-declaration content-handler)
+    (kind name value)
+  nil)
 
-  (define-event (notation-declaration content-handler)
-      (name public-id system-id)
-    nil)
+(define-event (notation-declaration content-handler)
+    (name public-id system-id)
+  nil)
 
-  (define-event (element-declaration content-handler)
-      (name model)
-    nil)
+(define-event (element-declaration content-handler)
+    (name model)
+  nil)
 
-  (define-event (attribute-declaration content-handler)
-      (element-name attribute-name type default)
-    nil)
+(define-event (attribute-declaration content-handler)
+    (element-name attribute-name type default)
+  nil)
 
-  (define-event (entity-resolver content-handler)
-      (resolver)
-    nil)
+(define-event (entity-resolver content-handler)
+    (resolver)
+  nil)
 
-  (define-event (dtd content-handler)
-      (dtd)
-    nil))
+(define-event (dtd content-handler)
+    (dtd)
+  nil)
 
 ;;; special case: this method is defined on abstract-handler through
 ;;; sax-parser-mixin
@@ -443,23 +475,23 @@ Setting this variable has no effect unless both
     (sax:start-prefix-mapping handler "" "http://www.w3.org/1999/xhtml")
     (when *include-xmlns-attributes*
       (push (make-attribute :namespace-uri "http://www.w3.org/2000/xmlns/"
-			    :local-name nil
-			    :qname "xmlns"
-			    :value "http://www.w3.org/1999/xhtml"
-			    :specified-p t)
-	    attributes)))
+                            :local-name nil
+                            :qname "xmlns"
+                            :value "http://www.w3.org/1999/xhtml"
+                            :specified-p t)
+            attributes)))
   (sax:start-element handler
-		     "http://www.w3.org/1999/xhtml"
-		     name
-		     name
-		     attributes))
+                     "http://www.w3.org/1999/xhtml"
+                     name
+                     name
+                     attributes))
 
 (defmethod hax:end-element ((handler abstract-handler) name)
   (setf name (runes:rod-downcase name))
   (sax:end-element handler
-		   "http://www.w3.org/1999/xhtml"
-		   name
-		   name)
+                   "http://www.w3.org/1999/xhtml"
+                   name
+                   name)
   (when (equal name "html")
     (sax:end-prefix-mapping handler "")))
 
