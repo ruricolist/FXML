@@ -11,11 +11,13 @@ namespaces went out of scope. This meant that, when the default
 namespace was changed, it never got changed back. Thus Klacks could
 not, say, parse Feedburner feeds.)
 
-Later, this fork was extended to provide restarts for common
-well-formedness violations.
+Since then this fork has been extended with additional features.
 
-For most such violations, there is only one reasonable way to proceed;
-this is made available as a `continue` restart.
+### Restarts
+
+For most well-formedness violations, there is one and only one
+reasonable way to proceed. We make this available as a `continue`
+restart.
 
     (handler-bind ((cxml:well-formedness-violation #'continue))
       (cxml:parse ...))
@@ -52,5 +54,36 @@ re-submitting it to the parser, except that it saves time. The fact
 that the XML spec was written in an era when *programming language*
 was a euphemism for *Java* does not mean we should have to write Java
 in Lisp to deal with XML.
+
+### SAX handlers
+
+This fork provides two new classes of SAX handler: `values-handler`
+and `callback-handler`.
+
+*Callback handlers* let you create SAX handlers without having to
+define classes. Instead of defining methods, you provide a callback
+for only the events that interest you. *Values handlers* are just
+broadcast handlers that return, as multiple values, the return value
+of each of their sub-handlers.
+
+Values handlers and callback handlers can work together. Suppose, for
+example, that you want to both parse an XML file, and extract all of
+its text.
+
+Of course you could parse the DOM and then recurse on it; but by
+combining callback handlers and values handlers, you can do it in one
+pass:
+
+    (multiple-value-bind (dom imgs)
+        (cxml:parse document
+                    (cxml:make-values-handler
+                     (stp:make-builder)
+                     (let ((text (make-string-output-stream)))
+                       (sax:make-callback-handler
+                        :characters (λ (data)
+                                       (write-string data text))
+                        :end-document (λ ()
+                                         (get-output-stream-string text))))))
+      ...)
 
 [CXML]: http://common-lisp.net/project/cxml/
