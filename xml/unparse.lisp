@@ -5,12 +5,14 @@
 ;;;   Created: 1999-09-09
 ;;;    Author: Gilbert Baumann <unk6@rz.uni-karlsruhe.de>
 ;;;    Author: David Lichteblau <david@lichteblau.com>
+;;;    Author: Paul M. Rodriguez <pmr@ruricolist.com>
 ;;;   License: Lisp-LGPL (See file COPYING for details).
 ;;; ---------------------------------------------------------------------------
 ;;;  (c) copyright 1999 by Gilbert Baumann
 ;;;  (c) copyright 2004 by knowledgeTools Int. GmbH
 ;;;  (c) copyright 2004 by David Lichteblau (for headcraft.de)
 ;;;  (c) copyright 2005-2008 by David Lichteblau
+;;;  (c) copyright 2014 by Paul M. Rodriguez
 
 ;;; This library is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU Library General Public

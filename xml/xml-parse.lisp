@@ -5,6 +5,7 @@
 ;;;    Author: Gilbert Baumann <unk6@rz.uni-karlsruhe.de>
 ;;;    Author: Henrik Motakef <hmot@henrik-motakef.de>
 ;;;    Author: David Lichteblau <david@lichteblau.com>
+;;;    Author: David Lichteblau <pmr@tbrss.com>
 ;;;   License: Lisp-LGPL (See file COPYING for details).
 ;;; ---------------------------------------------------------------------------
 ;;;  (c) copyright 1999 by Gilbert Baumann
@@ -12,6 +13,7 @@
 ;;;  (c) copyright 2004 knowledgeTools Int. GmbH
 ;;;  (c) copyright 2004 David Lichteblau
 ;;;  (c) copyright 2005 David Lichteblau
+;;;  (c) copyright 2014 Paul M. Rodriguez
 
 ;;; This library is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU Library General Public
