@@ -284,168 +284,135 @@ Setting this variable has no effect unless both
 (defclass content-handler (abstract-handler) ())
 (defclass default-handler (content-handler) ())
 
-(defun void (&rest args)
-  "Do nothing and return nil."
-  (declare (ignore args)))
-
-(defclass callback-handler (content-handler)
-  ((on-start-element :initarg :start-element :type function :accessor on-start-element)
-   (on-end-element :initarg :end-element :type function :accessor on-end-element)
-   (on-start-document :initarg :start-document :type function :accessor on-start-document)
-   (on-end-document :initarg :end-document :type function :accessor on-end-document)
-   (on-characters :initarg :characters :type function :accessor on-characters)
-   (on-unescaped :initarg :unescaped :type function :accessor on-unescaped)
-   (on-comment :initarg :comment :type function :accessor on-comment)
-   (on-processing-instruction :initarg :processing-instruction :type function
-                              :accessor on-processing-instruction))
-  (:default-initargs
-   :start-element #'void
-   :end-element #'void
-   :start-document #'void
-   :end-document #'void
-   :characters #'void
-   :comment #'void
-   :unescaped #'void
-   :processing-instruction #'void))
-
-(declaim (inline make-callback-handler))
-(defun make-callback-handler (&rest args)
-  (apply #'make-instance 'callback-handler args))
-
 ;;;; EVENTS
 
-(defmacro define-event ((name default-handler-class)
-                        (&rest args)
-                        &body hax-body)
-  `(defgeneric ,name (handler ,@args)
-     (:method ((handler null) ,@args)
-       (declare (ignore ,@args))
-       nil)
-     (:method ((handler t) ,@args)
-       (declare (ignore ,@args))
-       (warn "deprecated SAX default method used by a handler ~
+(macrolet ((define-event ((name default-handler-class)
+                          (&rest args)
+                          &body hax-body)
+               `(defgeneric ,name (handler ,@args)
+                  (:method ((handler null) ,@args)
+                    (declare (ignore ,@args))
+                    nil)
+                  (:method ((handler t) ,@args)
+                    (declare (ignore ,@args))
+                    (warn "deprecated SAX default method used by a handler ~
                          that is not a subclass of SAX:ABSTRACT-HANDLER ~
                          or HAX:ABSTRACT-HANDLER")
-       nil)
-     (:method ((handler abstract-handler) ,@args)
-       (declare (ignore ,@args))
-       (error "SAX event ~A not implemented by this handler"
-              ',name))
-     (:method ((handler ,default-handler-class) ,@args)
-       (declare (ignore ,@args))
-       nil)
-     ,@(let ((accessor (read-from-string (format nil "on-~a" name))))
-         (when (fboundp accessor)
-           `((:method ((handler callback-handler) ,@args)
-               (funcall (,accessor handler) ,@args)))))
-     (:method ((handler hax:abstract-handler) ,@args)
-       (declare (ignorable ,@args))
-       ,@hax-body)))
+                    nil)
+                  (:method ((handler abstract-handler) ,@args)
+                    (declare (ignore ,@args))
+                    (error "SAX event ~A not implemented by this handler"
+                           ',name))
+                  (:method ((handler ,default-handler-class) ,@args)
+                    (declare (ignore ,@args))
+                    nil)
+                  (:method ((handler hax:abstract-handler) ,@args)
+                    (declare (ignorable ,@args))
+                    ,@hax-body))))
+  (define-event (start-document default-handler)
+      ()
+    nil)
 
-(define-event (start-document default-handler)
-    ()
-  nil)
+  (define-event (start-element default-handler)
+      (namespace-uri local-name qname attributes)
+    (setf attributes
+          (remove "http://www.w3.org/2000/xmlns/"
+                  attributes
+                  :key #'attribute-namespace-uri
+                  :test #'equal))
+    (hax:start-element handler local-name attributes))
 
-(define-event (start-element default-handler)
-    (namespace-uri local-name qname attributes)
-  (setf attributes
-        (remove "http://www.w3.org/2000/xmlns/"
-                attributes
-                :key #'attribute-namespace-uri
-                :test #'equal))
-  (hax:start-element handler local-name attributes))
+  (define-event (start-prefix-mapping content-handler)
+      (prefix uri)
+    nil)
 
-(define-event (start-prefix-mapping content-handler)
-    (prefix uri)
-  nil)
+  (define-event (characters default-handler)
+      (data)
+    (hax:characters handler data))
 
-(define-event (characters default-handler)
-    (data)
-  (hax:characters handler data))
+  (define-event (unescaped default-handler)
+      (data)
+    (hax:unescaped handler data))
 
-(define-event (unescaped default-handler)
-    (data)
-  (hax:unescaped handler data))
+  (define-event (processing-instruction default-handler)
+      (target data)
+    nil)
 
-(define-event (processing-instruction default-handler)
-    (target data)
-  nil)
+  (define-event (end-prefix-mapping content-handler)
+      (prefix)
+    nil)
 
-(define-event (end-prefix-mapping content-handler)
-    (prefix)
-  nil)
+  (define-event (end-element default-handler)
+      (namespace-uri local-name qname)
+    (hax:end-element handler local-name))
 
-(define-event (end-element default-handler)
-    (namespace-uri local-name qname)
-  (hax:end-element handler local-name))
+  (define-event (end-document default-handler)
+      ()
+    (hax:end-document handler))
 
-(define-event (end-document default-handler)
-    ()
-  (hax:end-document handler))
+  (define-event (comment content-handler)
+      (data)
+    (hax:comment handler data))
 
-(define-event (comment content-handler)
-    (data)
-  (hax:comment handler data))
+  (define-event (start-cdata content-handler)
+      ()
+    nil)
 
-(define-event (start-cdata content-handler)
-    ()
-  nil)
+  (define-event (end-cdata content-handler)
+      ()
+    nil)
 
-(define-event (end-cdata content-handler)
-    ()
-  nil)
+  (define-event (start-dtd content-handler)
+      (name public-id system-id)
+    (hax:start-document handler name public-id system-id))
 
-(define-event (start-dtd content-handler)
-    (name public-id system-id)
-  (hax:start-document handler name public-id system-id))
+  (define-event (end-dtd content-handler)
+      ()
+    nil)
 
-(define-event (end-dtd content-handler)
-    ()
-  nil)
+  (define-event (start-internal-subset content-handler)
+      ()
+    nil)
 
-(define-event (start-internal-subset content-handler)
-    ()
-  nil)
+  (define-event (end-internal-subset content-handler)
+      ()
+    nil)
 
-(define-event (end-internal-subset content-handler)
-    ()
-  nil)
+  (define-event (unparsed-internal-subset content-handler)
+      (str)
+    nil)
 
-(define-event (unparsed-internal-subset content-handler)
-    (str)
-  nil)
+  (define-event (unparsed-entity-declaration content-handler)
+      (name public-id system-id notation-name)
+    nil)
 
-(define-event (unparsed-entity-declaration content-handler)
-    (name public-id system-id notation-name)
-  nil)
+  (define-event (external-entity-declaration content-handler)
+      (kind name public-id system-id)
+    nil)
 
-(define-event (external-entity-declaration content-handler)
-    (kind name public-id system-id)
-  nil)
+  (define-event (internal-entity-declaration content-handler)
+      (kind name value)
+    nil)
 
-(define-event (internal-entity-declaration content-handler)
-    (kind name value)
-  nil)
+  (define-event (notation-declaration content-handler)
+      (name public-id system-id)
+    nil)
 
-(define-event (notation-declaration content-handler)
-    (name public-id system-id)
-  nil)
+  (define-event (element-declaration content-handler)
+      (name model)
+    nil)
 
-(define-event (element-declaration content-handler)
-    (name model)
-  nil)
+  (define-event (attribute-declaration content-handler)
+      (element-name attribute-name type default)
+    nil)
 
-(define-event (attribute-declaration content-handler)
-    (element-name attribute-name type default)
-  nil)
+  (define-event (entity-resolver content-handler)
+      (resolver)
+    nil)
 
-(define-event (entity-resolver content-handler)
-    (resolver)
-  nil)
-
-(define-event (dtd content-handler)
-    (dtd)
-  nil)
+  (define-event (dtd content-handler)
+      (dtd)
+    nil))
 
 ;;; special case: this method is defined on abstract-handler through
 ;;; sax-parser-mixin
@@ -511,7 +478,47 @@ Setting this variable has no effect unless both
 (defmethod hax:end-document ((handler abstract-handler))
   (sax:end-document handler))
 
+;;;; Callback handlers.
 
+(defun void (&rest args)
+  "Do nothing and return nil."
+  (declare (ignore args)))
+
+(defclass callback-handler (content-handler)
+  ((start-element :initarg :start-element :type function)
+   (end-element :initarg :end-element :type function)
+   (start-document :initarg :start-document :type function)
+   (end-document :initarg :end-document :type function)
+   (characters :initarg :characters :type function)
+   (unescaped :initarg :unescaped :type function)
+   (comment :initarg :comment :type function)
+   (processing-instruction :initarg :processing-instruction :type function))
+  (:default-initargs
+   :start-element #'void
+   :end-element #'void
+   :start-document #'void
+   :end-document #'void
+   :characters #'void
+   :comment #'void
+   :unescaped #'void
+   :processing-instruction #'void))
+
+(macrolet ((defcallback (name args)
+               (let ((self (gensym (string 'self))))
+                 `(defmethod ,name ((,self callback-handler) ,@args)
+                    (funcall (slot-value ,self ',name) ,@args)))))
+  (defcallback start-element (ns lname qname attrs))
+  (defcallback end-element (ns lname qname))
+  (defcallback start-document ())
+  (defcallback end-document ())
+  (defcallback characters (data))
+  (defcallback unescaped (data))
+  (defcallback comment (data))
+  (defcallback processing-instruction (target data)))
+
+(declaim (inline make-callback-handler))
+(defun make-callback-handler (&rest args)
+  (apply #'make-instance 'callback-handler args))
 
 ;;;; Documentation
 
