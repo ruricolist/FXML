@@ -31,8 +31,10 @@ from a bug).
 
 Undefined entities are signaled as `undefined-entity`, a subtype of
 `well-formedness-violation`. The name of the undefined entity can be
-read with `undefined-entity-name`. You can omit the entity with
-`continue`, or manually supply an expansion with `use-value`.
+read with `undefined-entity-name`.
+
+There are two restarts for undefined entities: you can omit the entity
+with `continue`, or manually supply an expansion with `use-value`.
 
 #### Undeclared namespaces
 
@@ -61,20 +63,20 @@ This fork provides two new classes of SAX handler: `values-handler`
 and `callback-handler`.
 
 *Callback handlers* let you create SAX handlers without having to
-define classes. Instead of defining methods, you provide a callback
-for only the events that interest you. *Values handlers* are just
-broadcast handlers that return, as multiple values, the return value
-of each of their sub-handlers.
+define classes. Instead of defining methods, you provide callbacks for
+only the events that interest you.
 
-Values handlers and callback handlers can work together. Suppose, for
-example, that you want to both parse an XML file, and extract all of
-its text.
+*Values handlers* are just broadcast handlers that return, as multiple
+values, the return value of each of their sub-handlers.
 
-Of course you could parse the DOM and then recurse on it; but by
-combining callback handlers and values handlers, you can do it in one
-pass:
+Values handlers and callback handlers can work together.
 
-    (multiple-value-bind (dom imgs)
+Suppose, for example, that you want to both parse an XML file, and
+extract all of its text. Of course you could parse the DOM and then
+recurse on it; but by combining callback handlers and values handlers,
+you can do it in one pass:
+
+    (multiple-value-bind (dom text)
         (cxml:parse document
                     (cxml:make-values-handler
                      (stp:make-builder)
