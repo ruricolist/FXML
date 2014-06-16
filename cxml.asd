@@ -47,10 +47,7 @@
 
 (asdf:defsystem :cxml-xml
     :default-component-class closure-source-file
-    :pathname #+asdf2 "xml/"
-              #-asdf2 (merge-pathnames
-                       "xml/"
-                       (make-pathname :name nil :type nil :defaults *load-truename*))
+    :pathname "xml/"
     :components
     ((:file "package")
      (:file "util"            :depends-on ("package"))
@@ -93,10 +90,7 @@
 
 (asdf:defsystem :cxml-dom
     :default-component-class closure-source-file
-    :pathname #+asdf2 "dom/"
-              #-asdf2 (merge-pathnames
-                       "dom/"
-                       (make-pathname :name nil :type nil :defaults *load-truename*))
+    :pathname "dom/"
     :components
     ((:file "package")
      (:file rune-impl :pathname "dom-impl" :depends-on ("package"))
@@ -110,10 +104,7 @@
 
 (asdf:defsystem :cxml-klacks
     :default-component-class closure-source-file
-    :pathname #+asdf2 "klacks/"
-              #-asdf2 (merge-pathnames
-                       "klacks/"
-                       (make-pathname :name nil :type nil :defaults *load-truename*))
+    :pathname "klacks/"
     :serial t
     :components
     ((:file "package")
