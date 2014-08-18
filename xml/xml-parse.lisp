@@ -1508,14 +1508,13 @@
            (let ((name (read-name-token input)))
              (setf c (read-rune input))
              (unless (rune= c #/\;)
-               ;; TODO Should be able to supply a character.
-               ;; TODO Unread the entity and use an ampersand?
                (restart-case
                    (wf-error input "Expected \";\".")
                  (continue ()
-                   :report "Try to use the entity anyway."
+                   :report "Back up and include a literal ampersand."
                    (unread-rune c input)
-                   (values :ENTITY-REFERENCE name))))
+                   (return-from read-entity-like
+                     (values :non-reference name)))))
              (values :ENTITY-REFERENCE name))))))
 
 (defun read-tag-2 (zinput input kind)
@@ -3804,7 +3803,10 @@
                         (declare (type (simple-array rune (*)) exp))
                         (do ((i 0 (%+ i 1)))
                             ((%= i n))
-                          (collect (%rune exp i))))))))
+                          (collect (%rune exp i)))))
+                     (:non-reference
+                      (collect #\&)
+                      (loop for c across sem do (collect c))))))
                 ((space-rune-p c)
                  (collect #/u+0020))
                 (t
