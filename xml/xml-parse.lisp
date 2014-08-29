@@ -2570,10 +2570,14 @@
 
 (defun setup-encoding (input xml-header)
   (when (xml-header-encoding xml-header)
-    (let ((enc (find-encoding (xml-header-encoding xml-header))))
-      (cond (enc
-             (setf (xstream-encoding (car (zstream-input-stack input)))
-               enc))
+    (let ((enc (find-encoding (xml-header-encoding xml-header)))
+          (xstream (car (zstream-input-stack input))))
+      (cond ((eql enc :utf-8)
+             (let ((old (xstream-encoding xstream)))
+               (unless (eql old :utf-8)
+                 (with-simple-restart (continue "Stick with ~a" old)
+                   (wf-error input "Header says UTF-8, but BOM says ~a." old)))))
+            (enc (setf (xstream-encoding xstream) enc))
             (t
              (warn "There is no such encoding: ~S." (xml-header-encoding xml-header)))))))
 
