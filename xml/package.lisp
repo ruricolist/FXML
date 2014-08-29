@@ -77,6 +77,8 @@
    #:undeclared-namespace
    #:undeclared-namespace-prefix
 
+   #:current-encoding
+
    #:parse-dtd-file
    #:parse-dtd-stream
    #:make-validator

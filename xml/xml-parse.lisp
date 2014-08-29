@@ -2562,6 +2562,12 @@
       (otherwise
         (wf-error input "p/markup-decl ~S" (peek-token input))))))
 
+(defun current-encoding ()
+  "Return the current encoding of the input stream."
+  (let ((xstream (car (zstream-input-stack (main-zstream *ctx*)))))
+    (when xstream
+      (xstream-encoding xstream))))
+
 (defun setup-encoding (input xml-header)
   (when (xml-header-encoding xml-header)
     (let ((enc (find-encoding (xml-header-encoding xml-header))))
