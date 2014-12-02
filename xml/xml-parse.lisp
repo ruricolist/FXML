@@ -2722,10 +2722,14 @@
          (cdr (nth-value 1 (peek-token input))))))
     (consume-token input)))
 
+(defun void-entity-resolver (pubid sysid)
+  (declare (ignore pubid sysid))
+  (flexi-streams:make-in-memory-input-stream nil))
+
 (defun p/document
     (input handler
      &key validate dtd root entity-resolver disallow-internal-subset
-          (recode t))
+          (recode t) ignore-dtd)
   ;; check types of user-supplied arguments for better error messages:
   (check-type validate boolean)
   (check-type recode boolean)
@@ -2733,9 +2737,12 @@
   (check-type root (or null rod))
   (check-type entity-resolver (or null function symbol))
   (check-type disallow-internal-subset boolean)
+  (check-type ignore-dtd boolean)
   #+rune-is-integer
   (when recode
     (setf handler (make-recoder handler #'rod-to-utf8-string)))
+  (when ignore-dtd
+    (setf entity-resolver #'void-entity-resolver))
   (let* ((xstream (car (zstream-input-stack input)))
          (name (xstream-name xstream))
          (base (when name (stream-name-uri name)))
@@ -3239,7 +3246,7 @@
 (defun parse
     (input handler &rest args
      &key validate dtd root entity-resolver disallow-internal-subset
-          recode pathname)
+          recode pathname ignore-dtd)
   "@arg[input]{A string, pathname, octet vector, or stream.}
    @arg[handler]{A @class{SAX handler}}
    @arg[validate]{Boolean.  Defaults to @code{nil}.  If true, parse in
@@ -3284,7 +3291,7 @@
    All SAX parsing functions share the same keyword arguments.  Refer to
    @fun{parse} for details on keyword arguments."
   (declare (ignore validate dtd root entity-resolver disallow-internal-subset
-                   recode))
+                   recode ignore-dtd))
   (let ((args
          (loop
             for (name value) on args by #'cddr
