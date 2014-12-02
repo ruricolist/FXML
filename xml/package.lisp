@@ -72,6 +72,18 @@
    #:validity-error
    #:well-formedness-violation
 
+   #:xml-security-error
+   #:dtd-forbidden
+   #:dtd-name
+   #:dtd-sysid
+   #:dtd-pubid
+   #:entities-forbidden
+   #:entity-name
+   #:entity-value
+   #:external-reference-forbidden
+   #:external-reference-pubid
+   #:external-reference-sysid
+
    #:undefined-entity
    #:undefined-entity-name
    #:undeclared-namespace

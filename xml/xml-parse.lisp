@@ -622,6 +622,33 @@
 ;; would prefer not to document this class.
 (define-condition end-of-xstream (well-formedness-violation) ())
 
+(define-condition xml-security-error (error) ())
+
+(define-condition external-reference-forbidden (xml-security-error)
+  ((pubid :initarg :pubid :reader external-reference-pubid)
+   (sysid :initarg :sysid :reader external-reference-sysid))
+  (:report (lambda (c s)
+             (with-slots (sysid) c
+               (format s "External reference forbidden: ~a" sysid)))))
+
+(define-condition dtd-forbidden (xml-security-error)
+  ((name :initarg :name :reader dtd-name)
+   (sysid :initarg :sysid :reader dtd-sysid)
+   (pubid :initarg :pubid :reader dtd-pubid))
+  (:report (lambda (c s)
+             (with-slots (name sysid pubid) c
+               (format s "Forbidden DTD (~a, ~a, ~a)"
+                       name sysid pubid)))))
+
+(defvar *forbid-entities* nil)
+
+(define-condition entities-forbidden (xml-security-error)
+  ((name :initarg :name :reader entity-name)
+   (value :initarg :value :reader entity-value))
+  (:report (lambda (c s)
+             (with-slots (name) c
+               (format s "Entity declaration in internal subset: ~a" name)))))
+
 (defun describe-xstream (x s)
   (format s "  Line ~D, column ~D in ~A~%"
           (xstream-line-number x)
@@ -2051,7 +2078,14 @@
     (setf name (p/name input))
     (p/S input)
     (setf def (p/entity-def input kind))
-    (define-entity input name kind def)
+    (if *forbid-entities*
+        (with-simple-restart (continue "Skip the entity declaration")
+          (error 'entities-forbidden
+                 :name name
+                 :value (typecase def
+                          (internal-entdef (entdef-value def))
+                          (t nil))))
+        (define-entity input name kind def))
     (p/S? input)
     (expect input :\>)))
 
@@ -2609,7 +2643,7 @@
             extid))
       extid))
 
-(defun p/doctype-decl (input &optional dtd-extid)
+(defun p/doctype-decl (input &key ((:dtd dtd-extid) nil) forbid-dtd)
   (let ()
     (let ((*expand-pe-p* nil)
           name extid)
@@ -2626,10 +2660,17 @@
       (when dtd-extid
         (setf extid dtd-extid))
       (p/S? input)
-      (sax:start-dtd (handler *ctx*)
-                     name
-                     (and extid (extid-public extid))
-                     (and extid (uri-rod (extid-system extid))))
+
+      (let ((pubid (and extid (extid-public extid)))
+            (sysid (and extid (uri-rod (extid-system extid)))))
+        (when forbid-dtd
+          (with-simple-restart (continue "Parse the DTD")
+            (error 'dtd-forbidden
+                   :name name
+                   :pubid pubid
+                   :sysid sysid)))
+        (sax:start-dtd (handler *ctx*) name pubid sysid))
+
       (when (eq (peek-token input) :\[ )
         (when (disallow-internal-subset *ctx*)
           (wf-error input "document includes an internal subset"))
@@ -2681,9 +2722,8 @@
                        (setf (getdtd sysid *dtd-cache*) (dtd *ctx*))))))))
           (continue ()
             :report "Use empty DTD"
-            (setf (entity-resolver *ctx*)
-                  (lambda (p s) (declare (ignore p s))
-                    (flex:make-in-memory-input-stream nil))))))
+            (setf (dtd *ctx*) (make-dtd)
+                  (entity-resolver *ctx*) #'void-entity-resolver))))
       (sax:end-dtd (handler *ctx*))
       (let ((dtd (dtd *ctx*)))
         (sax:entity-resolver
@@ -2726,10 +2766,22 @@
   (declare (ignore pubid sysid))
   (flexi-streams:make-in-memory-input-stream nil))
 
+(defun external-reference-forbidden (pubid sysid)
+  (restart-case
+      (error 'external-reference-forbidden
+             :pubid pubid
+             :sysid sysid)
+    (continue ()
+      :report "Ignore this reference."
+      (void-entity-resolver pubid sysid))))
+
 (defun p/document
     (input handler
      &key validate dtd root entity-resolver disallow-internal-subset
-          (recode t) ignore-dtd)
+          (recode t) ignore-dtd
+          forbid-dtd
+          ((:forbid-entities *forbid-entities*) t)
+          (forbid-external t))
   ;; check types of user-supplied arguments for better error messages:
   (check-type validate boolean)
   (check-type recode boolean)
@@ -2738,20 +2790,25 @@
   (check-type entity-resolver (or null function symbol))
   (check-type disallow-internal-subset boolean)
   (check-type ignore-dtd boolean)
+  (check-type forbid-dtd boolean)
+  (check-type *forbid-entities* boolean)
+  (check-type forbid-external boolean)
   #+rune-is-integer
   (when recode
     (setf handler (make-recoder handler #'rod-to-utf8-string)))
   (when ignore-dtd
     (setf entity-resolver #'void-entity-resolver))
+  (when forbid-external
+    (setf entity-resolver #'external-reference-forbidden))
   (let* ((xstream (car (zstream-input-stack input)))
          (name (xstream-name xstream))
          (base (when name (stream-name-uri name)))
          (*ctx*
-          (make-context :handler handler
-                        :main-zstream input
-                        :entity-resolver entity-resolver
-                        :base-stack (list (or base ""))
-                        :disallow-internal-subset disallow-internal-subset))
+           (make-context :handler handler
+                         :main-zstream input
+                         :entity-resolver entity-resolver
+                         :base-stack (list (or base ""))
+                         :disallow-internal-subset disallow-internal-subset))
          (*validate* validate)
          (*namespace-bindings* *initial-namespace-bindings*))
     (sax:register-sax-parser handler (make-instance 'cxml-parser :ctx *ctx*))
@@ -2768,12 +2825,12 @@
       ;; (doctypedecl Misc*)?
       (cond
         ((eq (peek-token input) :<!DOCTYPE)
-          (p/doctype-decl input dtd)
-          (p/misc*-2 input))
+         (p/doctype-decl input :dtd dtd :forbid-dtd forbid-dtd)
+         (p/misc*-2 input))
         (dtd
-          (synthesize-doctype dtd input))
+         (synthesize-doctype dtd input))
         ((and validate (not dtd))
-          (validity-error "invalid document: no doctype")))
+         (validity-error "invalid document: no doctype")))
       (ensure-dtd)
       ;; Override expected root element if asked to
       (when root
@@ -2795,7 +2852,7 @@
            :entity-kind :main
            :uri (zstream-base-sysid input)))
     (with-zstream (zstream :input-stack (list dummy))
-      (p/doctype-decl zstream dtd))))
+      (p/doctype-decl zstream :dtd dtd))))
 
 (defun fix-seen-< (input)
   (when (eq (peek-token input) :seen-<)
@@ -3246,7 +3303,8 @@
 (defun parse
     (input handler &rest args
      &key validate dtd root entity-resolver disallow-internal-subset
-          recode pathname ignore-dtd)
+          recode pathname ignore-dtd
+          forbid-dtd (forbid-entities t) (forbid-external t))
   "@arg[input]{A string, pathname, octet vector, or stream.}
    @arg[handler]{A @class{SAX handler}}
    @arg[validate]{Boolean.  Defaults to @code{nil}.  If true, parse in
@@ -3291,7 +3349,7 @@
    All SAX parsing functions share the same keyword arguments.  Refer to
    @fun{parse} for details on keyword arguments."
   (declare (ignore validate dtd root entity-resolver disallow-internal-subset
-                   recode ignore-dtd))
+                   recode ignore-dtd forbid-dtd forbid-entities forbid-external))
   (let ((args
          (loop
             for (name value) on args by #'cddr

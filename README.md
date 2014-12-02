@@ -13,6 +13,54 @@ not, say, parse Feedburner feeds.)
 
 Since then this fork has been extended with additional features.
 
+
+### Security
+
+This fork of CXML tries to be *secure by default*, following the lead
+of Python’s [`defusedxml`][defusedxml] library. CXML is secure by
+default in some respects – it does not fetch external resources unless
+you tell it to – but it still vulnerable to other attacks, like the
+[billion laughs][].
+
+All of the new conditions are subtypes of `cxml:xml-security-error`, which is *not* a subtype of any other CXML error: you must handle it directly.
+
+Three extra keyword arguments for `cxml:parse`:
+
+#### `forbid-dtd`
+
+Default false. Signal `cxml:dtd-forbidden` if the document contains a
+DTD processing declarations.
+
+The name, pubid, and sysid can be read with `cxl:dtd-name`,
+`cxml:dtd-pubid`, and `cxml:dtd-sysid`, respectively.
+
+You can restart with `continue` if you want to parse the DTD anyway.
+
+#### `forbid-entities`
+
+Default true. Signal `cxml:entities-forbidden` if the document’s DTD
+contains entity definitions.
+
+The name of the entity can be read with `cxml:entity-name` and, in the
+case of an internal entity, the name can be read with
+`cxml:entity-value`.
+
+You can restart with `continue` to skip the entity being defined.
+
+#### `forbid-external`
+
+Default true. Signal `cxml:external-reference-forbidden` if the
+document’s DTD contains external references.
+
+(This is actually an error by default in CXML, but it doesn’t have its
+own condition.)
+
+The pubid and sysid of the reference can be read with
+`cxml:entity-reference-pubid` and `cxml:entity-reference-sysid`.
+
+You can restart with `continue` if you want to let CXML try to fetch
+the reference.
+
 ### Restarts
 
 For most well-formedness violations, there is one and only one
@@ -89,3 +137,5 @@ you can do it in one pass:
       ...)
 
 [CXML]: http://common-lisp.net/project/cxml/
+[defusedxml]: https://pypi.python.org/pypi/defusedxml
+[billion laughs]: https://en.wikipedia.org/wiki/Billion_laughs

@@ -113,6 +113,14 @@
      (:file "tap-source"))
     :depends-on (:cxml-xml))
 
+(asdf:defsystem :cxml-test
+  :default-component-class closure-source-file
+  :pathname "test/"
+  :serial t
+  :components ((:file "test")
+               (:file "suite"))
+  :depends-on (:cxml-xml :cxml-klacks :cxml-dom :fiveam))
+
 (asdf:defsystem :cxml
     :components ()
     :depends-on (:cxml-dom :cxml-klacks))
