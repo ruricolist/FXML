@@ -14,7 +14,7 @@ not, say, parse Feedburner feeds.)
 Since then this fork has been extended with additional features.
 
 
-### Security
+# Security
 
 This fork of CXML tries to be *secure by default*, following the lead
 of Python’s [`defusedxml`][defusedxml] library. CXML is secure by
@@ -26,7 +26,7 @@ All of the new conditions are subtypes of `cxml:xml-security-error`, which is *n
 
 Three extra keyword arguments for `cxml:parse`:
 
-#### `forbid-dtd`
+## `forbid-dtd`
 
 Default false. Signal `cxml:dtd-forbidden` if the document contains a
 DTD processing declarations.
@@ -36,7 +36,7 @@ The name, pubid, and sysid can be read with `cxl:dtd-name`,
 
 You can restart with `continue` if you want to parse the DTD anyway.
 
-#### `forbid-entities`
+## `forbid-entities`
 
 Default true. Signal `cxml:entities-forbidden` if the document’s DTD
 contains entity definitions.
@@ -47,7 +47,7 @@ case of an internal entity, the name can be read with
 
 You can restart with `continue` to skip the entity being defined.
 
-#### `forbid-external`
+## `forbid-external`
 
 Default true. Signal `cxml:external-reference-forbidden` if the
 document’s DTD contains external references.
@@ -61,7 +61,7 @@ The pubid and sysid of the reference can be read with
 You can restart with `continue` if you want to let CXML try to fetch
 the reference.
 
-### Restarts
+# Restarts
 
 For most well-formedness violations, there is one and only one
 reasonable way to proceed. We make this available as a `continue`
@@ -75,7 +75,15 @@ wild: leading and trailing junk, unescaped ampersands, illegal
 characters, and DTDs (a feature which is largely indistinguishable
 from a bug).
 
-#### Undefined entities
+Although I do not care much about conformance, I do not think that
+providing restarts can be said to be non-conforming. My invoking a
+restart is no different than my stopping, editing the document, and
+re-submitting it to the parser, except that it saves time. The fact
+that the XML spec was written in an era when *programming language*
+was a euphemism for *Java* does not mean we should have to write Java
+in Lisp to deal with XML.
+
+## Undefined entities
 
 Undefined entities are signaled as `undefined-entity`, a subtype of
 `well-formedness-violation`. The name of the undefined entity can be
@@ -84,7 +92,7 @@ read with `undefined-entity-name`.
 There are two restarts for undefined entities: you can omit the entity
 with `continue`, or manually supply an expansion with `use-value`.
 
-#### Undeclared namespaces
+## Undeclared namespaces
 
 Undeclared namespace prefixes are signaled as `undeclared-namespace`,
 a subtype of `well-formedness-violation`. The prefix of the namespace
@@ -95,17 +103,7 @@ to recover, you must provide a URI for the namespace. The XML is then
 re-written exactly as if the element had the appropriate `xmlns`
 attribute.
 
-#### A note about conformance
-
-Although I do not care much about conformance, I do not think that
-providing restarts can be said to be non-conforming. My invoking a
-restart is no different than my stopping, editing the document, and
-re-submitting it to the parser, except that it saves time. The fact
-that the XML spec was written in an era when *programming language*
-was a euphemism for *Java* does not mean we should have to write Java
-in Lisp to deal with XML.
-
-### SAX handlers
+# SAX handlers
 
 This fork provides two new classes of SAX handler: `values-handler`
 and `callback-handler`.
