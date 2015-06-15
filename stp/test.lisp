@@ -28,12 +28,12 @@
 ;;; SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (defpackage :fxml.stp.test
-  (:use :cl :rt :stp)
-  #+openmcl (:shadow #:check-type))
+  (:use :cl :rt :fxml.stp)
+  (:shadow #:check-type)
+  (:export #:run-tests))
 
 (in-package :fxml.stp.test)
 
-#+openmcl
 (defmacro check-type (place type)
   `(assert (typep ,place ',type)))
 
@@ -2954,7 +2954,7 @@
 		  (make-builder))))
   #1#)
 
-
-(do-tests)
+(defun run-tests ()
+  (do-tests))
 
 ;; next: testRemoveNonElementChildren

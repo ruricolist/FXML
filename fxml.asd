@@ -147,3 +147,34 @@
   :components ()
   :in-order-to ((test-op (test-op #:fxml/test)))
   :depends-on (:fxml/dom :fxml/klacks))
+
+(defsystem :fxml/stp
+  :default-component-class closure-source-file
+  :serial t
+  :in-order-to ((test-op (test-op #:fxml/stp/test)))
+  :pathname "stp/"
+  :components
+  ((:file "package")
+   (:file "classes")
+   (:file "node")
+   (:file "parent-node")
+   (:file "leaf-node")
+   (:file "document")
+   (:file "element")
+   (:file "attribute")
+   (:file "document-type")
+   (:file "comment")
+   (:file "processing-instruction")
+   (:file "text")
+   (:file "builder")
+   (:file "xpath"))
+  :depends-on (:fxml :alexandria :xpath))
+
+(defsystem :fxml/stp/test
+  :default-component-class closure-source-file
+  :serial t
+  :perform (test-op (o c) (uiop:symbol-call :fxml.stp.test :run-tests))
+  :pathname "stp/"
+  :components
+  ((:file "test"))
+  :depends-on (:fxml/stp :rt))
