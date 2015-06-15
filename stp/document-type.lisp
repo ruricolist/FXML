@@ -114,8 +114,8 @@
 
 (defun namep (str)
   (and (not (zerop (length str)))
-       (cxml::name-start-rune-p (elt str 0))
-       (every #'cxml::name-rune-p str)))
+       (fxml::name-start-rune-p (elt str 0))
+       (every #'fxml::name-rune-p str)))
 
 (defun check-xml-name (str)
   (unless (namep str)
@@ -125,18 +125,18 @@
   (unless (zerop (length newval))
     (check-xml-name newval)
     (handler-case
-	(cxml::split-qname newval)
-      (cxml:well-formedness-violation ()
+	(fxml::split-qname newval)
+      (fxml:well-formedness-violation ()
 	(stp-error "not a QName: ~A" newval)))))
 
 (defmethod (setf internal-subset) :around (newval (node fxml.stp:document-type))
   (setf newval (or newval ""))
   (unless (zerop (length newval))
     (handler-case
-	(cxml:parse-rod
+	(fxml:parse-rod
 	 (concatenate 'string "<!DOCTYPE dummy [" newval "]><dummy/>")
 	 nil)
-      (cxml:well-formedness-violation (c)
+      (fxml:well-formedness-violation (c)
 	(stp-error "attempt to set internal subset to a value that is not ~
                     well-formed: ~A"
 		   c))))
@@ -149,7 +149,7 @@
     (stp-error "attempt to set public-id, but no system-id is set"))
   ;; zzz hier muss mehr geprueft werden?
   ;; was ist mit ' und " gleichzeitig?
-  (unless (every #'cxml::pubid-char-p newval)
+  (unless (every #'fxml::pubid-char-p newval)
     (stp-error "malformed public id: ~S" newval))
   (call-next-method newval node))
 
@@ -167,7 +167,7 @@
   (call-next-method newval node))
 
 (defmethod (setf dtd) :before (newval (node fxml.stp:document-type))
-  (check-type newval (or cxml::dtd null)))
+  (check-type newval (or fxml::dtd null)))
 
 (defmethod string-value ((node fxml.stp:document-type))
   "")
@@ -179,37 +179,37 @@
 (defclass notation-collector ()
   ((collected-notations :initform nil :accessor collected-notations)))
 
-(defmethod sax:notation-declaration
+(defmethod fxml.sax:notation-declaration
     ((handler notation-collector) name public system)
   (push (list name public system) (collected-notations handler)))
 
-(defmethod sax:end-document ((handler notation-collector))
+(defmethod fxml.sax:end-document ((handler notation-collector))
   (collected-notations handler))
 
 (defmethod serialize ((node fxml.stp:document-type) handler)
-  (sax:start-dtd handler
+  (fxml.sax:start-dtd handler
 		 (root-element-name node)
 		 (public-id node)
 		 (system-id node))
   (unless (zerop (length (internal-subset node)))
     (if *serialize-canonical-notations-only-p*
 	(let ((notations
-	       (cxml:parse-rod
+	       (fxml:parse-rod
 		(concatenate 'string
 			     "<!DOCTYPE dummy ["
 			     (internal-subset node)
 			     "]><dummy/>")
 		(make-instance 'notation-collector))))
 	  (when notations
-	    (sax:start-internal-subset handler)
+	    (fxml.sax:start-internal-subset handler)
 	    (loop
 	       for (name public system)
 	       in (sort notations #'string< :key #'car)
 	       do
-		 (sax:notation-declaration handler name public system))
-	    (sax:end-internal-subset handler)))
-	(sax:unparsed-internal-subset handler (internal-subset node))))
-  (sax:end-dtd handler))
+		 (fxml.sax:notation-declaration handler name public system))
+	    (fxml.sax:end-internal-subset handler)))
+	(fxml.sax:unparsed-internal-subset handler (internal-subset node))))
+  (fxml.sax:end-dtd handler))
 
 
 ;;; printing

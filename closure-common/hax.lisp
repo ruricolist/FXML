@@ -199,7 +199,7 @@
        In addition,
        @a[http://common-lisp.net/project/cxml/sax.html#sax]{SAX handlers}
        are valid HAX handlers (and vice versa), even though
-       hax:abstract-handler and sax:abstract-handler do not
+       hax:abstract-handler and fxml.sax:abstract-handler do not
        share a specific superclass.  HAX events sent to SAX handlers are
        automatically re-signalled as XHTML SAX events, and SAX events sent
        to HAX handlers are re-signalled as namespace-less HAX events.

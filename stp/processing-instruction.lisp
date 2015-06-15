@@ -90,7 +90,7 @@
   (call-next-method newval node))
 
 (defmethod serialize ((node processing-instruction) handler)
-  (sax:processing-instruction handler (target node) (data node)))
+  (fxml.sax:processing-instruction handler (target node) (data node)))
 
 
 ;;; printing

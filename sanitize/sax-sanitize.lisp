@@ -38,7 +38,7 @@
 (defmethod fxml.sax:end-document ((self text-only-sanitizer))
   (fxml.sax:end-document (chained-handler self)))
 
-(defclass sanitizer (cxml:sax-proxy)
+(defclass sanitizer (fxml:sax-proxy)
   ((rules :type hash-table :accessor rules)
    (removed :initform 0 :type fixnum :accessor removed-count)
    (stack :initform '() :type list :accessor stack)

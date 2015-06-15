@@ -39,7 +39,7 @@
 
 (defun stp-test (filename handler &rest args)
   (declare (ignore handler))
-  (apply #'cxml:parse-file
+  (apply #'fxml:parse-file
 	 filename
 	 (read-from-string "#.(fxml.stp:make-builder)")
 	 :recode t
@@ -64,9 +64,9 @@
      (,type ())))
 
 (defun serialize-to-string (node)
-  (let ((sink (cxml:make-string-sink)))
+  (let ((sink (fxml:make-string-sink)))
     (serialize node sink)
-    (sax:end-document sink)))
+    (fxml.sax:end-document sink)))
 
 (defmacro define-condition-test (name form type)
   `(deftest ,name
@@ -555,7 +555,7 @@
 <!ELEMENT test #PCDATA>
 ]>
 <test/>")
-	   (d (cxml:parse str (make-builder) :validate t)))
+	   (d (fxml:parse str (make-builder) :validate t)))
       (assert-equal (serialize-to-string d) str)
       (values)))
 
@@ -1673,7 +1673,7 @@
     (serialize-to-string
      (copy
       (document-element
-       (cxml:parse #1="<b><c1/><c2/></b>" (make-builder)))))
+       (fxml:parse #1="<b><c1/><c2/></b>" (make-builder)))))
   #1#)
 
 (deftest element.copy.1
@@ -2940,7 +2940,7 @@
 (deftest builder.extra-namespaces
     (serialize-to-string
      (document-element
-      (cxml:parse #1="<b xmlns:extra=\"http://because-it.s-extra/\"/>"
+      (fxml:parse #1="<b xmlns:extra=\"http://because-it.s-extra/\"/>"
 		  (make-builder))))
   #1#)
 

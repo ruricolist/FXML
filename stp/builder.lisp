@@ -36,71 +36,71 @@
    @short{This function creates SAX handler that constructs an STP document.}
 
    The builder processes SAX events and can be used with any
-   function generating such events, in particular with cxml:parse-file.
+   function generating such events, in particular with fxml:parse-file.
 
    Examples. Parsing a file:
-   @begin{pre}(cxml:parse #p\"example.xml\" (fxml.stp:make-builder))@end{pre}
+   @begin{pre}(fxml:parse #p\"example.xml\" (fxml.stp:make-builder))@end{pre}
    Parsing a string:
-   @begin{pre}(cxml:parse \"<example/>\" (fxml.stp:make-builder))@end{pre}
+   @begin{pre}(fxml:parse \"<example/>\" (fxml.stp:make-builder))@end{pre}
 
    @see{serialize}"
   (make-instance 'builder))
 
-(defclass builder (sax:content-handler)
+(defclass builder (fxml.sax:content-handler)
   ((nodes :initform nil :accessor builder-nodes)
    (doctype :initform nil :accessor builder-doctype)
    (namespace-declarations :initform nil :accessor namespace-declarations)
    (internal-subset-sink :initform nil
 			 :accessor builder-internal-subset-sink)))
 
-(defmethod sax:start-document ((builder builder))
+(defmethod fxml.sax:start-document ((builder builder))
   (push (make-instance 'document) (builder-nodes builder)))
 
 (defun builder-append (builder x)
   (let ((parent (car (builder-nodes builder))))
     (%unchecked-insert-child parent x (length (%children parent)))))
 
-(defmethod sax:start-dtd ((builder builder) name publicid systemid)
+(defmethod fxml.sax:start-dtd ((builder builder) name publicid systemid)
   (setf (builder-doctype builder)
 	(make-document-type name systemid publicid ""))
   (builder-append builder (builder-doctype builder)))
 
-(defmethod sax:start-internal-subset ((builder builder))
-  (setf (builder-internal-subset-sink builder) (cxml:make-string-sink)))
+(defmethod fxml.sax:start-internal-subset ((builder builder))
+  (setf (builder-internal-subset-sink builder) (fxml:make-string-sink)))
 
 (macrolet ((def (name &rest args)
 	     `(defmethod ,name ((builder builder) ,@args)
 		(let ((sink (builder-internal-subset-sink builder)))
 		  (when sink (,name sink ,@args))))))
-  (def sax:unparsed-entity-declaration name public-id system-id notation-name)
-  (def sax:external-entity-declaration kind name public-id system-id)
-  (def sax:internal-entity-declaration kind name value)
-  (def sax:notation-declaration name public-id system-id)
-  (def sax:element-declaration name model)
-  (def sax:attribute-declaration element-name attribute-name type default))
+  (def fxml.sax:unparsed-entity-declaration name public-id system-id notation-name)
+  (def fxml.sax:external-entity-declaration kind name public-id system-id)
+  (def fxml.sax:internal-entity-declaration kind name value)
+  (def fxml.sax:notation-declaration name public-id system-id)
+  (def fxml.sax:element-declaration name model)
+  (def fxml.sax:attribute-declaration element-name attribute-name type default))
 
-(defmethod sax:end-internal-subset ((builder builder))
+(defmethod fxml.sax:end-internal-subset ((builder builder))
   (setf (internal-subset (builder-doctype builder))
 	(string-trim "[]"
-		     (sax:end-document
+		     (fxml.sax:end-document
 		      (builder-internal-subset-sink builder))))
   (setf (builder-internal-subset-sink builder) nil))
 
-(defmethod sax::dtd ((builder builder) dtd)
+(defmethod fxml.sax::dtd ((builder builder) dtd)
   (when (builder-doctype builder)
     (setf (dtd (builder-doctype builder)) dtd)))
 
-(defmethod sax:start-prefix-mapping ((builder builder) prefix uri)
+(defmethod fxml.sax:start-prefix-mapping ((builder builder) prefix uri)
   (push (cons (or prefix "") uri) (namespace-declarations builder)))
 
-(defmethod sax:start-element ((builder builder) uri lname qname attrs)
+(defmethod fxml.sax:start-element ((builder builder) uri lname qname attrs)
   (let ((element (make-element qname uri)))
-    (setf (%base-uri element) (sax:xml-base builder))
+    (setf (%base-uri element) (fxml.sax:xml-base builder))
     (dolist (a attrs)
-      (let ((uri (sax:attribute-namespace-uri a)))
+      (let ((uri (fxml.sax:attribute-namespace-uri a)))
 	(unless (equal uri "http://www.w3.org/2000/xmlns/")
-	  (let ((b (make-attribute (sax:attribute-value a)
-				   (sax:attribute-qname a)
+	  (let ((b (make-attribute (fxml.sax:attribute-value a)
+				   (fxml.sax:attribute-qname a)
 				   uri)))
 	    (add-attribute element b)))))
     (builder-append builder element)
@@ -110,19 +110,19 @@
     (setf (namespace-declarations builder) nil)
     (push element (builder-nodes builder))))
 
-(defmethod sax:end-element ((builder builder) uri lname qname)
+(defmethod fxml.sax:end-element ((builder builder) uri lname qname)
   (declare (ignore uri lname qname))
   (pop (builder-nodes builder)))
 
 ;; zzz normalisieren?
-(defmethod sax:characters ((builder builder) data)
+(defmethod fxml.sax:characters ((builder builder) data)
   (builder-append builder (make-text data)))
 
-(defmethod sax:processing-instruction ((builder builder) target data)
+(defmethod fxml.sax:processing-instruction ((builder builder) target data)
   (builder-append builder (make-processing-instruction target data)))
 
-(defmethod sax:comment ((builder builder) data)
+(defmethod fxml.sax:comment ((builder builder) data)
   (builder-append builder (make-comment data)))
 
-(defmethod sax:end-document ((builder builder))
+(defmethod fxml.sax:end-document ((builder builder))
   (pop (builder-nodes builder)))

@@ -57,7 +57,7 @@
   (call-next-method newval node))
 
 (defmethod serialize ((node text) handler)
-  (sax:characters handler (data node)))
+  (fxml.sax:characters handler (data node)))
 
 
 ;;; printing

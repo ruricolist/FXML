@@ -77,7 +77,7 @@
   (check-type name runes:rod)
   (let ((result (make-instance 'element)))
     (multiple-value-bind (prefix local-name)
-	(cxml::split-qname name)
+	(fxml::split-qname name)
       (setf prefix (or prefix ""))
       (setf (namespace-prefix result) prefix)
       (setf (namespace-uri result) uri)
@@ -146,7 +146,7 @@
    @see{find-namespace}
    @see{namespace-uri}"
   (multiple-value-bind (prefix local-name)
-      (cxml::split-qname qname)
+      (fxml::split-qname qname)
     (let ((uri (find-namespace prefix element)))
       (unless uri
 	(stp-error "namespace ~A not declared on ~A" prefix element))
@@ -248,7 +248,7 @@
 
 (defun sanitize-attribute-name (element name uri urip)
   (multiple-value-bind (prefix local-name)
-      (cxml::split-qname name)
+      (fxml::split-qname name)
     (when prefix
       (let ((uri2 (find-namespace prefix element)))
 	(cond
@@ -394,11 +394,11 @@
 
 (defun namep (str)
   (and (not (zerop (length str)))
-       (cxml::name-start-rune-p (elt str 0))
-       (every #'cxml::name-rune-p str)))
+       (fxml:name-start-rune-p (elt str 0))
+       (every #'fxml:name-rune-p str)))
 
 (defun nc-name-p (str)
-  (and (namep str) (cxml::nc-name-p str)))
+  (and (namep str) (fxml:nc-name-p str)))
 
 (defun check-nc-name (str)
   (unless (nc-name-p str)
@@ -565,7 +565,7 @@
 	(local-name (%local-name node))
 	(qname (qualified-name node))
 	(attrs (mapcar (lambda (a)
-			 (sax:make-attribute
+			 (fxml.sax:make-attribute
 			  :namespace-uri (namespace-uri a)
 			  :local-name (local-name a)
 			  :qname (qualified-name a)
@@ -581,28 +581,28 @@
 		   (unless (or (equal upper uri)
 			       (and (null upper) (zerop (length uri))))
 		     (push (if (plusp (length prefix))
-			       (sax:make-attribute 
+			       (fxml.sax:make-attribute 
 				:namespace-uri "http://www.w3.org/2000/xmlns/"
 				:local-name prefix
 				:qname (concatenate 'string "xmlns:" prefix)
 				:value uri)
-			       (sax:make-attribute 
+			       (fxml.sax:make-attribute 
 				:namespace-uri "http://www.w3.org/2000/xmlns/"
 				:local-name "xmlns"
 				:qname "xmlns"
 				:value uri))
 			   attrs)))))
 	     (collect-local-namespaces node))
-    (sax:start-element handler uri local-name qname attrs)
+    (fxml.sax:start-element handler uri local-name qname attrs)
     (map nil (lambda (x) (serialize x handler)) (%children node))
-    (sax:end-element handler uri local-name qname)))
+    (fxml.sax:end-element handler uri local-name qname)))
 
 (defmethod (setf base-uri) (newval (node element))
   (setf (%base-uri node) newval))
 
 (defun escape-uri (string)
   (with-output-to-string (out)
-    (loop for c across (cxml::rod-to-utf8-string string) do
+    (loop for c across (fxml::rod-to-utf8-string string) do
 	  (let ((code (char-code c)))
 	    ;; http://www.w3.org/TR/xlink/#link-locators
 	    (if (or (>= code 127) (<= code 32) (find c "<>\"{}|\\^`"))

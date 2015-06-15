@@ -235,11 +235,11 @@
 	(flet ((test (node)
 		 (when (typep node 'fxml.stp:element)
 		   (let ((elmdef
-			  (cxml::find-element (fxml.stp:qualified-name node) dtd)))
+			  (fxml::find-element (fxml.stp:qualified-name node) dtd)))
 		     (when elmdef
-		       (dolist (attdef (cxml::elmdef-attributes elmdef))
-			 (when (eq :ID (cxml::attdef-type attdef))
-			   (let* ((name (cxml::attdef-name attdef))
+		       (dolist (attdef (fxml::elmdef-attributes elmdef))
+			 (when (eq :ID (fxml::attdef-type attdef))
+			   (let* ((name (fxml::attdef-name attdef))
 				  (value (fxml.stp:attribute-value node name)))
 			     (when (and value (equal value id))
 			       (return node))))))))))
@@ -251,9 +251,9 @@
     (when doctype
       (let ((dtd (fxml.stp:dtd doctype)))
 	(when dtd
-	  (let ((entdef (cdr (gethash name (cxml::dtd-gentities dtd)))))
-	    (when (typep entdef 'cxml::external-entdef)
-	      (let ((uri (cxml::extid-system (cxml::entdef-extid entdef))))
+	  (let ((entdef (cdr (gethash name (fxml::dtd-gentities dtd)))))
+	    (when (typep entdef 'fxml::external-entdef)
+	      (let ((uri (fxml::extid-system (fxml::entdef-extid entdef))))
 		(when uri
 		  (puri:render-uri uri nil))))))))))
 
