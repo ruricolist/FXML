@@ -1,13 +1,13 @@
 ;;;; sax-proxy.lisp
 ;;;;
-;;;; This file is part of the CXML parser, released under Lisp-LGPL.
+;;;; This file is part of the FXML parser, released under Lisp-LGPL.
 ;;;; See file COPYING for details.
 ;;;;
 ;;;; Copyright (c) 2004 David Lichteblau
 ;;;; Copyright (c) 2014 Paul M. Rodriguez
 ;;;; Author: David Lichteblau
 
-(in-package :cxml)
+(in-package :fxml)
 
 (defclass broadcast-handler (sax:abstract-handler)
   ((handlers :initform nil
@@ -77,7 +77,7 @@
     sends events to exactly one chained handler.
 
     This class is still included for compatibility with older versions of
-    CXML which did not include the more general @class{broadcast-handler}
+    FXML which did not include the more general @class{broadcast-handler}
     yet, but has been retrofitted as a subclass of the latter.
 
     @see-slot{proxy-chained-handler}"))

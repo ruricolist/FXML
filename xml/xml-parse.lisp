@@ -1,4 +1,4 @@
-;;; -*- Mode: Lisp; Syntax: Common-Lisp; Package: CXML; readtable: runes; -*-
+;;; -*- Mode: Lisp; Syntax: Common-Lisp; Package: FXML; readtable: runes; -*-
 ;;; ---------------------------------------------------------------------------
 ;;;     Title: XML parser
 ;;;   Created: 1999-07-17
@@ -167,7 +167,7 @@
 ;;;; [**] Although I haven't investigated this properly yet, I believe that
 ;;;; we check this VC together with the WFC even in non-validating mode.
 
-(in-package :cxml)
+(in-package :fxml)
 
 #+allegro
 (setf (excl:named-readtable :runes) *readtable*)
@@ -602,7 +602,7 @@
 
 (define-condition xml-parse-error (simple-error) ()
   (:documentation
-   "Superclass of all conditions signalled by the CXML parser."))
+   "Superclass of all conditions signalled by the FXML parser."))
 
 (define-condition well-formedness-violation (xml-parse-error) ()
   (:documentation
@@ -735,7 +735,7 @@
           stream
           (format nil "End of file~@[: ~?~]" x args)))
 
-(defclass cxml-parser (sax:sax-parser) ((ctx :initarg :ctx)))
+(defclass fxml-parser (sax:sax-parser) ((ctx :initarg :ctx)))
 
 (defun parser-xstream (parser)
   (car (zstream-input-stack (main-zstream (slot-value parser 'ctx)))))
@@ -746,25 +746,25 @@
         (xstream-name xstream)
         nil)))
 
-(defmethod sax:line-number ((parser cxml-parser))
+(defmethod sax:line-number ((parser fxml-parser))
   (let ((x (parser-xstream parser)))
     (if x
         (xstream-line-number x)
         nil)))
 
-(defmethod sax:column-number ((parser cxml-parser))
+(defmethod sax:column-number ((parser fxml-parser))
   (let ((x (parser-xstream parser)))
     (if x
         (xstream-column-number x)
         nil)))
 
-(defmethod sax:system-id ((parser cxml-parser))
+(defmethod sax:system-id ((parser fxml-parser))
   (let ((name (parser-stream-name parser)))
     (if name
         (stream-name-uri name)
         nil)))
 
-(defmethod sax:xml-base ((parser cxml-parser))
+(defmethod sax:xml-base ((parser fxml-parser))
   (let ((uri (car (base-stack (slot-value parser 'ctx)))))
     (if (or (null uri) (stringp uri))
         uri
@@ -2813,7 +2813,7 @@
                          :disallow-internal-subset disallow-internal-subset))
          (*validate* validate)
          (*namespace-bindings* *initial-namespace-bindings*))
-    (sax:register-sax-parser handler (make-instance 'cxml-parser :ctx *ctx*))
+    (sax:register-sax-parser handler (make-instance 'fxml-parser :ctx *ctx*))
     (sax:start-document handler)
     ;; document ::= XMLDecl? Misc* (doctypedecl Misc*)? element Misc*
     ;; Misc ::= Comment | PI |  S
@@ -2967,10 +2967,10 @@
     (when (cdr sem2)
       (wf-error input "no attributes allowed in end tag"))))
 
-;; copy&paste from cxml-rng
+;; copy&paste from fxml-rng
 (defun escape-uri (string)
   (with-output-to-string (out)
-    (loop for c across (cxml::rod-to-utf8-string string) do
+    (loop for c across (fxml::rod-to-utf8-string string) do
           (let ((code (char-code c)))
             ;; http://www.w3.org/TR/xlink/#link-locators
             (if (or (>= code 127) (<= code 32) (find c "<>\"{}|\\^`"))
@@ -3174,7 +3174,7 @@
 ;;;; ---------------------------------------------------------------------------
 ;;;; User interface ;;;;
 
-#-cxml-system::uri-is-namestring
+#-fxml-system::uri-is-namestring
 (defun specific-or (component &optional (alternative nil))
   (if (eq component :unspecific)
       alternative
@@ -3185,7 +3185,7 @@
       alternative
       str))
 
-#-cxml-system::uri-is-namestring
+#-fxml-system::uri-is-namestring
 (defun make-uri (&rest initargs &key path query &allow-other-keys)
   (apply #'make-instance
          'puri:uri
@@ -3193,11 +3193,11 @@
          :query (and query (escape-query query))
          initargs))
 
-#-cxml-system::uri-is-namestring
+#-fxml-system::uri-is-namestring
 (defun escape-path (list)
   (puri::render-parsed-path list t))
 
-#-cxml-system::uri-is-namestring
+#-fxml-system::uri-is-namestring
 (defun escape-query (pairs)
   (flet ((escape (str)
            (puri::encode-escaped-encoding str puri::*reserved-characters* t)))
@@ -3211,7 +3211,7 @@
           (write-char #\= s)
           (write-string (escape (cdr pair)) s))))))
 
-#-cxml-system::uri-is-namestring
+#-fxml-system::uri-is-namestring
 (defun uri-parsed-query (uri)
   (flet ((unescape (str)
            (puri::decode-escaped-encoding str t puri::*reserved-characters*)))
@@ -3227,11 +3227,11 @@
         (t
           nil)))))
 
-#-cxml-system::uri-is-namestring
+#-fxml-system::uri-is-namestring
 (defun query-value (name alist)
   (cdr (assoc name alist :test #'equal)))
 
-#-cxml-system::uri-is-namestring
+#-fxml-system::uri-is-namestring
 (defun pathname-to-uri (pathname)
   (let ((path
          ;; FIXME: should we really leave ".." in base URIs?
@@ -3255,11 +3255,11 @@
                           (specific-or (pathname-device pathname)))
                   :path path))))
 
-#+cxml-system::uri-is-namestring
+#+fxml-system::uri-is-namestring
 (defun pathname-to-uri (pathname)
   (puri:parse-uri (namestring pathname)))
 
-#-cxml-system::uri-is-namestring
+#-fxml-system::uri-is-namestring
 (defun parse-name.type (str)
   (if str
       (let ((i (position #\. str :from-end t)))
@@ -3268,7 +3268,7 @@
             (values str nil)))
       (values nil nil)))
 
-#-cxml-system::uri-is-namestring
+#-fxml-system::uri-is-namestring
 (defun uri-to-pathname (uri)
   (let ((scheme (puri:uri-scheme uri))
         (path (loop for e in (puri:uri-parsed-path uri)
@@ -3295,7 +3295,7 @@
                            :directory (cons :absolute (butlast (cdr path)))
                            :name name
                            :type type))))))
-#+cxml-system::uri-is-namestring
+#+fxml-system::uri-is-namestring
 (defun uri-to-pathname (uri)
   (let ((pathname (puri:render-uri uri nil)))
     (when (equalp (pathname-host pathname) "+")
@@ -3323,7 +3323,7 @@
    @arg[entity-resolver]{@code{nil} or a function of two arguments which
      is invoked for every entity referenced by the document with the
      entity's Public ID (a rod) and System ID (an URI object) as arguments.
-     The function may either return nil, CXML will then try to resolve the
+     The function may either return nil, FXML will then try to resolve the
      entity as usual. Alternatively it may return a Common Lisp stream
      specialized on @code{(unsigned-byte 8)} which will be used instead.
      (It may also signal an error, of course, which can be useful to prohibit
@@ -3419,7 +3419,7 @@
 
 (deftype |SAX HANDLER| ()
   'sax:abstract-handler
-  "Historically, any object has been usable as a SAX handler with CXML,
+  "Historically, any object has been usable as a SAX handler with FXML,
    as long as it implemented all SAX events, i.e. had methods
    for the generic functions defined in the SAX package.
 
@@ -3477,7 +3477,7 @@
    @arg[entity-resolver]{@code{nil} or a function of two arguments which
      is invoked for every entity referenced by the document with the
      entity's Public ID (a rod) and System ID (an URI object) as arguments.
-     The function may either return nil, CXML will then try to resolve the
+     The function may either return nil, FXML will then try to resolve the
      entity as usual. Alternatively it may return a Common Lisp stream
      specialized on @code{(unsigned-byte 8)} which will be used instead.
      (It may also signal an error, of course, which can be useful to prohibit
@@ -4093,9 +4093,9 @@
 
    Example:
 
-   @pre{(let ((d (parse-file \"~/test.xml\" (cxml-dom:make-dom-builder)))
+   @pre{(let ((d (parse-file \"~/test.xml\" (fxml-dom:make-dom-builder)))
       (x (parse-dtd-file \"~/test.dtd\")))
-  (dom:map-document (cxml:make-validator x #\"foo\") d))}"
+  (dom:map-document (fxml:make-validator x #\"foo\") d))}"
   (make-instance 'validator
     :context (make-context
               :handler nil

@@ -1,11 +1,11 @@
 ;;;; xml-name-rune-p -- character class definitions
 ;;;;
-;;;; This file is part of the CXML parser, released under Lisp-LGPL.
+;;;; This file is part of the FXML parser, released under Lisp-LGPL.
 ;;;; See file COPYING for details.
 ;;;;
 ;;;; Author: Gilbert Baumann <unk6@rz.uni-karlsruhe.de>
 
-(in-package :cxml)
+(in-package :fxml)
 
 #.(funcall 
    (compile 

@@ -22,43 +22,43 @@ default in some respects – it does not fetch external resources unless
 you tell it to – but it still vulnerable to other attacks, like the
 [billion laughs][].
 
-All of the new conditions are subtypes of `cxml:xml-security-error`, which is *not* a subtype of any other CXML error: you must handle it directly.
+All of the new conditions are subtypes of `fxml:xml-security-error`, which is *not* a subtype of any other FXML error: you must handle it directly.
 
-Three extra keyword arguments for `cxml:parse`:
+Three extra keyword arguments for `fxml:parse`:
 
 ## `forbid-dtd`
 
-Default false. Signal `cxml:dtd-forbidden` if the document contains a
+Default false. Signal `fxml:dtd-forbidden` if the document contains a
 DTD processing declarations.
 
 The name, pubid, and sysid can be read with `cxl:dtd-name`,
-`cxml:dtd-pubid`, and `cxml:dtd-sysid`, respectively.
+`fxml:dtd-pubid`, and `fxml:dtd-sysid`, respectively.
 
 You can restart with `continue` if you want to parse the DTD anyway.
 
 ## `forbid-entities`
 
-Default true. Signal `cxml:entities-forbidden` if the document’s DTD
+Default true. Signal `fxml:entities-forbidden` if the document’s DTD
 contains entity definitions.
 
-The name of the entity can be read with `cxml:entity-name` and, in the
+The name of the entity can be read with `fxml:entity-name` and, in the
 case of an internal entity, the name can be read with
-`cxml:entity-value`.
+`fxml:entity-value`.
 
 You can restart with `continue` to skip the entity being defined.
 
 ## `forbid-external`
 
-Default true. Signal `cxml:external-reference-forbidden` if the
+Default true. Signal `fxml:external-reference-forbidden` if the
 document’s DTD contains external references.
 
-(This is actually an error by default in CXML, but it doesn’t have its
+(This is actually an error by default in FXML, but it doesn’t have its
 own condition.)
 
 The pubid and sysid of the reference can be read with
-`cxml:entity-reference-pubid` and `cxml:entity-reference-sysid`.
+`fxml:entity-reference-pubid` and `fxml:entity-reference-sysid`.
 
-You can restart with `continue` if you want to let CXML try to fetch
+You can restart with `continue` if you want to let FXML try to fetch
 the reference.
 
 # Restarts
@@ -67,8 +67,8 @@ For most well-formedness violations, there is one and only one
 reasonable way to proceed. We make this available as a `continue`
 restart.
 
-    (handler-bind ((cxml:well-formedness-violation #'continue))
-      (cxml:parse ...))
+    (handler-bind ((fxml:well-formedness-violation #'continue))
+      (fxml:parse ...))
 
 This is enough to handle many characteristic problems with XML in the
 wild: leading and trailing junk, unescaped ampersands, illegal
@@ -123,8 +123,8 @@ recurse on it; but by combining callback handlers and values handlers,
 you can do it in one pass:
 
     (multiple-value-bind (dom text)
-        (cxml:parse document
-                    (cxml:make-values-handler
+        (fxml:parse document
+                    (fxml:make-values-handler
                      (stp:make-builder)
                      (let ((text (make-string-output-stream)))
                        (sax:make-callback-handler
@@ -134,6 +134,6 @@ you can do it in one pass:
                                          (get-output-stream-string text))))))
       ...)
 
-[CXML]: http://common-lisp.net/project/cxml/
+[cxml]: http://common-lisp.net/project/fxml/
 [defusedxml]: https://pypi.python.org/pypi/defusedxml
 [billion laughs]: https://en.wikipedia.org/wiki/Billion_laughs

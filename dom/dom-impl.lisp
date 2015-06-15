@@ -1,28 +1,28 @@
 ;;;; dom-impl.lisp -- Implementation of DOM 1 Core -*- package: rune-dom -*-
 ;;;;
-;;;; This file is part of the CXML parser, released under Lisp-LGPL.
+;;;; This file is part of the FXML parser, released under Lisp-LGPL.
 ;;;; See file COPYING for details.
 ;;;;
 ;;;; Author: Gilbert Baumann <unk6@rz.uni-karlsruhe.de>
 ;;;; Author: David Lichteblau <david@lichteblau.com>
 ;;;; Author: knowledgeTools Int. GmbH
 
-#-cxml-system::utf8dom-file
+#-fxml-system::utf8dom-file
 (defpackage :rune-dom
   (:use :cl :runes)
-  #+rune-is-character (:nicknames :cxml-dom)
+  #+rune-is-character (:nicknames :fxml-dom)
   (:export #:implementation #:make-dom-builder #:create-document))
 
-#+cxml-system::utf8dom-file
+#+fxml-system::utf8dom-file
 (defpackage :utf8-dom
   (:use :cl :utf8-runes)
-  (:nicknames :cxml-dom)
+  (:nicknames :fxml-dom)
   (:export #:implementation #:make-dom-builder #:create-document))
 
-#-cxml-system::utf8dom-file
+#-fxml-system::utf8dom-file
 (in-package :rune-dom)
 
-#+cxml-system::utf8dom-file
+#+fxml-system::utf8dom-file
 (in-package :utf8-dom)
 
 
@@ -157,23 +157,23 @@
   (etypecase x
     (null x)
     (rod x)
-    #+cxml-system::utf8dom-file (runes::rod (cxml::rod-to-utf8-string x))
+    #+fxml-system::utf8dom-file (runes::rod (fxml::rod-to-utf8-string x))
     (string (string-rod x))
     (vector x)))
 
-#-cxml-system::utf8dom-file
+#-fxml-system::utf8dom-file
 (defun real-rod (x)
   (%rod x))
 
-#+cxml-system::utf8dom-file
+#+fxml-system::utf8dom-file
 (defun real-rod (x)
   (etypecase x
     (null x)
     (runes::rod x)
-    (string (cxml::utf8-string-to-rod x))))
+    (string (fxml::utf8-string-to-rod x))))
 
 (defun valid-name-p (x)
-  (cxml::valid-name-p (real-rod x)))
+  (fxml::valid-name-p (real-rod x)))
 
 (defun assert-writeable (node)
   (when (read-only-p node)
@@ -338,8 +338,8 @@
     (dom-error :INVALID_CHARACTER_ERR "not a name: ~A" (rod-string qname)))
   (multiple-value-bind (prefix local-name)
       (handler-case
-	  (cxml::split-qname (real-rod qname))
-	(cxml:well-formedness-violation (c)
+	  (fxml::split-qname (real-rod qname))
+	(fxml:well-formedness-violation (c)
 	  (dom-error :NAMESPACE_ERR "~A" c)))
     (setf local-name (%rod local-name))
     (when prefix
@@ -485,13 +485,13 @@
     (labels ((walk (n)
 	       (dovector (c (dom:child-nodes n))
 		 (when (dom:element-p c)
-		   (let ((e (cxml::find-element
+		   (let ((e (fxml::find-element
 			     (real-rod (dom:tag-name c))
 			     (dtd document))))
 		     (when e
-		       (dolist (a (cxml::elmdef-attributes e))
-			 (when (eq :ID (cxml::attdef-type a))
-			   (let* ((name (%rod (cxml::attdef-name a)))
+		       (dolist (a (fxml::elmdef-attributes e))
+			 (when (eq :ID (fxml::attdef-type a))
+			   (let* ((name (%rod (fxml::attdef-name a)))
 				  (value (dom:get-attribute c name)))
 			     (when (and value (rod= value id))
 			       (return-from t c)))))))
@@ -589,7 +589,7 @@
 (defmethod dom:insert-before
     ((node node) (fragment document-fragment) ref-child)
   (let ((children (dom:child-nodes fragment)))
-    (cxml::while (plusp (length children))
+    (fxml::while (plusp (length children))
       (dom:insert-before node (elt children 0) ref-child)))
   fragment)
 
@@ -633,7 +633,7 @@
 (defmethod dom:append-child ((node node) (new-child document-fragment))
   (assert-writeable node)
   (let ((children (dom:child-nodes new-child)))
-    (cxml::while (plusp (length children))
+    (fxml::while (plusp (length children))
       (dom:append-child node (elt children 0))))
   new-child)
 
@@ -971,7 +971,7 @@
     (with-slots (children owner) node
       ;; remove children, add new TEXT-NODE child
       ;; (alas, we must not reuse an old TEXT-NODE)
-      (cxml::while (plusp (length children))
+      (fxml::while (plusp (length children))
         (dom:remove-child node (dom:last-child node)))
       (dom:append-child node (dom:create-text-node owner rod))))
   new-value)
@@ -1091,11 +1091,11 @@
 (defun maybe-add-default-attribute (element old-attr)
   (let* ((qname (dom:name old-attr))
 	 (dtd (dtd (slot-value element 'owner)))
-         (e (when dtd (cxml::find-element
+         (e (when dtd (fxml::find-element
 		       (real-rod (dom:tag-name element))
 		       dtd)))
-         (a (when e (cxml::find-attribute e (real-rod qname)))))
-    (when (and a (listp (cxml::attdef-default a)))
+         (a (when e (fxml::find-attribute e (real-rod qname)))))
+    (when (and a (listp (fxml::attdef-default a)))
       (let ((new (add-default-attribute element a)))
 	(setf (slot-value new 'namespace-uri) (dom:namespace-uri old-attr))
 	(setf (slot-value new 'prefix) (dom:prefix old-attr))
@@ -1103,21 +1103,21 @@
 
 (defun add-default-attributes (element)
   (let* ((dtd (dtd (slot-value element 'owner)))
-         (e (when dtd (cxml::find-element
+         (e (when dtd (fxml::find-element
 		       (real-rod (dom:tag-name element))
 		       dtd))))
     (when e
-      (dolist (a (cxml::elmdef-attributes e))
+      (dolist (a (fxml::elmdef-attributes e))
         (when (and a
-		   (listp (cxml::attdef-default a))
+		   (listp (fxml::attdef-default a))
 		   (not (dom:get-attribute-node
 			 element
-			 (%rod (cxml::attdef-name a)))))
+			 (%rod (fxml::attdef-name a)))))
           (let ((anode (add-default-attribute element a)))
 	    (multiple-value-bind (prefix local-name)
 		(handler-case
-		    (cxml::split-qname (cxml::attdef-name a))
-		  (cxml:well-formedness-violation (c)
+		    (fxml::split-qname (fxml::attdef-name a))
+		  (fxml:well-formedness-violation (c)
 		    (dom-error :NAMESPACE_ERR "~A" c)))
 	      (when prefix (setf prefix (%rod prefix)))
 	      (setf local-name (%rod local-name))
@@ -1127,9 +1127,9 @@
 	      (setf (slot-value anode 'local-name) local-name))))))))
 
 (defun add-default-attribute (element adef)
-  (let* ((value (second (cxml::attdef-default adef)))
+  (let* ((value (second (fxml::attdef-default adef)))
          (owner (slot-value element 'owner))
-         (anode (dom:create-attribute owner (cxml::attdef-name adef)))
+         (anode (dom:create-attribute owner (fxml::attdef-name adef)))
          (text (dom:create-text-node owner value)))
     (setf (slot-value anode 'specified-p) nil)
     (setf (slot-value anode 'owner-element) element)
@@ -1174,7 +1174,7 @@
                    (i 0)
                    (previous nil))
                ;; careful here, we're modifying the array we are iterating over
-               (cxml::while (< i (length children))
+               (fxml::while (< i (length children))
                  (let ((child (elt children i)))
                    (cond
                      ((not (eq (dom:node-type child) :text))
@@ -1225,8 +1225,8 @@
 	   ;; wir daher nil liefern sollen.  bittesehr!
 	   (dom::%internal-subset node))
       (let ((sink
-	     #+rune-is-character (cxml:make-string-sink)
-	     #-rune-is-character (cxml:make-string-sink/utf8)))
+	     #+rune-is-character (fxml:make-string-sink)
+	     #-rune-is-character (fxml:make-string-sink/utf8)))
 	(dolist (def (dom::%internal-subset node))
 	  (apply (car def) sink (cdr def)))
 	(sax:end-document sink))
@@ -1244,8 +1244,8 @@
     (when resolver
       (setf (document handler) owner)
       (push instance (element-stack handler))
-      #+cxml-system::utf8dom-file
-      (setf handler (cxml:make-recoder handler #'cxml:rod-to-utf8-string))
+      #+fxml-system::utf8dom-file
+      (setf handler (fxml:make-recoder handler #'fxml:rod-to-utf8-string))
       (funcall resolver (real-rod (dom:name instance)) handler)
       (flush-characters handler)))
   (labels ((walk (n)
@@ -1468,7 +1468,7 @@
   ;; Um ein neues Dokumentenobject zu erzeugen, parsen wir einfach ein
   ;; Dummydokument.
   (let* ((handler (make-dom-builder))
-         (cxml::*ctx* (cxml::make-context :handler handler))
+         (fxml::*ctx* (fxml::make-context :handler handler))
          (result
           (progn
             (sax:start-document handler)

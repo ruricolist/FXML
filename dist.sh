@@ -29,19 +29,19 @@ tgz=$TMPDIR/${name_and_date}.tgz
 tar czf $tgz $name_and_date
 gpg -b -a $tgz
 
-mkdir -p ~/clnet/project/cxml/public_html/
+mkdir -p ~/clnet/project/fxml/public_html/
 
 rsync -av \
     $name_and_date/doc/ \
-    ~/clnet/project/cxml/public_html/
+    ~/clnet/project/fxml/public_html/
 
-rsync $tgz $tgz.asc ~/clnet/project/cxml/public_html/download/
+rsync $tgz $tgz.asc ~/clnet/project/fxml/public_html/download/
 
-rm -f ~/clnet/project/cxml/public_html/download/cxml.tar.gz 
-rm -f ~/clnet/project/cxml/public_html/download/cxml.tar.gz.asc
+rm -f ~/clnet/project/fxml/public_html/download/fxml.tar.gz 
+rm -f ~/clnet/project/fxml/public_html/download/fxml.tar.gz.asc
 
-ln -sf ${name_and_date}.tgz ~/clnet/project/cxml/public_html/download/cxml.tar.gz
-ln -sf ${name_and_date}.tgz.asc ~/clnet/project/cxml/public_html/download/cxml.tar.gz.asc
+ln -sf ${name_and_date}.tgz ~/clnet/project/fxml/public_html/download/fxml.tar.gz
+ln -sf ${name_and_date}.tgz.asc ~/clnet/project/fxml/public_html/download/fxml.tar.gz.asc
 
 echo done
 exit 0

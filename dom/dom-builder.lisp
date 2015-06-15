@@ -1,6 +1,6 @@
 ;;;; dom-builder.lisp -- DOM-building SAX handler
 ;;;;
-;;;; This file is part of the CXML parser, released under Lisp-LGPL.
+;;;; This file is part of the FXML parser, released under Lisp-LGPL.
 ;;;; See file COPYING for details.
 ;;;;
 ;;;; Author: Gilbert Baumann <unk6@rz.uni-karlsruhe.de>
@@ -8,10 +8,10 @@
 ;;;; Author: David Lichteblau <david@lichteblau.com>
 ;;;; Author: knowledgeTools Int. GmbH
 
-#-cxml-system::utf8dom-file
+#-fxml-system::utf8dom-file
 (in-package :rune-dom)
 
-#+cxml-system::utf8dom-file
+#+fxml-system::utf8dom-file
 (in-package :utf8-dom)
 
 
@@ -21,7 +21,7 @@
    (internal-subset             :accessor internal-subset)
    (text-buffer   :initform nil :accessor text-buffer)))
 
-#+(and rune-is-integer (not cxml-system::utf8dom-file))
+#+(and rune-is-integer (not fxml-system::utf8dom-file))
 (defmethod hax:%want-strings-p ((handler dom-builder))
   nil)
 
@@ -100,7 +100,7 @@
                      :owner document
 		     :namespace-uri (when nsp namespace-uri)
 		     :local-name (when nsp local-name)
-		     :prefix (%rod (when nsp (cxml::split-qname (real-rod qname))))))
+		     :prefix (%rod (when nsp (fxml::split-qname (real-rod qname))))))
 	  (parent (car element-stack))
           (anodes '()))
       (dolist (attr attributes)

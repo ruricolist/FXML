@@ -125,9 +125,9 @@
      (sax:end-element *html-sink* nil nil .tagname.)))
 
 (defun emit-without-quoting (str)
-  (let ((s (cxml::chained-handler *html-sink*)))
-    (cxml::maybe-close-tag s)
-    (map nil (lambda (c) (cxml::write-rune (char-code c) s)) str)))
+  (let ((s (fxml::chained-handler *html-sink*)))
+    (fxml::maybe-close-tag s)
+    (map nil (lambda (c) (fxml::write-rune (char-code c) s)) str)))
 
 (defun princ-http (val)
   (warn "use of deprecated :PRINC (use :PRINC-SAFE instead?)")

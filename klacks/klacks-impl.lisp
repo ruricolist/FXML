@@ -16,9 +16,9 @@
 ;;; Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 ;;; Boston, MA  02111-1307  USA.
 
-(in-package :cxml)
+(in-package :fxml)
 
-(defclass cxml-source (klacks:source)
+(defclass fxml-source (klacks:source)
     (;; args to make-source
      (context :initarg :context)
      (validate :initarg :validate)
@@ -41,7 +41,7 @@
      (scratch-pad-3 :initarg :scratch-pad-3)
      (scratch-pad-4 :initarg :scratch-pad-4)))
 
-(defmethod klacks:close-source ((source cxml-source))
+(defmethod klacks:close-source ((source fxml-source))
   (dolist (xstream (slot-value source 'temporary-streams))
     ;; fixme: error handling?
     (close-xstream xstream)))
@@ -70,30 +70,30 @@
       (setf continuation (funcall continuation))
       (assert (not (eq current-key :bogus))))))
 
-(defmethod klacks:peek ((source cxml-source))
+(defmethod klacks:peek ((source fxml-source))
   (with-source (source current-key current-values)
     (fill-source source)
     (apply #'values current-key current-values)))
 
-(defmethod klacks:peek-value ((source cxml-source))
+(defmethod klacks:peek-value ((source fxml-source))
   (with-source (source current-key current-values)
     (fill-source source)
     (apply #'values current-values)))
 
-(defmethod klacks:peek-next ((source cxml-source))
+(defmethod klacks:peek-next ((source fxml-source))
   (with-source (source current-key current-values)
     (setf current-key nil)
     (fill-source source)
     (apply #'values current-key current-values)))
 
-(defmethod klacks:consume ((source cxml-source))
+(defmethod klacks:consume ((source fxml-source))
   (with-source (source current-key current-values)
     (fill-source source)
     (multiple-value-prog1
         (apply #'values current-key current-values)
       (setf current-key nil))))
 
-(defmethod klacks:map-attributes (fn (source cxml-source))
+(defmethod klacks:map-attributes (fn (source fxml-source))
   (dolist (a (slot-value source 'current-attributes))
     (funcall fn
              (sax:attribute-namespace-uri a)
@@ -103,13 +103,13 @@
              (sax:attribute-specified-p a))))
 
 (defmethod klacks:get-attribute
-    ((source cxml-source) lname &optional uri)
+    ((source fxml-source) lname &optional uri)
   (dolist (a (slot-value source 'current-attributes))
     (when (and (equal (sax:attribute-local-name a) lname)
                (equal (sax:attribute-namespace-uri a) uri))
       (return (sax:attribute-value a)))))
 
-(defmethod klacks:list-attributes ((source cxml-source))
+(defmethod klacks:list-attributes ((source fxml-source))
   (slot-value source 'current-attributes))
 
 (defun make-source
@@ -163,7 +163,7 @@
                :uri nil))
         (apply #'make-source xstream args)))
     (array
-     (make-source (cxml::make-octet-input-stream input)))))
+     (make-source (fxml::make-octet-input-stream input)))))
 
 (defun %make-source
     (input &key validate dtd root entity-resolver disallow-internal-subset
@@ -183,7 +183,7 @@
                         :base-stack (list (or base ""))
                         :disallow-internal-subset disallow-internal-subset))
          (source
-          (make-instance 'cxml-source
+          (make-instance 'fxml-source
             :context context
             :validate validate
             :dtd dtd
@@ -475,41 +475,41 @@
         (xstream-name xstream)
         nil)))
 
-(defmethod klacks:current-line-number ((source cxml-source))
+(defmethod klacks:current-line-number ((source fxml-source))
   (let ((x (source-xstream source)))
     (if x
         (xstream-line-number x)
         nil)))
 
-(defmethod klacks:current-column-number ((source cxml-source))
+(defmethod klacks:current-column-number ((source fxml-source))
   (let ((x (source-xstream source)))
     (if x
         (xstream-column-number x)
         nil)))
 
-(defmethod klacks:current-system-id ((source cxml-source))
+(defmethod klacks:current-system-id ((source fxml-source))
   (let ((name (source-stream-name source)))
     (if name
         (stream-name-uri name)
         nil)))
 
-(defmethod klacks:current-xml-base ((source cxml-source))
+(defmethod klacks:current-xml-base ((source fxml-source))
   (let ((x (car (base-stack (slot-value source 'context)))))
     (if (stringp x)
         x
         (puri:render-uri x nil))))
 
-(defmethod klacks:map-current-namespace-declarations (fn (source cxml-source))
+(defmethod klacks:map-current-namespace-declarations (fn (source fxml-source))
   (loop
      for (prefix . uri) in (slot-value source 'current-namespace-declarations)
      do
        (funcall fn prefix uri)))
 
-(defmethod klacks:find-namespace-binding (prefix (source cxml-source))
+(defmethod klacks:find-namespace-binding (prefix (source fxml-source))
   (with-source (source)
     (find-namespace-binding prefix)))
 
-(defmethod klacks:decode-qname (qname (source cxml-source))
+(defmethod klacks:decode-qname (qname (source fxml-source))
   (with-source (source)
     (multiple-value-bind (prefix local-name) (split-qname qname)
       (values (and prefix (find-namespace-binding prefix))
@@ -520,16 +520,16 @@
 ;;;; debugging
 
 #+(or)
-(trace CXML::KLACKS/DOCTYPE
-       CXML::KLACKS/EXT-PARSED-ENT
-       CXML::KLACKS/MISC*-2
-       CXML::KLACKS/ENTITY-REFERENCE
-       CXML::KLACKS/ENTITY-REFERENCE-2
-       CXML::KLACKS/ELEMENT
-       CXML::KLACKS/ZTAG
-       CXML::KLACKS/XMLDECL
-       CXML::KLACKS/FINISH-DOCTYPE
-       CXML::KLACKS/ELEMENT-3
-       CXML::KLACKS/EOF
-       CXML::KLACKS/ELEMENT-2
-       CXML::KLACKS/CONTENT )
+(trace FXML::KLACKS/DOCTYPE
+       FXML::KLACKS/EXT-PARSED-ENT
+       FXML::KLACKS/MISC*-2
+       FXML::KLACKS/ENTITY-REFERENCE
+       FXML::KLACKS/ENTITY-REFERENCE-2
+       FXML::KLACKS/ELEMENT
+       FXML::KLACKS/ZTAG
+       FXML::KLACKS/XMLDECL
+       FXML::KLACKS/FINISH-DOCTYPE
+       FXML::KLACKS/ELEMENT-3
+       FXML::KLACKS/EOF
+       FXML::KLACKS/ELEMENT-2
+       FXML::KLACKS/CONTENT )

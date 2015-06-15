@@ -1,6 +1,6 @@
 ;;;; xmlns-normalizer.lisp -- DOM 3-style namespace normalization
 ;;;;
-;;;; This file is part of the CXML parser, released under Lisp-LGPL.
+;;;; This file is part of the FXML parser, released under Lisp-LGPL.
 ;;;; See file COPYING for details.
 ;;;;
 ;;;; Copyright (c) 2005 David Lichteblau
@@ -23,7 +23,7 @@
 ;;;;
 ;;;; [1] http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407/namespaces-algorithms.html#normalizeDocumentAlgo
 
-(in-package :cxml)
+(in-package :fxml)
 
 (defclass namespace-normalizer (sax-proxy)
     ((xmlns-stack :initarg :xmlns-stack :accessor xmlns-stack)))

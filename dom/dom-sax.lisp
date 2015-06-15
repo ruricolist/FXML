@@ -1,12 +1,12 @@
 ;;;; dom-sax.lisp -- DOM walker
 ;;;;
-;;;; This file is part of the CXML parser, released under Lisp-LGPL.
+;;;; This file is part of the FXML parser, released under Lisp-LGPL.
 ;;;; See file COPYING for details.
 ;;;;
 ;;;; Author: David Lichteblau <david@lichteblau.com>
 ;;;; Copyright (c) 2004 knowledgeTools Int. GmbH
 
-(in-package :cxml)
+(in-package :fxml)
 
 (defun dom:map-document
     (handler document
@@ -84,7 +84,7 @@
   (let ((results '()))
     (dom:do-node-list (a (dom:attributes element))
       (when (and (or defaultp (dom:specified a))
-                 (or xmlnsp (not (cxml::xmlns-attr-p (rod (dom:name a))))))
+                 (or xmlnsp (not (fxml::xmlns-attr-p (rod (dom:name a))))))
         (push
          (sax:make-attribute :qname (dom:name a)
                              :value (dom:value a)

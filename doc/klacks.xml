@@ -1,4 +1,4 @@
-<documentation title="CXML Klacks parser">
+<documentation title="FXML Klacks parser">
     <h1>Klacks parser</h1>
     <p>
       The Klacks parser provides an alternative parsing interface,
@@ -26,7 +26,7 @@
       To parse using Klacks, create an XML <tt>source</tt> first.
     </p>
     <p>
-      <div class="def">Function CXML:MAKE-SOURCE (input &amp;key validate
+      <div class="def">Function FXML:MAKE-SOURCE (input &amp;key validate
       dtd root entity-resolver disallow-external-subset pathname)</div>
       Create and return a source for <tt>input</tt>.
     </p>
@@ -348,7 +348,7 @@
       use of the <tt>peek-next</tt> function to read individual events,
       and shows some of the most common event types.
     </p>
-    <pre>* <b>(defparameter *source* (cxml:make-source "&lt;example>text&lt;/example>"))</b>
+    <pre>* <b>(defparameter *source* (fxml:make-source "&lt;example>text&lt;/example>"))</b>
 *SOURCE*
 
 * <b>(klacks:peek-next *source*)</b>
@@ -388,7 +388,7 @@ NIL</pre>
       closed.
     </p>
     <pre>* <b>(defparameter *source*
-      (cxml:make-source "&lt;example>
+      (fxml:make-source "&lt;example>
                            &lt;child1>&lt;p>foo&lt;/p>&lt;/child1>
                            &lt;child2 bar='baz'/>
                          &lt;/example>"))</b>
@@ -400,7 +400,7 @@ NIL
 "child1"
 "child1"
 
-* <b>(klacks:serialize-element *source* (cxml-xmls:make-xmls-builder))</b>
+* <b>(klacks:serialize-element *source* (fxml-xmls:make-xmls-builder))</b>
 ("child1" NIL ("p" NIL "foo"))
 
 * <b>(klacks:find-element *source*)</b>
@@ -409,7 +409,7 @@ NIL
 "child2"
 "child2"
 
-*  <b>(klacks:serialize-element *source* (cxml-xmls:make-xmls-builder))</b>
+*  <b>(klacks:serialize-element *source* (fxml-xmls:make-xmls-builder))</b>
 ("child2" (("bar" "baz")))
 
 * <b>(klacks:find-event *source* :end-document)</b>

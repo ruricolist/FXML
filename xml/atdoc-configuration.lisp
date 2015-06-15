@@ -1,4 +1,4 @@
-(in-package :cxml)
+(in-package :fxml)
 
 (defun atdoc-directory ()
   "doc/atdoc/")

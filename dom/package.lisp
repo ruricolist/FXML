@@ -1,6 +1,6 @@
 ;;;; package.lisp -- Paketdefinition
 ;;;;
-;;;; This file is part of the CXML parser, released under Lisp-LGPL.
+;;;; This file is part of the FXML parser, released under Lisp-LGPL.
 ;;;; See file COPYING for details.
 
 (in-package :cl-user)

@@ -1,11 +1,11 @@
-(defpackage :cxml-system
+(defpackage :fxml-system
   (:use :asdf :cl))
-(in-package :cxml-system)
+(in-package :fxml-system)
 
-(defclass dummy-cxml-component () ())
+(defclass dummy-fxml-component () ())
 
-(defmethod asdf:component-name ((c dummy-cxml-component))
-  :cxml)
+(defmethod asdf:component-name ((c dummy-fxml-component))
+  :fxml)
 
 (progn
   ;; (format t "~&;;; Checking for wide character support...")
@@ -44,7 +44,7 @@
     (let (#+sbcl (*compile-print* nil))
       (call-next-method))))
 
-(asdf:defsystem :cxml-xml
+(asdf:defsystem :fxml-xml
     :default-component-class closure-source-file
     :pathname "xml/"
     :components
@@ -87,7 +87,7 @@
                                     :closure-common-system))))
     (call-next-method)))
 
-(asdf:defsystem :cxml-dom
+(asdf:defsystem :fxml-dom
     :default-component-class closure-source-file
     :pathname "dom/"
     :components
@@ -99,9 +99,9 @@
      #+rune-is-integer
      (utf8dom-file utf8-builder :pathname "dom-builder" :depends-on (utf8-impl))
      (:file "dom-sax"         :depends-on ("package")))
-    :depends-on (:cxml-xml))
+    :depends-on (:fxml-xml))
 
-(asdf:defsystem :cxml-klacks
+(asdf:defsystem :fxml-klacks
     :default-component-class closure-source-file
     :pathname "klacks/"
     :serial t
@@ -110,16 +110,16 @@
      (:file "klacks")
      (:file "klacks-impl")
      (:file "tap-source"))
-    :depends-on (:cxml-xml))
+    :depends-on (:fxml-xml))
 
-(asdf:defsystem :cxml-test
+(asdf:defsystem :fxml-test
   :default-component-class closure-source-file
   :pathname "test/"
   :serial t
   :components ((:file "test")
                (:file "suite"))
-  :depends-on (:cxml-xml :cxml-klacks :cxml-dom :fiveam))
+  :depends-on (:fxml-xml :fxml-klacks :fxml-dom :fiveam))
 
-(asdf:defsystem :cxml
+(asdf:defsystem :fxml
     :components ()
-    :depends-on (:cxml-dom :cxml-klacks))
+    :depends-on (:fxml-dom :fxml-klacks))

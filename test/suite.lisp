@@ -1,10 +1,10 @@
-(in-package #:cxml.test)
+(in-package #:fxml.test)
 
-(def-suite cxml)
+(def-suite fxml)
 
-(in-suite cxml)
+(in-suite fxml)
 
-(def-suite defused-xml :in cxml)
+(def-suite defused-xml :in fxml)
 
 (in-suite defused-xml)
 
@@ -13,19 +13,19 @@
 
 (test entities-forbidden
   (flet ((forbidden (file)
-           (signals cxml:entities-forbidden
+           (signals fxml:entities-forbidden
              (parse-test-file file))))
     (forbidden xml-bomb)
     (forbidden xml-quadratic)
     (forbidden xml-external)))
 
 (test entity-cycle
-  (signals cxml:well-formedness-violation
+  (signals fxml:well-formedness-violation
     (parse-test-file xml-cyclic :forbid-entities nil)))
 
 (test dtd-forbidden
   (flet ((forbidden (file)
-           (signals cxml:dtd-forbidden
+           (signals fxml:dtd-forbidden
              (parse-test-file file :forbid-dtd t))))
     (forbidden xml-bomb)
     (forbidden xml-quadratic)
@@ -33,15 +33,15 @@
     (forbidden xml-dtd)))
 
 (test dtd/external-ref
-  (signals cxml:external-reference-forbidden
+  (signals fxml:external-reference-forbidden
     (parse-test-file xml-dtd)))
 
 (test external-ref
-  (signals cxml:external-reference-forbidden
+  (signals fxml:external-reference-forbidden
     (parse-test-file xml-external :forbid-entities nil)))
 
 (test external-file-ref
-  (signals cxml:external-reference-forbidden
+  (signals fxml:external-reference-forbidden
     (parse-test-file xml-external-file :forbid-entities nil)))
 
 (test allow-expansion

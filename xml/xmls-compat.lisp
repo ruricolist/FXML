@@ -1,17 +1,17 @@
 ;;;; xml-compat.lisp -- XMLS-compatible data structures
 ;;;;
-;;;; This file is part of the CXML parser, released under Lisp-LGPL.
+;;;; This file is part of the FXML parser, released under Lisp-LGPL.
 ;;;; See file COPYING for details.
 ;;;;
 ;;;; Developed 2004 for headcraft - http://headcraft.de/
 ;;;; Copyright: David Lichteblau
 
-(defpackage cxml-xmls
+(defpackage fxml-xmls
   (:use :cl :runes)
   (:export #:make-node #:node-name #:node-ns #:node-attrs #:node-children
            #:make-xmls-builder #:map-node #:make-xpath-navigator))
 
-(in-package :cxml-xmls)
+(in-package :fxml-xmls)
 
 
 ;;;; Knoten
@@ -127,7 +127,7 @@
   (let* ((parent (car (element-stack handler)))
          (prev (car (node-children parent))))
     ;; Be careful to accept both rods and strings here, so that xmls can be
-    ;; used with strings even if cxml is configured to use octet string rods.
+    ;; used with strings even if fxml is configured to use octet string rods.
     (if (typep prev '(or rod string))
         ;; um entities herum wird SAX:CHARACTERS mehrfach aufgerufen fuer
         ;; den gleichen Textknoten.  Hier muessen wir den bestehenden Knoten
@@ -147,7 +147,7 @@
      &key (include-xmlns-attributes sax:*include-xmlns-attributes*)
           (include-namespace-uri t))
   (if include-namespace-uri
-      (map-node/lnames (cxml:make-namespace-normalizer handler)
+      (map-node/lnames (fxml:make-namespace-normalizer handler)
 		       node
 		       include-xmlns-attributes)
       (map-node/qnames handler node include-xmlns-attributes)))
@@ -183,7 +183,7 @@
              (let* ((attlist
 		     (compute-attributes/qnames node include-xmlns-attributes))
 		    (qname (string-rod (node-name node)))
-                    (lname (nth-value 1 (cxml::split-qname qname))))
+                    (lname (nth-value 1 (fxml::split-qname qname))))
                (sax:start-element handler nil lname qname attlist)
                (dolist (child (node-children node))
                  (typecase child
@@ -235,7 +235,7 @@
                                 but attribute was created with a namespace ~
                                 URI"))
                       (if (or xmlnsp
-			      (not (cxml::xmlns-attr-p (string-rod name))))
+			      (not (fxml::xmlns-attr-p (string-rod name))))
                           (sax:make-attribute :qname (string-rod name)
                                               :value (string-rod value)
                                               :specified-p t)

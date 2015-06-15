@@ -1,13 +1,13 @@
-<documentation title="CXML SAX parser">
+<documentation title="FXML SAX parser">
     <h1>SAX parsing and serialization</h1>
 
     <a name="parser"/>
 
     <p>
-      This chapter describes CXML's SAX-like parser interface.
+      This chapter describes FXML's SAX-like parser interface.
     </p>
     <p>
-      The SAX layer is an important concept in CXML that users will
+      The SAX layer is an important concept in FXML that users will
       encounter in various situations:
     </p>
     <ul>
@@ -20,7 +20,7 @@
       <li>
         <b>Serialization</b> is done using SAX, too.   SAX handlers that
         process and consume events without sending them to another
-        handler are called <i>sinks</i> in CXML.  Serialization sinks
+        handler are called <i>sinks</i> in FXML.  Serialization sinks
         write XML output for the events they receive.  For example, to
         serialize DOM, use <tt>map-document</tt> to turn the DOM
         document into SAX events together with a <tt>sink</tt> for
@@ -36,7 +36,7 @@
     </ul>
     <p>
       However, SAX events are easier to generate than to process.  That
-      is why CXML offers <i>Klacks</i>, a "pull-based" API in addition to SAX.
+      is why FXML offers <i>Klacks</i>, a "pull-based" API in addition to SAX.
       Klacks events are generally easier to process than to generate.
       Please refer to the <a href="klacks.html">Klacks documentation</a>
       for details.
@@ -49,24 +49,24 @@
     <p>
       Old-style convenience functions:
     </p>
-    <div style="font-weight: bold">Function CXML:PARSE-FILE (pathname handler &amp;key ...)</div>
-    <p style="margin-left: 2em">Same as <tt>cxml:parse</tt> with a pathname argument.
-      (But note that <tt>cxml:parse-file</tt> interprets string
-      arguments as namestrings, while <tt>cxml:parse</tt> expects
+    <div style="font-weight: bold">Function FXML:PARSE-FILE (pathname handler &amp;key ...)</div>
+    <p style="margin-left: 2em">Same as <tt>fxml:parse</tt> with a pathname argument.
+      (But note that <tt>fxml:parse-file</tt> interprets string
+      arguments as namestrings, while <tt>fxml:parse</tt> expects
       literal XML documents.)
     </p>
-    <div style="font-weight: bold">Function CXML:PARSE-STREAM (stream handler &amp;key ...)</div>
-    <p style="margin-left: 2em">Same as <tt>cxml:parse</tt> with a stream argument.</p>
-    <div style="font-weight: bold">Function CXML:PARSE-OCTETS (octets handler &amp;key ...)</div>
-    <p style="margin-left: 2em">Same as <tt>cxml:parse</tt> with an octet vector argument.</p>
-    <div style="font-weight: bold">Function CXML:PARSE-ROD (rod handler &amp;key ...)</div>
-    <p style="margin-left: 2em">Same as <tt>cxml:parse</tt> with a string argument.</p>
+    <div style="font-weight: bold">Function FXML:PARSE-STREAM (stream handler &amp;key ...)</div>
+    <p style="margin-left: 2em">Same as <tt>fxml:parse</tt> with a stream argument.</p>
+    <div style="font-weight: bold">Function FXML:PARSE-OCTETS (octets handler &amp;key ...)</div>
+    <p style="margin-left: 2em">Same as <tt>fxml:parse</tt> with an octet vector argument.</p>
+    <div style="font-weight: bold">Function FXML:PARSE-ROD (rod handler &amp;key ...)</div>
+    <p style="margin-left: 2em">Same as <tt>fxml:parse</tt> with a string argument.</p>
     </div>
 
     <h4>
       New all-in-one parser interface:
     </h4>
-    <div class="def">Function CXML:PARSE (input handler &amp;key ...)</div>
+    <div class="def">Function FXML:PARSE (input handler &amp;key ...)</div>
     <p>
       Parse an XML document, where input is a string, pathname, octet
       vector, or stream.
@@ -129,7 +129,7 @@
         arguments which is invoked for every entity referenced by the
         document with the entity's Public ID (a rod) and System ID (an
         URI object) as arguments.  The function may either return
-        nil, CXML will then try to resolve the entity as usual.
+        nil, FXML will then try to resolve the entity as usual.
         Alternatively it may return a Common Lisp stream specialized on
         <tt>(unsigned-byte 8)</tt> which will be used instead.  (It may
         also signal an error, of course, which can be useful to prohibit
@@ -155,7 +155,7 @@
     </p>
 
     <p>
-      <div class="def">Function CXML:PARSE-EMPTY-DOCUMENT (uri qname handler &amp;key public-id system-id entity-resolver recode)</div>
+      <div class="def">Function FXML:PARSE-EMPTY-DOCUMENT (uri qname handler &amp;key public-id system-id entity-resolver recode)</div>
     </p>
     <p>
       Simulate parsing a document with a document element <tt>qname</tt>
@@ -167,8 +167,8 @@
     </p>
 
     <p>
-      <div class="def">Function CXML:PARSE-DTD-FILE (pathname)</div>
-      <div class="def">Function CXML:PARSE-DTD-STREAM (stream)</div>
+      <div class="def">Function FXML:PARSE-DTD-FILE (pathname)</div>
+      <div class="def">Function FXML:PARSE-DTD-STREAM (stream)</div>
       Parse <a
       href="http://www.w3.org/TR/2000/REC-xml-20001006#NT-extSubset">declarations</a>
       from a stand-alone file and return an object representing the DTD,
@@ -181,18 +181,18 @@
     </ul>
 
     <p>
-      <div class="def">Function CXML:MAKE-EXTID (publicid systemid)</div>
+      <div class="def">Function FXML:MAKE-EXTID (publicid systemid)</div>
       Create an object representing the External ID composed
       of the specified Public ID, a rod or <tt>nil</tt>, and System ID
       (an URI object).
     </p>
 
     <p>
-      <div class="def">Condition class CXML:XML-PARSE-ERROR ()</div>
-      Superclass of all conditions signalled by the CXML parser.
+      <div class="def">Condition class FXML:XML-PARSE-ERROR ()</div>
+      Superclass of all conditions signalled by the FXML parser.
     </p>
     <p>
-      <div class="def">Condition class CXML:WELL-FORMEDNESS-VIOLATION (cxml:xml-parse-error)</div>
+      <div class="def">Condition class FXML:WELL-FORMEDNESS-VIOLATION (fxml:xml-parse-error)</div>
       This condition is signalled for all well-formedness violations.
       (Note that, when parsing document that is not well-formed in validating
       mode, the parser might encounter validity errors before detecting
@@ -200,7 +200,7 @@
       in that situation.)
     </p>
     <p>
-      <div class="def">Condition class CXML:VALIDITY-ERROR (cxml:xml-parse-error)</div>
+      <div class="def">Condition class FXML:VALIDITY-ERROR (fxml:xml-parse-error)</div>
       Reports the violation of a validity constraint.
     </p>
 
@@ -220,24 +220,24 @@
       in-memory document.
     </p>
     <p>
-      In addition to <tt>map-document</tt>, cxml has a set of
+      In addition to <tt>map-document</tt>, fxml has a set of
       convenience macros for serialization (see below for
       <tt>with-xml-output</tt>, <tt>with-element</tt>, etc).
     </p>
 
     <div style="background-color: #ddddff">
       Portable sinks:<br/>
-      <span class="def">Function CXML:MAKE-OCTET-VECTOR-SINK (&amp;rest keys) => sink</span><br/>
-      <span class="def">Function CXML:MAKE-OCTET-STREAM-SINK (stream &amp;rest keys) => sink</span><br/>
-      <span class="def">Function CXML:MAKE-ROD-SINK (&amp;rest keys) => sink</span><br/>
+      <span class="def">Function FXML:MAKE-OCTET-VECTOR-SINK (&amp;rest keys) => sink</span><br/>
+      <span class="def">Function FXML:MAKE-OCTET-STREAM-SINK (stream &amp;rest keys) => sink</span><br/>
+      <span class="def">Function FXML:MAKE-ROD-SINK (&amp;rest keys) => sink</span><br/>
       <br/>
       Only on Lisps with Unicode support:<br/>
-      <span class="def">Function CXML:MAKE-STRING-SINK</span> -- alias for <tt>cxml:make-rod-sink</tt><br/>
-      <span class="def">Function CXML:MAKE-CHARACTER-STREAM-SINK (stream &amp;rest keys) => sink</span><br/>
+      <span class="def">Function FXML:MAKE-STRING-SINK</span> -- alias for <tt>fxml:make-rod-sink</tt><br/>
+      <span class="def">Function FXML:MAKE-CHARACTER-STREAM-SINK (stream &amp;rest keys) => sink</span><br/>
       <br/>
       Only on Lisps <em>without</em> Unicode support:<br/>
-      <span class="def">Function CXML:MAKE-STRING-SINK/UTF8 (&amp;rest keys) => sink</span><br/>
-      <span class="def">Function CXML:MAKE-CHARACTER-STREAM-SINK/UTF8 (stream &amp;rest keys) => sink</span><br/>
+      <span class="def">Function FXML:MAKE-STRING-SINK/UTF8 (&amp;rest keys) => sink</span><br/>
+      <span class="def">Function FXML:MAKE-CHARACTER-STREAM-SINK/UTF8 (stream &amp;rest keys) => sink</span><br/>
     </div>
     <p>
       Return a SAX serialization handle.
@@ -317,7 +317,7 @@
       </li>
       <li>
         <tt>2</tt>: <a
-         href="http://dev.w3.org/cvsweb/~checkout~/2001/XML-Test-Suite/xmlconf/sun/cxml.html?content-type=text/html;%20charset=iso-8859-1">Second
+         href="http://dev.w3.org/cvsweb/~checkout~/2001/XML-Test-Suite/xmlconf/sun/fxml.html?content-type=text/html;%20charset=iso-8859-1">Second
          Canonical Form</a>
       </li>
       <li>
@@ -342,16 +342,16 @@
     </p>
 
     <p>
-      <div class="def">Macro CXML:WITH-XML-OUTPUT (sink &amp;body body) => sink-specific result</div>
-      <div class="def">Macro CXML:WITH-NAMESPACE ((prefix uri) &amp;body body) => result</div>
-      <div class="def">Macro CXML:WITH-ELEMENT (qname &amp;body body) => result</div>
-      <div class="def">Macro CXML:WITH-ELEMENT* ((prefix lname) &amp;body body) => result</div>
-      <div class="def">Function CXML:ATTRIBUTE (qname value) => value</div>
-      <div class="def">Generic Function CXML:UNPARSE-ATTRIBUTE (value) => string</div>
-      <div class="def">Function CXML:ATTRIBUTE* (prefix lname value) => value</div>
-      <div class="def">Function CXML:TEXT (data) => data</div>
-      <div class="def">Function CXML:CDATA (data) => data</div>
-      <div class="def">Function CXML:doctype (name public-id system-id &amp;optional internal-subset)</div>
+      <div class="def">Macro FXML:WITH-XML-OUTPUT (sink &amp;body body) => sink-specific result</div>
+      <div class="def">Macro FXML:WITH-NAMESPACE ((prefix uri) &amp;body body) => result</div>
+      <div class="def">Macro FXML:WITH-ELEMENT (qname &amp;body body) => result</div>
+      <div class="def">Macro FXML:WITH-ELEMENT* ((prefix lname) &amp;body body) => result</div>
+      <div class="def">Function FXML:ATTRIBUTE (qname value) => value</div>
+      <div class="def">Generic Function FXML:UNPARSE-ATTRIBUTE (value) => string</div>
+      <div class="def">Function FXML:ATTRIBUTE* (prefix lname value) => value</div>
+      <div class="def">Function FXML:TEXT (data) => data</div>
+      <div class="def">Function FXML:CDATA (data) => data</div>
+      <div class="def">Function FXML:doctype (name public-id system-id &amp;optional internal-subset)</div>
       Convenience syntax for event-based serialization.
     </p>
     <p>
@@ -380,9 +380,9 @@
     </p>
     <p>
       <tt>xhtmlgen</tt> is included as <tt>contrib/xhtmlgen.lisp</tt> in
-      the cxml distribution.  Example:
+      the fxml distribution.  Example:
     </p>
-    <pre>(let ((sink (cxml:make-character-stream-sink *standard-output*)))
+    <pre>(let ((sink (fxml:make-character-stream-sink *standard-output*)))
   (sax:start-document sink)
   (xhtml-generator:write-doctype sink)
   (xhtml-generator:with-html sink
@@ -401,7 +401,7 @@
     <a name="misc"/>
     <h3>Miscellaneous SAX handlers</h3>
     <p>
-      <div class="def">Function CXML:MAKE-VALIDATOR (dtd root)</div>
+      <div class="def">Function FXML:MAKE-VALIDATOR (dtd root)</div>
       Create a SAX handler which validates against a DTD instance.&#160;
       The document's root element must be named <tt>root</tt>.&#160; 
       Used with <tt>dom:map-document</tt>, this validates a document
@@ -410,14 +410,14 @@
       ignored.<br/>
       Example:
     </p>
-    <pre>(let ((d (parse-file "~/test.xml" (cxml-dom:make-dom-builder)))
+    <pre>(let ((d (parse-file "~/test.xml" (fxml-dom:make-dom-builder)))
       (x (parse-dtd-file "~/test.dtd")))
-  (dom:map-document (cxml:make-validator x #"foo") d))</pre>
+  (dom:map-document (fxml:make-validator x #"foo") d))</pre>
 
     <p>
-      <div class="def">Class CXML:BROADCAST-HANDLER ()</div>
-      <div class="def">Accessor CXML:BROADCAST-HANDLER-HANDLERS</div>
-      <div class="def">Function CXML:MAKE-BROADCAST-HANDLER (&amp;rest handlers)</div>
+      <div class="def">Class FXML:BROADCAST-HANDLER ()</div>
+      <div class="def">Accessor FXML:BROADCAST-HANDLER-HANDLERS</div>
+      <div class="def">Function FXML:MAKE-BROADCAST-HANDLER (&amp;rest handlers)</div>
       <tt>broadcast-handler</tt> is a SAX handler which passes every event it
       receives on to each of several chained handlers, somewhat similar
       to the way a <tt>broadcast-stream</tt> works.
@@ -436,18 +436,18 @@
     </p>
 
     <p>
-      <div class="def">Class CXML:SAX-PROXY (broadcast-handler)</div>
-      <div class="def">Accessor CXML:PROXY-CHAINED-HANDLER</div>
+      <div class="def">Class FXML:SAX-PROXY (broadcast-handler)</div>
+      <div class="def">Accessor FXML:PROXY-CHAINED-HANDLER</div>
       <tt>sax-proxy</tt> is a subclass of <tt>broadcast-handler</tt>
       which sends events to exactly one chained handler.  This class is
       still included for compatibility with older versions of
-      CXML which did not include the more
+      FXML which did not include the more
       general <tt>broadcast-handler</tt> yet, but has been retrofitted
       as a subclass of the latter.
     </p>
 
     <p>
-    <div class="def">Accessor CXML:MAKE-NAMESPACE-NORMALIZER (next-handler)</div>
+    <div class="def">Accessor FXML:MAKE-NAMESPACE-NORMALIZER (next-handler)</div>
     </p>
     <p>
       Return a SAX handler that performs <a
@@ -457,14 +457,14 @@
       handler.
     </p>
     <p>
-      <div class="def">Function CXML:MAKE-WHITESPACE-NORMALIZER (chained-handler &amp;optional dtd)</div>
+      <div class="def">Function FXML:MAKE-WHITESPACE-NORMALIZER (chained-handler &amp;optional dtd)</div>
       Return a SAX handler which removes whitespace from elements that
       have <em>element content</em> and have not been declared to
       preserve space using an xml:space attribute.
     </p>
     <p>Example:</p>
-    <pre>(cxml:parse-file "example.xml"
-                 (cxml:make-whitespace-normalizer (cxml-dom:make-dom-builder))
+    <pre>(fxml:parse-file "example.xml"
+                 (fxml:make-whitespace-normalizer (fxml-dom:make-dom-builder))
                  :validate t)</pre>
     <p>Example input:</p>
     <pre>&lt;!DOCTYPE test [
@@ -486,16 +486,16 @@
     <a name="rods"/>
     <h3>Recoders</h3>
     <p>
-      Recoders are a mechanism used by CXML internally on Lisp implementations
+      Recoders are a mechanism used by FXML internally on Lisp implementations
       without Unicode support to recode UTF-16 vectors (rods) of
       integers (runes) into UTF-8 strings.
     </p>
     <p>
       User code does not usually need to deal with recoders in current
-      versions of CXML.
+      versions of FXML.
     </p>
     <p>
-      <div class="def">Function CXML:MAKE-RECODER (chained-handler recoder-fn)</div>
+      <div class="def">Function FXML:MAKE-RECODER (chained-handler recoder-fn)</div>
       Return a SAX handler which passes all events on to
       <tt>chained-handler</tt> after converting all strings and rods
       using <tt>recoder-fn</tt>, a function of one argument.
@@ -505,47 +505,47 @@
     <h3>Caching of DTD Objects</h3>
     <p>
       To avoid spending time parsing the same DTD over and over again,
-      CXML can cache DTD objects.  The parser consults
-      <tt>cxml:*dtd-cache*</tt> whenever it is looking for an external
+      FXML can cache DTD objects.  The parser consults
+      <tt>fxml:*dtd-cache*</tt> whenever it is looking for an external
       subset in a document which does not have an internal subset and
       uses the cached DTD instance if one is present in the cache for
       the System ID in question.
     </p>
     <p>
       Note that DTDs do not expire from the cache automatically.
-      (Future versions of CXML might introduce automatic checks for
+      (Future versions of FXML might introduce automatic checks for
       outdated DTDs.)
     </p>
     <p>
-      <div class="def">Variable CXML:*DTD-CACHE*</div>
+      <div class="def">Variable FXML:*DTD-CACHE*</div>
       The DTD cache object consulted by the parser when it needs a DTD.
     </p>
     <p>
-      <div class="def">Function CXML:MAKE-DTD-CACHE ()</div>
+      <div class="def">Function FXML:MAKE-DTD-CACHE ()</div>
       Return a new, empty DTD cache object.
     </p>
     <p>
-      <div class="def">Variable CXML:*CACHE-ALL-DTDS*</div>
+      <div class="def">Variable FXML:*CACHE-ALL-DTDS*</div>
       If true, instructs the parser to enter all DTDs that could have
       been cached into <tt>*dtd-cache*</tt> if they were not cached
       already.  Defaults to <tt>nil</tt>.
     </p>
     <p>
-      <div class="def">Reader CXML:GETDTD (uri dtd-cache)</div>
+      <div class="def">Reader FXML:GETDTD (uri dtd-cache)</div>
       Return a cached instance of the DTD at <tt>uri</tt>, if present in
       the cache, or <tt>nil</tt>.
     </p>
     <p>
-      <div class="def">Writer CXML:GETDTD (uri dtd-cache)</div>
+      <div class="def">Writer FXML:GETDTD (uri dtd-cache)</div>
       Enter a new value for <tt>uri</tt> into <tt>dtd-cache</tt>.
     </p>
     <p>
-      <div class="def">Function CXML:REMDTD (uri dtd-cache)</div>
+      <div class="def">Function FXML:REMDTD (uri dtd-cache)</div>
       Ensure that no DTD is recorded for <tt>uri</tt> in the cache and
       return true if such a DTD was present.
     </p>
     <p>
-      <div class="def">Function CXML:CLEAR-DTD-CACHE (dtd-cache)</div>
+      <div class="def">Function FXML:CLEAR-DTD-CACHE (dtd-cache)</div>
       Remove all entries from <tt>dtd-cache</tt>.
     </p>
     <p>
@@ -599,9 +599,9 @@
     <p>
       External entities (for example, DTDs) are referred to using their
       Public and System IDs.  Usually the System ID, a URI, is used to
-      locate the entity.  CXML itself handles only file://-URIs, but
+      locate the entity.  FXML itself handles only file://-URIs, but
       many System IDs in practical use are http://-URIs.  There are two
-      different mechanims applications can use to allow CXML to locate
+      different mechanims applications can use to allow FXML to locate
       entities using arbitrary Public ID or System ID:
     </p>
     <ul>
@@ -611,45 +611,45 @@
         handle all System-IDs with the <tt>http</tt> scheme using some
         HTTP library.  Refer to the description of the 
         <tt>entity-resolver</tt> keyword argument to parser functions (see <a
-        href="#parser"><tt>cxml:parse-file</tt></a>) to more
+        href="#parser"><tt>fxml:parse-file</tt></a>) to more
         information on entity resolvers.
       </li>
       <li>
         XML Catalogs are (local) tables in XML syntax which map External
         IDs to alternative System IDs.  If, say, the xhtml DTD is
         present in the local file system and the local copy has been
-        registered with the XML catalog, CXML will use the local copy of
+        registered with the XML catalog, FXML will use the local copy of
         the DTD instead of trying to open the version available using HTTP.
       </li>
     </ul>
     <p>
-      This section describes XML Catalogs, the second solution.  CXML
+      This section describes XML Catalogs, the second solution.  FXML
       implements <a
       href="http://www.oasis-open.org/committees/entity/spec.html">Oasis
       XML Catalogs</a>.
     </p>
     <p>
-      <div class="def">Variable CXML:*CATALOG*</div>
+      <div class="def">Variable FXML:*CATALOG*</div>
       The XML Catalog object consulted by the parser before trying to
       open an entity.  Initially <tt>nil</tt>.
     </p>
     <p>
-      <div class="def">Variable CXML:*PREFER*</div>
+      <div class="def">Variable FXML:*PREFER*</div>
       The default "prefer" mode from the Catalog specification, one
       of <tt>:public</tt> or <tt>:system</tt>.  Defaults
       to <tt>:public</tt>.
     </p>
     <p>
-      <div class="def">Function CXML:MAKE-CATALOG (&amp;optional uris)</div>
+      <div class="def">Function FXML:MAKE-CATALOG (&amp;optional uris)</div>
       Return a catalog object for the catalog files specified.
     </p>
     <p>
-      <div class="def">Function CXML:RESOLVE-URI (uri catalog)</div>
+      <div class="def">Function FXML:RESOLVE-URI (uri catalog)</div>
       Look up <tt>uri</tt> in <tt>catalog</tt> and return the
       resulting URI, or <tt>nil</tt> if no match was found.
     </p>
     <p>
-      <div class="def">Function CXML:RESOLVE-EXTID (publicid systemid catalog)</div>
+      <div class="def">Function FXML:RESOLVE-EXTID (publicid systemid catalog)</div>
       Look up the External ID (<tt>publicid</tt>, <tt>systemid</tt>)
       in <tt>catalog</tt> and return the resulting URI, or <tt>nil</tt>
       if no match was found.
@@ -657,12 +657,12 @@
     <p>
       Example:
     </p>
-    <pre>* (setf cxml:*catalog* nil)
-* (cxml:parse-file "test.xhtml" nil)
+    <pre>* (setf fxml:*catalog* nil)
+* (fxml:parse-file "test.xhtml" nil)
 => Error: URI scheme :HTTP not supported
 
-* (setf cxml:*catalog* (cxml:make-catalog))
-* (cxml:parse-file "test.xhtml" nil)
+* (setf fxml:*catalog* (fxml:make-catalog))
+* (fxml:parse-file "test.xhtml" nil)
 ;; no error!
 NIL</pre>
     <p>

@@ -1,9 +1,9 @@
 (in-package #:cl-user)
 
-(defpackage #:cxml.test
+(defpackage #:fxml.test
   (:use #:cl #:5am))
 
-(in-package #:cxml.test)
+(in-package #:fxml.test)
 
 (macrolet ((def (name value)
              `(define-symbol-macro ,name (pathname ,value))))
@@ -19,11 +19,11 @@
 
 (defun test-file-path (name)
   (asdf:system-relative-pathname
-   :cxml
+   :fxml
    (merge-pathnames name #p"test/xmltestdata/")))
 
 (defun parse-test-file (name &rest args)
-  (apply #'cxml:parse (test-file-path name) nil args))
+  (apply #'fxml:parse (test-file-path name) nil args))
 
 (defun debug-test (test &key (error t) (failure t))
   "Run TEST, breaking on error or failure."

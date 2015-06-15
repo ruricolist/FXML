@@ -1,12 +1,12 @@
 ;;;; catalogs.lisp -- XML Catalogs  -*- Mode: Lisp; readtable: runes -*-
 ;;;;
-;;;; This file is part of the CXML parser, released under Lisp-LGPL.
+;;;; This file is part of the FXML parser, released under Lisp-LGPL.
 ;;;; See file COPYING for details.
 ;;;;
 ;;;; Developed 2004 for headcraft - http://headcraft.de/
 ;;;; Copyright: David Lichteblau
 
-(in-package :cxml)
+(in-package :fxml)
 
 ;;; http://www.oasis-open.org/committees/entity/spec.html
 ;;;

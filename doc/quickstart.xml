@@ -1,8 +1,8 @@
-<documentation title="CXML Quick-Start Example">
+<documentation title="FXML Quick-Start Example">
     <h1>Quick-Start Example / FAQ</h1>
 
     <p>
-      Make sure to <a href="installation.html#installation">install and load</a> cxml first.
+      Make sure to <a href="installation.html#installation">install and load</a> fxml first.
     </p>
 
     <h3>
@@ -21,7 +21,7 @@
 
     <p>Parse <tt>example.xml</tt> into a DOM tree (<a href="sax.html#parser">read
     more</a>):</p>
-    <pre>* <b>(cxml:parse-file "example.xml" (cxml-dom:make-dom-builder))</b>
+    <pre>* <b>(fxml:parse-file "example.xml" (fxml-dom:make-dom-builder))</b>
 #&lt;DOM-IMPL::DOCUMENT @ #x72206172>
 
 ;; save result for later:
@@ -48,7 +48,7 @@
     <p>Serialize the DOM document back into a file (<a
     href="sax.html#serialization">read more</a>):</p>
     <pre>(with-open-file (out "example.out" :direction :output :element-type '(unsigned-byte 8))
-  <b>(dom:map-document (cxml:make-octet-stream-sink out) *example*)</b></pre>
+  <b>(dom:map-document (fxml:make-octet-stream-sink out) *example*)</b></pre>
 
     <heading>Parsing into XMLS-like lists</heading>
 
@@ -57,23 +57,23 @@
       other data structures is possible using the same SAX parser
       function, while using a different handler.
       The XMLS builder is included for compatibility with XMLS, and also
-      also sample code (see cxml/xml/xmls-compat.lisp) for your own
+      also sample code (see fxml/xml/xmls-compat.lisp) for your own
       handlers.
     </p>
 
     <p>As an alternative to DOM, parse into xmls-compatible list
     structure (<a href="xmls-compat.html">read more</a>):</p>
-    <pre>* <b>(cxml:parse-file "example.xml" (cxml-xmls:make-xmls-builder))</b>
+    <pre>* <b>(fxml:parse-file "example.xml" (fxml-xmls:make-xmls-builder))</b>
 ("test" (("a" "b")) ("child" NIL))</pre>
 
     <p>
       Again, serialization into XML is done using a sink as a SAX
       handler and a data-structure specific function to generate SAX
-      events for the document, in this case <tt>cxml-xmls:map-node</tt>.
+      events for the document, in this case <tt>fxml-xmls:map-node</tt>.
     </p>
 
     <pre>* (with-open-file (out "example.out" :direction :output :element-type '(unsigned-byte 8))
-    (<b>cxml-xmls:map-node (cxml:make-octet-stream-sink out)
+    (<b>fxml-xmls:map-node (fxml:make-octet-stream-sink out)
                         '("test" (("a" "b")) ("child" nil)))</b>)</pre>
 
     <heading>Parsing incrementally using Klacks</heading>
@@ -82,7 +82,7 @@
     following example looks only for :start-element and :end-element
     events and prints them (<a href="klacks.html">read more</a>):</p>
     <pre>* <b>(klacks:with-open-source
-    (s (cxml:make-source #p"example.xml"))</b>
+    (s (fxml:make-source #p"example.xml"))</b>
   (loop
       for key = <b>(klacks:peek s)</b>
       while key
@@ -102,12 +102,12 @@ test {child {}}</pre>
       but there are convenience functions and macros to make that easier
       to use:
     </p>
-    <pre>(cxml:with-xml-output (cxml:make-octet-stream-sink stream :indentation 2 :canonical nil)
-  (cxml:with-element "foo"
-    (cxml:attribute "xyz" "abc")
-    (cxml:with-element "bar"
-      (cxml:attribute "blub" "bla"))
-    (cxml:text "Hi there.")))</pre>
+    <pre>(fxml:with-xml-output (fxml:make-octet-stream-sink stream :indentation 2 :canonical nil)
+  (fxml:with-element "foo"
+    (fxml:attribute "xyz" "abc")
+    (fxml:with-element "bar"
+      (fxml:attribute "blub" "bla"))
+    (fxml:text "Hi there.")))</pre>
    <p>
       Prints this to <tt>stream</tt>:
    </p>
@@ -116,11 +116,11 @@ test {child {}}</pre>
   Hi there.
 &lt;/foo&gt;</pre>
     
-    <heading>Help! CXML says 'URI scheme :HTTP not supported'</heading>
+    <heading>Help! FXML says 'URI scheme :HTTP not supported'</heading>
 
     <p>
       By default, this error will occur when the DTD (or generally, any
-      entity) has an http:// URL as its system ID.  CXML itself
+      entity) has an http:// URL as its system ID.  FXML itself
       understands only file:// URLs, but allows users to customize the
       behaviour for all URLs.
     </p>
@@ -136,11 +136,11 @@ test {child {}}</pre>
 	  empty, again using an entity resolver.
 	</li>
 	<li>
-	  Use a <em>catalog</em> to make CXML find DTDs in the local
+	  Use a <em>catalog</em> to make FXML find DTDs in the local
 	  filesystem automatically.
 	</li>
 	<li>
-	  Teach CXML actually load DTDs using HTTP.
+	  Teach FXML actually load DTDs using HTTP.
 	</li>
       </ul>
     </p>
@@ -179,7 +179,7 @@ test {child {}}</pre>
 	   (declare (ignore pubid))
 	   <b>(when (puri:uri= sysid (puri:parse-uri uri))
 	     (open pathname :element-type '(unsigned-byte 8)))</b>))
-    (cxml:parse-file "dtdexample.xml" (cxml-dom:make-dom-builder) <b>:entity-resolver #'resolver</b>)))</pre>
+    (fxml:parse-file "dtdexample.xml" (fxml-dom:make-dom-builder) <b>:entity-resolver #'resolver</b>)))</pre>
 
 
     <heading>Can I skip loading of DTDs entirely?</heading>
@@ -188,7 +188,7 @@ test {child {}}</pre>
       Yes and no.
     </p>
     <p>
-      <i>Yes</i>, you can force CXML to do this, see the following example.
+      <i>Yes</i>, you can force FXML to do this, see the following example.
     </p>
     
     <p>
@@ -199,21 +199,21 @@ test {child {}}</pre>
     </p>
 
     <p>
-      The trick to make CXML skip the DTD is to pretend that it is empty
+      The trick to make FXML skip the DTD is to pretend that it is empty
       by returning a zero-length stream instead:
     </p>
     
     <pre>(flet ((resolver (pubid sysid)
 	 (declare (ignore pubid sysid))
 	 <b>(flexi-streams:make-in-memory-input-stream nil)</b>))
-  (cxml:parse-file "dtdexample.xml" (cxml-dom:make-dom-builder) <b>:entity-resolver #'resolver</b>))</pre>
+  (fxml:parse-file "dtdexample.xml" (fxml-dom:make-dom-builder) <b>:entity-resolver #'resolver</b>))</pre>
 
     <heading>
       Catalogs: How can I use the HTML DTD installed by my distribution?
     </heading>
 
     <p>
-      Rather than writing an entity resolver function yourself, CXML can
+      Rather than writing an entity resolver function yourself, FXML can
       use XML catalogs to find DTDs and entity files on your local system.
     </p>
     <p>
@@ -223,11 +223,11 @@ test {child {}}</pre>
       distribution-dependent location, which the central catalog file
       points to.
     </p>
-    <p>By default, CXML looks for the catalog in /etc/xml/catalog
+    <p>By default, FXML looks for the catalog in /etc/xml/catalog
     (Linux) and /usr/local/share/xml/catalog.ports (FreeBSD).
     </p>
-    <pre>* <b>(setf cxml:*catalog* (cxml:make-catalog))</b>
-* (cxml:parse-file "test.xhtml" (cxml-dom:make-dom-builder))</pre>
+    <pre>* <b>(setf fxml:*catalog* (fxml:make-catalog))</b>
+* (fxml:parse-file "test.xhtml" (fxml-dom:make-dom-builder))</pre>
 
     <heading>
       Can I load DTDs through HTTP?
@@ -243,5 +243,5 @@ test {child {}}</pre>
 	 (declare (ignore pubid))
 	 <b>(when (eq (puri:uri-scheme sysid) :http)
 	   (drakma:http-request sysid :want-stream t))</b>))
-  (cxml:parse-file "dtdexample.xml" (cxml-dom:make-dom-builder) <b>:entity-resolver #'resolver</b>))</pre>
+  (fxml:parse-file "dtdexample.xml" (fxml-dom:make-dom-builder) <b>:entity-resolver #'resolver</b>))</pre>
 </documentation>

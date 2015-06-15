@@ -1,11 +1,11 @@
 ;;;; space-normalizer.lisp -- whitespace removal
 ;;;;
-;;;; This file is part of the CXML parser, released under Lisp-LGPL.
+;;;; This file is part of the FXML parser, released under Lisp-LGPL.
 ;;;; See file COPYING for details.
 ;;;;
 ;;;; Copyright (c) 2005 David Lichteblau
 
-(in-package :cxml)
+(in-package :fxml)
 
 (defclass whitespace-normalizer (sax-proxy)
     ((attributes :initform '(t) :accessor xml-space-attributes)
@@ -33,8 +33,8 @@
 		  (rod= (rod (sax:attribute-value xml-space)) #"default")
 		  (car (xml-space-attributes handler)))
 	      (xml-space-attributes handler)))
-      (let* ((e (cxml::find-element (rod qname) dtd))
-	     (cspec (when e (cxml::elmdef-content e))))
+      (let* ((e (fxml::find-element (rod qname) dtd))
+	     (cspec (when e (fxml::elmdef-content e))))
 	(push (and (consp cspec)
 		   (not (and (eq (car cspec) '*)
 			     (let ((subspec (second cspec)))

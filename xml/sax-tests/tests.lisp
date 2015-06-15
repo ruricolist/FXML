@@ -1,7 +1,7 @@
 (in-package :sax-tests)
 
 (defun first-start-element-event (string)
-  (let ((events (cxml:parse-rod string (make-instance 'event-collecting-handler))))
+  (let ((events (fxml:parse-rod string (make-instance 'event-collecting-handler))))
     (find :start-element events :key #'car)))
 
 
@@ -17,7 +17,7 @@
 
 (deftest attribute-uniqueness-1
   (handler-case
-      (cxml:parse-rod "<x xmlns:a='http://example.com' xmlns:b='http://example.com' a:a='1' b:a='1'/>")
+      (fxml:parse-rod "<x xmlns:a='http://example.com' xmlns:b='http://example.com' a:a='1' b:a='1'/>")
     (error () t)
     (:no-error (&rest junk)
       (declare (ignore junk))
@@ -26,7 +26,7 @@
 
 (deftest attribute-uniqueness-2
   (handler-case
-      (cxml:parse-rod "<x xmlns:a='http://example.com' xmlns='http://example.com' a:a='1' a='1'/>")
+      (fxml:parse-rod "<x xmlns:a='http://example.com' xmlns='http://example.com' a:a='1' a='1'/>")
     (error () nil)
     (:no-error (&rest junk)
       (declare (ignore junk))
@@ -36,7 +36,7 @@
 (deftest attribute-uniqueness-3
   (let ((sax:*namespace-processing* nil))
     (handler-case
-	(cxml:parse-rod "<x xmlns:a='http://example.com' xmlns:b='http://example.com' a:a='1' b:a='1'/>")
+	(fxml:parse-rod "<x xmlns:a='http://example.com' xmlns:b='http://example.com' a:a='1' b:a='1'/>")
     (error () nil)
     (:no-error (&rest junk)
       (declare (ignore junk))
@@ -46,7 +46,7 @@
 ;;; Namespace undeclaring
 
 (deftest undeclare-default-namespace-1
-  (let* ((evts (cxml:parse-rod "<x xmlns='http://example.com'><y xmlns='' a='1'/></x>"
+  (let* ((evts (fxml:parse-rod "<x xmlns='http://example.com'><y xmlns='' a='1'/></x>"
 				   (make-instance 'event-collecting-handler)))
 	 (start-elt-events (remove :start-element evts :test (complement #'eql) :key #'car))
 	 (evt1 (first start-elt-events))
@@ -59,7 +59,7 @@
 
 (deftest undeclare-other-namespace
   (handler-case
-      (cxml:parse-rod "<x:x xmlns:x='http://example.com'><x:y xmlns:x='' a='1'/></x:x>")
+      (fxml:parse-rod "<x:x xmlns:x='http://example.com'><x:y xmlns:x='' a='1'/></x:x>")
     (error () t)
     (:no-error (&rest junk)
       (declare (ignore junk))
@@ -71,7 +71,7 @@
 
 (deftest pi-names-are-ncnames-when-namespace-processing-1
   (handler-case
-      (cxml:parse-rod "<?a:b c?><x/>")
+      (fxml:parse-rod "<?a:b c?><x/>")
     (error () t)
     (:no-error (&rest junk)
       (declare (ignore junk))
@@ -81,7 +81,7 @@
 (deftest pi-names-are-ncnames-when-namespace-processing-2
   (let ((sax:*namespace-processing* nil))
     (handler-case
-	(cxml:parse-rod "<?a:b c?><x/>")
+	(fxml:parse-rod "<?a:b c?><x/>")
       (error () nil)
       (:no-error (&rest junk)
 	(declare (ignore junk))
@@ -90,7 +90,7 @@
 
 (deftest entity-names-are-ncnames-when-namespace-processing-1
   (handler-case
-      (cxml:parse-rod "<!DOCTYPE x [ <!ENTITY y:z 'foo'> ]><x>&y:z;</x>")
+      (fxml:parse-rod "<!DOCTYPE x [ <!ENTITY y:z 'foo'> ]><x>&y:z;</x>")
     (error () t)
     (:no-error (&rest junk)
       (declare (ignore junk))
@@ -99,7 +99,7 @@
 
 (deftest entity-names-are-ncnames-when-namespace-processing-2
   (handler-case
-      (cxml:parse-rod "<!DOCTYPE x [ <!ENTITY y:z 'foo'> ]><x/>")
+      (fxml:parse-rod "<!DOCTYPE x [ <!ENTITY y:z 'foo'> ]><x/>")
     (error () t)
     (:no-error (&rest junk)
       (declare (ignore junk))
@@ -109,7 +109,7 @@
 (deftest entity-names-are-ncnames-when-namespace-processing-3
   (let ((sax:*namespace-processing* nil))
     (handler-case
-	(cxml:parse-rod "<!DOCTYPE x [ <!ENTITY y:z 'foo'> ]><x>&y:z;</x>")
+	(fxml:parse-rod "<!DOCTYPE x [ <!ENTITY y:z 'foo'> ]><x>&y:z;</x>")
       (error () nil)
       (:no-error (&rest junk)
 	(declare (ignore junk))
@@ -119,7 +119,7 @@
 (deftest entity-names-are-ncnames-when-namespace-processing-4
   (let ((sax:*namespace-processing* nil))
     (handler-case
-	(cxml:parse-rod "<!DOCTYPE x [ <!ENTITY y:z 'foo'> ]><x/>")
+	(fxml:parse-rod "<!DOCTYPE x [ <!ENTITY y:z 'foo'> ]><x/>")
       (error () nil)
       (:no-error (&rest junk)
 	(declare (ignore junk))
@@ -259,7 +259,7 @@
 
 (deftest redefine-xml-namespace-1
   (handler-case
-      (cxml:parse-rod "<x xmlns:xml='http://www.w3.org/XML/1998/namespace'/>")
+      (fxml:parse-rod "<x xmlns:xml='http://www.w3.org/XML/1998/namespace'/>")
     (error () nil)
     (:no-error (&rest junk)
       (declare (ignore junk))
@@ -268,7 +268,7 @@
 
 (deftest redefine-xml-namespace-2
   (handler-case
-      (cxml:parse-rod "<x xmlns:xml='http://example.com/wrong-uri'/>")
+      (fxml:parse-rod "<x xmlns:xml='http://example.com/wrong-uri'/>")
     (error () t)
     (:no-error (&rest junk)
       (declare (ignore junk))
@@ -277,7 +277,7 @@
 
 (deftest redefine-xml-namespace-3
   (handler-case
-      (cxml:parse-rod "<x xmlns:wrong='http://www.w3.org/XML/1998/namespace'/>")
+      (fxml:parse-rod "<x xmlns:wrong='http://www.w3.org/XML/1998/namespace'/>")
     (error () t)
     (:no-error (&rest junk)
       (declare (ignore junk))
@@ -286,7 +286,7 @@
 
 (deftest redefine-xml-namespace-4
   (handler-case
-      (cxml:parse-rod "<x xmlns:wrong='http://www.w3.org/XML/1998/namespace'/>")
+      (fxml:parse-rod "<x xmlns:wrong='http://www.w3.org/XML/1998/namespace'/>")
     (error () t)
     (:no-error (&rest junk)
       (declare (ignore junk))
@@ -295,7 +295,7 @@
 
 (deftest redefine-xmlns-namespace-1
   (handler-case
-      (cxml:parse-rod "<x xmlns:xmlns='http://www.w3.org/2000/xmlns/'/>")
+      (fxml:parse-rod "<x xmlns:xmlns='http://www.w3.org/2000/xmlns/'/>")
     (error () t)
     (:no-error (&rest junk)
       (declare (ignore junk))
@@ -304,7 +304,7 @@
 
 (deftest redefine-xmlns-namespace-2
   (handler-case
-      (cxml:parse-rod "<x xmlns:xmlns='http://example.com/wrong-ns'/>")
+      (fxml:parse-rod "<x xmlns:xmlns='http://example.com/wrong-ns'/>")
     (error () t)
     (:no-error (&rest junk)
       (declare (ignore junk))
@@ -313,7 +313,7 @@
 
 (deftest redefine-xmlns-namespace-3
   (handler-case
-      (cxml:parse-rod "<x xmlns:wrong='http://www.w3.org/2000/xmlns/'/>")
+      (fxml:parse-rod "<x xmlns:wrong='http://www.w3.org/2000/xmlns/'/>")
     (error () t)
     (:no-error (&rest junk)
       (declare (ignore junk))
@@ -322,7 +322,7 @@
 
 (deftest redefine-xmlns-namespace-4
   (handler-case
-      (cxml:parse-rod "<x xmlns='http://www.w3.org/2000/xmlns/'/>")
+      (fxml:parse-rod "<x xmlns='http://www.w3.org/2000/xmlns/'/>")
     (error () t)
     (:no-error (&rest junk)
       (declare (ignore junk))

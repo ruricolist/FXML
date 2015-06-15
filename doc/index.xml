@@ -13,7 +13,7 @@
     </p>      
 
     <p>
-      CXML implements a <a
+      FXML implements a <a
       href="http://www.w3.org/TR/REC-xml-names/">namespace-aware</a>,
       validating <a
       href="http://www.w3.org/TR/2000/REC-xml-20001006">XML&#160;1.0</a>
@@ -25,9 +25,9 @@
 
     <p>
       Send bug reports to <a
-      href="mailto:cxml-devel@common-lisp.net">cxml-devel@common-lisp.net</a>
+      href="mailto:fxml-devel@common-lisp.net">fxml-devel@common-lisp.net</a>
       (<a
-      href="http://common-lisp.net/cgi-bin/mailman/listinfo/cxml-devel">list
+      href="http://common-lisp.net/cgi-bin/mailman/listinfo/fxml-devel">list
       information</a>).
     </p>
 
@@ -37,11 +37,11 @@
     </p>
     <ul style="list-style-type: square">
       <li>
-	<a href="http://www.lichteblau.com/cxml-rng/">cxml-rng</a>:
+	<a href="http://www.lichteblau.com/fxml-rng/">fxml-rng</a>:
 	Relax NG validation
       </li>
       <li>
-	<a href="http://www.lichteblau.com/cxml-stp/">cxml-stp</a>:
+	<a href="http://www.lichteblau.com/fxml-stp/">fxml-stp</a>:
 	STP, an alternative to DOM
       </li>
       <li>
@@ -66,7 +66,7 @@
 		border: solid #9c0000;
 		margin: 0em 2pt 1em 2em;
 		padding: 1em">
-      cxml and closure-common are now available from <b>git</b> instead of CVS.
+      fxml and closure-common are now available from <b>git</b> instead of CVS.
       Please refer to the <a href="installation.html#download">
       installation instructions</a> for details.
     </div>
@@ -85,10 +85,10 @@
 	existing support for 16 bit characters using UTF-16 (including
 	Allegro and LispWorks).  The feature <tt>rune-is-utf-16</tt> is
 	now set on 16 bit Lisps. Make sure to update and
-	recompile both cxml and closure-common when upgrading.
+	recompile both fxml and closure-common when upgrading.
       </li>
       <li>
-	New sink slot sink-omit-xml-declaration-p; functions cxml:unescaped
+	New sink slot sink-omit-xml-declaration-p; functions fxml:unescaped
 	and sax:unescaped.
       </li>
       <li>
@@ -149,7 +149,7 @@
 	Fixed build on non-Unicode lisps.  Fixed parsing on
 	non-Unicode lisps.  Fixed Unicode detection on OpenMCL.
       </li>
-      <li>New function <tt>cxml:parse</tt>.</li>
+      <li>New function <tt>fxml:parse</tt>.</li>
       <li>Serialization no longer defaults to canonical form.</li>
       <li>Fixed octet array argument to make-source.</li>
       <li>
@@ -165,16 +165,16 @@
 	where normal streams are used instead of xstreams and ystreams
 	(albeit both SCL-specific at this point).
       </li>
-      <li>new convenience serialization function cxml:doctype.  Various
+      <li>new convenience serialization function fxml:doctype.  Various
 	DTD serialization fixes.</li>
     </ul>
     <p class="nomargin"><tt>rel-2007-05-26</tt></p>
     <ul class="nomargin">
-      <li>cxml.asd has been split up into <tt>cxml.asd</tt> for the
+      <li>fxml.asd has been split up into <tt>fxml.asd</tt> for the
       XML parser and <tt>runes.asd</tt> for the runes package, in
-      preparation of a complete split of the two systems.  Future CXML
+      preparation of a complete split of the two systems.  Future FXML
       releases will use separate tarballs for <tt>runes</tt>
-      and <tt>cxml</tt>.</li>
+      and <tt>fxml</tt>.</li>
       <li>xml:base support (SAX and Klacks only, not yet used in DOM).
       See documentation <a href="sax.html#saxparser">here</a> and <a
       href="klacks.html#locator">here</a>.</li>
@@ -251,7 +251,7 @@
     </ul>
     <p class="nomargin"><tt>patch-204</tt></p>
     <ul class="nomargin">
-      <li>Renamed package <tt>XML</tt> to <tt>CXML</tt>.</li>
+      <li>Renamed package <tt>XML</tt> to <tt>FXML</tt>.</li>
       <li>The unparse functions support non-canonical output now.</li>
     </ul>
     <p class="nomargin"><tt>patch-191</tt> (2004-03-18)</p>

@@ -16,7 +16,7 @@
 	<title>
 	  <xsl:value-of select="@title"/>
 	</title>
-	<link rel="stylesheet" type="text/css" href="cxml.css"/>
+	<link rel="stylesheet" type="text/css" href="fxml.css"/>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
       </head>
       <body>

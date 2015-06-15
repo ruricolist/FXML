@@ -1,7 +1,7 @@
-<documentation title="CXML W3C DOM">
+<documentation title="FXML W3C DOM">
   <h1>W3C DOM</h1>
   <p>
-    CXML implements the DOM Level 2 Core interfaces.&#160; For details
+    FXML implements the DOM Level 2 Core interfaces.&#160; For details
     on DOM, please refer to the <a
 				   href="http://www.w3.org/TR/DOM-Level-2-Core/core.html">specification</a>.
   </p>
@@ -12,9 +12,9 @@
     To parse an XML document into a DOM tree, use the SAX parser with a
     DOM builder as the SAX handler.  Example:
   </p>
-  <pre>(cxml:parse-file "test.xml" (cxml-dom:make-dom-builder))</pre>
+  <pre>(fxml:parse-file "test.xml" (fxml-dom:make-dom-builder))</pre>
   <p>
-    <div class="def">Function CXML-DOM:MAKE-DOM-BUILDER ()</div>
+    <div class="def">Function FXML-DOM:MAKE-DOM-BUILDER ()</div>
     Create a SAX handler which builds a DOM document.
     <p>
     </p>
@@ -95,7 +95,7 @@
       in CORBA IDL</a>, but it refrains from using object-oriented IDL
     features, allowing for a much more natural Lisp implemenation than
     the the ordinary IDL/Lisp mapping would.&#160;
-    Differences between CXML's DOM and the direct IDL/Lisp mapping:
+    Differences between FXML's DOM and the direct IDL/Lisp mapping:
   </p>
   <ul>
     <li>
@@ -108,7 +108,7 @@
     </li>
     <li>
       Although most IDL interfaces are implemented as CLOS classes by
-      CXML, the Lisp types of DOM objects is not documented and cannot
+      FXML, the Lisp types of DOM objects is not documented and cannot
       be relied upon.&#160; A node's type can be determined using
       <tt>dom:node-type</tt> instead.
     </li>
@@ -120,7 +120,7 @@
       The IDL/Lisp mapping maps CORBA enums to Lisp keywords.&#160;
       Unfortunately, the DOM IDL does not use enums.&#160; Instead,
       both exception types and node types are defined integer
-      constants.&#160; CXML chooses to ignore this definition and uses
+      constants.&#160; FXML chooses to ignore this definition and uses
       keywords instead.
     </li>
     <li>
@@ -138,7 +138,7 @@
       <tt>NodeList</tt> is specified to reflect changes done after a
       node list was created, so node lists cannot be Lisp lists.&#160;
       (A node list could be implemented as a CLOS object pointing to
-      said list though.)&#160; Instead, CXML currently implements node
+      said list though.)&#160; Instead, FXML currently implements node
       lists as adjustable vectors.&#160; Note that code which relies on
       this implementation and uses Lisp sequence functions
       instead of sticking to <tt>dom:item</tt> and <tt>dom:length</tt>
