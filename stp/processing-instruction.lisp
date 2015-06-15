@@ -76,7 +76,7 @@
 
 (defmethod (setf data) :around (newval (node processing-instruction))
   (unless newval (setf newval ""))
-  (unless (xml-characters-p newval)
+  (unless (fxml:xml-characters-p newval)
     (stp-error "Processing instruction data includes characters that ~
                 cannot be represented in XML at all: ~S"
 	       newval))

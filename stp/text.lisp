@@ -50,7 +50,7 @@
 
 (defmethod (setf data) :around (newval (node text))
   (unless newval (setf newval ""))
-  (unless (xml-characters-p newval)
+  (unless (fxml:xml-characters-p newval)
     (stp-error "text includes characters that cannot be ~
                 represented in XML at all: ~S"
 	       newval))

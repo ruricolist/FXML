@@ -11,7 +11,7 @@
    ;; meta
    #:xml-character-p
    #:xml-characters-p
-   #:name-start-run-p
+   #:name-start-rune-p
    #:name-rune-p
    #:nc-name-p
    

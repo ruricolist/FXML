@@ -251,7 +251,7 @@
     (when c			  ;nothing to delete if not a vector yet
       (if from-end
 	  (let ((i (1- end)))
-	    (fxml::while (and (>= i start) (plusp count))
+	    (loop while (and (>= i start) (plusp count)) do
 	      (let ((loser (elt c i)))
 		(when (funcall predicate (funcall key loser))
 		  (check-deletion-allowed parent loser i)
