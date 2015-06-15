@@ -1,0 +1,481 @@
+<tutorial>
+  <page title="STP"
+	description="About STP">
+    <spacy-list>
+      <li>
+	Data structure for well-formed XML documents
+	<div style="margin-top: 5px">
+	  (Real namespace support built in from the start)
+	</div>
+      </li>
+    </spacy-list>
+    <spacy-list>
+      <li>Designed for Common Lisp</li>
+    </spacy-list>
+    <spacy-list>
+      <li>
+	Alternative to DOM, inspired by XOM
+	<div style="margin-top: 5px">
+	  More TIMTOWTDI than XOM
+	</div>
+      </li>
+    </spacy-list>
+  </page>
+
+  <page title="XML to STP and back"
+	description="Parsing and serializing">
+    Parsing into STP:
+    <example title="To parse into STP, use an STP builder together with a
+		   function generating SAX events:">
+      <code>(<b>cxml:parse</b> #p"example.xml" (<a
+						    href="doc/pages/cxml-stp__make-builder.html"><b>stp:make-builder</b></a>))</code>
+    </example>
+    <br/>
+    Serializing back into XML:
+    <example title="Serialize STP by sending SAX events for the tree to a
+		   sink:">
+      <code>(<a href="doc/pages/cxml-stp__serialize.html"
+	      ><b>stp:serialize</b></a> * (cxml:make-character-stream-sink *standard-output*))</code>
+    </example>
+  </page>
+
+  <page title="Class Hierarchy">
+    Everything is a <em>node</em>.
+    <br/>
+    <br/>
+    Subclasses that can have children:
+    <ul>
+      <li><em>document</em></li>
+      <li><em>element</em></li>
+    </ul>
+    <br/>
+    Leaf nodes:
+    <ul>
+      <li><em>comment</em></li>
+      <li><em>document-type</em></li>
+      <li><em>processing-instruction</em></li>
+      <li><em>text</em></li>
+    </ul>
+    <br/>
+    Attributes neither <i>have</i> nor <i>are</i> children.  They belong
+    to an element:
+    <ul>
+      <li><em>attribute</em></li>
+    </ul>
+  </page>
+
+  <page title="Node"
+	description="The superclass">
+    All nodes have a parent slot (can be nil)
+    <code>(defclass <b>node</b> ()
+  ((parent :reader <b>parent</b>)))</code>
+    <br/>
+    ... and a base URI.
+    <code>(defgeneric <b>base-uri</b> (node))</code>
+  </page>
+
+  <page title="Hidden slots"
+	description="Parent nodes and their children">
+    Elements and documents have children.
+    <br/>
+    <br/>
+    But exposing the child list leads to trouble when users modify it
+    without updating <tt>parent</tt> slots.  Documenting the sequence type
+    prohibits optimizations.
+    <br/>
+    <br/>
+    <em>That's why we hide the children:</em>
+    <br/>
+    <code>(defclass <b>parent-node</b> (node)
+  (...secret...))
+
+(defgeneric <b>map-children</b> (result-type function node))</code>
+  </page>
+
+  <page title="More Children"
+	description="Convenience functions">
+    Convenience functions to work with children:
+<code>(defun <b>list-children</b> (node) ...) => fresh list
+
+(defmacro <b>do-children</b> ((var node &amp;optional result) &amp;body body) ...)</code>
+    <br/>
+    Also: nth-child, first-child, last-child, previous-sibling, next-sibling
+    <br/>
+    <br/>
+    In addition, lots of sequence-like functions are provided:
+    <code>(defun <b>find-child</b> (value parent &amp;key from-end start end key test) ...)</code>
+    <ul>
+      <li>find-child[-if]</li>
+      <li>count-children[-if]</li>
+      <li>child-position[-if]</li>
+      <li>filter-children</li>
+    </ul>
+  </page>
+
+  <page title="Grandchildren, too"
+	description="Recursive functions">
+    DOM has <tt>getElementsByTagName("foo")</tt>.
+    <br/>
+    <br/>
+    We have:
+    <code>(defun <b>map-recursively</b> (fn node) ...)
+(defmacro <b>do-recursively</b> ((var node &amp;optional result) &amp;body body) ...)
+
+(defun <b>find-recursively</b> (item node &amp;key key test) ...)
+(defun <b>filter-recursively</b> (test node &amp;key key))</code>
+    <br/>
+    Try this:
+    <example title='getElementsByTagNameNS("foo", "")'>
+      <code>(stp:filter-recursively (stp:of-name "foo") node)</code>
+    </example>
+  </page>
+
+  <page title="Adopting and Disowning"
+	description="Changing the node hierarchy">
+    Adopting:
+    <code>(defun <b>insert-child</b> (parent child position))
+(defun <b>insert-child-after</b> (parent new-child ref-child) ....)
+(defun <b>insert-child-before</b> (parent new-child ref-child) ...)
+(defun <b>append-child</b> (parent child) ...)
+(defun <b>prepend-child</b> (parent child) ...)</code>
+    <br/>
+    Disowning:
+    <code>
+(defun <b>delete-child-if</b> (predicate parent &amp;rest args &amp;key from-end start end count key))
+(defun <b>delete-nth-child</b> (idx parent) ...)
+(defun <b>delete-child</b> (child parent &amp;key from-end test start end count key) ...)
+(defun <b>delete-children</b> (parent) ...)</code>
+    <br/>
+    In one step (for well-formedness):
+    <code>(defun <b>replace-child</b> (parent new-child old-child) ...)</code>
+  </page>
+
+  <page title="Elements">
+    Four names for the price of three:
+    <code>(defclass <b>element</b> (parent-node)
+  ((local-name    :accessor <b>local-name</b>)
+   (prefix        :accessor <b>namespace-prefix</b>)
+   (namespace-uri :accessor <b>namespace-uri</b>)))
+
+(defun <b>qualified-name</b> (node) ...)</code>
+    <br/>
+    Rename using <tt>setf</tt>.
+    <br/>
+    <br/>
+    <em>Hidden slots:</em> attributes and extra namespaces.
+  </page>
+
+  <page title="Elements (2)"
+	description="Example">
+    <example title="Making an element (no namespace)">
+      <repl>CL-USER> (stp:make-element "list")</repl>
+      <result>#.(STP:ELEMENT :LOCAL-NAME "list")</result>
+    </example>
+    <br/>
+    Namespace URI is an optional argument:
+    <br/>
+    <example title="Making an element (with namespace)">
+      <repl>CL-USER> (stp:make-element "z:list" "http://namespace")</repl>
+      <result>
+#.(STP:ELEMENT
+   :LOCAL-NAME "list"
+   :NAMESPACE-PREFIX "z"
+   :NAMESPACE-URI "http://namespace")</result>
+    </example>
+  <br/>
+  It's always <em>Name</em> and <em>URI</em> in that order.
+  <br/>
+  <br/>
+  URI defaults to <tt>""</tt>.
+  </page>
+
+  <page title="Attributes">
+    Leaf node with name and value.
+    <code>(defclass <b>attribute</b> (node)
+  ((<b>local-name</b>    :accessor local-name)
+   (<b>prefix</b>        :reader namespace-prefix)
+   (<b>namespace-uri</b> :reader namespace-uri)
+   (<b>value</b>         :accessor value)))
+
+(defun <b>rename-attribute</b> (attribute prefix uri) ...)</code>
+    <br/>
+    Note renaming protocol to change prefix and URI
+    simultaneously.
+  </page>
+
+  <page title="Attributes (2)"
+	description="Attribute nodes">
+    Asking an element for its attribute nodes:
+    <code>(defun <b>list-attributes</b> (element) ...)
+
+(defun <b>add-attribute</b> (element attribute) ...)
+(defun <b>remove-attribute</b> (element attribute) ...)
+
+(defun <b>find-attribute-named</b> (element name &amp;optional (uri "")) ...)
+(defun <b>find-attribute-if</b> (test element) ...)</code>
+  </page>
+
+  <page title="Accessing attribute values directly">
+    Accessing values without going through <tt>attribute</tt> nodes:
+    <example title="">
+      <code>
+(defun <b>attribute-value</b> (element name &amp;optional uri) ...)
+(defun <b>(setf attribute-value)</b> (newval element name &amp;optional uri) ...)</code>
+    </example>
+    <br/>
+    <tt>with-attributes</tt> is like <tt>with-accessors</tt>:
+    <example title="with-attributes">
+      <repl>(let ((e (stp:document-element
+	  (cxml:parse "&lt;foo a='quux'/>" (stp:make-builder)))))
+  (<b>stp:with-attributes ((a "a") (b "x:b" "http://foo")) e</b>
+    (setf b (concatenate 'string ".oO(" a ")"))
+    e))</repl>
+      <result>#.(CXML-STP:ELEMENT
+   :ATTRIBUTES '(#.(CXML-STP:ATTRIBUTE
+                    :VALUE ".oO(quux)"
+                    :LOCAL-NAME "b"
+                    :NAMESPACE-PREFIX "x"
+                    :NAMESPACE-URI "http://foo")
+                 #.(CXML-STP:ATTRIBUTE
+                    :VALUE "1"
+                    :LOCAL-NAME "a"))
+   :LOCAL-NAME "foo")</result>
+    </example>
+  </page>
+
+  <page title="make-attribute"
+	description="Example">
+    Value comes first because URI is optional argument:
+    <example title="Making an attribute node">
+      <repl>CL-USER> (stp:make-attribute "123"
+                             "a:defaultValue"
+                             "http://relaxng.org/ns/compatibility/annotations/1.0")</repl>
+      <result>
+#.(STP:ATTRIBUTE
+   :VALUE "123"
+   :LOCAL-NAME "defaultValue"
+   :NAMESPACE-PREFIX "a"
+   :NAMESPACE-URI "http://relaxng.org/ns/compatibility/annotations/1.0")</result>
+    </example>
+    <br/>
+    Without namespace:
+    <example title="Making an attribute node (without namespace)">
+      <repl>CL-USER> (stp:make-attribute "123" "defaultValue")</repl>
+      <result>
+#.(STP:ATTRIBUTE
+   :VALUE "123"
+   :LOCAL-NAME "defaultValue"></result>
+    </example>
+  </page>
+
+  <page title="Namespaces: No xmlns attributes"
+	description="Namespaces declared implicitly">
+    Namespaces are declared implicitly.
+    <br/>
+    <br/>
+    Example (note absence of attributes named <tt>xmlns</tt>):
+    <example title="Namespaces are declared implicitly">
+      <repl>&lt;element xmlns="http://relaxng.org/ns/structure/1.0"
+	 xmlns:foo="http://foo"
+	 name="foo"
+	 foo:annotation="bar">
+  &lt;empty/>
+&lt;/element></repl>
+      <result>#.(STP:ELEMENT
+   :LOCAL-NAME "element"
+   :NAMESPACE-URI "http://relaxng.org/ns/structure/1.0"
+   :ATTRIBUTES '(#.(<b>STP:ATTRIBUTE</b>
+                    :LOCAL-NAME "name"
+                    :VALUE "foo")
+                 #.(<b>STP:ATTRIBUTE</b>
+                    :LOCAL-NAME "annotation"
+                    :NAMESPACE-PREFIX "foo"
+                    :NAMESPACE-URI "http://foo"
+                    :VALUE "bar"))
+   <span style="color: #aaaaaa">:CHILDREN ... uninteresting child nodes elided ...</span>)</result>
+    </example>
+  </page>
+
+  <page title="Namespaces checked strictly">
+    STP represents namespace-well-formed documents.
+    <br/>
+    <br/>
+    <example title="Well-formed namespaces">
+      <repl>(let ((e (stp:make-element           "a:foo" "http://a"))
+      (a (stp:make-attribute "value" "b:bar" "http://b")))
+  (stp:add-attribute e a))</repl>
+      <result>Okay</result>
+    </example>
+    <br/>
+    Conflicting declarations on the same element are forbidden.
+    <example title="Namespaces not well-formed">
+      <repl>(let ((e (stp:make-element           "<b>a</b>:foo" "http://a"))
+      (a (stp:make-attribute "value" "a:bar" "<b>http://b</b>")))
+  (stp:add-attribute e a))</repl>
+      <result><b>Error: namespace collision with element</b></result>
+    </example>
+  </page>
+
+  <page title="Extra Namespaces"
+	description="Namespaces declared explicitly">
+    Sometimes namespaces are referenced where we can't tell:
+    <code>&lt;report xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xsl:version="1.0"
+	xmlns:<b>xhtml</b>="http://www.w3.org/1999/xhtml">
+  &lt;xsl:for-each select="//<b>xhtml</b>:p">
+    Paragraph found! 
+  &lt;/xsl:for-each>
+&lt;/report></code>
+    <br/>
+    Those namespaces can be declared explicitly.
+    <code>(defun add-extra-namespace (element prefix uri) ...)
+(defun remove-extra-namespace (element prefix) ...)
+(defun find-extra-namespace (prefix element) ...)
+(defun map-extra-namespaces (fn element) ...)</code>
+
+  </page>
+
+  <page title="Documents">
+    Create using <tt>make-document</tt>:
+    <br/>
+    <repl>CL-USER> (stp:make-document (stp:make-element "list"))</repl>
+    <result>#.(STP:DOCUMENT
+   :CHILDREN '(#.(STP:ELEMENT
+                  #| :PARENT of type DOCUMENT |#
+                  :LOCAL-NAME "list")))</result>
+    Children: May have <em>at most one document-type</em>, and
+    must have <em>exactly one element</em> as a child (<em>in this
+      order</em>). May also have comments and processing-instructions
+    anywhere.
+    <br/>
+    <br/>
+    Properties (and their <tt>setf</tt> functions):
+    <ul>
+      <li>
+	<tt>document-element</tt>: Returns (replaces) the child that
+	is an element.
+      </li>
+      <li>
+	<tt>document-type</tt>: Returns (adds or replaces) the child that
+	is a document-type, if any.
+      </li>
+    </ul>
+  </page>
+
+  <page title="Easy Classes"
+	description="comment, text, processing-instruction">
+    Text nodes are the <i>chit-chat</i> in <tt>&lt;p>chit-chat&lt;/p></tt>.
+    <example title="Text nodes">
+      <repl>CL-USER> (stp:make-text "chit-chat")</repl>
+      <result>#.(STP:TEXT :DATA "chit-chat")</result>
+    </example>
+    <tt>&lt;!--Ich bin ein Blindtext.--&gt;</tt> is preserved by the parser
+    as a node, too.
+    <example title="Comment nodes">
+      <repl>CL-USER> (stp:make-comment "Ich bin ein Blindtext.")</repl>
+      <result>#.(STP:COMMENT :DATA "Ich bin ein Blindtext.")</result>
+    </example>
+    <example title="Processing instruction nodes">
+      <tt>&lt;?xml-stylesheet type='text/xsl' href='style.xsl'?&gt;</tt>
+      <repl>CL-USER> (stp:make-processing-instruction "xml-stylesheet" "type='text/xsl' href='style.xsl'")</repl>
+      <result>#.(STP:PROCESSING-INSTRUCTION
+   :DATA "type='text/xsl' href='style.xsl'"
+   :TARGET "xml-stylesheet")</result>
+    </example>
+  </page>
+  
+  <page title="document-type">
+    Optional child of <tt>document</tt>.
+    <code>(defclass <b>document-type</b> (leaf-node)
+  ((<b>root-element-name</b> :accessor root-element-name)
+   (<b>system-id</b>         :accessor system-id)
+   (<b>public-id</b>         :accessor public-id)
+   (<b>internal-subset</b>   :accessor internal-subset)))</code>
+    <br/>
+    Records what DTD the document <i>claims</i> to be following.<br/>
+    <ul>
+      <li>STP checks for well-formedness, not validity.</li>
+      <li>Internal subset only preserved as a string for serialization.</li>
+      <li>
+	Entities and notations not represented as objects.
+	(Nobody cares.)
+	<ul>
+	  <li>
+	    But documentation of cxml's entire DTD structure forthcoming.
+	  </li>
+	</ul>
+      </li>
+    </ul>
+  </page>
+
+  <page title="MORE STRICTNESS"
+	description="Other well-formedness checks">
+    Some examples for well-formedness checks:
+    <example title="Not all strings are allowed as comments">
+      <repl>CL-USER> (stp:make-comment "verboten: --")</repl>
+      <result>Error: forbidden -- in comment</result>
+    </example>
+    <example title="Names must follow the XML grammar">
+      <repl>CL-USER> (stp:make-element "1eadingdigit")</repl>
+      <result>Error: not an NCName: 1eadingdigit</result>
+    </example>
+    <example title="Mild protection against bogus argument order">
+      <repl>CL-USER> (stp:make-element "html" "oops")</repl>
+      <result>WARNING: namespace URI does not look like an absolute URL: "oops"</result>
+    </example>
+    <example title="The XMLDecl is not a processing instruction">
+      <repl>CL-USER> (stp:make-processing-instruction "xml" "version='1.0'")</repl>
+      <result>Error: attempt to pretend that a PI is an XMLDecl</result>
+    </example>
+  </page>
+
+  <page title="SERIALIZE examples">
+    STP to DOM:
+    <example title="Convert STP to DOM">
+      <repl>CL-USER> (<b>stp:serialize</b> document (<b>cxml-dom:make-dom-builder</b>))</repl>
+      <result>#&lt;RUNE-DOM::DOCUMENT {1005A421F1}></result>
+    </example>
+    STP to xmls-style lists:
+    <example title="Convert STP to DOM">
+      <repl>CL-USER> (<b>stp:serialize</b> document (<b>cxml-xmls:make-xmls-builder</b>))</repl>
+      <result>(("x" . "") NIL)</result>
+    </example>
+    Relax NG validation:
+    <example title="Validate against Relax NG schema">
+      <repl>CL-USER> (let ((schema (cxml-rng:parse-compact #p"/home/david/demo.rnc")))
+	   (<b>stp:serialize</b> document (<b>cxml-rng:make-validator schema</b>)))</repl>
+      <result>Error: element example () not valid,
+was expecting an element named "demo", in the namespace ""
+   [Condition of type CXML-RNG:RNG-ERROR]</result>
+    </example>
+  </page>
+
+  <page title="Printed representation">
+    Structure-like output for copy&amp;paste in the REPL
+    <repl>CL-USER> (stp:make-document (stp:make-element "list"))</repl>
+    <result>#.(STP:DOCUMENT
+   :CHILDREN '(#.(STP:ELEMENT
+                  #| :PARENT of type DOCUMENT |#
+                  :LOCAL-NAME "list")))</result>
+    <ul>
+      <li>Uses #. to avoid changing the global readtable</li>
+      <li>
+	Private constructor functions for debugging purposes only.  In
+	source code, use the documented <tt>make-</tt><i>foo</i>
+	functions instead.
+      </li>
+      <li>
+	Syntax subject to change without notice
+      </li>
+    </ul>
+  </page>
+
+  <page title="STP for Closure XML">
+    <br/>
+    <br/>
+    <br/>
+    <a href="http://www.lichteblau.com/cxml-stp/">
+      http://www.lichteblau.com/cxml-stp/
+    </a>
+  </page>
+</tutorial>

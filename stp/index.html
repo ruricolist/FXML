@@ -1,0 +1,125 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>
+	  cxml-stp
+	</title>
+<link rel="stylesheet" type="text/css" href="index.css">
+</head>
+<body style="width: 62em">
+<div id="header"><div style="margin-left: 30px"><b><span>cxml–</span><span style="color: #55a6e0">stp</span></b></div></div>
+<div id="homepage" class="main">
+  <p>
+    A data structure for well-formed XML documents, designed for Common
+    Lisp.
+  </p>
+
+  <h3>About</h3>
+
+  <p>
+    cxml-stp is an alternative to the
+    W3C's <a href="http://common-lisp.net/project/cxml/dom.html">DOM</a>,
+    which cxml also implements.  It was written
+    by <a href="mailto:david@lichteblau.com">David Lichteblau</a> as an
+    add-on library for
+    <a href="http://common-lisp.net/project/cxml">Closure XML</a> and is
+    available under an X11-style license.
+  </p>
+  <p>
+    Please send bug reports
+    to <a href="mailto:cxml-devel@common-lisp.net">
+      cxml-devel@common-lisp.net</a>
+    (<a href="http://common-lisp.net/cgi-bin/mailman/listinfo/cxml-devel">list information</a>).
+  </p>
+  <p>
+    <i>Acknowledgements:</i>
+    cxml-stp is inspired by <a href="http://www.xom.nu/">XOM</a>.
+  </p>
+  <h3>Download</h3>
+  <p>
+    Download a
+    <a href="http://www.lichteblau.com/cxml-stp/download/">tarball</a>.
+  </p>
+
+  <h3>Installation</h3>
+  <p>
+    cxml-stp needs
+    <a href="http://common-lisp.net/project/cxml">Closure XML</a>,
+    <a href="http://common-lisp.net/project/alexandria/">Alexandria</a>,
+    and <a href="http://common-lisp.net/project/plexippus-xpath/">Plexippus
+      XPath</a>.
+  </p>
+  <p>
+    <a href="http://www.cliki.net/asdf">ASDF</a> is used for
+    compilation.  Register the .asd file, e.g. by symlinking it,
+    then compile cxml-stp using <tt>asdf:operate</tt>.
+  </p>
+  <pre>$ ln -sf `pwd`/cxml-stp.asd /path/to/your/registry/
+* (asdf:operate 'asdf:load-op :cxml-stp)</pre>
+  <p>
+    <i>Implementation-specific notes:</i>
+    At this point, cxml-stp is written to work with Lisp strings
+    (as opposed to runes and rods), and is meant to be used on
+    Lisp implementations with Unicode support.
+  </p>
+
+  <h3>Documentation</h3>
+  <p>
+    <span style="font-size: 12pt">⬗</span> <a href="tutorial/index.html">Tutorial</a>
+  </p>
+  <p>
+    <span style="font-size: 12pt">⬗</span> <a href="tutorial/examples.html">Code</a> snippets
+    from the tutorial collected on one page
+  </p>
+  <p>
+    <span style="font-size: 12pt">⬗</span> <a href="doc/pages/cxml-stp.html">API documentation</a>
+  </p>
+  <p>
+    There is also a rough "STP for DOM
+    users" <a href="DOM-COMPARISON">comparison</a> which should be
+    useful if you have a specific DOM function in mind and are looking
+    for STP's equivalent.
+  </p>
+
+  <h3>Recent changes</h3>
+  <p><b>2008-11-30</b></p>
+  <ul>
+    <li>
+      XPath support.  (Thanks to Ivan Shvedunov for his contributions.)
+    </li>
+    <li>
+      Use 21 bit characters on Lisps offering them.
+    </li>
+    <li>
+      New function NUMBER-OF-CHILDREN.
+    </li>
+    <li>
+      Fixed FILTER-CHILDREN to return a list, not a vector.
+    </li>
+    <li>
+      Shortcut syntax using symbol in WITH-ATTRIBUTE (thanks to Cyrus Harmon).
+    </li>
+    <li>
+      Minor changes: Disabled uri syntax warnings.  Represent uris as
+      strings, not puri objects.
+    </li>
+  </ul>
+  <p><b>2007-10-21</b></p>
+  <ul>
+    <li>
+      New function FIND-RECURSIVELY-IF.
+    </li>
+    <li>
+      Minor changes: Update to current CXML's SAX builders.
+    </li>
+  </ul>
+  <p><b>2007-08-05</b></p>
+  <ul>
+    <li>
+      Initial public release. 
+    </li>
+  </ul>
+</div>
+</body>
+</html>

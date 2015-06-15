@@ -1,0 +1,135 @@
+-*- indent-tabs: nil -*- 
+
+DOM Interface                 STP Class
+========================================================================
+Attr                          ATTRIBUTE
+Comment                       COMMENT
+Document                      DOCUMENT
+DocumentType                  DOCUMENT-TYPE
+Element                       ELEMENT
+Node                          NODE
+ProcessingInstruction         PROCESSING-INSTRUCTION
+Text                          TEXT
+
+CDATASection                  none
+CharacterData                 none (TEXT and COMMENT are disjoint)
+DocumentFragment              none (use DOCUMENT)
+DOMImplementation             none
+Entity                        none (but recorded in INTERNAL-SUBSET)
+EntityReference               none
+NamedNodeMap                  none (see FIND-ATTRIBUTE, LIST-ATTRIBUTES)
+NodeList                      none (see MAP-CHILDREN, LIST-CHILDREN)
+Notation                      none (but recorded in INTERNAL-SUBSET)
+
+Type checks
+========================================================================
+ELEMENT_NODE                  [ none, use TYPEP or TYPE-OF instead
+ATTRIBUTE_NODE                  .
+TEXT_NODE                       .
+CDATA_SECTION_NODE              .
+ENTITY_REFERENCE_NODE           .
+ENTITY_NODE                     .
+PROCESSING_INSTRUCTION_NODE     .
+COMMENT_NODE                    .
+DOCUMENT_NODE                   .
+DOCUMENT_TYPE_NODE              .
+DOCUMENT_FRAGMENT_NODE          .
+NOTATION_NODE                   . ]
+
+Methods
+========================================================================
+DOMImplementation.hasFeature            none
+DOMImplementation.createDocumentType    [ not a method ]  MAKE-DOCUMENT-TYPE
+DOMImplementation.createDocument        [ not a method ]  MAKE-DOCUMENT
+Node.nodeName                           not a method on NODE
+Node.nodeValue                          vaguely similar: VALUE
+Node.nodeType                           none (use TYPEP and TYPE-OF instead)
+Node.parentNode                         PARENT (node)
+Node.childNodes                         none (see MAP-CHILDREN, LIST-CHILDREN)
+Node.firstChild                         FIRST-CHILD
+Node.lastChild                          LAST-CHILD
+Node.previousSibling                    PREVIOUS-SIBLING
+Node.nextSibling                        NEXT-SIBLING
+Node.attributes                         [none, especially not on NODE]
+                                          but see class ELEMENT, functions
+                                          FIND-ATTRIBUTE, LIST-ATTRIBUTES
+Node.ownerDocument                      DOCUMENT
+Node.insertBefore                       [method on PARENT-NODE, not NODE]
+                                          INSERT-BEFORE, INSERT-AFTER,
+                                          INSERT-CHILD, ...
+Node.replaceChild                       [method on PARENT-NODE, not NODE]
+                                          REPLACE-CHILD, REPLACE-CHILDREN
+Node.removeChild                       [method on PARENT-NODE, not NODE]
+                                          DELETE-CHILD, DELETE-CHILD-IF,
+                                          DELETE-NTH-CHILD
+Node.appendChild                       [method on PARENT-NODE, not NODE]
+                                          APPEND-CHILD, PREPEND-CHILD
+Node.normalize                         not yet
+Node.isSupported                       none
+Node.namespaceURI                      [method on ATTRIBUTE/ELEMENT, not NODE]
+                                         NAMESPACE-URI
+Node.prefix                            [method on ATTRIBUTE/ELEMENT, not NODE]
+                                         NAMESPACE-PREFIX
+Node.localName                         [method on ATTRIBUTE/ELEMENT, not NODE]
+                                         LOCAL-NAME
+Node.hasAttributes                     not yet (seems uninteresting?)
+NodeList.item                          [method on NODE, not NodeList]
+                                         NTH-CHILD
+NodeList.length                        [method on NODE, not NodeList]
+                                         COUNT-CHILDREN, COUNT-CHILDREN-IF
+NameNodeMap.*                          see various ATTRIBUTE-related functions
+CharacterData.data                     [method on TEXT/COMMENT]
+                                         DATA
+CharacterData.length                   none (use DATA and LENGTH)
+CharacterData.substringData            none (use DATA and SUBSEQ)
+CharacterData.appendData               none (use (SETF DATA) and CONCATENATE)
+CharacterData.insertData               none (use (SETF DATA) and REPLACE)
+CharacterData.deleteData               none (use (SETF DATA) and REPLACE)
+CharacterData.replaceData              none (use (SETF DATA) and REPLACE)
+Attr.name                              QUALIFIED-NAME
+Attr.specified                         none
+Attr.value                             VALUE
+Attr.ownerElement                      none, use PARENT
+Element.tagName                        QUALIFIED-NAME
+Element.getAttribute                   ATTRIBUTE-VALUE
+Element.setAttribute                   (SETF ATTRIBUTE-VALUE)
+Element.removeAttribute                none, use REMOVE-ATTRIBUTE
+                                         with FIND-ATTRIBUTE-NAMED
+Element.getAttributeNode               FIND-ATTRIBUTE-NAMED, FIND-ATTRIBUTE-IF
+Element.setAttributeNode               ADD-ATTRIBUTE
+Element.removeAttributeNode            REMOVE-ATTRIBUTE
+Element.hasAttribute                   FIND-ATTRIBUTE, FIND-ATTRIBUTE-IF
+Element.getAttributeNS                 [ see above, we /only/ have functions
+Element.setAttributeNS                   with namespace support
+Element.removeAttributeNS                .
+Element.getAttributeNodeNS               .
+Element.setAttributeNodeNS               .
+Element.removeAttributeNodeNS            .
+Element.hasAttributeNS                   . ]
+Text.splitText                         not (yet?)
+DocumentType.name                      ROOT-ELEMENT-NAME
+DocumentType.entities                  none, use INTERNAL-SUBSET
+DocumentType.notations                 none, use INTERNAL-SUBSET
+DocumentType.publicId                  PUBLIC-ID
+DocumentType.systemId                  SYSTEM-ID
+DocumentType.internalSubset            INTERNAL-SUBSET
+ProcessingInstruction.target           TARGET
+ProcessingInstruction.data             DATA
+Document.doctype                       DOCUMENT-TYPE
+Document.implementation                none
+Document.documentElement               DOCUMENT-ELEMENT
+Document.createElement                 [ not a method ] MAKE-ELEMENT
+Document.createDocumentFragment        none, use MAKE-DOCUMENT
+Document.createTextNode                [ not a method ] MAKE-TEXT
+Document.createComment                 [ not a method ] MAKE-COMMENT
+Document.createCDATASection            none
+Document.createProcessingInstruction   [ not a method ]
+                                         MAKE-PROCESSING-INSTRUCTION
+Document.createAttribute               [ not a method ] MAKE-ATTRIBUTE
+Document.createEntityReference         none
+Document.getElementsByTagName          (FILTER-RECURSIVELY (OF-NAME "x") node)
+Document.importNode                    COPY
+Document.createElementNS               [ see above, we /only/ have functions
+Document.createAttributeNS               with namespace support
+Document.getElementsByTagNameNS          ]
+Document.getElementById                not yet
