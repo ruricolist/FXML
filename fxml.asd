@@ -44,7 +44,7 @@
     (let (#+sbcl (*compile-print* nil))
       (call-next-method))))
 
-(asdf:defsystem :fxml-xml
+(asdf:defsystem :fxml/xml
     :default-component-class closure-source-file
     :pathname "xml/"
     :components
@@ -87,7 +87,7 @@
                                     :closure-common-system))))
     (call-next-method)))
 
-(asdf:defsystem :fxml-dom
+(asdf:defsystem :fxml/dom
     :default-component-class closure-source-file
     :pathname "dom/"
     :components
@@ -99,9 +99,9 @@
      #+rune-is-integer
      (utf8dom-file utf8-builder :pathname "dom-builder" :depends-on (utf8-impl))
      (:file "dom-sax"         :depends-on ("package")))
-    :depends-on (:fxml-xml))
+    :depends-on (:fxml/xml))
 
-(asdf:defsystem :fxml-klacks
+(asdf:defsystem :fxml/klacks
     :default-component-class closure-source-file
     :pathname "klacks/"
     :serial t
@@ -110,18 +110,18 @@
      (:file "klacks")
      (:file "klacks-impl")
      (:file "tap-source"))
-    :depends-on (:fxml-xml))
+    :depends-on (:fxml/xml))
 
-(asdf:defsystem :fxml-test
+(asdf:defsystem :fxml/test
   :default-component-class closure-source-file
   :pathname "test/"
   :serial t
   :perform (test-op (o c) (uiop:symbol-call :fxml.test :run-tests))
   :components ((:file "test")
                (:file "suite"))
-  :depends-on (:fxml-xml :fxml-klacks :fxml-dom :fiveam))
+  :depends-on (:fxml/xml :fxml/klacks :fxml/dom :fiveam))
 
 (asdf:defsystem :fxml
   :components ()
-  :in-order-to ((test-op (test-op #:fxml-test)))
-  :depends-on (:fxml-dom :fxml-klacks))
+  :in-order-to ((test-op (test-op #:fxml/test)))
+  :depends-on (:fxml/dom :fxml/klacks))
