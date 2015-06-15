@@ -32,6 +32,8 @@
        (pushnew :rune-is-utf-16 *features*)
        (pushnew :rune-is-character *features*)))))
 
+(defvar *utf8-runes-readtable*)
+
 (defclass closure-source-file (cl-source-file) ())
 
 #+scl
@@ -43,6 +45,28 @@
   (handler-bind ((sb-ext:compiler-note #'muffle-warning))
     (let (#+sbcl (*compile-print* nil))
       (call-next-method))))
+
+(defsystem :fxml/closure-common
+  :default-component-class closure-source-file
+  :serial t
+  :pathname "closure-common/"
+  :components
+  ((:file "package")
+   (:file "definline")
+   (:file runes
+    :pathname
+    #-rune-is-character "runes"
+    #+rune-is-character "characters")
+   #+rune-is-integer (:file "utf8")
+   (:file "syntax")
+   #-x&y-streams-are-stream (:file "encodings")
+   #-x&y-streams-are-stream (:file "encodings-data")
+   #-x&y-streams-are-stream (:file "xstream")
+   #-x&y-streams-are-stream (:file "ystream")
+   #+x&y-streams-are-stream (:file #+scl "stream-scl")
+   (:file "hax"))
+  :depends-on (#-scl :trivial-gray-streams
+               #+rune-is-character :babel))
 
 (asdf:defsystem :fxml/xml
     :default-component-class closure-source-file
@@ -62,7 +86,7 @@
      (:file "catalog"         :depends-on ("xml-parse"))
      (:file "sax-proxy"       :depends-on ("xml-parse"))
      (:file "atdoc-configuration" :depends-on ("package")))
-    :depends-on (:closure-common :puri #-scl :trivial-gray-streams :flexi-streams))
+    :depends-on (:fxml/closure-common :puri #-scl :trivial-gray-streams :flexi-streams))
 
 (defclass utf8dom-file (closure-source-file) ((of)))
 
@@ -82,9 +106,7 @@
 
 (defmethod perform ((operation compile-op) (c utf8dom-file))
   (let ((*features* (cons 'utf8dom-file *features*))
-        (*readtable*
-         (symbol-value (find-symbol "*UTF8-RUNES-READTABLE*"
-                                    :closure-common-system))))
+        (*readtable* *utf8-runes-readtable*))
     (call-next-method)))
 
 (asdf:defsystem :fxml/dom
