@@ -71,3 +71,26 @@
   "Returns the smallest prime number no less than `n'."
   (cond ((primep n) n)
         ((nearest-greater-prime (+ n 1)))))
+
+;;; XML meta.
+(definline xml-character-p (c)
+  (declare (optimize speed) (character c))
+  (let ((code (char-code c)))
+    (or (eql code 9)
+        (eql code 10)
+        (eql code 13)
+        (<= 32 code #xd7ff)
+        #+rune-is-utf-16 (<= #xD800 code #xDFFF)
+        (<= #xe000 code #xfffd)
+        #-rune-is-utf-16 (<= #x10000 code #x10ffff))))
+
+(defun xml-characters-p (str)
+  (declare (optimize speed (safety 0)))
+  (etypecase str
+    ((simple-array character (*))
+     (loop for c across str
+           always (xml-character-p c)))
+    (string
+     (loop for c across str
+           always (xml-character-p c)))))
+

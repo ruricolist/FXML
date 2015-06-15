@@ -80,21 +80,8 @@
 (defmethod string-value ((node attribute))
   (value node))
 
-(defun xml-characters-p (str)
-  (declare (optimize speed (safety 0)))
-  (every (lambda (c)
-	   (let ((code (char-code c)))
-	     (or (eql code 9)
-		 (eql code 10)
-		 (eql code 13)
-		 (<= 32 code #xd7ff)
-		 #+rune-is-utf-16 (<= #xD800 code #xDFFF)
-		 (<= #xe000 code #xfffd)
-		 #-rune-is-utf-16 (<= #x10000 code #x10ffff))))
-	 (the string str)))
-
 (defmethod (setf value) :before (newval (node attribute))
-  (unless (xml-characters-p newval)
+  (unless (fxml:xml-characters-p newval)
     (stp-error "new attribute value includes characters that cannot be ~
                 represented in XML at all: ~S"
 	       newval)))

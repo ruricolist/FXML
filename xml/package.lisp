@@ -8,6 +8,13 @@
 (defpackage :fxml
   (:use :cl :fxml.runes :fxml.runes-encoding #-scl :trivial-gray-streams)
   (:export
+   ;; meta
+   #:xml-character-p
+   #:xml-characters-p
+   #:name-start-run-p
+   #:name-rune-p
+   #:nc-name-p
+   
    ;; xstreams
    #:make-xstream
    #:make-rod-xstream
