@@ -178,3 +178,19 @@
   :components
   ((:file "test"))
   :depends-on (:fxml/stp :rt))
+
+(defsystem #:fxml/sanitize
+  :serial t
+  :description "Streaming HTML sanitizer"
+  :author "Paul M. Rodriguez"
+  :license "LLGPL"
+  :depends-on (#:alexandria #:serapeum #:fxml)
+  :pathname "sanitize/"
+  :components ((:file "package")
+               (:file "sax-sanitize")))
+
+(defsystem #:fxml/sanitize/test
+  :depends-on (#:fxml/sanitize #:fiveam #:html5-sax)
+  :pathname "sanitize/"
+  :perform (test-op (o c) (uiop:symbol-call :fxml.sanitize.test :run-tests))
+  :components ((:file "test")))
