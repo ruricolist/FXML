@@ -116,10 +116,12 @@
   :default-component-class closure-source-file
   :pathname "test/"
   :serial t
+  :perform (test-op (o c) (uiop:symbol-call :fxml.test :run-tests))
   :components ((:file "test")
                (:file "suite"))
   :depends-on (:fxml-xml :fxml-klacks :fxml-dom :fiveam))
 
 (asdf:defsystem :fxml
-    :components ()
-    :depends-on (:fxml-dom :fxml-klacks))
+  :components ()
+  :in-order-to ((test-op (test-op #:fxml-test)))
+  :depends-on (:fxml-dom :fxml-klacks))

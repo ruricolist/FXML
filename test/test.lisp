@@ -1,7 +1,8 @@
 (in-package #:cl-user)
 
 (defpackage #:fxml.test
-  (:use #:cl #:5am))
+  (:use #:cl #:5am)
+  (:export #:run-tests))
 
 (in-package #:fxml.test)
 
@@ -30,3 +31,6 @@
   (let ((5am:*debug-on-error* error)
         (5am:*debug-on-failure* failure))
     (run! test)))
+
+(defun run-tests ()
+  (5am:run! 'fxml))
