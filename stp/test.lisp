@@ -37,9 +37,6 @@
 (defmacro check-type (place type)
   `(assert (typep ,place ',type)))
 
-(defmethod xmlconf::serialize-document ((document node))
-  (serialize document (cxml:make-octet-vector-sink :canonical 2)))
-
 (defun stp-test (filename handler &rest args)
   (declare (ignore handler))
   (apply #'cxml:parse-file
@@ -47,13 +44,6 @@
 	 (read-from-string "#.(fxml.stp:make-builder)")
 	 :recode t
 	 args))
-
-
-#+(or)
-(let ((fxml.stp::*serialize-canonical-notations-only-p* t))
-  (xmlconf::run-all-tests 'xmlconf::stp-test
-			  "/home/david/2001/XML-Test-Suite/xmlconf/"))
-
 
 (defun assert-equal (a b)
   (unless (equal a b)
