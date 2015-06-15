@@ -25,101 +25,101 @@
            (defwrapper (name (&rest args) &rest forms)
              `(defmethod ,name ((handler recoder) ,@args)
                 (,name (chained-handler handler) ,@forms))))
-  (defwrapper sax:start-document ())
+  (defwrapper fxml.sax:start-document ())
 
-  (defwrapper sax:start-element
+  (defwrapper fxml.sax:start-element
       (namespace-uri local-name qname attributes)
     (%string namespace-uri)
     (%string local-name)
     (%string qname)
     (mapcar (lambda (attr)
-              (sax:make-attribute
-               :namespace-uri (%string (sax:attribute-namespace-uri attr))
-               :local-name (%string (sax:attribute-local-name attr))
-               :qname (%string (sax:attribute-qname attr))
-               :value (%string (sax:attribute-value attr))
-               :specified-p (sax:attribute-specified-p attr)))
+              (fxml.sax:make-attribute
+               :namespace-uri (%string (fxml.sax:attribute-namespace-uri attr))
+               :local-name (%string (fxml.sax:attribute-local-name attr))
+               :qname (%string (fxml.sax:attribute-qname attr))
+               :value (%string (fxml.sax:attribute-value attr))
+               :specified-p (fxml.sax:attribute-specified-p attr)))
             attributes))
 
-  (defwrapper sax:start-prefix-mapping (prefix uri)
+  (defwrapper fxml.sax:start-prefix-mapping (prefix uri)
     (%string prefix)
     (%string uri))
 
-  (defwrapper sax:characters (data)
+  (defwrapper fxml.sax:characters (data)
     (%string data))
 
-  (defwrapper sax:processing-instruction (target data)
+  (defwrapper fxml.sax:processing-instruction (target data)
     (%string target)
     (%string data))
 
-  (defwrapper sax:end-prefix-mapping (prefix)
+  (defwrapper fxml.sax:end-prefix-mapping (prefix)
     (%string prefix))
 
-  (defwrapper sax:end-element (namespace-uri local-name qname)
+  (defwrapper fxml.sax:end-element (namespace-uri local-name qname)
     (%string namespace-uri)
     (%string local-name)
     (%string qname))
 
-  (defwrapper sax:end-document ())
+  (defwrapper fxml.sax:end-document ())
 
-  (defwrapper sax:comment (data)
+  (defwrapper fxml.sax:comment (data)
     (%string data))
 
-  (defwrapper sax:start-cdata ())
+  (defwrapper fxml.sax:start-cdata ())
 
-  (defwrapper sax:end-cdata ())
+  (defwrapper fxml.sax:end-cdata ())
 
-  (defwrapper sax:start-dtd (name public-id system-id)
+  (defwrapper fxml.sax:start-dtd (name public-id system-id)
     (%string name)
     (%string public-id)
     (%string system-id))
 
-  (defwrapper sax:start-internal-subset ())
-  (defwrapper sax:end-internal-subset ())
+  (defwrapper fxml.sax:start-internal-subset ())
+  (defwrapper fxml.sax:end-internal-subset ())
 
-  (defwrapper sax:end-dtd ())
+  (defwrapper fxml.sax:end-dtd ())
 
-  (defwrapper sax:unparsed-entity-declaration
+  (defwrapper fxml.sax:unparsed-entity-declaration
       (name public-id system-id notation-name)
     (%string name)
     (%string public-id)
     (%string system-id)
     (%string notation-name))
 
-  (defwrapper sax:external-entity-declaration
+  (defwrapper fxml.sax:external-entity-declaration
       (kind name public-id system-id)
     (%string kind)
     (%string name)
     (%string public-id)
     (%string system-id))
 
-  (defwrapper sax:internal-entity-declaration
+  (defwrapper fxml.sax:internal-entity-declaration
       (kind name value)
     kind
     (%string name)
     (%string value))
 
-  (defwrapper sax:notation-declaration
+  (defwrapper fxml.sax:notation-declaration
       (name public-id system-id)
     (%string name)
     (%string public-id)
     (%string system-id))
 
-  (defwrapper sax:element-declaration (name model)
+  (defwrapper fxml.sax:element-declaration (name model)
     (%string name)
     model)
 
-  (defwrapper sax:attribute-declaration
+  (defwrapper fxml.sax:attribute-declaration
       (element-name attribute-name type default)
     (%string element-name)
     (%string attribute-name)
     (%string type)
     (%string default))
 
-  (defwrapper sax:entity-resolver
+  (defwrapper fxml.sax:entity-resolver
       (resolver)
     resolver)
 
-  (defwrapper sax::dtd
+  (defwrapper fxml.sax::dtd
       (dtd)
     dtd))

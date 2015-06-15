@@ -17,20 +17,20 @@
     :dtd dtd
     :chained-handler chained-handler))
 
-(defmethod sax::dtd ((handler whitespace-normalizer) dtd)
+(defmethod fxml.sax::dtd ((handler whitespace-normalizer) dtd)
   (unless (xml-space-dtd handler)
     (setf (xml-space-dtd handler) dtd)))
 
-(defmethod sax:start-element
+(defmethod fxml.sax:start-element
     ((handler whitespace-normalizer) uri lname qname attrs)
   (declare (ignore uri lname))
   (let ((dtd (xml-space-dtd handler)))
     (when dtd
       (let ((xml-space
-	     (sax:find-attribute (if (stringp qname) "xml:space" #"xml:space")
+	     (fxml.sax:find-attribute (if (stringp qname) "xml:space" #"xml:space")
 				 attrs)))
 	(push (if xml-space
-		  (rod= (rod (sax:attribute-value xml-space)) #"default")
+		  (rod= (rod (fxml.sax:attribute-value xml-space)) #"default")
 		  (car (xml-space-attributes handler)))
 	      (xml-space-attributes handler)))
       (let* ((e (fxml::find-element (rod qname) dtd))
@@ -43,7 +43,7 @@
 	      (xml-space-models handler)))))
   (call-next-method))
 
-(defmethod sax:characters ((handler whitespace-normalizer) data)
+(defmethod fxml.sax:characters ((handler whitespace-normalizer) data)
   (cond
     ((and (xml-space-dtd handler)
 	  (car (xml-space-attributes handler))
@@ -54,7 +54,7 @@
     (t
       (call-next-method))))
 
-(defmethod sax:end-element ((handler whitespace-normalizer) uri lname qname)
+(defmethod fxml.sax:end-element ((handler whitespace-normalizer) uri lname qname)
   (declare (ignore uri lname qname))
   (when (xml-space-dtd handler)
     (pop (xml-space-attributes handler))

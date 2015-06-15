@@ -18,7 +18,7 @@
 
 (in-package :fxml)
 
-(defclass klacks:source ()
+(defclass fxml.klacks:source ()
     (
      ;; fixme, terrible DTD kludges
      (internal-declarations)
@@ -26,123 +26,123 @@
      (dom-impl-dtd :initform nil)
      (dom-impl-entity-resolver :initform nil)))
 
-(defgeneric klacks:close-source (source))
+(defgeneric fxml.klacks:close-source (source))
 
-(defgeneric klacks:peek (source))
-(defgeneric klacks:peek-value (source))
-(defgeneric klacks:consume (source))
+(defgeneric fxml.klacks:peek (source))
+(defgeneric fxml.klacks:peek-value (source))
+(defgeneric fxml.klacks:consume (source))
 
-(defgeneric klacks:map-attributes (fn source))
-(defgeneric klacks:list-attributes (source))
-(defgeneric klacks:get-attribute (source lname &optional uri))
-;;;(defgeneric klacks:current-uri (source))
-;;;(defgeneric klacks:current-lname (source))
-;;;(defgeneric klacks:current-qname (source))
-;;;(defgeneric klacks:current-characters (source))
-(defgeneric klacks:current-cdata-section-p (source))
-(defgeneric klacks:map-current-namespace-declarations (fn source))
+(defgeneric fxml.klacks:map-attributes (fn source))
+(defgeneric fxml.klacks:list-attributes (source))
+(defgeneric fxml.klacks:get-attribute (source lname &optional uri))
+;;;(defgeneric fxml.klacks:current-uri (source))
+;;;(defgeneric fxml.klacks:current-lname (source))
+;;;(defgeneric fxml.klacks:current-qname (source))
+;;;(defgeneric fxml.klacks:current-characters (source))
+(defgeneric fxml.klacks:current-cdata-section-p (source))
+(defgeneric fxml.klacks:map-current-namespace-declarations (fn source))
 
-(defgeneric klacks:current-line-number (source))
-(defgeneric klacks:current-column-number (source))
-(defgeneric klacks:current-system-id (source))
-(defgeneric klacks:current-xml-base (source))
+(defgeneric fxml.klacks:current-line-number (source))
+(defgeneric fxml.klacks:current-column-number (source))
+(defgeneric fxml.klacks:current-system-id (source))
+(defgeneric fxml.klacks:current-xml-base (source))
 
-(defgeneric klacks:find-namespace-binding (prefix source))
-(defgeneric klacks:decode-qname (qname source))
+(defgeneric fxml.klacks:find-namespace-binding (prefix source))
+(defgeneric fxml.klacks:decode-qname (qname source))
 
-(defmacro klacks:with-open-source ((var source) &body body)
+(defmacro fxml.klacks:with-open-source ((var source) &body body)
   `(let ((,var ,source))
      (unwind-protect
 	 (progn ,@body)
-       (klacks:close-source ,var))))
+       (fxml.klacks:close-source ,var))))
 
-(defun klacks:current-uri (source)
-  (multiple-value-bind (key uri lname qname) (klacks:peek source)
+(defun fxml.klacks:current-uri (source)
+  (multiple-value-bind (key uri lname qname) (fxml.klacks:peek source)
     (declare (ignore lname qname))
     (check-type key (member :start-element :end-element))
     uri))
 
-(defun klacks:current-lname (source)
-  (multiple-value-bind (key uri lname qname) (klacks:peek source)
+(defun fxml.klacks:current-lname (source)
+  (multiple-value-bind (key uri lname qname) (fxml.klacks:peek source)
     (declare (ignore uri qname))
     (check-type key (member :start-element :end-element))
     lname))
 
-(defun klacks:current-qname (source)
-  (multiple-value-bind (key uri lname qname) (klacks:peek source)
+(defun fxml.klacks:current-qname (source)
+  (multiple-value-bind (key uri lname qname) (fxml.klacks:peek source)
     (declare (ignore uri lname))
     (check-type key (member :start-element :end-element))
     qname))
 
-(defun klacks:current-characters (source)
-  (multiple-value-bind (key characters) (klacks:peek source)
+(defun fxml.klacks:current-characters (source)
+  (multiple-value-bind (key characters) (fxml.klacks:peek source)
     (check-type key (member :characters))
     characters))
 
-(defun klacks:consume-characters (source)
+(defun fxml.klacks:consume-characters (source)
   (with-output-to-string (s)
-    (while (eq (klacks:peek source) :characters)
-      (write-string (klacks:current-characters source) s)
-      (klacks:consume source))))
+    (while (eq (fxml.klacks:peek source) :characters)
+      (write-string (fxml.klacks:current-characters source) s)
+      (fxml.klacks:consume source))))
 
-(defun klacks:serialize-event (source handler &key (consume t))
-  (multiple-value-bind (key a b c) (klacks:peek source)
+(defun fxml.klacks:serialize-event (source handler &key (consume t))
+  (multiple-value-bind (key a b c) (fxml.klacks:peek source)
     (let ((result nil))
       (case key
 	(:start-document
-	  (sax:start-document handler)
+	  (fxml.sax:start-document handler)
 	  (loop for (prefix . uri) in *initial-namespace-bindings* do
-	       (sax:start-prefix-mapping handler prefix uri)))
+	       (fxml.sax:start-prefix-mapping handler prefix uri)))
 	(:characters
 	  (cond
-	    ((klacks:current-cdata-section-p source)
-	      (sax:start-cdata handler)
-	      (sax:characters handler a)
-	      (sax:end-cdata handler))
+	    ((fxml.klacks:current-cdata-section-p source)
+	      (fxml.sax:start-cdata handler)
+	      (fxml.sax:characters handler a)
+	      (fxml.sax:end-cdata handler))
 	    (t
-	      (sax:characters handler a))))
+	      (fxml.sax:characters handler a))))
 	(:processing-instruction
-	  (sax:processing-instruction handler a b))
+	  (fxml.sax:processing-instruction handler a b))
 	(:comment
-	  (sax:comment handler a))
+	  (fxml.sax:comment handler a))
 	(:dtd
-	  (sax:start-dtd handler a b (and c (uri-rod c)))
+	  (fxml.sax:start-dtd handler a b (and c (uri-rod c)))
 	  (when (slot-boundp source 'internal-declarations)
-	    (sax:start-internal-subset handler)
+	    (fxml.sax:start-internal-subset handler)
 	    (serialize-declaration-kludge
 	     (slot-value source 'internal-declarations)
 	     handler)
-	    (sax:end-internal-subset handler))
+	    (fxml.sax:end-internal-subset handler))
 	  (serialize-declaration-kludge
 	   (slot-value source 'external-declarations)
 	   handler)
-	  (sax:end-dtd handler)
-	  (sax:entity-resolver handler
+	  (fxml.sax:end-dtd handler)
+	  (fxml.sax:entity-resolver handler
 			       (slot-value source 'dom-impl-entity-resolver))
-	  (sax::dtd handler (slot-value source 'dom-impl-dtd)))
+	  (fxml.sax::dtd handler (slot-value source 'dom-impl-dtd)))
 	(:start-element
-	  (klacks:map-current-namespace-declarations
+	  (fxml.klacks:map-current-namespace-declarations
 	   (lambda (prefix uri)
-	     (sax:start-prefix-mapping handler prefix uri))
+	     (fxml.sax:start-prefix-mapping handler prefix uri))
 	   source)
-	  (sax:start-element handler a b c (klacks:list-attributes source)))
+	  (fxml.sax:start-element handler a b c (fxml.klacks:list-attributes source)))
 	(:end-element
-	  (sax:end-element handler a b c)
-	  (klacks:map-current-namespace-declarations
+	  (fxml.sax:end-element handler a b c)
+	  (fxml.klacks:map-current-namespace-declarations
 	   (lambda (prefix uri)
 	     (declare (ignore uri))
-	     (sax:end-prefix-mapping handler prefix))
+	     (fxml.sax:end-prefix-mapping handler prefix))
 	   source))
 	(:end-document
 	 (loop for (prefix . nil) in *initial-namespace-bindings* do
-	      (sax:end-prefix-mapping handler prefix))
-	  (setf result (sax:end-document handler)))
+	      (fxml.sax:end-prefix-mapping handler prefix))
+	  (setf result (fxml.sax:end-document handler)))
 	((nil)
 	  (error "serialize-event read past end of document"))
 	(t
 	  (error "unexpected klacks key: ~A" key)))
       (when consume
-	(klacks:consume source))
+	(fxml.klacks:consume source))
       result)))
 
 (defun serialize-declaration-kludge (list handler)
@@ -150,85 +150,85 @@
       for (fn . args) in list
       do (apply fn handler args)))
 
-(defun klacks:serialize-source (source handler)
+(defun fxml.klacks:serialize-source (source handler)
   (loop
-    (let ((document (klacks:serialize-event source handler)))
+    (let ((document (fxml.klacks:serialize-event source handler)))
       (when document
 	(return document)))))
 
-(defclass klacksax (sax:sax-parser)
+(defclass klacksax (fxml.sax:sax-parser)
     ((source :initarg :source)))
 
-(defmethod sax:line-number ((parser klacksax))
-  (klacks:current-line-number (slot-value parser 'source)))
+(defmethod fxml.sax:line-number ((parser klacksax))
+  (fxml.klacks:current-line-number (slot-value parser 'source)))
 
-(defmethod sax:column-number ((parser klacksax))
-  (klacks:current-column-number (slot-value parser 'source)))
+(defmethod fxml.sax:column-number ((parser klacksax))
+  (fxml.klacks:current-column-number (slot-value parser 'source)))
 
-(defmethod sax:system-id ((parser klacksax))
-  (klacks:current-system-id (slot-value parser 'source)))
+(defmethod fxml.sax:system-id ((parser klacksax))
+  (fxml.klacks:current-system-id (slot-value parser 'source)))
 
-(defmethod sax:xml-base ((parser klacksax))
-  (klacks:current-xml-base (slot-value parser 'source)))
+(defmethod fxml.sax:xml-base ((parser klacksax))
+  (fxml.klacks:current-xml-base (slot-value parser 'source)))
 
-(defun klacks:serialize-element (source handler &key (document-events t))
-  (unless (eq (klacks:peek source) :start-element)
+(defun fxml.klacks:serialize-element (source handler &key (document-events t))
+  (unless (eq (fxml.klacks:peek source) :start-element)
     (error "not at start of element"))
-  (sax:register-sax-parser handler (make-instance 'klacksax :source source))
+  (fxml.sax:register-sax-parser handler (make-instance 'klacksax :source source))
   (when document-events
-    (sax:start-document handler))
+    (fxml.sax:start-document handler))
   (labels ((recurse ()
-	     (klacks:serialize-event source handler)
+	     (fxml.klacks:serialize-event source handler)
 	     (loop
-	       (let ((key (klacks:peek source)))
+	       (let ((key (fxml.klacks:peek source)))
 		 (ecase key
 		   (:start-element (recurse))
 		   (:end-element (return))
 		   ((:characters :comment :processing-instruction)
-		     (klacks:serialize-event source handler)))))
-	     (klacks:serialize-event source handler)))
+		     (fxml.klacks:serialize-event source handler)))))
+	     (fxml.klacks:serialize-event source handler)))
     (recurse))
   (when document-events
-    (sax:end-document handler)))
+    (fxml.sax:end-document handler)))
 
-(defun klacks:find-element (source &optional lname uri)
+(defun fxml.klacks:find-element (source &optional lname uri)
   (loop
     (multiple-value-bind (key current-uri current-lname current-qname)
-	(klacks:peek source)
+	(fxml.klacks:peek source)
       (case key
 	((nil)
 	  (return nil))
 	(:start-element
 	  (when (and (eq key :start-element)
 		     (or (null lname)
-			 (equal lname (klacks:current-lname source)))
+			 (equal lname (fxml.klacks:current-lname source)))
 		     (or (null uri)
-			 (equal uri (klacks:current-uri source))))
+			 (equal uri (fxml.klacks:current-uri source))))
 	    (return
 	      (values key current-uri current-lname current-qname)))))
-      (klacks:consume source))))
+      (fxml.klacks:consume source))))
 
-(defun klacks:find-event (source key)
+(defun fxml.klacks:find-event (source key)
   (loop
     (multiple-value-bind (this a b c)
-	(klacks:peek source)
+	(fxml.klacks:peek source)
       (cond
 	((null this)
 	  (return nil))
 	((eq this key)
 	  (return (values this a b c))))
-      (klacks:consume source))))
+      (fxml.klacks:consume source))))
 
-(define-condition klacks:klacks-error (xml-parse-error) ())
+(define-condition fxml.klacks:klacks-error (xml-parse-error) ())
 
 (defun klacks-error (fmt &rest args)
-  (%error 'klacks:klacks-error
+  (%error 'fxml.klacks:klacks-error
 	  nil
 	  (format nil "Klacks assertion failed: ~?" fmt args)))
 
-(defun klacks:expect (source key &optional u v w)
+(defun fxml.klacks:expect (source key &optional u v w)
   (multiple-value-bind (this a b c)
-      (klacks:peek source)
+      (fxml.klacks:peek source)
     (unless (eq this key) (klacks-error "expected ~A but got ~A" key this))
     (when (and u (not (equal a u)))
       (klacks-error "expected ~A but got ~A" u a))
@@ -238,13 +238,13 @@
       (klacks-error "expected ~A but got ~A" w c))
     (values this a b c)))
 
-(defun klacks:skip (source key &optional a b c)
-  (klacks:expect source key a b c)
-  (klacks:consume source))
+(defun fxml.klacks:skip (source key &optional a b c)
+  (fxml.klacks:expect source key a b c)
+  (fxml.klacks:consume source))
 
 (defun invoke-expecting-element (fn source &optional lname uri)
   (multiple-value-bind (key a b)
-      (klacks:peek source)
+      (fxml.klacks:peek source)
     (unless (eq key :start-element)
       (klacks-error "expected ~A but got ~A" (or lname "element") key))
     (when (and uri (not (equal a uri)))
@@ -253,7 +253,7 @@
       (klacks-error "expected ~A but got ~A" lname b))
     (multiple-value-prog1
 	(funcall fn)
-      (klacks:skip source :end-element a b))))
+      (fxml.klacks:skip source :end-element a b))))
 
-(defmacro klacks:expecting-element ((source &optional lname uri) &body body)
+(defmacro fxml.klacks:expecting-element ((source &optional lname uri) &body body)
   `(invoke-expecting-element (lambda () ,@body) ,source ,lname ,uri))

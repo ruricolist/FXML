@@ -1,4 +1,4 @@
-(in-package :sax-tests)
+(in-package :fxml.sax.tests)
 
 (defun first-start-element-event (string)
   (let ((events (fxml:parse-rod string (make-instance 'event-collecting-handler))))
@@ -34,7 +34,7 @@
   t)
 
 (deftest attribute-uniqueness-3
-  (let ((sax:*namespace-processing* nil))
+  (let ((fxml.sax:*namespace-processing* nil))
     (handler-case
 	(fxml:parse-rod "<x xmlns:a='http://example.com' xmlns:b='http://example.com' a:a='1' b:a='1'/>")
     (error () nil)
@@ -79,7 +79,7 @@
   t)
 
 (deftest pi-names-are-ncnames-when-namespace-processing-2
-  (let ((sax:*namespace-processing* nil))
+  (let ((fxml.sax:*namespace-processing* nil))
     (handler-case
 	(fxml:parse-rod "<?a:b c?><x/>")
       (error () nil)
@@ -107,7 +107,7 @@
   t)
 
 (deftest entity-names-are-ncnames-when-namespace-processing-3
-  (let ((sax:*namespace-processing* nil))
+  (let ((fxml.sax:*namespace-processing* nil))
     (handler-case
 	(fxml:parse-rod "<!DOCTYPE x [ <!ENTITY y:z 'foo'> ]><x>&y:z;</x>")
       (error () nil)
@@ -117,7 +117,7 @@
   t)
 
 (deftest entity-names-are-ncnames-when-namespace-processing-4
-  (let ((sax:*namespace-processing* nil))
+  (let ((fxml.sax:*namespace-processing* nil))
     (handler-case
 	(fxml:parse-rod "<!DOCTYPE x [ <!ENTITY y:z 'foo'> ]><x/>")
       (error () nil)
@@ -129,16 +129,16 @@
 ;;; Inclusion of xmlns attributes
 
 (deftest xmlns-attr-include-1
-  (let* ((sax:*namespace-processing* t)
-	 (sax:*include-xmlns-attributes* t)
+  (let* ((fxml.sax:*namespace-processing* t)
+	 (fxml.sax:*include-xmlns-attributes* t)
 	 (evt (first-start-element-event "<x xmlns='http://example.com'/>"))
 	 (attrs (fifth evt)))
     (length attrs))
   1)
 
 (deftest xmlns-attr-discard-1
-  (let* ((sax:*namespace-processing* t)
-	 (sax:*include-xmlns-attributes* nil)
+  (let* ((fxml.sax:*namespace-processing* t)
+	 (fxml.sax:*include-xmlns-attributes* nil)
 	 (evt (first-start-element-event "<x xmlns='http://example.com'/>"))
 	 (attrs (fifth evt)))
     (length attrs))
@@ -147,108 +147,108 @@
 ;;; Namespace of xmlns attributes
 
 (deftest xmlns-attr-ns-uri-1
-  (let* ((sax:*namespace-processing* t)
-	 (sax:*include-xmlns-attributes* t)
-	 (sax:*use-xmlns-namespace* nil)
+  (let* ((fxml.sax:*namespace-processing* t)
+	 (fxml.sax:*include-xmlns-attributes* t)
+	 (fxml.sax:*use-xmlns-namespace* nil)
 	 (evt (first-start-element-event "<x xmlns='http://example.com'/>"))
 	 (attrs (fifth evt)))
     (attribute-namespace-uri (car attrs)))
   nil)
 
 (deftest xmlns-attr-ns-uri-2
-  (let* ((sax:*namespace-processing* t)
-	 (sax:*include-xmlns-attributes* t)
-	 (sax:*use-xmlns-namespace* nil)
+  (let* ((fxml.sax:*namespace-processing* t)
+	 (fxml.sax:*include-xmlns-attributes* t)
+	 (fxml.sax:*use-xmlns-namespace* nil)
 	 (evt (first-start-element-event "<x xmlns:foo='http://example.com'/>"))
 	 (attrs (fifth evt)))
     (attribute-namespace-uri (car attrs)))
   nil)
 
 (deftest xmlns-attr-ns-uri-3
-  (let* ((sax:*namespace-processing* t)
-	 (sax:*include-xmlns-attributes* t)
-	 (sax:*use-xmlns-namespace* t)
+  (let* ((fxml.sax:*namespace-processing* t)
+	 (fxml.sax:*include-xmlns-attributes* t)
+	 (fxml.sax:*use-xmlns-namespace* t)
 	 (evt (first-start-element-event "<x xmlns='http://example.com'/>"))
 	 (attrs (fifth evt)))
     (attribute-namespace-uri (car attrs)))
   nil)
 
 (deftest xmlns-attr-ns-uri-4
-  (let* ((sax:*namespace-processing* t)
-	 (sax:*include-xmlns-attributes* t)
-	 (sax:*use-xmlns-namespace* t)
+  (let* ((fxml.sax:*namespace-processing* t)
+	 (fxml.sax:*include-xmlns-attributes* t)
+	 (fxml.sax:*use-xmlns-namespace* t)
 	 (evt (first-start-element-event "<x xmlns:foo='http://example.com'/>"))
 	 (attrs (fifth evt)))
     (rod= #"http://www.w3.org/2000/xmlns/" (attribute-namespace-uri (car attrs))))
   t)
 
 (deftest xmlns-attr-ns-local-name-1
-  (let* ((sax:*namespace-processing* t)
-	 (sax:*include-xmlns-attributes* t)
-	 (sax:*use-xmlns-namespace* nil)
+  (let* ((fxml.sax:*namespace-processing* t)
+	 (fxml.sax:*include-xmlns-attributes* t)
+	 (fxml.sax:*use-xmlns-namespace* nil)
 	 (evt (first-start-element-event "<x xmlns='http://example.com'/>"))
 	 (attrs (fifth evt)))
     (attribute-local-name (car attrs)))
   nil)
 
 (deftest xmlns-attr-ns-local-name-2
-  (let* ((sax:*namespace-processing* t)
-	 (sax:*include-xmlns-attributes* t)
-	 (sax:*use-xmlns-namespace* nil)
+  (let* ((fxml.sax:*namespace-processing* t)
+	 (fxml.sax:*include-xmlns-attributes* t)
+	 (fxml.sax:*use-xmlns-namespace* nil)
 	 (evt (first-start-element-event "<x xmlns:foo='http://example.com'/>"))
 	 (attrs (fifth evt)))
     (attribute-local-name (car attrs)))
   nil)
 
 (deftest xmlns-attr-ns-local-name-3
-  (let* ((sax:*namespace-processing* t)
-	 (sax:*include-xmlns-attributes* t)
-	 (sax:*use-xmlns-namespace* t)
+  (let* ((fxml.sax:*namespace-processing* t)
+	 (fxml.sax:*include-xmlns-attributes* t)
+	 (fxml.sax:*use-xmlns-namespace* t)
 	 (evt (first-start-element-event "<x xmlns='http://example.com'/>"))
 	 (attrs (fifth evt)))
     (attribute-local-name (car attrs)))
   nil)
 
 (deftest xmlns-attr-ns-local-name-4
-  (let* ((sax:*namespace-processing* t)
-	 (sax:*include-xmlns-attributes* t)
-	 (sax:*use-xmlns-namespace* t)
+  (let* ((fxml.sax:*namespace-processing* t)
+	 (fxml.sax:*include-xmlns-attributes* t)
+	 (fxml.sax:*use-xmlns-namespace* t)
 	 (evt (first-start-element-event "<x xmlns:foo='http://example.com'/>"))
 	 (attrs (fifth evt)))
     (rod= #"foo" (attribute-local-name (car attrs))))
   t)
 
 (deftest xmlns-attr-qname-1
-  (let* ((sax:*namespace-processing* t)
-	 (sax:*include-xmlns-attributes* t)
-	 (sax:*use-xmlns-namespace* nil)
+  (let* ((fxml.sax:*namespace-processing* t)
+	 (fxml.sax:*include-xmlns-attributes* t)
+	 (fxml.sax:*use-xmlns-namespace* nil)
 	 (evt (first-start-element-event "<x xmlns='http://example.com'/>"))
 	 (attrs (fifth evt)))
     (rod= #"xmlns" (attribute-qname (car attrs))))
   t)
 
 (deftest xmlns-attr-qname-2
-  (let* ((sax:*namespace-processing* t)
-	 (sax:*include-xmlns-attributes* t)
-	 (sax:*use-xmlns-namespace* nil)
+  (let* ((fxml.sax:*namespace-processing* t)
+	 (fxml.sax:*include-xmlns-attributes* t)
+	 (fxml.sax:*use-xmlns-namespace* nil)
 	 (evt (first-start-element-event "<x xmlns:foo='http://example.com'/>"))
 	 (attrs (fifth evt)))
     (rod= #"xmlns:foo" (attribute-qname (car attrs))))
   t)
 
 (deftest xmlns-attr-qname-4
-  (let* ((sax:*namespace-processing* t)
-	 (sax:*include-xmlns-attributes* t)
-	 (sax:*use-xmlns-namespace* t)
+  (let* ((fxml.sax:*namespace-processing* t)
+	 (fxml.sax:*include-xmlns-attributes* t)
+	 (fxml.sax:*use-xmlns-namespace* t)
 	 (evt (first-start-element-event "<x xmlns='http://example.com'/>"))
 	 (attrs (fifth evt)))
     (rod= #"xmlns" (attribute-qname (car attrs))))
   t)
 
 (deftest xmlns-attr-qname-4
-  (let* ((sax:*namespace-processing* t)
-	 (sax:*include-xmlns-attributes* t)
-	 (sax:*use-xmlns-namespace* t)
+  (let* ((fxml.sax:*namespace-processing* t)
+	 (fxml.sax:*include-xmlns-attributes* t)
+	 (fxml.sax:*use-xmlns-namespace* t)
 	 (evt (first-start-element-event "<x xmlns:foo='http://example.com'/>"))
 	 (attrs (fifth evt)))
     (rod= #"xmlns:foo" (attribute-qname (car attrs))))

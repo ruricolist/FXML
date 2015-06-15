@@ -8,88 +8,88 @@
 
 (in-package :fxml)
 
-(defun dom:map-document
+(defun fxml.dom:map-document
     (handler document
-     &key (include-xmlns-attributes sax:*include-xmlns-attributes*)
+     &key (include-xmlns-attributes fxml.sax:*include-xmlns-attributes*)
 	  include-doctype
           include-default-values
-	  (recode (and #+rune-is-integer (typep document 'utf8-dom::node))))
+	  (recode (and #+rune-is-integer (typep document 'fxml.utf8-dom::node))))
   (declare (ignorable recode))
   #+rune-is-integer
   (when recode
     (setf handler (make-recoder handler #'utf8-string-to-rod)))
-  (sax:start-document handler)
+  (fxml.sax:start-document handler)
   (when include-doctype
-    (let ((doctype (dom:doctype document)))
+    (let ((doctype (fxml.dom:doctype document)))
       (when doctype
-	(sax:start-dtd handler
-		       (dom:name doctype)
-		       (dom:public-id doctype)
-		       (dom:system-id doctype))
+	(fxml.sax:start-dtd handler
+		       (fxml.dom:name doctype)
+		       (fxml.dom:public-id doctype)
+		       (fxml.dom:system-id doctype))
 	(ecase include-doctype
 	  (:full-internal-subset
-	    (when (slot-boundp doctype 'dom::%internal-subset)
-	      (sax:start-internal-subset handler)
-	      (dolist (def (dom::%internal-subset doctype))
+	    (when (slot-boundp doctype 'fxml.dom::%internal-subset)
+	      (fxml.sax:start-internal-subset handler)
+	      (dolist (def (fxml.dom::%internal-subset doctype))
 		(apply (car def) handler (cdr def)))
-	      (sax:end-internal-subset handler)))
+	      (fxml.sax:end-internal-subset handler)))
 	  (:canonical-notations
 	    ;; need notations for canonical mode 2
-	    (let* ((ns (dom:notations doctype))
-		   (a (make-array (dom:length ns))))
-	      (when (plusp (dom:length ns))
-		(sax:start-internal-subset handler)
+	    (let* ((ns (fxml.dom:notations doctype))
+		   (a (make-array (fxml.dom:length ns))))
+	      (when (plusp (fxml.dom:length ns))
+		(fxml.sax:start-internal-subset handler)
 		;; get them
-		(dotimes (k (dom:length ns))
-		  (setf (elt a k) (dom:item ns k)))
+		(dotimes (k (fxml.dom:length ns))
+		  (setf (elt a k) (fxml.dom:item ns k)))
 		;; sort them 
-		(setf a (sort a #'rod< :key #'dom:name))
+		(setf a (sort a #'rod< :key #'fxml.dom:name))
 		(loop for n across a do
-		      (sax:notation-declaration handler
-						(dom:name n)
-						(dom:public-id n)
-						(dom:system-id n)))
-		(sax:end-internal-subset handler)))))
-	(sax:end-dtd handler))))
+		      (fxml.sax:notation-declaration handler
+						(fxml.dom:name n)
+						(fxml.dom:public-id n)
+						(fxml.dom:system-id n)))
+		(fxml.sax:end-internal-subset handler)))))
+	(fxml.sax:end-dtd handler))))
   (labels ((walk (node)
-             (dom:do-node-list (child (dom:child-nodes node))
-               (ecase (dom:node-type child)
+             (fxml.dom:do-node-list (child (fxml.dom:child-nodes node))
+               (ecase (fxml.dom:node-type child)
                  (:element
                    (let ((attlist
                           (compute-attributes child
                                               include-xmlns-attributes
                                               include-default-values))
-			 (uri (dom:namespace-uri child))
-                         (lname (dom:local-name child))
-                         (qname (dom:tag-name child)))
-                     (sax:start-element handler uri lname qname attlist)
+			 (uri (fxml.dom:namespace-uri child))
+                         (lname (fxml.dom:local-name child))
+                         (qname (fxml.dom:tag-name child)))
+                     (fxml.sax:start-element handler uri lname qname attlist)
                      (walk child)
-                     (sax:end-element handler uri lname qname)))
+                     (fxml.sax:end-element handler uri lname qname)))
                  (:cdata-section
-                   (sax:start-cdata handler)
-                   (sax:characters handler (dom:data child))
-                   (sax:end-cdata handler))
+                   (fxml.sax:start-cdata handler)
+                   (fxml.sax:characters handler (fxml.dom:data child))
+                   (fxml.sax:end-cdata handler))
                  (:text
-                   (sax:characters handler (dom:data child)))
+                   (fxml.sax:characters handler (fxml.dom:data child)))
                  (:comment
-                   (sax:comment handler (dom:data child)))
+                   (fxml.sax:comment handler (fxml.dom:data child)))
                  (:processing-instruction
-                   (sax:processing-instruction handler
-                                               (dom:target child)
-                                               (dom:data child)))))))
+                   (fxml.sax:processing-instruction handler
+                                               (fxml.dom:target child)
+                                               (fxml.dom:data child)))))))
     (walk document))
-  (sax:end-document handler))
+  (fxml.sax:end-document handler))
 
 (defun compute-attributes (element xmlnsp defaultp)
   (let ((results '()))
-    (dom:do-node-list (a (dom:attributes element))
-      (when (and (or defaultp (dom:specified a))
-                 (or xmlnsp (not (fxml::xmlns-attr-p (rod (dom:name a))))))
+    (fxml.dom:do-node-list (a (fxml.dom:attributes element))
+      (when (and (or defaultp (fxml.dom:specified a))
+                 (or xmlnsp (not (fxml::xmlns-attr-p (rod (fxml.dom:name a))))))
         (push
-         (sax:make-attribute :qname (dom:name a)
-                             :value (dom:value a)
-			     :local-name (dom:local-name a)
-			     :namespace-uri (dom:namespace-uri a)
-                             :specified-p (dom:specified a))
+         (fxml.sax:make-attribute :qname (fxml.dom:name a)
+                             :value (fxml.dom:value a)
+			     :local-name (fxml.dom:local-name a)
+			     :namespace-uri (fxml.dom:namespace-uri a)
+                             :specified-p (fxml.dom:specified a))
          results)))
     (reverse results)))

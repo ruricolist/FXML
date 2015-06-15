@@ -18,7 +18,7 @@
 
 (in-package :fxml)
 
-(defclass fxml-source (klacks:source)
+(defclass fxml-source (fxml.klacks:source)
     (;; args to make-source
      (context :initarg :context)
      (validate :initarg :validate)
@@ -30,7 +30,7 @@
      (current-key :initform nil)
      (current-values)
      (current-attributes)
-     (cdata-section-p :reader klacks:current-cdata-section-p)
+     (cdata-section-p :reader fxml.klacks:current-cdata-section-p)
      ;; extra WITH-SOURCE magic
      (data-behaviour :initform :DTD)
      (namespace-stack :initform (list *initial-namespace-bindings*))
@@ -41,7 +41,7 @@
      (scratch-pad-3 :initarg :scratch-pad-3)
      (scratch-pad-4 :initarg :scratch-pad-4)))
 
-(defmethod klacks:close-source ((source fxml-source))
+(defmethod fxml.klacks:close-source ((source fxml-source))
   (dolist (xstream (slot-value source 'temporary-streams))
     ;; fixme: error handling?
     (close-xstream xstream)))
@@ -70,46 +70,46 @@
       (setf continuation (funcall continuation))
       (assert (not (eq current-key :bogus))))))
 
-(defmethod klacks:peek ((source fxml-source))
+(defmethod fxml.klacks:peek ((source fxml-source))
   (with-source (source current-key current-values)
     (fill-source source)
     (apply #'values current-key current-values)))
 
-(defmethod klacks:peek-value ((source fxml-source))
+(defmethod fxml.klacks:peek-value ((source fxml-source))
   (with-source (source current-key current-values)
     (fill-source source)
     (apply #'values current-values)))
 
-(defmethod klacks:peek-next ((source fxml-source))
+(defmethod fxml.klacks:peek-next ((source fxml-source))
   (with-source (source current-key current-values)
     (setf current-key nil)
     (fill-source source)
     (apply #'values current-key current-values)))
 
-(defmethod klacks:consume ((source fxml-source))
+(defmethod fxml.klacks:consume ((source fxml-source))
   (with-source (source current-key current-values)
     (fill-source source)
     (multiple-value-prog1
         (apply #'values current-key current-values)
       (setf current-key nil))))
 
-(defmethod klacks:map-attributes (fn (source fxml-source))
+(defmethod fxml.klacks:map-attributes (fn (source fxml-source))
   (dolist (a (slot-value source 'current-attributes))
     (funcall fn
-             (sax:attribute-namespace-uri a)
-             (sax:attribute-local-name a)
-             (sax:attribute-qname a)
-             (sax:attribute-value a)
-             (sax:attribute-specified-p a))))
+             (fxml.sax:attribute-namespace-uri a)
+             (fxml.sax:attribute-local-name a)
+             (fxml.sax:attribute-qname a)
+             (fxml.sax:attribute-value a)
+             (fxml.sax:attribute-specified-p a))))
 
-(defmethod klacks:get-attribute
+(defmethod fxml.klacks:get-attribute
     ((source fxml-source) lname &optional uri)
   (dolist (a (slot-value source 'current-attributes))
-    (when (and (equal (sax:attribute-local-name a) lname)
-               (equal (sax:attribute-namespace-uri a) uri))
-      (return (sax:attribute-value a)))))
+    (when (and (equal (fxml.sax:attribute-local-name a) lname)
+               (equal (fxml.sax:attribute-namespace-uri a) uri))
+      (return (fxml.sax:attribute-value a)))))
 
-(defmethod klacks:list-attributes ((source fxml-source))
+(defmethod fxml.klacks:list-attributes ((source fxml-source))
   (slot-value source 'current-attributes))
 
 (defun make-source
@@ -277,7 +277,7 @@
 (defun klacks/eof (source input)
   (with-source (source current-key current-values)
     (p/eof input)
-    (klacks:close-source source)
+    (fxml.klacks:close-source source)
     (setf current-key :end-document)
     (setf current-values nil)
     (lambda () (klacks/nil source))))
@@ -417,24 +417,24 @@
 
 ;;;; terrible kludges
 
-(defclass klacks-dtd-handler (sax:default-handler)
+(defclass klacks-dtd-handler (fxml.sax:default-handler)
     ((handler-source :initarg :source :reader handler-source)
      (internal-subset-p :initform nil :accessor handler-internal-subset-p)))
 
-(defmethod sax:start-internal-subset ((handler klacks-dtd-handler))
+(defmethod fxml.sax:start-internal-subset ((handler klacks-dtd-handler))
   (setf (slot-value (handler-source handler) 'internal-declarations) '())
   (setf (handler-internal-subset-p handler) t))
 
-(defmethod sax:end-internal-subset ((handler klacks-dtd-handler))
+(defmethod fxml.sax:end-internal-subset ((handler klacks-dtd-handler))
   (setf (handler-internal-subset-p handler) nil))
 
-(defmethod sax:entity-resolver ((handler klacks-dtd-handler) fn)
+(defmethod fxml.sax:entity-resolver ((handler klacks-dtd-handler) fn)
   (setf (slot-value (handler-source handler) 'dom-impl-entity-resolver) fn))
 
-(defmethod sax::dtd ((handler klacks-dtd-handler) dtd)
+(defmethod fxml.sax::dtd ((handler klacks-dtd-handler) dtd)
   (setf (slot-value (handler-source handler) 'dom-impl-dtd) dtd))
 
-(defmethod sax:end-dtd ((handler klacks-dtd-handler))
+(defmethod fxml.sax:end-dtd ((handler klacks-dtd-handler))
   (let ((source (handler-source handler)))
     (when (slot-boundp source 'internal-declarations)
       (setf (slot-value source 'internal-declarations)
@@ -450,17 +450,17 @@
               (if (handler-internal-subset-p handler)
                   (push spec (slot-value source 'internal-declarations))
                   (push spec (slot-value source 'external-declarations)))))))
-  (defhandler sax:unparsed-entity-declaration
+  (defhandler fxml.sax:unparsed-entity-declaration
       name public-id system-id notation-name)
-  (defhandler sax:external-entity-declaration
+  (defhandler fxml.sax:external-entity-declaration
       kind name public-id system-id)
-  (defhandler sax:internal-entity-declaration
+  (defhandler fxml.sax:internal-entity-declaration
       kind name value)
-  (defhandler sax:notation-declaration
+  (defhandler fxml.sax:notation-declaration
       name public-id system-id)
-  (defhandler sax:element-declaration
+  (defhandler fxml.sax:element-declaration
       name model)
-  (defhandler sax:attribute-declaration
+  (defhandler fxml.sax:attribute-declaration
       element-name attribute-name type default))
 
 
@@ -475,41 +475,41 @@
         (xstream-name xstream)
         nil)))
 
-(defmethod klacks:current-line-number ((source fxml-source))
+(defmethod fxml.klacks:current-line-number ((source fxml-source))
   (let ((x (source-xstream source)))
     (if x
         (xstream-line-number x)
         nil)))
 
-(defmethod klacks:current-column-number ((source fxml-source))
+(defmethod fxml.klacks:current-column-number ((source fxml-source))
   (let ((x (source-xstream source)))
     (if x
         (xstream-column-number x)
         nil)))
 
-(defmethod klacks:current-system-id ((source fxml-source))
+(defmethod fxml.klacks:current-system-id ((source fxml-source))
   (let ((name (source-stream-name source)))
     (if name
         (stream-name-uri name)
         nil)))
 
-(defmethod klacks:current-xml-base ((source fxml-source))
+(defmethod fxml.klacks:current-xml-base ((source fxml-source))
   (let ((x (car (base-stack (slot-value source 'context)))))
     (if (stringp x)
         x
         (puri:render-uri x nil))))
 
-(defmethod klacks:map-current-namespace-declarations (fn (source fxml-source))
+(defmethod fxml.klacks:map-current-namespace-declarations (fn (source fxml-source))
   (loop
      for (prefix . uri) in (slot-value source 'current-namespace-declarations)
      do
        (funcall fn prefix uri)))
 
-(defmethod klacks:find-namespace-binding (prefix (source fxml-source))
+(defmethod fxml.klacks:find-namespace-binding (prefix (source fxml-source))
   (with-source (source)
     (find-namespace-binding prefix)))
 
-(defmethod klacks:decode-qname (qname (source fxml-source))
+(defmethod fxml.klacks:decode-qname (qname (source fxml-source))
   (with-source (source)
     (multiple-value-bind (prefix local-name) (split-qname qname)
       (values (and prefix (find-namespace-binding prefix))

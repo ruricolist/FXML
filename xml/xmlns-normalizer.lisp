@@ -36,7 +36,7 @@
 
    Return a SAX handler that performs @a[http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407/namespaces-algorithms.html#normalizeDocumentAlgo]{DOM
      3-style namespace normalization} on attribute lists in
-   @fun{sax:start-element} events before passing them on the next handler."
+   @fun{fxml.sax:start-element} events before passing them on the next handler."
   (make-instance 'namespace-normalizer
     :xmlns-stack (list (mapcar (lambda (cons)
 				 (make-xmlns-attribute (car cons) (cdr cons)))
@@ -49,51 +49,51 @@
   (block t
     (dolist (bindings (xmlns-stack handler))
       (dolist (attribute bindings)
-	(when (rod= (sax:attribute-local-name attribute) prefix)
+	(when (rod= (fxml.sax:attribute-local-name attribute) prefix)
 	  (return-from t attribute))))))
 
 (defun normalizer-find-uri (handler uri)
   (block t
     (dolist (bindings (xmlns-stack handler))
       (dolist (attribute bindings)
-	(when (and (rod= (sax:attribute-value attribute) uri)
+	(when (and (rod= (fxml.sax:attribute-value attribute) uri)
 		   ;; default-namespace interessiert uns nicht
-		   (not (rod= (sax:attribute-qname attribute) #"xmlns")))
+		   (not (rod= (fxml.sax:attribute-qname attribute) #"xmlns")))
 	  (return-from t attribute))))))
 
 (defun make-xmlns-attribute (prefix uri)
   (if (and (plusp (length prefix)) (not (equal prefix #"xmlns")))
-      (sax:make-attribute
+      (fxml.sax:make-attribute
        :qname (concatenate 'rod #"xmlns:" prefix)
        :namespace-uri *xmlns-namespace*
        :local-name prefix
        :value uri)
-      (sax:make-attribute
+      (fxml.sax:make-attribute
        :qname #"xmlns"
        :namespace-uri *xmlns-namespace*
        :local-name #"xmlns"
        :value uri)))
 
 (defun rename-attribute (a new-prefix)
-  (setf (sax:attribute-qname a)
-	(concatenate 'rod new-prefix #":" (sax:attribute-local-name a))))
+  (setf (fxml.sax:attribute-qname a)
+	(concatenate 'rod new-prefix #":" (fxml.sax:attribute-local-name a))))
 
-(defmethod sax:start-element
+(defmethod fxml.sax:start-element
     ((handler namespace-normalizer) uri lname qname attrs)
   (when (null uri)
     (setf uri #""))
   (let ((normal-attrs '()))
     (push nil (xmlns-stack handler))
     (dolist (a attrs)
-      (if (rod= *xmlns-namespace* (sax:attribute-namespace-uri a))
+      (if (rod= *xmlns-namespace* (fxml.sax:attribute-namespace-uri a))
 	  (push a (car (xmlns-stack handler)))
 	  (push a normal-attrs)))
     (flet ((push-namespace (prefix uri)
 	     (let ((new (make-xmlns-attribute prefix uri)))
-	       (unless (find (sax:attribute-qname new)
+	       (unless (find (fxml.sax:attribute-qname new)
 			     attrs
 			     :test #'rod=
-			     :key #'sax:attribute-qname)
+			     :key #'fxml.sax:attribute-qname)
 		 (push new (car (xmlns-stack handler)))
 		 (push new attrs)))))
       (multiple-value-bind (prefix local-name) (split-qname qname)
@@ -103,26 +103,26 @@
 	    ((null binding)
 	      (unless (and (null prefix) (zerop (length uri)))
 		(push-namespace prefix uri)))
-	    ((rod= (sax:attribute-value binding) uri))
+	    ((rod= (fxml.sax:attribute-value binding) uri))
 	    ((member binding (car (xmlns-stack handler)))
-	      (setf (sax:attribute-value binding) uri))
+	      (setf (fxml.sax:attribute-value binding) uri))
 	    (t
 	      (push-namespace prefix uri)))))
       (dolist (a normal-attrs)
-	(let ((u (sax:attribute-namespace-uri a)))
+	(let ((u (fxml.sax:attribute-namespace-uri a)))
 	  (when u
-	    (let* ((prefix (split-qname (sax:attribute-qname a)))
+	    (let* ((prefix (split-qname (fxml.sax:attribute-qname a)))
 		   (prefix-binding
 		    (when prefix
 		      (normalizer-find-prefix handler prefix))))
 	      (when (or (null prefix-binding)
-			(not (rod= (sax:attribute-value prefix-binding) u)))
+			(not (rod= (fxml.sax:attribute-value prefix-binding) u)))
 		(let ((uri-binding (normalizer-find-uri handler u)))
 		  (cond
 		    (uri-binding
 		      (rename-attribute
 		       a
-		       (sax:attribute-local-name uri-binding)))
+		       (fxml.sax:attribute-local-name uri-binding)))
 		    ((and prefix (null prefix-binding))
 		      (push-namespace prefix u))
 		    (t
@@ -134,8 +134,8 @@
 			    (push-namespace prefix u)
 			    (rename-attribute a prefix)
 			    (return))))))))))))
-  (sax:start-element (proxy-chained-handler handler) uri lname qname attrs))
+  (fxml.sax:start-element (proxy-chained-handler handler) uri lname qname attrs))
 
-(defmethod sax:end-element ((handler namespace-normalizer) uri lname qname)
+(defmethod fxml.sax:end-element ((handler namespace-normalizer) uri lname qname)
   (pop (xmlns-stack handler))
-  (sax:end-element (proxy-chained-handler handler) (or uri #"") lname qname))
+  (fxml.sax:end-element (proxy-chained-handler handler) (or uri #"") lname qname))

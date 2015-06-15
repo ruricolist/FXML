@@ -6,12 +6,12 @@
 ;;;; Developed 2004 for headcraft - http://headcraft.de/
 ;;;; Copyright: David Lichteblau
 
-(defpackage fxml-xmls
+(defpackage fxml.xmls
   (:use :cl :runes)
   (:export #:make-node #:node-name #:node-ns #:node-attrs #:node-children
            #:make-xmls-builder #:map-node #:make-xpath-navigator))
 
-(in-package :fxml-xmls)
+(in-package :fxml.xmls)
 
 
 ;;;; Knoten
@@ -61,7 +61,7 @@
 
 ;;;; SAX-Handler (Parser)
 
-(defclass xmls-builder (sax:default-handler)
+(defclass xmls-builder (fxml.sax:default-handler)
     ((element-stack :initform nil :accessor element-stack)
      (root :initform nil :accessor root)
      (include-default-values :initform t
@@ -80,19 +80,19 @@
 		 :include-default-values include-default-values
 		 :include-namespace-uri include-namespace-uri))
 
-(defmethod sax:end-document ((handler xmls-builder))
+(defmethod fxml.sax:end-document ((handler xmls-builder))
   (root handler))
 
-(defmethod sax:start-element
+(defmethod fxml.sax:start-element
     ((handler xmls-builder) namespace-uri local-name qname attributes)
   (let* ((include-default-values (include-default-values handler))
 	 (include-namespace-uri (include-namespace-uri handler))
 	 (attributes
           (loop
               for attr in attributes
-	      for attr-namespace-uri = (sax:attribute-namespace-uri attr)
-	      for attr-local-name = (sax:attribute-local-name attr)
-              when (and (or (sax:attribute-specified-p attr)
+	      for attr-namespace-uri = (fxml.sax:attribute-namespace-uri attr)
+	      for attr-local-name = (fxml.sax:attribute-local-name attr)
+              when (and (or (fxml.sax:attribute-specified-p attr)
 			    include-default-values)
 			#+(or)
 			(or (not include-namespace-uri)
@@ -103,10 +103,10 @@
 			     (cond (attr-namespace-uri
 				    (cons attr-local-name attr-namespace-uri))
 				   (t
-				    (sax:attribute-qname attr))))
+				    (fxml.sax:attribute-qname attr))))
                             (t
-                             (sax:attribute-qname attr)))
-                      (sax:attribute-value attr))))
+                             (fxml.sax:attribute-qname attr)))
+                      (fxml.sax:attribute-value attr))))
 	 (namespace (when include-namespace-uri namespace-uri))
          (node (make-node :name local-name
                           :ns namespace
@@ -117,19 +117,19 @@
         (setf (root handler) node))
     (push node (element-stack handler))))
 
-(defmethod sax:end-element
+(defmethod fxml.sax:end-element
     ((handler xmls-builder) namespace-uri local-name qname)
   (declare (ignore namespace-uri local-name qname))
   (let ((node (pop (element-stack handler))))
     (setf (node-children node) (reverse (node-children node)))))
 
-(defmethod sax:characters ((handler xmls-builder) data)
+(defmethod fxml.sax:characters ((handler xmls-builder) data)
   (let* ((parent (car (element-stack handler)))
          (prev (car (node-children parent))))
     ;; Be careful to accept both rods and strings here, so that xmls can be
     ;; used with strings even if fxml is configured to use octet string rods.
     (if (typep prev '(or rod string))
-        ;; um entities herum wird SAX:CHARACTERS mehrfach aufgerufen fuer
+        ;; um entities herum wird FXML.SAX:CHARACTERS mehrfach aufgerufen fuer
         ;; den gleichen Textknoten.  Hier muessen wir den bestehenden Knoten
         ;; erweitern, sonst ist das Dokument nicht normalisiert.
         ;; (XXX Oder sollte man besser den Parser entsprechend aendern?)
@@ -144,7 +144,7 @@
 
 (defun map-node
     (handler node
-     &key (include-xmlns-attributes sax:*include-xmlns-attributes*)
+     &key (include-xmlns-attributes fxml.sax:*include-xmlns-attributes*)
           (include-namespace-uri t))
   (if include-namespace-uri
       (map-node/lnames (fxml:make-namespace-normalizer handler)
@@ -153,7 +153,7 @@
       (map-node/qnames handler node include-xmlns-attributes)))
 
 (defun map-node/lnames (handler node include-xmlns-attributes)
-  (sax:start-document handler)
+  (fxml.sax:start-document handler)
   (labels ((walk (node)
 	     (unless (node-ns node)
 	       (error "serializing with :INCLUDE-NAMESPACE-URI, but node ~
@@ -164,18 +164,18 @@
 		    (lname (node-name node))
 		    (qname lname)	;let the normalizer fix it
 		    )
-	       (sax:start-element handler uri lname qname attlist)
+	       (fxml.sax:start-element handler uri lname qname attlist)
 	       (dolist (child (node-children node))
 		 (typecase child
 		   (list (walk child))
 		   ((or string rod)
-		    (sax:characters handler (string-rod child)))))
-	       (sax:end-element handler uri lname qname))))
+		    (fxml.sax:characters handler (string-rod child)))))
+	       (fxml.sax:end-element handler uri lname qname))))
     (walk node))
-  (sax:end-document handler))
+  (fxml.sax:end-document handler))
 
 (defun map-node/qnames (handler node include-xmlns-attributes)
-  (sax:start-document handler)
+  (fxml.sax:start-document handler)
   (labels ((walk (node)
 	     (when (node-ns node)
 	       (error "serializing without :INCLUDE-NAMESPACE-URI, but node ~
@@ -184,15 +184,15 @@
 		     (compute-attributes/qnames node include-xmlns-attributes))
 		    (qname (string-rod (node-name node)))
                     (lname (nth-value 1 (fxml::split-qname qname))))
-               (sax:start-element handler nil lname qname attlist)
+               (fxml.sax:start-element handler nil lname qname attlist)
                (dolist (child (node-children node))
                  (typecase child
                    (list (walk child))
                    ((or string rod)
-		    (sax:characters handler (string-rod child)))))
-               (sax:end-element handler nil lname qname))))
+		    (fxml.sax:characters handler (string-rod child)))))
+               (fxml.sax:end-element handler nil lname qname))))
     (walk node))
-  (sax:end-document handler))
+  (fxml.sax:end-document handler))
 
 (defun compute-attributes/lnames (node xmlnsp)
   (remove nil
@@ -203,7 +203,7 @@
                       (destructuring-bind (lname &rest uri) name
 			(cond
 			  ((not (equal uri "http://www.w3.org/2000/xmlns/"))
-			   (sax:make-attribute
+			   (fxml.sax:make-attribute
 			    ;; let the normalizer fix the qname
 			    :qname (if uri
 				       (string-rod (concatenate 'string
@@ -215,7 +215,7 @@
 			    :value (string-rod value)
 			    :specified-p t))
 			  (xmlnsp
-			   (sax:make-attribute
+			   (fxml.sax:make-attribute
 			    :qname (string-rod
 				    (if lname
 					(concatenate 'string "xmlns:" lname)
@@ -236,7 +236,7 @@
                                 URI"))
                       (if (or xmlnsp
 			      (not (fxml::xmlns-attr-p (string-rod name))))
-                          (sax:make-attribute :qname (string-rod name)
+                          (fxml.sax:make-attribute :qname (string-rod name)
                                               :value (string-rod value)
                                               :specified-p t)
                           nil)))

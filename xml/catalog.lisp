@@ -256,7 +256,7 @@
                       :root #"catalog"
                       :entity-resolver #'entity-resolver)))))
 
-(defclass catalog-parser (sax:default-handler)
+(defclass catalog-parser (fxml.sax:default-handler)
   ((result :initform (make-entry-file) :accessor result)
    (next :initform '() :accessor next)
    (prefer-stack :initform (list *prefer*) :accessor prefer-stack)
@@ -275,12 +275,12 @@
 (defun get-attribute/lname (name attributes)
   (let ((a (find name attributes
                  :key (lambda (a)
-                        (or (sax:attribute-local-name a)
-                            (sax:attribute-qname a)))
+                        (or (fxml.sax:attribute-local-name a)
+                            (fxml.sax:attribute-qname a)))
                  :test #'string=)))
-    (and a (sax:attribute-value a))))
+    (and a (fxml.sax:attribute-value a))))
 
-(defmethod sax:start-element ((handler catalog-parser) uri lname qname attrs)
+(defmethod fxml.sax:start-element ((handler catalog-parser) uri lname qname attrs)
   (declare (ignore uri))
   (setf lname (or lname qname))
   ;; we can dispatch on lnames only because we validate against the DTD,
@@ -342,10 +342,10 @@
         (push (geturi "catalog")
               (next-catalog-entries (result handler)))))))
 
-(defmethod sax:end-element ((handler catalog-parser) uri lname qname)
+(defmethod fxml.sax:end-element ((handler catalog-parser) uri lname qname)
   (declare (ignore uri lname qname))
   (pop (catalog-base-stack handler))
   (pop (prefer-stack handler)))
 
-(defmethod sax:end-document ((handler catalog-parser))
+(defmethod fxml.sax:end-document ((handler catalog-parser))
   (result handler))

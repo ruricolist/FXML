@@ -22,11 +22,11 @@
 ;; version) or write to the Free Software Foundation, Inc., 59 Temple Place, 
 ;; Suite 330, Boston, MA  02111-1307  USA
 
-(defpackage :xhtml-generator
+(defpackage :fxml.xhtml-generator
   (:use :common-lisp)
   (:export #:with-html #:write-doctype))
 
-(in-package :xhtml-generator)
+(in-package :fxml.xhtml-generator)
 
 ;; html generation
 
@@ -49,11 +49,11 @@
 (defvar *html-sink*)
 
 (defun write-doctype (sink)
-  (sax:start-dtd sink
+  (fxml.sax:start-dtd sink
                  "html"
                  "-//W3C//DTD XHTML 1.0 Transitional//EN"
                  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd")
-  (sax:end-dtd sink))
+  (fxml.sax:end-dtd sink))
 
 (defmacro with-html (sink &rest forms &environment env)
   `(let ((*html-sink* ,sink))
@@ -92,7 +92,7 @@
 	(if (atom form)
             (typecase form
               (keyword (do-ent (get-process form) nil nil nil)) 
-              (string (push `(sax:characters *html-sink* ,form) res))
+              (string (push `(fxml.sax:characters *html-sink* ,form) res))
               (t (push form res)))
             (let ((first (car form)))
               (cond
@@ -110,19 +110,19 @@
   (unless (evenp (length args))
     (error "attribute list ~S isn't even" args))
   `(let ((.tagname. ,string-code))
-     (sax:start-element *html-sink* nil nil .tagname.
+     (fxml.sax:start-element *html-sink* nil nil .tagname.
                         (list
                          ,@(loop
                                for (name value) on args by #'cddr
                                collect
-                                 `(sax:make-attribute
+                                 `(fxml.sax:make-attribute
                                    :qname ,(etypecase name
                                              (symbol (symbol-name name))
                                              (string name))
                                    :value ,value
                                    :specified-p t))))
      ,@body
-     (sax:end-element *html-sink* nil nil .tagname.)))
+     (fxml.sax:end-element *html-sink* nil nil .tagname.)))
 
 (defun emit-without-quoting (str)
   (let ((s (fxml::chained-handler *html-sink*)))
@@ -138,10 +138,10 @@
   (emit-without-quoting (prin1-to-string val)))
 
 (defun princ-safe-http (val)
-  (sax:characters *html-sink* (princ-to-string val)))
+  (fxml.sax:characters *html-sink* (princ-to-string val)))
 
 (defun prin1-safe-http (val)
-  (sax:characters *html-sink* (prin1-to-string val)))
+  (fxml.sax:characters *html-sink* (prin1-to-string val)))
 
 
 ;; --  defining how html tags are handled. --

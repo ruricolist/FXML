@@ -9,13 +9,13 @@
 ;;;; Author: knowledgeTools Int. GmbH
 
 #-fxml-system::utf8dom-file
-(in-package :rune-dom)
+(in-package :fxml.rune-dom)
 
 #+fxml-system::utf8dom-file
-(in-package :utf8-dom)
+(in-package :fxml.utf8-dom)
 
 
-(defclass dom-builder (sax:content-handler)
+(defclass dom-builder (fxml.sax:content-handler)
   ((document      :initform nil :accessor document)
    (element-stack :initform '() :accessor element-stack)
    (internal-subset             :accessor internal-subset)
@@ -31,11 +31,11 @@
 (defun fast-push (new-element vector)
   (vector-push-extend new-element vector (max 1 (array-dimension vector 0))))
 
-(defmethod sax:start-document ((handler dom-builder))
-  (when (and sax:*namespace-processing*
-	     (not (and sax:*include-xmlns-attributes*
-		       sax:*use-xmlns-namespace*)))
-    (error "SAX configuration is incompatible with DOM: *namespace-processing* is activated, but *include-xmlns-attributes* or *use-xmlns-namespace* are not"))
+(defmethod fxml.sax:start-document ((handler dom-builder))
+  (when (and fxml.sax:*namespace-processing*
+	     (not (and fxml.sax:*include-xmlns-attributes*
+		       fxml.sax:*use-xmlns-namespace*)))
+    (error "SAX configuration is incompatible with FXML.DOM: *namespace-processing* is activated, but *include-xmlns-attributes* or *use-xmlns-namespace* are not"))
   (let ((document (make-instance 'document)))
     (setf (slot-value document 'owner) nil
 	  (slot-value document 'doc-type) nil)
@@ -43,32 +43,32 @@
     (push document (element-stack handler))))
 
 ;; fixme
-(defmethod sax::dtd ((handler dom-builder) dtd)
+(defmethod fxml.sax::dtd ((handler dom-builder) dtd)
   (setf (slot-value (document handler) 'dtd) dtd))
 
-(defmethod sax:end-document ((handler dom-builder))
-  (let ((doctype (dom:doctype (document handler))))
+(defmethod fxml.sax:end-document ((handler dom-builder))
+  (let ((doctype (fxml.dom:doctype (document handler))))
     (when doctype
-      (setf (slot-value (dom:entities doctype) 'read-only-p) t)
-      (setf (slot-value (dom:notations doctype) 'read-only-p) t)))
+      (setf (slot-value (fxml.dom:entities doctype) 'read-only-p) t)
+      (setf (slot-value (fxml.dom:notations doctype) 'read-only-p) t)))
   (document handler))
 
-(defmethod sax:entity-resolver ((handler dom-builder) resolver)
+(defmethod fxml.sax:entity-resolver ((handler dom-builder) resolver)
   (setf (slot-value (document handler) 'entity-resolver) resolver))
 
-(defmethod sax:start-dtd ((handler dom-builder) name publicid systemid)
+(defmethod fxml.sax:start-dtd ((handler dom-builder) name publicid systemid)
   (let* ((document (document handler))
          (doctype (%create-document-type name publicid systemid)))
     (setf (slot-value doctype 'owner) document
-	  (slot-value (dom:notations doctype) 'owner) document
-	  (slot-value (dom:entities doctype) 'owner) document
+	  (slot-value (fxml.dom:notations doctype) 'owner) document
+	  (slot-value (fxml.dom:entities doctype) 'owner) document
 	  (slot-value document 'doc-type) doctype)))
 
-(defmethod sax:start-internal-subset ((handler dom-builder))
+(defmethod fxml.sax:start-internal-subset ((handler dom-builder))
   (setf (internal-subset handler) nil))
 
-(defmethod sax:end-internal-subset ((handler dom-builder))
-  (setf (dom::%internal-subset (slot-value (document handler) 'doc-type))
+(defmethod fxml.sax:end-internal-subset ((handler dom-builder))
+  (setf (fxml.dom::%internal-subset (slot-value (document handler) 'doc-type))
 	(nreverse (internal-subset handler)))
   (slot-makunbound handler 'internal-subset))
 
@@ -76,25 +76,25 @@
 	     `(defmethod ,name ((handler dom-builder) ,@args)
 		(when (slot-boundp handler 'internal-subset)
 		  (push (list ',name ,@args) (internal-subset handler))))))
-  (defhandler sax:unparsed-entity-declaration
+  (defhandler fxml.sax:unparsed-entity-declaration
       name public-id system-id notation-name)
-  (defhandler sax:external-entity-declaration
+  (defhandler fxml.sax:external-entity-declaration
       kind name public-id system-id)
-  (defhandler sax:internal-entity-declaration
+  (defhandler fxml.sax:internal-entity-declaration
       kind name value)
-  (defhandler sax:notation-declaration
+  (defhandler fxml.sax:notation-declaration
       name public-id system-id)
-  (defhandler sax:element-declaration
+  (defhandler fxml.sax:element-declaration
       name model)
-  (defhandler sax:attribute-declaration
+  (defhandler fxml.sax:attribute-declaration
       element-name attribute-name type default))
 
-(defmethod sax:start-element
+(defmethod fxml.sax:start-element
     ((handler dom-builder) namespace-uri local-name qname attributes)
   (check-type qname rod)		;catch recoder/builder mismatch
   (flush-characters handler)
   (with-slots (document element-stack) handler
-    (let* ((nsp sax:*namespace-processing*)
+    (let* ((nsp fxml.sax:*namespace-processing*)
 	   (element (make-instance 'element 
                      :tag-name qname
                      :owner document
@@ -106,16 +106,16 @@
       (dolist (attr attributes)
 	(let ((anode
                (if nsp
-		   (dom:create-attribute-ns document
-					    (sax:attribute-namespace-uri attr)
-					    (sax:attribute-qname attr))
-		   (dom:create-attribute document (sax:attribute-qname attr))))
+		   (fxml.dom:create-attribute-ns document
+					    (fxml.sax:attribute-namespace-uri attr)
+					    (fxml.sax:attribute-qname attr))
+		   (fxml.dom:create-attribute document (fxml.sax:attribute-qname attr))))
               (text
-               (dom:create-text-node document (sax:attribute-value attr))))
+               (fxml.dom:create-text-node document (fxml.sax:attribute-value attr))))
           (setf (slot-value anode 'specified-p)
-                (sax:attribute-specified-p attr))
+                (fxml.sax:attribute-specified-p attr))
 	  (setf (slot-value anode 'owner-element) element)
-          (dom:append-child anode text)
+          (fxml.dom:append-child anode text)
           (push anode anodes)))
       (setf (slot-value element 'parent) parent)
       (fast-push element (slot-value parent 'children))
@@ -130,12 +130,12 @@
 	  (setf (slot-value anode 'map) map)))
       (push element element-stack))))
 
-(defmethod sax:end-element ((handler dom-builder) namespace-uri local-name qname)
+(defmethod fxml.sax:end-element ((handler dom-builder) namespace-uri local-name qname)
   (declare (ignore namespace-uri local-name qname))
   (flush-characters handler)
   (pop (element-stack handler)))
 
-(defmethod sax:characters ((handler dom-builder) data)
+(defmethod fxml.sax:characters ((handler dom-builder) data)
   (with-slots (text-buffer) handler
     (cond
       ((null text-buffer)
@@ -162,54 +162,54 @@
 			    :element-type 'rune
 			    :initial-contents data)))
 	(let ((parent (car element-stack)))
-	  (if (eq (dom:node-type parent) :cdata-section)
-	      (setf (dom:data parent) data)
-	      (let ((node (dom:create-text-node document data)))
+	  (if (eq (fxml.dom:node-type parent) :cdata-section)
+	      (setf (fxml.dom:data parent) data)
+	      (let ((node (fxml.dom:create-text-node document data)))
 		(setf (slot-value node 'parent) parent)
 		(fast-push node (slot-value (car element-stack) 'children)))))
 	(setf text-buffer nil)))))
 
-(defmethod sax:start-cdata ((handler dom-builder))
+(defmethod fxml.sax:start-cdata ((handler dom-builder))
   (flush-characters handler)
   (with-slots (document element-stack) handler
-    (let ((node (dom:create-cdata-section document #""))
+    (let ((node (fxml.dom:create-cdata-section document #""))
           (parent (car element-stack)))
       (setf (slot-value node 'parent) parent)
       (fast-push node (slot-value parent 'children))
       (push node element-stack))))
 
-(defmethod sax:end-cdata ((handler dom-builder))
+(defmethod fxml.sax:end-cdata ((handler dom-builder))
   (flush-characters handler)
   (let ((node (pop (slot-value handler 'element-stack))))
-    (assert (eq (dom:node-type node) :cdata-section))))
+    (assert (eq (fxml.dom:node-type node) :cdata-section))))
 
-(defmethod sax:processing-instruction ((handler dom-builder) target data)
+(defmethod fxml.sax:processing-instruction ((handler dom-builder) target data)
   (flush-characters handler)
   (with-slots (document element-stack) handler
-    (let ((node (dom:create-processing-instruction document target data))
+    (let ((node (fxml.dom:create-processing-instruction document target data))
           (parent (car element-stack)))
       (setf (slot-value node 'parent) parent)
       (fast-push node (slot-value (car element-stack) 'children)))))
 
-(defmethod sax:comment ((handler dom-builder) data)
+(defmethod fxml.sax:comment ((handler dom-builder) data)
   (flush-characters handler)
   (with-slots (document element-stack) handler
-    (let ((node (dom:create-comment document data))
+    (let ((node (fxml.dom:create-comment document data))
           (parent (car element-stack)))
       (setf (slot-value node 'parent) parent)
       (fast-push node (slot-value (car element-stack) 'children)))))
 
-(defmethod sax:unparsed-entity-declaration
+(defmethod fxml.sax:unparsed-entity-declaration
     ((handler dom-builder) name public-id system-id notation-name)
   (set-entity handler name public-id system-id notation-name))
 
-(defmethod sax:external-entity-declaration
+(defmethod fxml.sax:external-entity-declaration
     ((handler dom-builder) kind name public-id system-id)
   (ecase kind
     (:general (set-entity handler name public-id system-id nil))
     (:parameter)))
 
-(defmethod sax:internal-entity-declaration
+(defmethod fxml.sax:internal-entity-declaration
     ((handler dom-builder) kind name value)
   (declare (ignore value))
   (ecase kind
@@ -217,7 +217,7 @@
     (:parameter)))
 
 (defun set-entity (handler name pid sid notation)
-  (dom:set-named-item (dom:entities (dom:doctype (document handler)))
+  (fxml.dom:set-named-item (fxml.dom:entities (fxml.dom:doctype (document handler)))
                       (make-instance 'entity
                         :owner (document handler)
                         :name name
@@ -225,9 +225,9 @@
                         :system-id sid
                         :notation-name notation)))
 
-(defmethod sax:notation-declaration
+(defmethod fxml.sax:notation-declaration
     ((handler dom-builder) name public-id system-id)
-  (dom:set-named-item (dom:notations (dom:doctype (document handler)))
+  (fxml.dom:set-named-item (fxml.dom:notations (fxml.dom:doctype (document handler)))
                       (make-instance 'notation
                         :owner (document handler)
                         :name name

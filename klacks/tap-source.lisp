@@ -18,89 +18,89 @@
 
 (in-package :fxml)
 
-(defun klacks:make-tapping-source (upstream-source &optional sax-handler)
-  (make-instance 'klacks:tapping-source
+(defun fxml.klacks:make-tapping-source (upstream-source &optional sax-handler)
+  (make-instance 'fxml.klacks:tapping-source
 		 :upstream-source upstream-source
 		 :dribble-handler sax-handler))
 
-(defclass klacks:tapping-source (klacks:source)
+(defclass fxml.klacks:tapping-source (fxml.klacks:source)
     ((upstream-source :initarg :upstream-source :accessor upstream-source)
      (dribble-handler :initarg :dribble-handler :accessor dribble-handler)
      (seen-event-p :initform nil :accessor seen-event-p)
      (document-done-p :initform nil :accessor document-done-p)))
 
-(defmethod initialize-instance :after ((instance klacks:tapping-source) &key)
+(defmethod initialize-instance :after ((instance fxml.klacks:tapping-source) &key)
   (let ((s-p (make-instance 'klacksax :source (upstream-source instance))))
-    (sax:register-sax-parser (dribble-handler instance) s-p)))
+    (fxml.sax:register-sax-parser (dribble-handler instance) s-p)))
 
 
 ;;; event dribbling 
 
 (defun maybe-dribble (source)
   (unless (or (seen-event-p source) (document-done-p source))
-    (when (eq (klacks:peek (upstream-source source)) :end-document)
+    (when (eq (fxml.klacks:peek (upstream-source source)) :end-document)
       (setf (document-done-p source) t))
-    (klacks:serialize-event (upstream-source source)
+    (fxml.klacks:serialize-event (upstream-source source)
 			    (dribble-handler source)
 			    :consume nil)
     (setf (seen-event-p source) t)))
 
-(defmethod klacks:peek ((source klacks:tapping-source))
+(defmethod fxml.klacks:peek ((source fxml.klacks:tapping-source))
   (multiple-value-prog1
-      (klacks:peek (upstream-source source))
+      (fxml.klacks:peek (upstream-source source))
     (maybe-dribble source)))
 
-(defmethod klacks:peek-value ((source klacks:tapping-source))
+(defmethod fxml.klacks:peek-value ((source fxml.klacks:tapping-source))
   (multiple-value-prog1
-      (klacks:peek-value (upstream-source source))
+      (fxml.klacks:peek-value (upstream-source source))
     (maybe-dribble source)))
 
-(defmethod klacks:peek-next ((source klacks:tapping-source))
+(defmethod fxml.klacks:peek-next ((source fxml.klacks:tapping-source))
   (setf (seen-event-p source) nil)
   (multiple-value-prog1
-      (klacks:peek-next (upstream-source source))
+      (fxml.klacks:peek-next (upstream-source source))
     (maybe-dribble source)))
 
-(defmethod klacks:consume ((source klacks:tapping-source))
+(defmethod fxml.klacks:consume ((source fxml.klacks:tapping-source))
   (maybe-dribble source)
   (multiple-value-prog1
-      (klacks:consume (upstream-source source))
+      (fxml.klacks:consume (upstream-source source))
     (setf (seen-event-p source) nil)))
 
 
 ;;; loop through
 
-(defmethod klacks:close-source ((source klacks:tapping-source))
-  (klacks:close-source (upstream-source source)))
+(defmethod fxml.klacks:close-source ((source fxml.klacks:tapping-source))
+  (fxml.klacks:close-source (upstream-source source)))
 
-(defmethod klacks:map-attributes (fn (source klacks:tapping-source))
-  (klacks:map-attributes fn (upstream-source source)))
+(defmethod fxml.klacks:map-attributes (fn (source fxml.klacks:tapping-source))
+  (fxml.klacks:map-attributes fn (upstream-source source)))
 
-(defmethod klacks:map-current-namespace-declarations
-    (fn (source klacks:tapping-source))
-  (klacks:map-current-namespace-declarations fn (upstream-source source)))
+(defmethod fxml.klacks:map-current-namespace-declarations
+    (fn (source fxml.klacks:tapping-source))
+  (fxml.klacks:map-current-namespace-declarations fn (upstream-source source)))
 
-(defmethod klacks:list-attributes ((source klacks:tapping-source))
-  (klacks:list-attributes (upstream-source source)))
+(defmethod fxml.klacks:list-attributes ((source fxml.klacks:tapping-source))
+  (fxml.klacks:list-attributes (upstream-source source)))
 
-(defmethod klacks:current-line-number ((source klacks:tapping-source))
-  (klacks:current-line-number (upstream-source source)))
+(defmethod fxml.klacks:current-line-number ((source fxml.klacks:tapping-source))
+  (fxml.klacks:current-line-number (upstream-source source)))
 
-(defmethod klacks:current-column-number ((source klacks:tapping-source))
-  (klacks:current-column-number (upstream-source source)))
+(defmethod fxml.klacks:current-column-number ((source fxml.klacks:tapping-source))
+  (fxml.klacks:current-column-number (upstream-source source)))
 
-(defmethod klacks:current-system-id ((source klacks:tapping-source))
-  (klacks:current-system-id (upstream-source source)))
+(defmethod fxml.klacks:current-system-id ((source fxml.klacks:tapping-source))
+  (fxml.klacks:current-system-id (upstream-source source)))
 
-(defmethod klacks:current-xml-base ((source klacks:tapping-source))
-  (klacks:current-xml-base (upstream-source source)))
+(defmethod fxml.klacks:current-xml-base ((source fxml.klacks:tapping-source))
+  (fxml.klacks:current-xml-base (upstream-source source)))
 
-(defmethod klacks:current-cdata-section-p ((source klacks:tapping-source))
-  (klacks:current-cdata-section-p (upstream-source source)))
+(defmethod fxml.klacks:current-cdata-section-p ((source fxml.klacks:tapping-source))
+  (fxml.klacks:current-cdata-section-p (upstream-source source)))
 
-(defmethod klacks:find-namespace-binding
-    (prefix (source klacks:tapping-source))
-  (klacks:find-namespace-binding prefix (upstream-source source)))
+(defmethod fxml.klacks:find-namespace-binding
+    (prefix (source fxml.klacks:tapping-source))
+  (fxml.klacks:find-namespace-binding prefix (upstream-source source)))
 
-(defmethod klacks:decode-qname (qname (source klacks:tapping-source))
-  (klacks:decode-qname qname (upstream-source source)))
+(defmethod fxml.klacks:decode-qname (qname (source fxml.klacks:tapping-source))
+  (fxml.klacks:decode-qname qname (upstream-source source)))

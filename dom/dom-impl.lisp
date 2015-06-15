@@ -1,4 +1,4 @@
-;;;; dom-impl.lisp -- Implementation of DOM 1 Core -*- package: rune-dom -*-
+;;;; dom-impl.lisp -- Implementation of DOM 1 Core -*- package: fxml.rune-dom -*-
 ;;;;
 ;;;; This file is part of the FXML parser, released under Lisp-LGPL.
 ;;;; See file COPYING for details.
@@ -8,22 +8,22 @@
 ;;;; Author: knowledgeTools Int. GmbH
 
 #-fxml-system::utf8dom-file
-(defpackage :rune-dom
+(defpackage :fxml.rune-dom
   (:use :cl :runes)
   #+rune-is-character (:nicknames :fxml-dom)
   (:export #:implementation #:make-dom-builder #:create-document))
 
 #+fxml-system::utf8dom-file
-(defpackage :utf8-dom
+(defpackage :fxml.utf8-dom
   (:use :cl :utf8-runes)
   (:nicknames :fxml-dom)
   (:export #:implementation #:make-dom-builder #:create-document))
 
 #-fxml-system::utf8dom-file
-(in-package :rune-dom)
+(in-package :fxml.rune-dom)
 
 #+fxml-system::utf8dom-file
-(in-package :utf8-dom)
+(in-package :fxml.utf8-dom)
 
 
 ;; Classes
@@ -36,114 +36,114 @@
    (lambda (c s)
      (format s "~A (~D):~%~?"
              (dom-exception-key c)
-             (dom:code c)
+             (fxml.dom:code c)
              (dom-exception-string c)
              (dom-exception-arguments c)))))
 
-(defclass node (dom:node)
+(defclass node (fxml.dom:node)
   ((parent      :initarg :parent        :initform nil)
    (children    :initarg :children      :initform (make-node-list))
    (owner       :initarg :owner         :initform nil)
    (read-only-p :initform nil           :reader read-only-p)
    (map         :initform nil)))
 
-(defmethod dom:prefix ((node node)) nil)
-(defmethod dom:local-name ((node node)) nil)
-(defmethod dom:namespace-uri ((node node)) nil)
+(defmethod fxml.dom:prefix ((node node)) nil)
+(defmethod fxml.dom:local-name ((node node)) nil)
+(defmethod fxml.dom:namespace-uri ((node node)) nil)
 
 (defclass namespace-mixin ()
-  ((prefix        :initarg :prefix        :reader dom:prefix)
-   (local-name    :initarg :local-name    :reader dom:local-name)
-   (namespace-uri :initarg :namespace-uri :reader dom:namespace-uri)))
+  ((prefix        :initarg :prefix        :reader fxml.dom:prefix)
+   (local-name    :initarg :local-name    :reader fxml.dom:local-name)
+   (namespace-uri :initarg :namespace-uri :reader fxml.dom:namespace-uri)))
 
-(defmethod (setf dom:prefix) (newval (node namespace-mixin))
+(defmethod (setf fxml.dom:prefix) (newval (node namespace-mixin))
   (assert-writeable node)
   (when newval
     (safe-split-qname (concatenate 'rod newval #":foo")
-		      (dom:namespace-uri node)))
+		      (fxml.dom:namespace-uri node)))
   (setf (slot-value node 'prefix) newval))
 
-(defclass document (node dom:document)
-  ((doc-type    :initarg :doc-type     :reader dom:doctype)
+(defclass document (node fxml.dom:document)
+  ((doc-type    :initarg :doc-type     :reader fxml.dom:doctype)
    (dtd         :initform nil          :reader dtd)
    (entity-resolver :initform nil)))
 
-(defclass document-fragment (node dom:document-fragment)
+(defclass document-fragment (node fxml.dom:document-fragment)
   ())
 
-(defclass character-data (node dom:character-data)
-  ((value       :initarg :data          :reader dom:data)))
+(defclass character-data (node fxml.dom:character-data)
+  ((value       :initarg :data          :reader fxml.dom:data)))
 
-(defclass attribute (namespace-mixin node dom:attr)
-  ((name        :initarg :name          :reader dom:name)
-   (owner-element :initarg :owner-element :reader dom:owner-element)
-   (specified-p :initarg :specified-p   :reader dom:specified)))
+(defclass attribute (namespace-mixin node fxml.dom:attr)
+  ((name        :initarg :name          :reader fxml.dom:name)
+   (owner-element :initarg :owner-element :reader fxml.dom:owner-element)
+   (specified-p :initarg :specified-p   :reader fxml.dom:specified)))
 
-(defmethod (setf dom:prefix) :before (newval (node attribute))
-  (when (rod= (dom:node-name node) #"xmlns")
+(defmethod (setf fxml.dom:prefix) :before (newval (node attribute))
+  (when (rod= (fxml.dom:node-name node) #"xmlns")
     (dom-error :NAMESPACE_ERR "must not change xmlns attribute prefix")))
 
-(defmethod (setf dom:prefix) :after (newval (node attribute))
+(defmethod (setf fxml.dom:prefix) :after (newval (node attribute))
   (setf (slot-value node 'name)
-	(concatenate 'rod newval #":" (dom:local-name node))))
+	(concatenate 'rod newval #":" (fxml.dom:local-name node))))
 
 (defmethod print-object ((object attribute) stream)
   (print-unreadable-object (object stream :type t :identity t)
     (format stream "~A=~S"
-            (rod-string (dom:name object))
-            (rod-string (dom:value object)))))
+            (rod-string (fxml.dom:name object))
+            (rod-string (fxml.dom:value object)))))
 
-(defclass element (namespace-mixin node dom:element)
-  ((tag-name    :initarg :tag-name      :reader dom:tag-name)
-   (attributes  :initarg :attributes    :reader dom:attributes)))
+(defclass element (namespace-mixin node fxml.dom:element)
+  ((tag-name    :initarg :tag-name      :reader fxml.dom:tag-name)
+   (attributes  :initarg :attributes    :reader fxml.dom:attributes)))
 
-(defmethod (setf dom:prefix) :after (newval (node element))
+(defmethod (setf fxml.dom:prefix) :after (newval (node element))
   (setf (slot-value node 'tag-name)
-	(concatenate 'rod newval #":" (dom:local-name node))))
+	(concatenate 'rod newval #":" (fxml.dom:local-name node))))
 
 (defmethod print-object ((object element) stream)
   (print-unreadable-object (object stream :type t :identity t)
-    (princ (rod-string (dom:tag-name object)) stream)))
+    (princ (rod-string (fxml.dom:tag-name object)) stream)))
 
-(defclass text (character-data dom:text)
+(defclass text (character-data fxml.dom:text)
   ())
 
-(defclass comment (character-data dom:comment)
+(defclass comment (character-data fxml.dom:comment)
   ())
 
-(defclass cdata-section (text dom:cdata-section)
+(defclass cdata-section (text fxml.dom:cdata-section)
   ())
 
-(defclass document-type (node dom:document-type)
-  ((name          :initarg :name          :reader dom:name)
-   (public-id     :initarg :public-id     :reader dom:public-id)
-   (system-id     :initarg :system-id     :reader dom:system-id)
-   (entities      :initarg :entities      :reader dom:entities)
-   (notations     :initarg :notations     :reader dom:notations)
-   (dom::%internal-subset                 :accessor dom::%internal-subset)))
+(defclass document-type (node fxml.dom:document-type)
+  ((name          :initarg :name          :reader fxml.dom:name)
+   (public-id     :initarg :public-id     :reader fxml.dom:public-id)
+   (system-id     :initarg :system-id     :reader fxml.dom:system-id)
+   (entities      :initarg :entities      :reader fxml.dom:entities)
+   (notations     :initarg :notations     :reader fxml.dom:notations)
+   (fxml.dom::%internal-subset                 :accessor fxml.dom::%internal-subset)))
 
-(defclass notation (node dom:notation)
-  ((name          :initarg :name          :reader dom:name)
-   (public-id     :initarg :public-id     :reader dom:public-id)
-   (system-id     :initarg :system-id     :reader dom:system-id)))
+(defclass notation (node fxml.dom:notation)
+  ((name          :initarg :name          :reader fxml.dom:name)
+   (public-id     :initarg :public-id     :reader fxml.dom:public-id)
+   (system-id     :initarg :system-id     :reader fxml.dom:system-id)))
 
-(defclass entity (node dom:entity)
-  ((name          :initarg :name          :reader dom:name)
-   (public-id     :initarg :public-id     :reader dom:public-id)
-   (system-id     :initarg :system-id     :reader dom:system-id)
-   (notation-name :initarg :notation-name :reader dom:notation-name)))
+(defclass entity (node fxml.dom:entity)
+  ((name          :initarg :name          :reader fxml.dom:name)
+   (public-id     :initarg :public-id     :reader fxml.dom:public-id)
+   (system-id     :initarg :system-id     :reader fxml.dom:system-id)
+   (notation-name :initarg :notation-name :reader fxml.dom:notation-name)))
 
-(defclass entity-reference (node dom:entity-reference)
-  ((name          :initarg :name          :reader dom:name)))
+(defclass entity-reference (node fxml.dom:entity-reference)
+  ((name          :initarg :name          :reader fxml.dom:name)))
 
-(defclass processing-instruction (node dom:processing-instruction)
-  ((target        :initarg :target        :reader dom:target)
-   (data          :initarg :data          :reader dom:data)))
+(defclass processing-instruction (node fxml.dom:processing-instruction)
+  ((target        :initarg :target        :reader fxml.dom:target)
+   (data          :initarg :data          :reader fxml.dom:data)))
 
-(defclass named-node-map (dom:named-node-map)
-  ((items         :initarg :items         :reader dom:items
+(defclass named-node-map (fxml.dom:named-node-map)
+  ((items         :initarg :items         :reader fxml.dom:items
                   :initform nil)
-   (owner         :initarg :owner         :reader dom:owner-document)
+   (owner         :initarg :owner         :reader fxml.dom:owner-document)
    (read-only-p   :initform nil           :reader read-only-p)
    (element-type  :initarg :element-type)))
 
@@ -179,22 +179,22 @@
   (when (read-only-p node)
     (dom-error :NO_MODIFICATION_ALLOWED_ERR "~S is marked read-only." node)))
 
-(defun dom:map-node-list (fn nodelist)
-  (dotimes (i (dom:length nodelist))
-    (funcall fn (dom:item nodelist i))))
+(defun fxml.dom:map-node-list (fn nodelist)
+  (dotimes (i (fxml.dom:length nodelist))
+    (funcall fn (fxml.dom:item nodelist i))))
 
-(defmacro dom:do-node-list ((var nodelist &optional resultform) &body body)
+(defmacro fxml.dom:do-node-list ((var nodelist &optional resultform) &body body)
   `(block nil
-     (dom:map-node-list (lambda (,var) ,@body) ,nodelist)
+     (fxml.dom:map-node-list (lambda (,var) ,@body) ,nodelist)
      ,resultform))
 
-(defun dom:map-node-map (fn node-map)
+(defun fxml.dom:map-node-map (fn node-map)
   (with-slots (items) node-map
     (mapc fn items)))
 
-(defmacro dom:do-node-map ((var node-map &optional resultform) &body body)
+(defmacro fxml.dom:do-node-map ((var node-map &optional resultform) &body body)
   `(block nil
-     (dom:map-node-map (lambda (,var) ,@body) ,node-map)
+     (fxml.dom:map-node-map (lambda (,var) ,@body) ,node-map)
      ,resultform))
 
 (defmacro dovector ((var vector &optional resultform) &body body)
@@ -239,7 +239,7 @@
 (defun dom-error (key fmt &rest args)
   (error 'dom-exception :key key :string fmt :arguments args))
 
-(defmethod dom:code ((self dom-exception))
+(defmethod fxml.dom:code ((self dom-exception))
   (ecase (dom-exception-key self)
     (:INDEX_SIZE_ERR                    1)
     (:DOMSTRING_SIZE_ERR                2)
@@ -259,7 +259,7 @@
 
 ;; dom-implementation protocol
 
-(defmethod dom:has-feature ((factory (eql 'implementation)) feature version)
+(defmethod fxml.dom:has-feature ((factory (eql 'implementation)) feature version)
   (and (or (string-equal (rod-string feature) "xml")
 	   (string-equal (rod-string feature) "core"))
        (or (zerop (length version))
@@ -278,15 +278,15 @@
     :public-id publicid
     :system-id systemid))
 
-(defmethod dom:create-document-type
+(defmethod fxml.dom:create-document-type
     ((factory (eql 'implementation)) name publicid systemid)
   (safe-split-qname name #"")
   (let ((result (%create-document-type name publicid systemid)))
-    (setf (slot-value (dom:entities result) 'read-only-p) t)
-    (setf (slot-value (dom:notations result) 'read-only-p) t)
+    (setf (slot-value (fxml.dom:entities result) 'read-only-p) t)
+    (setf (slot-value (fxml.dom:notations result) 'read-only-p) t)
     result))
 
-(defmethod dom:create-document
+(defmethod fxml.dom:create-document
     ((factory (eql 'implementation)) uri qname doctype)
   (let ((document (make-instance 'document)))
     (setf (slot-value document 'owner) nil
@@ -295,27 +295,27 @@
       (unless (typep doctype 'document-type)
 	(dom-error :WRONG_DOCUMENT_ERR
 		   "doctype was created by a different dom implementation"))
-      (when (dom:owner-document doctype)
+      (when (fxml.dom:owner-document doctype)
 	(dom-error :WRONG_DOCUMENT_ERR "doctype already in use"))
       (setf (slot-value doctype 'owner) document
-	    (slot-value (dom:notations doctype) 'owner) document
-	    (slot-value (dom:entities doctype) 'owner) document))
+	    (slot-value (fxml.dom:notations doctype) 'owner) document
+	    (slot-value (fxml.dom:entities doctype) 'owner) document))
     (when (or uri qname)
-      (dom:append-child document (dom:create-element-ns document uri qname)))
+      (fxml.dom:append-child document (fxml.dom:create-element-ns document uri qname)))
     document))
 
 ;; document-fragment protocol
 ;; document protocol
 
-(defmethod dom:implementation ((document document))
+(defmethod fxml.dom:implementation ((document document))
   'implementation)
 
-(defmethod dom:document-element ((document document))
-  (dovector (k (dom:child-nodes document))
+(defmethod fxml.dom:document-element ((document document))
+  (dovector (k (fxml.dom:child-nodes document))
     (cond ((typep k 'element)
            (return k)))))
 
-(defmethod dom:create-element ((document document) tag-name)
+(defmethod fxml.dom:create-element ((document document) tag-name)
   (setf tag-name (%rod tag-name))
   (unless (valid-name-p tag-name)
     (dom-error :INVALID_CHARACTER_ERR "not a name: ~A" (rod-string tag-name)))
@@ -354,7 +354,7 @@
 	(dom-error :NAMESPACE_ERR "invalid uri for prefix `xmlns'")))
     (values prefix local-name)))
 
-(defmethod dom:create-element-ns ((document document) uri qname)
+(defmethod fxml.dom:create-element-ns ((document document) uri qname)
   (setf qname (%rod qname))
   (multiple-value-bind (prefix local-name)
       (safe-split-qname qname uri)
@@ -372,29 +372,29 @@
       (add-default-attributes result)
       result)))
 
-(defmethod dom:create-document-fragment ((document document))
+(defmethod fxml.dom:create-document-fragment ((document document))
   (make-instance 'document-fragment
     :owner document))
 
-(defmethod dom:create-text-node ((document document) data)
+(defmethod fxml.dom:create-text-node ((document document) data)
   (setf data (%rod data))
   (make-instance 'text
     :data data
     :owner document))
 
-(defmethod dom:create-comment ((document document) data)
+(defmethod fxml.dom:create-comment ((document document) data)
   (setf data (%rod data))
   (make-instance 'comment
     :data data
     :owner document))
 
-(defmethod dom:create-cdata-section ((document document) data)
+(defmethod fxml.dom:create-cdata-section ((document document) data)
   (setf data (%rod data))
   (make-instance 'cdata-section
     :data data
     :owner document))
 
-(defmethod dom:create-processing-instruction ((document document) target data)
+(defmethod fxml.dom:create-processing-instruction ((document document) target data)
   (setf target (%rod target))
   (setf data (%rod data))
   (unless (valid-name-p target)
@@ -404,7 +404,7 @@
     :target target
     :data data))
 
-(defmethod dom:create-attribute ((document document) name)
+(defmethod fxml.dom:create-attribute ((document document) name)
   (setf name (%rod name))
   (unless (valid-name-p name)
     (dom-error :INVALID_CHARACTER_ERR "not a name: ~A" (rod-string name)))
@@ -417,7 +417,7 @@
     :owner-element nil
     :owner document))
 
-(defmethod dom:create-attribute-ns ((document document) uri qname)
+(defmethod fxml.dom:create-attribute-ns ((document document) uri qname)
   (setf uri (%rod uri))
   (setf qname (%rod qname))
   (when (and (rod= qname #"xmlns")
@@ -434,7 +434,7 @@
       :owner-element nil
       :owner document)))
 
-(defmethod dom:create-entity-reference ((document document) name)
+(defmethod fxml.dom:create-entity-reference ((document document) name)
   (setf name (%rod name))
   (unless (valid-name-p name)
     (dom-error :INVALID_CHARACTER_ERR "not a name: ~A" (rod-string name)))
@@ -447,9 +447,9 @@
   (let ((result (make-node-list))
 	(wild-p (rod= tag-name #"*")))
     (labels ((walk (n)
-	       (dovector (c (dom:child-nodes n))
-		 (when (dom:element-p c)
-		   (when (or wild-p (rod= tag-name (dom:node-name c)))
+	       (dovector (c (fxml.dom:child-nodes n))
+		 (when (fxml.dom:element-p c)
+		   (when (or wild-p (rod= tag-name (fxml.dom:node-name c)))
 		     (vector-push-extend c result (extension result)))
 		   (walk c)))))
       (walk node))
@@ -462,37 +462,37 @@
 	(wild-uri-p (rod= uri #"*"))
 	(wild-lname-p (rod= lname #"*")))
     (labels ((walk (n)
-	       (dovector (c (dom:child-nodes n))
-		 (when (dom:element-p c)
-		   (when (and (or wild-lname-p (rod= lname (dom:local-name c)))
-			      (or wild-uri-p (rod= uri (dom:namespace-uri c))))
+	       (dovector (c (fxml.dom:child-nodes n))
+		 (when (fxml.dom:element-p c)
+		   (when (and (or wild-lname-p (rod= lname (fxml.dom:local-name c)))
+			      (or wild-uri-p (rod= uri (fxml.dom:namespace-uri c))))
 		     (vector-push-extend c result (extension result)))
 		   (walk c)))))
       (walk node))
     result))
 
-(defmethod dom:get-elements-by-tag-name ((document document) tag-name)
+(defmethod fxml.dom:get-elements-by-tag-name ((document document) tag-name)
   (get-elements-by-tag-name-internal document tag-name))
 
-(defmethod dom:get-elements-by-tag-name-ns ((document document) uri lname)
+(defmethod fxml.dom:get-elements-by-tag-name-ns ((document document) uri lname)
   (get-elements-by-tag-name-internal-ns document uri lname))
 
-(defmethod dom:get-element-by-id ((document document) id)
+(defmethod fxml.dom:get-element-by-id ((document document) id)
   (block t
     (unless (dtd document)
       (return-from t nil))
     (setf id (%rod id))
     (labels ((walk (n)
-	       (dovector (c (dom:child-nodes n))
-		 (when (dom:element-p c)
+	       (dovector (c (fxml.dom:child-nodes n))
+		 (when (fxml.dom:element-p c)
 		   (let ((e (fxml::find-element
-			     (real-rod (dom:tag-name c))
+			     (real-rod (fxml.dom:tag-name c))
 			     (dtd document))))
 		     (when e
 		       (dolist (a (fxml::elmdef-attributes e))
 			 (when (eq :ID (fxml::attdef-type a))
 			   (let* ((name (%rod (fxml::attdef-name a)))
-				  (value (dom:get-attribute c name)))
+				  (value (fxml.dom:get-attribute c name)))
 			     (when (and value (rod= value id))
 			       (return-from t c)))))))
 		   (walk c)))))
@@ -501,28 +501,28 @@
 
 ;;; Node
 
-(defmethod dom:has-attributes ((element node))
+(defmethod fxml.dom:has-attributes ((element node))
   nil)
 
-(defmethod dom:is-supported ((node node) feature version)
-  (dom:has-feature 'implementation feature version))
+(defmethod fxml.dom:is-supported ((node node) feature version)
+  (fxml.dom:has-feature 'implementation feature version))
 
-(defmethod dom:parent-node ((node node))
+(defmethod fxml.dom:parent-node ((node node))
   (slot-value node 'parent))
 
-(defmethod dom:child-nodes ((node node))
+(defmethod fxml.dom:child-nodes ((node node))
   (slot-value node 'children))
 
-(defmethod dom:first-child ((node node))
-  (dom:item (slot-value node 'children) 0))
+(defmethod fxml.dom:first-child ((node node))
+  (fxml.dom:item (slot-value node 'children) 0))
 
-(defmethod dom:last-child ((node node))
+(defmethod fxml.dom:last-child ((node node))
   (with-slots (children) node
     (if (plusp (length children))
         (elt children (1- (length children)))
         nil)))
 
-(defmethod dom:previous-sibling ((node node))
+(defmethod fxml.dom:previous-sibling ((node node))
   (with-slots (parent) node
     (when parent
       (with-slots (children) parent
@@ -531,7 +531,7 @@
               nil
               (elt children index)))))))
 
-(defmethod dom:next-sibling ((node node))
+(defmethod fxml.dom:next-sibling ((node node))
   (with-slots (parent) node
     (when parent
       (with-slots (children) parent
@@ -540,7 +540,7 @@
               nil
               (elt children index)))))))
 
-(defmethod dom:owner-document ((node node))
+(defmethod fxml.dom:owner-document ((node node))
   (slot-value node 'owner))
 
 (defun ensure-valid-insertion-request (node new-child)
@@ -548,30 +548,30 @@
   (unless (can-adopt-p node new-child)
     (dom-error :HIERARCHY_REQUEST_ERR "~S cannot adopt ~S." node new-child))
   #+(or)                                ;XXX needs to be moved elsewhere
-  (when (eq (dom:node-type node) :document)
-    (let ((child-type (dom:node-type new-child)))
+  (when (eq (fxml.dom:node-type node) :document)
+    (let ((child-type (fxml.dom:node-type new-child)))
       (when (and (member child-type '(:element :document-type))
-                 (find child-type (dom:child-nodes node) :key #'dom:node-type))
+                 (find child-type (fxml.dom:child-nodes node) :key #'fxml.dom:node-type))
         (dom-error :HIERARCHY_REQUEST_ERR
                    "~S cannot adopt a second child of type ~S."
                    node child-type))))
-  (unless (eq (if (eq (dom:node-type node) :document)
+  (unless (eq (if (eq (fxml.dom:node-type node) :document)
                   node
-                  (dom:owner-document node))
-              (dom:owner-document new-child))
+                  (fxml.dom:owner-document node))
+              (fxml.dom:owner-document new-child))
     (dom-error :WRONG_DOCUMENT_ERR
                "~S cannot adopt ~S, since it was created by a different document."
                node new-child))
-  (do ((n node (dom:parent-node n)))
+  (do ((n node (fxml.dom:parent-node n)))
       ((null n))
     (when (eq n new-child)
       (dom-error :HIERARCHY_REQUEST_ERR
                  "~S cannot adopt ~S, since that would create a cycle"
                  node new-child)))
   (unless (null (slot-value new-child 'parent))
-    (dom:remove-child (slot-value new-child 'parent) new-child)))
+    (fxml.dom:remove-child (slot-value new-child 'parent) new-child)))
 
-(defmethod dom:insert-before ((node node) (new-child node) ref-child)
+(defmethod fxml.dom:insert-before ((node node) (new-child node) ref-child)
   (ensure-valid-insertion-request node new-child)
   (with-slots (children) node
     (if ref-child
@@ -586,14 +586,14 @@
     (setf (slot-value new-child 'parent) node)
     new-child))
 
-(defmethod dom:insert-before
+(defmethod fxml.dom:insert-before
     ((node node) (fragment document-fragment) ref-child)
-  (let ((children (dom:child-nodes fragment)))
+  (let ((children (fxml.dom:child-nodes fragment)))
     (fxml::while (plusp (length children))
-      (dom:insert-before node (elt children 0) ref-child)))
+      (fxml.dom:insert-before node (elt children 0) ref-child)))
   fragment)
 
-(defmethod dom:replace-child ((node node) (new-child node) (old-child node))
+(defmethod fxml.dom:replace-child ((node node) (new-child node) (old-child node))
   (ensure-valid-insertion-request node new-child)
   (with-slots (children) node
     (let ((i (position old-child children)))
@@ -604,12 +604,12 @@
     (setf (slot-value old-child 'parent) nil)
     old-child))
 
-(defmethod dom:replace-child
+(defmethod fxml.dom:replace-child
     ((node node) (new-child document-fragment) (old-child node))
-  (dom:insert-before node new-child old-child)
-  (dom:remove-child node old-child))
+  (fxml.dom:insert-before node new-child old-child)
+  (fxml.dom:remove-child node old-child))
 
-(defmethod dom:remove-child ((node node) (old-child node))
+(defmethod fxml.dom:remove-child ((node node) (old-child node))
   (assert-writeable node)
   (with-slots (children) node
     (let ((i (position old-child children)))
@@ -620,21 +620,21 @@
     (setf (slot-value old-child 'parent) nil)
     old-child))
 
-(defmethod dom:append-child ((node node) (new-child node))
+(defmethod fxml.dom:append-child ((node node) (new-child node))
   (ensure-valid-insertion-request node new-child)
   (with-slots (children) node
     (vector-push-extend new-child children (extension children))
     (setf (slot-value new-child 'parent) node)
     new-child))
 
-(defmethod dom:has-child-nodes ((node node))
+(defmethod fxml.dom:has-child-nodes ((node node))
   (plusp (length (slot-value node 'children))))
 
-(defmethod dom:append-child ((node node) (new-child document-fragment))
+(defmethod fxml.dom:append-child ((node node) (new-child document-fragment))
   (assert-writeable node)
-  (let ((children (dom:child-nodes new-child)))
+  (let ((children (fxml.dom:child-nodes new-child)))
     (fxml::while (plusp (length children))
-      (dom:append-child node (elt children 0))))
+      (fxml.dom:append-child node (elt children 0))))
   new-child)
 
 ;; was auf node noch implemetiert werden muss:
@@ -646,83 +646,83 @@
 
 ;; node-name 
 
-(defmethod dom:node-name ((self document))
+(defmethod fxml.dom:node-name ((self document))
   #"#document")
 
-(defmethod dom:node-name ((self document-fragment))
+(defmethod fxml.dom:node-name ((self document-fragment))
   #"#document-fragment")
 
-(defmethod dom:node-name ((self text))
+(defmethod fxml.dom:node-name ((self text))
   #"#text")
 
-(defmethod dom:node-name ((self cdata-section))
+(defmethod fxml.dom:node-name ((self cdata-section))
   #"#cdata-section")
 
-(defmethod dom:node-name ((self comment))
+(defmethod fxml.dom:node-name ((self comment))
   #"#comment")
 
-(defmethod dom:node-name ((self attribute))
-  (dom:name self))
+(defmethod fxml.dom:node-name ((self attribute))
+  (fxml.dom:name self))
 
-(defmethod dom:node-name ((self element))
-  (dom:tag-name self))
+(defmethod fxml.dom:node-name ((self element))
+  (fxml.dom:tag-name self))
 
-(defmethod dom:node-name ((self document-type))
-  (dom:name self))
+(defmethod fxml.dom:node-name ((self document-type))
+  (fxml.dom:name self))
 
-(defmethod dom:node-name ((self notation))
-  (dom:name self))
+(defmethod fxml.dom:node-name ((self notation))
+  (fxml.dom:name self))
 
-(defmethod dom:node-name ((self entity))
-  (dom:name self))
+(defmethod fxml.dom:node-name ((self entity))
+  (fxml.dom:name self))
 
-(defmethod dom:node-name ((self entity-reference))
-  (dom:name self))
+(defmethod fxml.dom:node-name ((self entity-reference))
+  (fxml.dom:name self))
 
-(defmethod dom:node-name ((self processing-instruction))
-  (dom:target self))
+(defmethod fxml.dom:node-name ((self processing-instruction))
+  (fxml.dom:target self))
 
 ;; node-type
 
-(defmethod dom:node-type ((self document)) :document)
-(defmethod dom:node-type ((self document-fragment)) :document-fragment)
-(defmethod dom:node-type ((self text)) :text)
-(defmethod dom:node-type ((self comment)) :comment)
-(defmethod dom:node-type ((self cdata-section)) :cdata-section)
-(defmethod dom:node-type ((self attribute)) :attribute)
-(defmethod dom:node-type ((self element)) :element)
-(defmethod dom:node-type ((self document-type)) :document-type)
-(defmethod dom:node-type ((self notation)) :notation)
-(defmethod dom:node-type ((self entity)) :entity)
-(defmethod dom:node-type ((self entity-reference)) :entity-reference)
-(defmethod dom:node-type ((self processing-instruction)) :processing-instruction)
+(defmethod fxml.dom:node-type ((self document)) :document)
+(defmethod fxml.dom:node-type ((self document-fragment)) :document-fragment)
+(defmethod fxml.dom:node-type ((self text)) :text)
+(defmethod fxml.dom:node-type ((self comment)) :comment)
+(defmethod fxml.dom:node-type ((self cdata-section)) :cdata-section)
+(defmethod fxml.dom:node-type ((self attribute)) :attribute)
+(defmethod fxml.dom:node-type ((self element)) :element)
+(defmethod fxml.dom:node-type ((self document-type)) :document-type)
+(defmethod fxml.dom:node-type ((self notation)) :notation)
+(defmethod fxml.dom:node-type ((self entity)) :entity)
+(defmethod fxml.dom:node-type ((self entity-reference)) :entity-reference)
+(defmethod fxml.dom:node-type ((self processing-instruction)) :processing-instruction)
 
 ;; node-value
 
-(defmethod dom:node-value ((self document)) nil)
-(defmethod dom:node-value ((self document-fragment)) nil)
-(defmethod dom:node-value ((self character-data)) (dom:data self))
-(defmethod dom:node-value ((self attribute)) (dom:value self))
-(defmethod dom:node-value ((self element)) nil)
-(defmethod dom:node-value ((self document-type)) nil)
-(defmethod dom:node-value ((self notation)) nil)
-(defmethod dom:node-value ((self entity)) nil)
-(defmethod dom:node-value ((self entity-reference)) nil)
-(defmethod dom:node-value ((self processing-instruction)) (dom:data self))
+(defmethod fxml.dom:node-value ((self document)) nil)
+(defmethod fxml.dom:node-value ((self document-fragment)) nil)
+(defmethod fxml.dom:node-value ((self character-data)) (fxml.dom:data self))
+(defmethod fxml.dom:node-value ((self attribute)) (fxml.dom:value self))
+(defmethod fxml.dom:node-value ((self element)) nil)
+(defmethod fxml.dom:node-value ((self document-type)) nil)
+(defmethod fxml.dom:node-value ((self notation)) nil)
+(defmethod fxml.dom:node-value ((self entity)) nil)
+(defmethod fxml.dom:node-value ((self entity-reference)) nil)
+(defmethod fxml.dom:node-value ((self processing-instruction)) (fxml.dom:data self))
 
 ;; (setf node-value), first the meaningful cases...
 
-(defmethod (setf dom:node-value) (newval (self character-data))
+(defmethod (setf fxml.dom:node-value) (newval (self character-data))
   (assert-writeable self)
-  (setf (dom:data self) newval))
+  (setf (fxml.dom:data self) newval))
 
-(defmethod (setf dom:node-value) (newval (self attribute))
+(defmethod (setf fxml.dom:node-value) (newval (self attribute))
   (assert-writeable self)
-  (setf (dom:value self) newval))
+  (setf (fxml.dom:value self) newval))
 
-(defmethod (setf dom:node-value) (newval (self processing-instruction))
+(defmethod (setf fxml.dom:node-value) (newval (self processing-instruction))
   (assert-writeable self)
-  (setf (dom:data self) newval))
+  (setf (fxml.dom:data self) newval))
 
 ;; ... and (setf node-value), part II.  The DOM Level 1 spec fails to explain
 ;; this case, but it is covered by the (Level 1) test suite and clarified
@@ -732,32 +732,32 @@
 ;;                 table above.  When it is defined to be null, setting
 ;;                 it has no effect.
 
-(defmethod (setf dom:node-value) (newval (self element))
+(defmethod (setf fxml.dom:node-value) (newval (self element))
   (declare (ignore newval)))
 
-(defmethod (setf dom:node-value) (newval (self entity-reference))
+(defmethod (setf fxml.dom:node-value) (newval (self entity-reference))
   (declare (ignore newval)))
 
-(defmethod (setf dom:node-value) (newval (self entity))
+(defmethod (setf fxml.dom:node-value) (newval (self entity))
   (declare (ignore newval)))
 
-(defmethod (setf dom:node-value) (newval (self document))
+(defmethod (setf fxml.dom:node-value) (newval (self document))
   (declare (ignore newval)))
 
-(defmethod (setf dom:node-value) (newval (self document-type))
+(defmethod (setf fxml.dom:node-value) (newval (self document-type))
   (declare (ignore newval)))
 
-(defmethod (setf dom:node-value) (newval (self document-fragment))
+(defmethod (setf fxml.dom:node-value) (newval (self document-fragment))
   (declare (ignore newval)))
 
-(defmethod (setf dom:node-value) (newval (self notation))
+(defmethod (setf fxml.dom:node-value) (newval (self notation))
   (declare (ignore newval)))
 
 ;; attributes
 
 ;; (gibt es nur auf element)
 
-(defmethod dom:attributes ((self node))
+(defmethod fxml.dom:attributes ((self node))
   nil)
 
 ;; dann fehlt noch can-adopt und attribute conventions fuer adoption
@@ -770,39 +770,39 @@
               :fill-pointer (length initial-contents)
               :initial-contents initial-contents))
 
-(defmethod dom:item ((self vector) index)
+(defmethod fxml.dom:item ((self vector) index)
   (if (< index (length self))
       (elt self index)
       nil))
 
-(defmethod dom:length ((self vector))
+(defmethod fxml.dom:length ((self vector))
   (length self))
 
 ;;; NAMED-NODE-MAP
 
-(defmethod dom:get-named-item ((self named-node-map) name)
+(defmethod fxml.dom:get-named-item ((self named-node-map) name)
   (setf name (%rod name))
   (with-slots (items) self
     (dolist (k items nil)
-      (when (rod= name (dom:node-name k))
+      (when (rod= name (fxml.dom:node-name k))
 	(return k)))))
 
-(defmethod dom:get-named-item-ns ((self named-node-map) uri lname)
+(defmethod fxml.dom:get-named-item-ns ((self named-node-map) uri lname)
   (setf uri (%rod uri))
   (setf lname (%rod lname))
   (with-slots (items) self
     (dolist (k items nil)
-      (when (and (rod= uri (dom:namespace-uri k))
-		 (rod= lname (dom:local-name k)))
+      (when (and (rod= uri (fxml.dom:namespace-uri k))
+		 (rod= lname (fxml.dom:local-name k)))
 	(return k)))))
 
 (defun %set-named-item (map arg test)
   (assert-writeable map)
-  (unless (eq (dom:node-type arg) (slot-value map 'element-type))
+  (unless (eq (fxml.dom:node-type arg) (slot-value map 'element-type))
     (dom-error :HIERARCHY_REQUEST_ERR
                "~S cannot adopt ~S, since it is not of type ~S."
                map arg (slot-value map 'element-type)))
-  (unless (eq (dom:owner-document map) (dom:owner-document arg))
+  (unless (eq (fxml.dom:owner-document map) (fxml.dom:owner-document arg))
     (dom-error :WRONG_DOCUMENT_ERR
                "~S cannot adopt ~S, since it was created by a different document."
                map arg))
@@ -816,45 +816,45 @@
 	(setf items (cons arg (delete k items)))
 	(return k)))))
 
-(defmethod dom:set-named-item ((self named-node-map) arg)
-  (let ((name (dom:node-name arg)))
-    (%set-named-item self arg (lambda (k) (rod= name (dom:node-name k))))))
+(defmethod fxml.dom:set-named-item ((self named-node-map) arg)
+  (let ((name (fxml.dom:node-name arg)))
+    (%set-named-item self arg (lambda (k) (rod= name (fxml.dom:node-name k))))))
 
-(defmethod dom:set-named-item-ns ((self named-node-map) arg)
-  (let ((uri (dom:namespace-uri arg))
-	(lname (dom:local-name arg)))
+(defmethod fxml.dom:set-named-item-ns ((self named-node-map) arg)
+  (let ((uri (fxml.dom:namespace-uri arg))
+	(lname (fxml.dom:local-name arg)))
     (%set-named-item self
 		     arg
 		     (lambda (k)
-		       (and (rod= lname (dom:local-name k))
-			    (rod= uri (dom:namespace-uri k)))))))
+		       (and (rod= lname (fxml.dom:local-name k))
+			    (rod= uri (fxml.dom:namespace-uri k)))))))
 
-(defmethod dom:remove-named-item ((self named-node-map) name)
+(defmethod fxml.dom:remove-named-item ((self named-node-map) name)
   (assert-writeable self)
   (setf name (%rod name))
   (with-slots (items) self
     (dolist (k items (dom-error :NOT_FOUND_ERR "~A not found in ~A" name self))
-      (cond ((rod= name (dom:node-name k))
+      (cond ((rod= name (fxml.dom:node-name k))
              (setf items (delete k items))
              (return k))))))
 
-(defmethod dom:remove-named-item-ns ((self named-node-map) uri lname)
+(defmethod fxml.dom:remove-named-item-ns ((self named-node-map) uri lname)
   (assert-writeable self)
   (setf uri (%rod uri))
   (setf lname (%rod lname))
   (with-slots (items) self
     (dolist (k items
 	      (dom-error :NOT_FOUND_ERR "~A not found in ~A" lname self))
-      (when (and (rod= lname (dom:local-name k))
-		 (rod= uri (dom:namespace-uri k)))
+      (when (and (rod= lname (fxml.dom:local-name k))
+		 (rod= uri (fxml.dom:namespace-uri k)))
 	(setf items (delete k items))
 	(return k)))))
 
-(defmethod dom:length ((self named-node-map))
+(defmethod fxml.dom:length ((self named-node-map))
   (with-slots (items) self
     (length items)))
 
-(defmethod dom:item ((self named-node-map) index)
+(defmethod fxml.dom:item ((self named-node-map) index)
   (with-slots (items) self
     (do ((nthcdr items (cdr nthcdr))
          (i index (1- i)))
@@ -862,29 +862,29 @@
 
 ;;; CHARACTER-DATA
 
-(defmethod (setf dom:data) (newval (self character-data))
+(defmethod (setf fxml.dom:data) (newval (self character-data))
   (assert-writeable self)
   (setf newval (%rod newval))
   (setf (slot-value self 'value) newval))
 
-(defmethod dom:length ((node character-data))
+(defmethod fxml.dom:length ((node character-data))
   (length (slot-value node 'value)))
 
-(defmethod dom:substring-data ((node character-data) offset count)
+(defmethod fxml.dom:substring-data ((node character-data) offset count)
   (with-slots (value) node
     (unless (<= 0 offset (length value))
       (dom-error :INDEX_SIZE_ERR "offset is invalid"))
     (let ((end (min (length value) (+ offset count))))
       (subseq value offset end))))
 
-(defmethod dom:append-data ((node character-data) arg)
+(defmethod fxml.dom:append-data ((node character-data) arg)
   (assert-writeable node)
   (setq arg (%rod arg))
   (with-slots (value) node
     (setf value (concatenate 'rod value arg)))
   (values))
 
-(defmethod dom:delete-data ((node character-data) offset count)
+(defmethod fxml.dom:delete-data ((node character-data) offset count)
   (assert-writeable node)
   (with-slots (value) node
     (unless (<= 0 offset (length value))
@@ -903,7 +903,7 @@
       (setf value new)))
   (values))
 
-(defmethod dom:replace-data ((node character-data) offset count arg)
+(defmethod fxml.dom:replace-data ((node character-data) offset count arg)
   ;; Although we could implement this by calling DELETE-DATA, then INSERT-DATA,
   ;; we implement this function directly to avoid creating temporary garbage.
   (assert-writeable node)
@@ -928,7 +928,7 @@
           (setf value new))))
   (values))
 
-(defmethod dom:insert-data ((node character-data) offset arg)
+(defmethod fxml.dom:insert-data ((node character-data) offset arg)
   (assert-writeable node)
   (setf arg (%rod arg))
   (with-slots (value) node
@@ -945,41 +945,41 @@
 
 ;;; ATTR
 ;;;
-;;; An attribute value can be read and set as a string using DOM:VALUE
+;;; An attribute value can be read and set as a string using FXML.DOM:VALUE
 ;;; or frobbed by changing the attribute's children!
 ;;;
 ;;; We store the value in a TEXT node and read this node's DATA slot
 ;;; when asked for our VALUE -- until the user changes the child nodes,
 ;;; in which case we have to compute VALUE by traversing the children.
 
-(defmethod dom:value ((node attribute))
+(defmethod fxml.dom:value ((node attribute))
   (with-slots (children) node
     (cond
       ((zerop (length children))
         #.(rod-string ""))
       ((and (eql (length children) 1)
-            (eq (dom:node-type (elt children 0)) :text))
+            (eq (fxml.dom:node-type (elt children 0)) :text))
         ;; we have as single TEXT-NODE child, just return its DATA
-        (dom:data (elt children 0)))
+        (fxml.dom:data (elt children 0)))
       (t
         ;; traverse children to compute value
         (attribute-to-string node)))))
 
-(defmethod (setf dom:value) (new-value (node attribute))
+(defmethod (setf fxml.dom:value) (new-value (node attribute))
   (assert-writeable node)
   (let ((rod (%rod new-value)))
     (with-slots (children owner) node
       ;; remove children, add new TEXT-NODE child
       ;; (alas, we must not reuse an old TEXT-NODE)
       (fxml::while (plusp (length children))
-        (dom:remove-child node (dom:last-child node)))
-      (dom:append-child node (dom:create-text-node owner rod))))
+        (fxml.dom:remove-child node (fxml.dom:last-child node)))
+      (fxml.dom:append-child node (fxml.dom:create-text-node owner rod))))
   new-value)
 
 (defun attribute-to-string (attribute)
   (let ((stream (make-rod-stream)))
     (flet ((doit ()
-             (dovector (child (dom:child-nodes attribute))
+             (dovector (child (fxml.dom:child-nodes attribute))
                (write-attribute-child child stream))))
       (doit)
       (initialize-rod-stream stream)
@@ -987,10 +987,10 @@
     (rod-stream-buf stream)))
 
 (defmethod write-attribute-child ((node node) stream)
-  (put-rod (dom:node-value node) stream))
+  (put-rod (fxml.dom:node-value node) stream))
 
 (defmethod write-attribute-child ((node entity-reference) stream)
-  (dovector (child (dom:child-nodes node))
+  (dovector (child (fxml.dom:child-nodes node))
     (write-attribute-child child stream)))
 
 ;;; ROD-STREAM als Ersatz fuer MAKE-STRING-OUTPUT-STREAM zu verwenden,
@@ -1016,70 +1016,70 @@
 
 ;;; ELEMENT
 
-(defmethod dom:has-attributes ((element element))
-  (plusp (length (dom:items (dom:attributes element)))))
+(defmethod fxml.dom:has-attributes ((element element))
+  (plusp (length (fxml.dom:items (fxml.dom:attributes element)))))
 
-(defmethod dom:has-attribute ((element element) name)
-  (and (dom:get-named-item (dom:attributes element) name) t))
+(defmethod fxml.dom:has-attribute ((element element) name)
+  (and (fxml.dom:get-named-item (fxml.dom:attributes element) name) t))
 
-(defmethod dom:has-attribute-ns ((element element) uri lname)
-  (and (dom:get-named-item-ns (dom:attributes element) uri lname) t))
+(defmethod fxml.dom:has-attribute-ns ((element element) uri lname)
+  (and (fxml.dom:get-named-item-ns (fxml.dom:attributes element) uri lname) t))
 
-(defmethod dom:get-attribute-node ((element element) name)
-  (dom:get-named-item (dom:attributes element) name))
+(defmethod fxml.dom:get-attribute-node ((element element) name)
+  (fxml.dom:get-named-item (fxml.dom:attributes element) name))
 
-(defmethod dom:set-attribute-node ((element element) (new-attr attribute))
+(defmethod fxml.dom:set-attribute-node ((element element) (new-attr attribute))
   (assert-writeable element)
-  (dom:set-named-item (dom:attributes element) new-attr))
+  (fxml.dom:set-named-item (fxml.dom:attributes element) new-attr))
 
-(defmethod dom:get-attribute-node-ns ((element element) uri lname)
-  (dom:get-named-item-ns (dom:attributes element) uri lname))
+(defmethod fxml.dom:get-attribute-node-ns ((element element) uri lname)
+  (fxml.dom:get-named-item-ns (fxml.dom:attributes element) uri lname))
 
-(defmethod dom:set-attribute-node-ns ((element element) (new-attr attribute))
+(defmethod fxml.dom:set-attribute-node-ns ((element element) (new-attr attribute))
   (assert-writeable element)
-  (dom:set-named-item-ns (dom:attributes element) new-attr))
+  (fxml.dom:set-named-item-ns (fxml.dom:attributes element) new-attr))
 
-(defmethod dom:get-attribute ((element element) name)
-  (let ((a (dom:get-attribute-node element name)))
+(defmethod fxml.dom:get-attribute ((element element) name)
+  (let ((a (fxml.dom:get-attribute-node element name)))
     (if a
-        (dom:value a)
+        (fxml.dom:value a)
         #"")))
 
-(defmethod dom:get-attribute-ns ((element element) uri lname)
-  (let ((a (dom:get-attribute-node-ns element uri lname)))
+(defmethod fxml.dom:get-attribute-ns ((element element) uri lname)
+  (let ((a (fxml.dom:get-attribute-node-ns element uri lname)))
     (if a
-        (dom:value a)
+        (fxml.dom:value a)
         #"")))
 
-(defmethod dom:set-attribute ((element element) name value)
+(defmethod fxml.dom:set-attribute ((element element) name value)
   (assert-writeable element)
   (with-slots (owner) element
-    (let ((attr (dom:create-attribute owner name)))
+    (let ((attr (fxml.dom:create-attribute owner name)))
       (setf (slot-value attr 'owner-element) element)
-      (setf (dom:value attr) value)
-      (dom:set-attribute-node element attr))
+      (setf (fxml.dom:value attr) value)
+      (fxml.dom:set-attribute-node element attr))
     (values)))
 
-(defmethod dom:set-attribute-ns ((element element) uri lname value)
+(defmethod fxml.dom:set-attribute-ns ((element element) uri lname value)
   (assert-writeable element)
   (with-slots (owner) element
-    (let ((attr (dom:create-attribute-ns owner uri lname)))
+    (let ((attr (fxml.dom:create-attribute-ns owner uri lname)))
       (setf (slot-value attr 'owner-element) element)
-      (setf (dom:value attr) value)
-      (dom:set-attribute-node-ns element attr))
+      (setf (fxml.dom:value attr) value)
+      (fxml.dom:set-attribute-node-ns element attr))
     (values)))
 
-(defmethod dom:remove-attribute ((element element) name)
+(defmethod fxml.dom:remove-attribute ((element element) name)
   (assert-writeable element)
-  (dom:remove-attribute-node element (dom:get-attribute-node element name)))
+  (fxml.dom:remove-attribute-node element (fxml.dom:get-attribute-node element name)))
 
-(defmethod dom:remove-attribute-ns ((elt element) uri lname)
+(defmethod fxml.dom:remove-attribute-ns ((elt element) uri lname)
   (assert-writeable elt)
-  (dom:remove-attribute-node elt (dom:get-attribute-node-ns elt uri lname)))
+  (fxml.dom:remove-attribute-node elt (fxml.dom:get-attribute-node-ns elt uri lname)))
 
-(defmethod dom:remove-attribute-node ((element element) (old-attr attribute))
+(defmethod fxml.dom:remove-attribute-node ((element element) (old-attr attribute))
   (assert-writeable element)
-  (with-slots (items) (dom:attributes element)
+  (with-slots (items) (fxml.dom:attributes element)
     (unless (find old-attr items)
       (dom-error :NOT_FOUND_ERR "Attribute not found."))
     (setf items (remove old-attr items))
@@ -1089,28 +1089,28 @@
 ;; eek, defaulting:
 
 (defun maybe-add-default-attribute (element old-attr)
-  (let* ((qname (dom:name old-attr))
+  (let* ((qname (fxml.dom:name old-attr))
 	 (dtd (dtd (slot-value element 'owner)))
          (e (when dtd (fxml::find-element
-		       (real-rod (dom:tag-name element))
+		       (real-rod (fxml.dom:tag-name element))
 		       dtd)))
          (a (when e (fxml::find-attribute e (real-rod qname)))))
     (when (and a (listp (fxml::attdef-default a)))
       (let ((new (add-default-attribute element a)))
-	(setf (slot-value new 'namespace-uri) (dom:namespace-uri old-attr))
-	(setf (slot-value new 'prefix) (dom:prefix old-attr))
-	(setf (slot-value new 'local-name) (dom:local-name old-attr))))))
+	(setf (slot-value new 'namespace-uri) (fxml.dom:namespace-uri old-attr))
+	(setf (slot-value new 'prefix) (fxml.dom:prefix old-attr))
+	(setf (slot-value new 'local-name) (fxml.dom:local-name old-attr))))))
 
 (defun add-default-attributes (element)
   (let* ((dtd (dtd (slot-value element 'owner)))
          (e (when dtd (fxml::find-element
-		       (real-rod (dom:tag-name element))
+		       (real-rod (fxml.dom:tag-name element))
 		       dtd))))
     (when e
       (dolist (a (fxml::elmdef-attributes e))
         (when (and a
 		   (listp (fxml::attdef-default a))
-		   (not (dom:get-attribute-node
+		   (not (fxml.dom:get-attribute-node
 			 element
 			 (%rod (fxml::attdef-name a)))))
           (let ((anode (add-default-attribute element a)))
@@ -1129,87 +1129,87 @@
 (defun add-default-attribute (element adef)
   (let* ((value (second (fxml::attdef-default adef)))
          (owner (slot-value element 'owner))
-         (anode (dom:create-attribute owner (fxml::attdef-name adef)))
-         (text (dom:create-text-node owner value)))
+         (anode (fxml.dom:create-attribute owner (fxml::attdef-name adef)))
+         (text (fxml.dom:create-text-node owner value)))
     (setf (slot-value anode 'specified-p) nil)
     (setf (slot-value anode 'owner-element) element)
-    (dom:append-child anode text)
-    (push anode (slot-value (dom:attributes element) 'items))
+    (fxml.dom:append-child anode text)
+    (push anode (slot-value (fxml.dom:attributes element) 'items))
     anode))
 
-(defmethod dom:remove-named-item ((self attribute-node-map) name)
+(defmethod fxml.dom:remove-named-item ((self attribute-node-map) name)
   name
   (let ((k (call-next-method)))
     (maybe-add-default-attribute (slot-value self 'element) k)
     k))
 
-(defmethod dom:remove-named-item-ns ((self attribute-node-map) uri lname)
+(defmethod fxml.dom:remove-named-item-ns ((self attribute-node-map) uri lname)
   uri lname
   (let ((k (call-next-method)))
     (maybe-add-default-attribute (slot-value self 'element) k)
     k))
 
-(defmethod dom:get-elements-by-tag-name ((element element) name)
+(defmethod fxml.dom:get-elements-by-tag-name ((element element) name)
   (assert-writeable element)
   (get-elements-by-tag-name-internal element name))
 
-(defmethod dom:get-elements-by-tag-name-ns ((element element) uri lname)
+(defmethod fxml.dom:get-elements-by-tag-name-ns ((element element) uri lname)
   (assert-writeable element)
   (get-elements-by-tag-name-internal-ns element uri lname))
 
-(defmethod dom:set-named-item :after ((self attribute-node-map) arg)
+(defmethod fxml.dom:set-named-item :after ((self attribute-node-map) arg)
   (setf (slot-value arg 'owner-element)
 	(slot-value self 'element)))
 
-(defmethod dom:set-named-item-ns :after ((self attribute-node-map) arg)
+(defmethod fxml.dom:set-named-item-ns :after ((self attribute-node-map) arg)
   (setf (slot-value arg 'owner-element)
 	(slot-value self 'element)))
 
-(defmethod dom:normalize ((node node))
+(defmethod fxml.dom:normalize ((node node))
   (assert-writeable node)
   (labels ((walk (n)
-             (when (eq (dom:node-type n) :element)
-               (map nil #'walk (dom:items (dom:attributes n))))
-             (let ((children (dom:child-nodes n))
+             (when (eq (fxml.dom:node-type n) :element)
+               (map nil #'walk (fxml.dom:items (fxml.dom:attributes n))))
+             (let ((children (fxml.dom:child-nodes n))
                    (i 0)
                    (previous nil))
                ;; careful here, we're modifying the array we are iterating over
                (fxml::while (< i (length children))
                  (let ((child (elt children i)))
                    (cond
-                     ((not (eq (dom:node-type child) :text))
+                     ((not (eq (fxml.dom:node-type child) :text))
                        (setf previous nil)
                        (incf i))
-                     ((and previous (eq (dom:node-type previous) :text))
+                     ((and previous (eq (fxml.dom:node-type previous) :text))
                        (setf (slot-value previous 'value)
                              (concatenate 'rod
-                               (dom:data previous)
-                               (dom:data child)))
-                       (dom:remove-child n child)
+                               (fxml.dom:data previous)
+                               (fxml.dom:data child)))
+                       (fxml.dom:remove-child n child)
                        ;; not (incf i)
                        )
-		     ((zerop (length (dom:data child)))
-                       (dom:remove-child n child)
+		     ((zerop (length (fxml.dom:data child)))
+                       (fxml.dom:remove-child n child)
                        ;; not (incf i)
 		       )
                      (t
                        (setf previous child)
                        (incf i)))))) 
-             (map nil #'walk (dom:child-nodes n))))
+             (map nil #'walk (fxml.dom:child-nodes n))))
     (walk node))
   (values))
 
 ;;; TEXT
 
-(defmethod dom:split-text ((text text) offset)
+(defmethod fxml.dom:split-text ((text text) offset)
   (assert-writeable text)
   (with-slots (owner parent value) text
     (unless (<= 0 offset (length value))
       (dom-error :INDEX_SIZE_ERR "offset is invalid"))
     (prog1
-        (dom:insert-before parent
-                           (dom:create-text-node owner (subseq value offset))
-                           (dom:next-sibling text))
+        (fxml.dom:insert-before parent
+                           (fxml.dom:create-text-node owner (subseq value offset))
+                           (fxml.dom:next-sibling text))
       (setf value (subseq value 0 offset)))))
 
 ;;; COMMENT -- nix
@@ -1217,19 +1217,19 @@
 
 ;;; DOCUMENT-TYPE
 
-(defmethod dom:internal-subset ((node document-type))
+(defmethod fxml.dom:internal-subset ((node document-type))
   ;; FIXME: encoding ist falsch, anderen sink nehmen!
-  (if (and (slot-boundp node 'dom::%internal-subset)
+  (if (and (slot-boundp node 'fxml.dom::%internal-subset)
 	   ;; die damen und herren von der test suite sind wohl der meinung,
 	   ;; dass ein leeres internal subset nicht vorhanden ist und
 	   ;; wir daher nil liefern sollen.  bittesehr!
-	   (dom::%internal-subset node))
+	   (fxml.dom::%internal-subset node))
       (let ((sink
 	     #+rune-is-character (fxml:make-string-sink)
 	     #-rune-is-character (fxml:make-string-sink/utf8)))
-	(dolist (def (dom::%internal-subset node))
+	(dolist (def (fxml.dom::%internal-subset node))
 	  (apply (car def) sink (cdr def)))
-	(sax:end-document sink))
+	(fxml.sax:end-document sink))
       nil))
 
 ;;; NOTATION -- nix
@@ -1238,7 +1238,7 @@
 ;;; ENTITY-REFERENCE
 
 (defmethod initialize-instance :after ((instance entity-reference) &key)
-  (let* ((owner (dom:owner-document instance))
+  (let* ((owner (fxml.dom:owner-document instance))
          (handler (make-dom-builder))
          (resolver (slot-value owner 'entity-resolver)))
     (when resolver
@@ -1246,26 +1246,26 @@
       (push instance (element-stack handler))
       #+fxml-system::utf8dom-file
       (setf handler (fxml:make-recoder handler #'fxml:rod-to-utf8-string))
-      (funcall resolver (real-rod (dom:name instance)) handler)
+      (funcall resolver (real-rod (fxml.dom:name instance)) handler)
       (flush-characters handler)))
   (labels ((walk (n)
              (setf (slot-value n 'read-only-p) t)
-             (when (dom:element-p n)
-	       (setf (slot-value (dom:attributes n) 'read-only-p) t)
-               (map nil #'walk (dom:items (dom:attributes n))))
-             (map nil #'walk (dom:child-nodes n))))
+             (when (fxml.dom:element-p n)
+	       (setf (slot-value (fxml.dom:attributes n) 'read-only-p) t)
+               (map nil #'walk (fxml.dom:items (fxml.dom:attributes n))))
+             (map nil #'walk (fxml.dom:child-nodes n))))
     (walk instance)))
 
 ;;; PROCESSING-INSTRUCTION
 
-(defmethod (setf dom:data) (newval (self processing-instruction))
+(defmethod (setf fxml.dom:data) (newval (self processing-instruction))
   (assert-writeable self)
   (setf newval (%rod newval))
   (setf (slot-value self 'data) newval))
 
 ;; das koennte man auch mit einer GF machen
 (defun can-adopt-p (parent child)
-  (member (dom:node-type child)
+  (member (fxml.dom:node-type child)
           (let ((default '(:element :processing-instruction :comment :text
                            :cdata-section :entity-reference)))
             (etypecase parent
@@ -1286,50 +1286,50 @@
 
 ;;; predicates
 
-(defmethod dom:node-p ((object node)) t)
-(defmethod dom:node-p ((object t)) nil)
+(defmethod fxml.dom:node-p ((object node)) t)
+(defmethod fxml.dom:node-p ((object t)) nil)
 
-(defmethod dom:document-p ((object document)) t)
-(defmethod dom:document-p ((object t)) nil)
+(defmethod fxml.dom:document-p ((object document)) t)
+(defmethod fxml.dom:document-p ((object t)) nil)
 
-(defmethod dom:document-fragment-p ((object document-fragment)) t)
-(defmethod dom:document-fragment-p ((object t)) nil)
+(defmethod fxml.dom:document-fragment-p ((object document-fragment)) t)
+(defmethod fxml.dom:document-fragment-p ((object t)) nil)
 
-(defmethod dom:character-data-p ((object character-data)) t)
-(defmethod dom:character-data-p ((object t)) nil)
+(defmethod fxml.dom:character-data-p ((object character-data)) t)
+(defmethod fxml.dom:character-data-p ((object t)) nil)
 
-(defmethod dom:attribute-p ((object attribute)) t)
-(defmethod dom:attribute-p ((object t)) nil)
+(defmethod fxml.dom:attribute-p ((object attribute)) t)
+(defmethod fxml.dom:attribute-p ((object t)) nil)
 
-(defmethod dom:element-p ((object element)) t)
-(defmethod dom:element-p ((object t)) nil)
+(defmethod fxml.dom:element-p ((object element)) t)
+(defmethod fxml.dom:element-p ((object t)) nil)
 
-(defmethod dom:text-node-p ((object text)) t)
-(defmethod dom:text-node-p ((object t)) nil)
+(defmethod fxml.dom:text-node-p ((object text)) t)
+(defmethod fxml.dom:text-node-p ((object t)) nil)
 
-(defmethod dom:comment-p ((object comment)) t)
-(defmethod dom:comment-p ((object t)) nil)
+(defmethod fxml.dom:comment-p ((object comment)) t)
+(defmethod fxml.dom:comment-p ((object t)) nil)
 
-(defmethod dom:cdata-section-p ((object cdata-section)) t)
-(defmethod dom:cdata-section-p ((object t)) nil)
+(defmethod fxml.dom:cdata-section-p ((object cdata-section)) t)
+(defmethod fxml.dom:cdata-section-p ((object t)) nil)
 
-(defmethod dom:document-type-p ((object document-type)) t)
-(defmethod dom:document-type-p ((object t)) nil)
+(defmethod fxml.dom:document-type-p ((object document-type)) t)
+(defmethod fxml.dom:document-type-p ((object t)) nil)
 
-(defmethod dom:notation-p ((object notation)) t)
-(defmethod dom:notation-p ((object t)) nil)
+(defmethod fxml.dom:notation-p ((object notation)) t)
+(defmethod fxml.dom:notation-p ((object t)) nil)
 
-(defmethod dom:entity-p ((object entity)) t)
-(defmethod dom:entity-p ((object t)) nil)
+(defmethod fxml.dom:entity-p ((object entity)) t)
+(defmethod fxml.dom:entity-p ((object t)) nil)
 
-(defmethod dom:entity-reference-p ((object entity-reference)) t)
-(defmethod dom:entity-reference-p ((object t)) nil)
+(defmethod fxml.dom:entity-reference-p ((object entity-reference)) t)
+(defmethod fxml.dom:entity-reference-p ((object t)) nil)
 
-(defmethod dom:processing-instruction-p ((object processing-instruction)) t)
-(defmethod dom:processing-instruction-p ((object t)) nil)
+(defmethod fxml.dom:processing-instruction-p ((object processing-instruction)) t)
+(defmethod fxml.dom:processing-instruction-p ((object t)) nil)
 
-(defmethod dom:named-node-map-p ((object named-node-map)) t)
-(defmethod dom:named-node-map-p ((object t)) nil)
+(defmethod fxml.dom:named-node-map-p ((object named-node-map)) t)
+(defmethod fxml.dom:named-node-map-p ((object t)) nil)
 
 
 ;;; IMPORT-NODE
@@ -1339,78 +1339,78 @@
 (defmethod import-node-internal (class document node deep &rest initargs)
   (let ((result (apply #'make-instance class :owner document initargs)))
     (when deep
-      (dovector (child (dom:child-nodes node))
-        (dom:append-child result (dom:import-node document child t))))
+      (dovector (child (fxml.dom:child-nodes node))
+        (fxml.dom:append-child result (fxml.dom:import-node document child t))))
     result))
 
-(defmethod dom:import-node ((document document) (node t) deep)
+(defmethod fxml.dom:import-node ((document document) (node t) deep)
   (declare (ignore deep))
   (dom-error :NOT_SUPPORTED_ERR "not implemented"))
 
-(defmethod dom:import-node ((document document) (node attribute) deep)
+(defmethod fxml.dom:import-node ((document document) (node attribute) deep)
   (declare (ignore deep))
   (import-node-internal 'attribute
 			document node
 			t
-                        :specified-p (dom:specified node)
-			:name (dom:name node)
-			:namespace-uri (dom:namespace-uri node)
-			:local-name (dom:local-name node)
-			:prefix (dom:prefix node)
+                        :specified-p (fxml.dom:specified node)
+			:name (fxml.dom:name node)
+			:namespace-uri (fxml.dom:namespace-uri node)
+			:local-name (fxml.dom:local-name node)
+			:prefix (fxml.dom:prefix node)
 			:owner-element nil))
 
-(defmethod dom:import-node ((document document) (node document-fragment) deep)
+(defmethod fxml.dom:import-node ((document document) (node document-fragment) deep)
   (import-node-internal 'document-fragment document node deep))
 
-(defmethod dom:import-node ((document document) (node element) deep)
+(defmethod fxml.dom:import-node ((document document) (node element) deep)
   (let* ((attributes (make-instance 'attribute-node-map
                        :element-type :attribute
                        :owner document))
          (result (import-node-internal 'element document node deep
                                        :attributes attributes
-				       :namespace-uri (dom:namespace-uri node)
-				       :local-name (dom:local-name node)
-				       :prefix (dom:prefix node)
-                                       :tag-name (dom:tag-name node))))
+				       :namespace-uri (fxml.dom:namespace-uri node)
+				       :local-name (fxml.dom:local-name node)
+				       :prefix (fxml.dom:prefix node)
+                                       :tag-name (fxml.dom:tag-name node))))
     (setf (slot-value attributes 'element) result)
-    (dolist (attribute (dom:items (dom:attributes node)))
-      (when (or (dom:specified attribute) *clone-not-import*)
-        (let ((attr (dom:import-node document attribute t)))
-          (if (dom:namespace-uri attribute)
-              (dom:set-attribute-node-ns result attr)
-              (dom:set-attribute-node result attr)))))
+    (dolist (attribute (fxml.dom:items (fxml.dom:attributes node)))
+      (when (or (fxml.dom:specified attribute) *clone-not-import*)
+        (let ((attr (fxml.dom:import-node document attribute t)))
+          (if (fxml.dom:namespace-uri attribute)
+              (fxml.dom:set-attribute-node-ns result attr)
+              (fxml.dom:set-attribute-node result attr)))))
     (add-default-attributes result)
     result))
 
-(defmethod dom:import-node ((document document) (node entity) deep)
+(defmethod fxml.dom:import-node ((document document) (node entity) deep)
   (import-node-internal 'entity document node deep
-			:name (dom:name node)
-                        :public-id (dom:public-id node)
-                        :system-id (dom:system-id node)
-                        :notation-name (dom:notation-name node)))
+			:name (fxml.dom:name node)
+                        :public-id (fxml.dom:public-id node)
+                        :system-id (fxml.dom:system-id node)
+                        :notation-name (fxml.dom:notation-name node)))
 
-(defmethod dom:import-node ((document document) (node entity-reference) deep)
+(defmethod fxml.dom:import-node ((document document) (node entity-reference) deep)
   (declare (ignore deep))
   (import-node-internal 'entity-reference document node nil
-                        :name (dom:name node)))
+                        :name (fxml.dom:name node)))
 
-(defmethod dom:import-node ((document document) (node notation) deep)
+(defmethod fxml.dom:import-node ((document document) (node notation) deep)
   (import-node-internal 'notation document node deep
-                        :name (dom:name node)
-                        :public-id (dom:public-id node)
-                        :system-id (dom:system-id node)))
+                        :name (fxml.dom:name node)
+                        :public-id (fxml.dom:public-id node)
+                        :system-id (fxml.dom:system-id node)))
 
-(defmethod dom:import-node
+(defmethod fxml.dom:import-node
     ((document document) (node processing-instruction) deep)
   (import-node-internal 'processing-instruction document node deep
-                        :target (dom:target node)
-                        :data (dom:data node)))
+                        :target (fxml.dom:target node)
+                        :data (fxml.dom:data node)))
 
 ;; TEXT_NODE, CDATA_SECTION_NODE, COMMENT_NODE
-(defmethod dom:import-node
+(defmethod fxml.dom:import-node
     ((document document) (node character-data) deep)
   (import-node-internal (class-of node) document node deep
-                        :data (copy-seq (dom:data node))))
+                        :data (copy-seq (fxml.dom:data node))))
 
 ;;; CLONE-NODE
 ;;;
@@ -1421,44 +1421,44 @@
 ;;; Since I don't want to reimplement all of importNode here, we run
 ;;; importNode with a special flag...
 
-(defmethod dom:clone-node ((node node) deep)
+(defmethod fxml.dom:clone-node ((node node) deep)
   (let ((*clone-not-import* t))
-    (dom:import-node (dom:owner-document node) node deep)))
+    (fxml.dom:import-node (fxml.dom:owner-document node) node deep)))
 
 ;; extension:
-(defmethod dom:clone-node ((node document) deep)
+(defmethod fxml.dom:clone-node ((node document) deep)
   (let* ((document (make-instance 'document))
-	 (original-doctype (dom:doctype node))
+	 (original-doctype (fxml.dom:doctype node))
 	 (doctype 
 	  (when original-doctype
 	    (make-instance 'document-type
 	      :owner document
-	      :name (dom:name original-doctype)
-	      :public-id (dom:public-id original-doctype)
-	      :system-id (dom:system-id original-doctype)
+	      :name (fxml.dom:name original-doctype)
+	      :public-id (fxml.dom:public-id original-doctype)
+	      :system-id (fxml.dom:system-id original-doctype)
 	      :notations (make-instance 'named-node-map
 			   :element-type :notation
 			   :owner document
-			   :items (dom:items (dom:notations original-doctype)))
+			   :items (fxml.dom:items (fxml.dom:notations original-doctype)))
 	      :entities (make-instance 'named-node-map
 			  :element-type :entity
 			  :owner document
-			  :items (dom:items
-				  (dom:entities original-doctype)))))))
+			  :items (fxml.dom:items
+				  (fxml.dom:entities original-doctype)))))))
     (setf (slot-value document 'owner) nil)
     (setf (slot-value document 'doc-type) doctype)
     (setf (slot-value document 'dtd) (dtd node))
     (setf (slot-value document 'entity-resolver)
 	  (slot-value node 'entity-resolver))
-    (setf (slot-value (dom:entities doctype) 'read-only-p) t)
-    (setf (slot-value (dom:notations doctype) 'read-only-p) t)
-    (when (and doctype (slot-boundp doctype 'dom::%internal-subset))
-      (setf (dom::%internal-subset doctype)
-	    (dom::%internal-subset original-doctype)))
-    (when (and (dom:document-element node) deep)
+    (setf (slot-value (fxml.dom:entities doctype) 'read-only-p) t)
+    (setf (slot-value (fxml.dom:notations doctype) 'read-only-p) t)
+    (when (and doctype (slot-boundp doctype 'fxml.dom::%internal-subset))
+      (setf (fxml.dom::%internal-subset doctype)
+	    (fxml.dom::%internal-subset original-doctype)))
+    (when (and (fxml.dom:document-element node) deep)
       (let* ((*clone-not-import* t)
-	     (clone (dom:import-node document (dom:document-element node) t)))
-	(dom:append-child document clone)))
+	     (clone (fxml.dom:import-node document (fxml.dom:document-element node) t)))
+	(fxml.dom:append-child document clone)))
     document))
 
 
@@ -1471,8 +1471,8 @@
          (fxml::*ctx* (fxml::make-context :handler handler))
          (result
           (progn
-            (sax:start-document handler)
-            (sax:end-document handler))))
+            (fxml.sax:start-document handler)
+            (fxml.sax:end-document handler))))
     (when document-element
-      (dom:append-child result (dom:import-node result document-element t)))
+      (fxml.dom:append-child result (fxml.dom:import-node result document-element t)))
     result))

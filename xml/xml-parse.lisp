@@ -735,7 +735,7 @@
           stream
           (format nil "End of file~@[: ~?~]" x args)))
 
-(defclass fxml-parser (sax:sax-parser) ((ctx :initarg :ctx)))
+(defclass fxml-parser (fxml.sax:sax-parser) ((ctx :initarg :ctx)))
 
 (defun parser-xstream (parser)
   (car (zstream-input-stack (main-zstream (slot-value parser 'ctx)))))
@@ -746,25 +746,25 @@
         (xstream-name xstream)
         nil)))
 
-(defmethod sax:line-number ((parser fxml-parser))
+(defmethod fxml.sax:line-number ((parser fxml-parser))
   (let ((x (parser-xstream parser)))
     (if x
         (xstream-line-number x)
         nil)))
 
-(defmethod sax:column-number ((parser fxml-parser))
+(defmethod fxml.sax:column-number ((parser fxml-parser))
   (let ((x (parser-xstream parser)))
     (if x
         (xstream-column-number x)
         nil)))
 
-(defmethod sax:system-id ((parser fxml-parser))
+(defmethod fxml.sax:system-id ((parser fxml-parser))
   (let ((name (parser-stream-name parser)))
     (if name
         (stream-name-uri name)
         nil)))
 
-(defmethod sax:xml-base ((parser fxml-parser))
+(defmethod fxml.sax:xml-base ((parser fxml-parser))
   (let ((uri (car (base-stack (slot-value parser 'ctx)))))
     (if (or (null uri) (stringp uri))
         uri
@@ -827,25 +827,25 @@
               (t
                 (when (standalone-check-necessary-p ad)
                   (validity-error "(02) Standalone Document Declaration: missing attribute value"))
-                (push (sax:make-attribute :qname (attdef-name ad)
+                (push (fxml.sax:make-attribute :qname (attdef-name ad)
                                           :value (cadr (attdef-default ad))
                                           :specified-p nil)
                       attlist)))))
         (dolist (a attlist)		;normalize non-CDATA values
-          (let* ((qname (sax:attribute-qname a))
+          (let* ((qname (fxml.sax:attribute-qname a))
                  (adef (find-attribute e qname)))
             (when adef
               (when (and *validate*
-                         sax:*namespace-processing*
+                         fxml.sax:*namespace-processing*
                          (eq (attdef-type adef) :ID)
-                         (find #/: (sax:attribute-value a)))
+                         (find #/: (fxml.sax:attribute-value a)))
                 (validity-error "colon in ID attribute"))
               (unless (eq (attdef-type adef) :CDATA)
-                (let ((canon (canon-not-cdata-attval (sax:attribute-value a))))
+                (let ((canon (canon-not-cdata-attval (fxml.sax:attribute-value a))))
                   (when (and (standalone-check-necessary-p adef)
-                             (not (rod= (sax:attribute-value a) canon)))
+                             (not (rod= (fxml.sax:attribute-value a) canon)))
                     (validity-error "(02) Standalone Document Declaration: attribute value not normalized"))
-                  (setf (sax:attribute-value a) canon))))))
+                  (setf (fxml.sax:attribute-value a) canon))))))
         (when *validate*		;maybe validate attribute values
           (dolist (a attlist)
             (validate-attribute ctx e a))))
@@ -855,16 +855,16 @@
   attlist)
 
 (defun get-attribute (name attributes)
-  (member name attributes :key #'sax:attribute-qname :test #'rod=))
+  (member name attributes :key #'fxml.sax:attribute-qname :test #'rod=))
 
 (defun validate-attribute (ctx e a)
-  (when (sax:attribute-specified-p a)   ;defaults checked by DEFINE-ATTRIBUTE
-    (let* ((qname (sax:attribute-qname a))
+  (when (fxml.sax:attribute-specified-p a)   ;defaults checked by DEFINE-ATTRIBUTE
+    (let* ((qname (fxml.sax:attribute-qname a))
            (adef
             (or (find-attribute e qname)
                 (validity-error "(04) Attribute Value Type: not declared: ~A"
                                 (rod-string qname)))))
-      (validate-attribute* ctx adef (sax:attribute-value a)))))
+      (validate-attribute* ctx adef (fxml.sax:attribute-value a)))))
 
 (defun validate-attribute* (ctx adef value)
   (let ((type (attdef-type adef))
@@ -1021,7 +1021,7 @@
 
 (defun define-entity (source-stream name kind def)
   (setf name (intern-name name))
-  (when (and sax:*namespace-processing* (find #/: name))
+  (when (and fxml.sax:*namespace-processing* (find #/: name))
     (wf-error source-stream "colon in entity name"))
   (let ((table
          (ecase kind
@@ -1211,7 +1211,7 @@
            (setf (gethash element-name (dtd-elements dtd))
                  (make-elmdef :name element-name :content content-model))
          (when content-model
-           (sax:element-declaration (handler *ctx*) element-name content-model))))
+           (fxml.sax:element-declaration (handler *ctx*) element-name content-model))))
       ((null content-model)
         e)
       (t
@@ -1224,7 +1224,7 @@
                 (when (and (listp type) (eq (car type) :NOTATION))
                   (validity-error "(16) No Notation on Empty Element: ~S"
                                   (rod-string element-name)))))))
-        (sax:element-declaration (handler *ctx*) element-name content-model)
+        (fxml.sax:element-declaration (handler *ctx*) element-name content-model)
         (setf (elmdef-content e) content-model)
         (setf (elmdef-external-p e) *external-subset-p*)
         e))))
@@ -1266,7 +1266,7 @@
                  (when (eq (elmdef-content e) :EMPTY)
                    (validity-error "(16) No Notation on Empty Element: ~S"
                                    (rod-string element))))))
-           (sax:attribute-declaration (handler *ctx*) element name type default)
+           (fxml.sax:attribute-declaration (handler *ctx*) element name type default)
            (push adef (elmdef-attributes e))))))
 
 (defun find-attribute (elmdef name)
@@ -1441,7 +1441,7 @@
                    ((rod-equal target '#.(string-rod "XML"))
                     (wf-error zinput
                               "You lost -- no XML processing instructions."))
-                   ((and sax:*namespace-processing* (position #/: target))
+                   ((and fxml.sax:*namespace-processing* (position #/: target))
                     (wf-error zinput
                               "Processing instruction target ~S is not a ~
                                valid NcName."
@@ -2095,18 +2095,18 @@
       (let ((extid (entdef-extid def))
             (ndata (entdef-ndata def)))
         (if ndata
-            (sax:unparsed-entity-declaration h
+            (fxml.sax:unparsed-entity-declaration h
                                              name
                                              (extid-public extid)
                                              (uri-rod (extid-system extid))
                                              ndata)
-            (sax:external-entity-declaration h
+            (fxml.sax:external-entity-declaration h
                                              kind
                                              name
                                              (extid-public extid)
                                              (uri-rod (extid-system extid))))))
     (internal-entdef
-      (sax:internal-entity-declaration h kind name (entdef-value def)))))
+      (fxml.sax:internal-entity-declaration h kind name (entdef-value def)))))
 
 (defun p/entity-def (input kind)
   (multiple-value-bind (cat sem) (peek-token input)
@@ -2462,13 +2462,13 @@
     (setf id (p/external-id input t))
     (p/S? input)
     (expect input :\>)
-    (sax:notation-declaration (handler *ctx*)
+    (fxml.sax:notation-declaration (handler *ctx*)
                               name
                               (if (extid-public id)
                                   (normalize-public-id (extid-public id))
                                   nil)
                               (uri-rod (extid-system id)))
-    (when (and sax:*namespace-processing* (find #/: name))
+    (when (and fxml.sax:*namespace-processing* (find #/: name))
       (wf-error input "colon in notation name"))
     (when *validate*
       (define-notation (dtd *ctx*) name id))
@@ -2591,7 +2591,7 @@
       (:|<!NOTATION| (p/notation-decl input))
       (:PI
         (let ((sem (nth-value 1 (read-token input))))
-          (sax:processing-instruction (handler *ctx*) (car sem) (cdr sem))))
+          (fxml.sax:processing-instruction (handler *ctx*) (car sem) (cdr sem))))
       (:COMMENT      (consume-token input))
       (otherwise
         (wf-error input "p/markup-decl ~S" (peek-token input))))))
@@ -2669,14 +2669,14 @@
                    :name name
                    :pubid pubid
                    :sysid sysid)))
-        (sax:start-dtd (handler *ctx*) name pubid sysid))
+        (fxml.sax:start-dtd (handler *ctx*) name pubid sysid))
 
       (when (eq (peek-token input) :\[ )
         (when (disallow-internal-subset *ctx*)
           (wf-error input "document includes an internal subset"))
         (ensure-dtd)
         (consume-token input)
-        (sax:start-internal-subset (handler *ctx*))
+        (fxml.sax:start-internal-subset (handler *ctx*))
         (while (progn (p/S? input)
                       (not (eq (peek-token input) :\] )))
           (if (eq (peek-token input) :PE-REFERENCE)
@@ -2693,7 +2693,7 @@
               (let ((*expand-pe-p* t))
                 (p/markup-decl input))))
         (consume-token input)
-        (sax:end-internal-subset (handler *ctx*))
+        (fxml.sax:end-internal-subset (handler *ctx*))
         (p/S? input))
       (expect input :>)
       (when extid
@@ -2714,24 +2714,24 @@
                  (let ((xi2 (xstream-open-extid effective-extid)))
                    (with-zstream (zi2 :input-stack (list xi2))
                      (ensure-dtd)
-                     (sax:start-internal-subset (handler *ctx*))
+                     (fxml.sax:start-internal-subset (handler *ctx*))
                      (p/ext-subset zi2)
                      (when (and fresh-dtd-p
                                 *cache-all-dtds*
                                 *validate*
                                 (not (standalone-p *ctx*)))
                        (setf (getdtd sysid *dtd-cache*) (dtd *ctx*)))
-                     (sax:end-internal-subset (handler *ctx*)))))))
+                     (fxml.sax:end-internal-subset (handler *ctx*)))))))
           (continue ()
             :report "Use empty DTD"
             (setf (dtd *ctx*) (make-dtd)
                   (entity-resolver *ctx*) #'void-entity-resolver))))
-      (sax:end-dtd (handler *ctx*))
+      (fxml.sax:end-dtd (handler *ctx*))
       (let ((dtd (dtd *ctx*)))
-        (sax:entity-resolver
+        (fxml.sax:entity-resolver
          (handler *ctx*)
          (lambda (name handler) (resolve-entity name handler dtd)))
-        (sax::dtd (handler *ctx*) dtd))
+        (fxml.sax::dtd (handler *ctx*) dtd))
       (list :DOCTYPE name extid))))
 
 (defun report-cached-dtd (dtd)
@@ -2742,7 +2742,7 @@
              (report-entity (handler *ctx*) :parameter k (cdr v)))
            (dtd-pentities dtd))
   (maphash (lambda (k v)
-             (sax:notation-declaration
+             (fxml.sax:notation-declaration
               (handler *ctx*)
               k
               (if (extid-public v)
@@ -2756,9 +2756,9 @@
   (while (member (peek-token input) '(:COMMENT :PI :S))
     (case (peek-token input)
       (:COMMENT
-        (sax:comment (handler *ctx*) (nth-value 1 (peek-token input))))
+        (fxml.sax:comment (handler *ctx*) (nth-value 1 (peek-token input))))
       (:PI
-        (sax:processing-instruction
+        (fxml.sax:processing-instruction
          (handler *ctx*)
          (car (nth-value 1 (peek-token input)))
          (cdr (nth-value 1 (peek-token input))))))
@@ -2813,8 +2813,8 @@
                          :disallow-internal-subset disallow-internal-subset))
          (*validate* validate)
          (*namespace-bindings* *initial-namespace-bindings*))
-    (sax:register-sax-parser handler (make-instance 'fxml-parser :ctx *ctx*))
-    (sax:start-document handler)
+    (fxml.sax:register-sax-parser handler (make-instance 'fxml-parser :ctx *ctx*))
+    (fxml.sax:start-document handler)
     ;; document ::= XMLDecl? Misc* (doctypedecl Misc*)? element Misc*
     ;; Misc ::= Comment | PI |  S
     ;; xmldecl::='<?xml' VersionInfo EncodingDecl? SDDecl? S? '?>'
@@ -2844,7 +2844,7 @@
       ;; optional Misc*
       (p/misc*-2 input)
       (p/eof input)
-      (sax:end-document handler))))
+      (fxml.sax:end-document handler))))
 
 (defun synthesize-doctype (dtd input)
   (let ((dummy (string->xstream "<!DOCTYPE dummy>")))
@@ -2890,13 +2890,13 @@
 
 (defun p/element (input)
   (multiple-value-bind (cat n-b new-b uri lname qname attrs) (p/sztag input)
-    (sax:start-element (handler *ctx*) uri lname qname attrs)
+    (fxml.sax:start-element (handler *ctx*) uri lname qname attrs)
     (when (eq cat :stag)
       (let ((*namespace-bindings* n-b))
         (p/content input))
       (with-simple-restart (continue "Close the current tag")
         (p/etag input qname)))
-    (sax:end-element (handler *ctx*) uri lname qname)
+    (fxml.sax:end-element (handler *ctx*) uri lname qname)
     (undeclare-namespaces new-b)
     (pop (base-stack *ctx*))
     (validate-end-element *ctx* qname)))
@@ -2920,12 +2920,12 @@
                (process-attributes *ctx* name (build-attribute-list raw-attrs)))
              (*namespace-bindings* *namespace-bindings*)
              new-namespaces)
-        (when sax:*namespace-processing*
+        (when fxml.sax:*namespace-processing*
           (setf new-namespaces (declare-namespaces attrs))
           (mapc #'set-attribute-namespace attrs))
         (push (compute-base attrs) (base-stack *ctx*))
         (multiple-value-bind (uri prefix local-name)
-            (if sax:*namespace-processing*
+            (if fxml.sax:*namespace-processing*
                 (restart-case
                     (decode-qname name)
                   (store-value (uri)
@@ -2935,10 +2935,10 @@
                            (uri (rod uri))
                            (decls (cons prefix uri)))
                       (push decls *namespace-bindings*)
-                      (sax:start-prefix-mapping (handler *ctx*)
+                      (fxml.sax:start-prefix-mapping (handler *ctx*)
                                                 (car decls)
                                                 (cdr decls))
-                      (let ((attr (sax:make-attribute :qname (rod (format nil "xmlns:~a" prefix))
+                      (let ((attr (fxml.sax:make-attribute :qname (rod (format nil "xmlns:~a" prefix))
                                                       :value uri
                                                       :specified-p t)))
                         (set-attribute-namespace attr)
@@ -2947,10 +2947,10 @@
                 (values nil nil nil))
           (declare (ignore prefix))
           (check-attribute-uniqueness attrs)
-          (unless (or sax:*include-xmlns-attributes*
-                      (null sax:*namespace-processing*))
+          (unless (or fxml.sax:*include-xmlns-attributes*
+                      (null fxml.sax:*namespace-processing*))
             (setf attrs
-                  (remove-if (compose #'xmlns-attr-p #'sax:attribute-qname)
+                  (remove-if (compose #'xmlns-attr-p #'fxml.sax:attribute-qname)
                              attrs)))
           (values cat
                   *namespace-bindings*
@@ -2967,7 +2967,7 @@
     (when (cdr sem2)
       (wf-error input "no attributes allowed in end tag"))))
 
-;; copy&paste from fxml-rng
+;; copy&paste from cxml-rng
 (defun escape-uri (string)
   (with-output-to-string (out)
     (loop for c across (fxml::rod-to-utf8-string string) do
@@ -2978,10 +2978,10 @@
                 (write-char c out))))))
 
 (defun compute-base (attrs)
-  (let ((new (sax:find-attribute #"xml:base" attrs))
+  (let ((new (fxml.sax:find-attribute #"xml:base" attrs))
         (current (car (base-stack *ctx*))))
     (if new
-        (puri:merge-uris (escape-uri (sax:attribute-value new)) current)
+        (puri:merge-uris (escape-uri (fxml.sax:attribute-value new)) current)
         current)))
 
 (defun process-characters (input sem)
@@ -3012,7 +3012,7 @@
          (p/element input))
         ((:CDATA)
          (process-characters input sem)
-         (sax:characters (handler *ctx*) sem))
+         (fxml.sax:characters (handler *ctx*) sem))
         ((:ENTITY-REF)
          (let ((name sem))
            (consume-token input)
@@ -3027,15 +3027,15 @@
                                               (peek-token input))))))))
         ((:<!\[)
          (let ((data (process-cdata-section input)))
-           (sax:start-cdata (handler *ctx*))
-           (sax:characters (handler *ctx*) data)
-           (sax:end-cdata (handler *ctx*))))
+           (fxml.sax:start-cdata (handler *ctx*))
+           (fxml.sax:characters (handler *ctx*) data)
+           (fxml.sax:end-cdata (handler *ctx*))))
         ((:PI)
          (consume-token input)
-         (sax:processing-instruction (handler *ctx*) (car sem) (cdr sem)))
+         (fxml.sax:processing-instruction (handler *ctx*) (car sem) (cdr sem)))
         ((:COMMENT)
          (consume-token input)
-         (sax:comment (handler *ctx*) sem))
+         (fxml.sax:comment (handler *ctx*) sem))
         (otherwise
          (return))))))
 
@@ -3333,10 +3333,10 @@
      an error if the document contains an internal subset.}
    @arg[recode]{Boolean.  (Ignored on Lisps with Unicode
      support.)  Recode rods to UTF-8 strings.  Defaults to true.
-     Make sure to use @fun{utf8-dom:make-dom-builder} if this
-     option is enabled and @fun{rune-dom:make-dom-builder}
+     Make sure to use @fun{fxml.utf8-dom:make-dom-builder} if this
+     option is enabled and @fun{fxml.rune-dom:make-dom-builder}
      otherwise.}
-   @return{The value returned by @fun{sax:end-document} on @var{handler}.}
+   @return{The value returned by @fun{fxml.sax:end-document} on @var{handler}.}
 
    Parse an XML document from @var{input}, which can be a string, pathname,
    octet vector, or stream.
@@ -3386,7 +3386,7 @@
 (defun parse-file (filename handler &rest args)
   "@arg[filename]{An pathname designator.}
    @arg[handler]{A @class{SAX handler}}
-   @return{The value returned by @fun{sax:end-document} on @var{handler}.}
+   @return{The value returned by @fun{fxml.sax:end-document} on @var{handler}.}
 
    This is an old-style convenience wrapper around the new-style interface
    @fun{parse}.
@@ -3418,7 +3418,7 @@
       nil))
 
 (deftype |SAX HANDLER| ()
-  'sax:abstract-handler
+  'fxml.sax:abstract-handler
   "Historically, any object has been usable as a SAX handler with FXML,
    as long as it implemented all SAX events, i.e. had methods
    for the generic functions defined in the SAX package.
@@ -3447,7 +3447,7 @@
 (defun parse-stream (stream handler &rest args)
   "@arg[stream]{An (unsigned-byte 8) stream}
    @arg[handler]{A @class{SAX handler}}
-   @return{The value returned by @fun{sax:end-document} on @var{handler}.}
+   @return{The value returned by @fun{fxml.sax:end-document} on @var{handler}.}
 
    This is an old-style convenience wrapper around the new-style interface
    @fun{parse}.
@@ -3485,10 +3485,10 @@
      the parser.)}
    @arg[recode]{Boolean.  (Ignored on Lisps with Unicode
      support.)  Recode rods to UTF-8 strings.  Defaults to true.
-     Make sure to use @fun{utf8-dom:make-dom-builder} if this
-     option is enabled and @fun{rune-dom:make-dom-builder}
+     Make sure to use @fun{fxml.utf8-dom:make-dom-builder} if this
+     option is enabled and @fun{fxml.rune-dom:make-dom-builder}
      otherwise.}
-   @return{The value returned by @fun{sax:end-document} on @var{handler}.}
+   @return{The value returned by @fun{fxml.sax:end-document} on @var{handler}.}
 
    Simulate parsing of a document with a document element @var{qname}
    having no attributes except for an optional namespace
@@ -3511,9 +3511,9 @@
         (extid
          (when (or public-id system-id)
            (extid-using-catalog (make-extid public-id system-id)))))
-    (sax:start-document handler)
+    (fxml.sax:start-document handler)
     (when extid
-      (sax:start-dtd handler
+      (fxml.sax:start-dtd handler
                      qname
                      (and public-id)
                      (and system-id (uri-rod system-id)))
@@ -3525,32 +3525,32 @@
               (with-zstream (zi2 :input-stack (list xi2))
                 (ensure-dtd)
                 (p/ext-subset zi2))))))
-      (sax:end-dtd handler)
+      (fxml.sax:end-dtd handler)
       (let ((dtd (dtd *ctx*)))
-        (sax:entity-resolver handler (lambda (n h) (resolve-entity n h dtd)))
-        (sax::dtd handler dtd)))
+        (fxml.sax:entity-resolver handler (lambda (n h) (resolve-entity n h dtd)))
+        (fxml.sax::dtd handler dtd)))
     (ensure-dtd)
     (when (or uri qname)
       (let* ((attrs
               (when uri
-                (list (sax:make-attribute :qname #"xmlns"
+                (list (fxml.sax:make-attribute :qname #"xmlns"
                                           :value (rod uri)
                                           :specified-p t))))
              (*namespace-bindings* *namespace-bindings*)
              new-namespaces)
-        (when sax:*namespace-processing*
+        (when fxml.sax:*namespace-processing*
           (setf new-namespaces (declare-namespaces attrs))
           (mapc #'set-attribute-namespace attrs))
         (multiple-value-bind (uri prefix local-name)
-            (if sax:*namespace-processing* (decode-qname qname) nil)
+            (if fxml.sax:*namespace-processing* (decode-qname qname) nil)
           (declare (ignore prefix))
-          (unless (or sax:*include-xmlns-attributes*
-                      (null sax:*namespace-processing*))
+          (unless (or fxml.sax:*include-xmlns-attributes*
+                      (null fxml.sax:*namespace-processing*))
             (setf attrs nil))
-          (sax:start-element (handler *ctx*) uri local-name qname attrs)
-          (sax:end-element (handler *ctx*) uri local-name qname))
+          (fxml.sax:start-element (handler *ctx*) uri local-name qname attrs)
+          (fxml.sax:end-element (handler *ctx*) uri local-name qname))
         (undeclare-namespaces new-namespaces)))
-    (sax:end-document handler)))
+    (fxml.sax:end-document handler)))
 
 (defun parse-dtd-file (filename &optional handler)
   "@arg[filename]{An pathname designator.}
@@ -3590,7 +3590,7 @@
 (defun parse-rod (string handler &rest args)
   "@arg[string]{An string of unicode characters.}
    @arg[handler]{A @class{SAX handler}}
-   @return{The value returned by @fun{sax:end-document} on @var{handler}.}
+   @return{The value returned by @fun{fxml.sax:end-document} on @var{handler}.}
 
    This is an old-style convenience wrapper around the new-style interface
    @fun{parse}.
@@ -3618,7 +3618,7 @@
 (defun parse-octets (octets handler &rest args)
   "@arg[octets]{An (unsigned-byte 8) vector.}
    @arg[handler]{A @class{SAX handler}}
-   @return{The value returned by @fun{sax:end-document} on @var{handler}.}
+   @return{The value returned by @fun{fxml.sax:end-document} on @var{handler}.}
 
    This is an old-style convenience wrapper around the new-style interface
    @fun{parse}.
@@ -3947,9 +3947,9 @@
 (defun find-namespace-declarations (attributes)
   (loop
       for attribute in attributes
-      for qname = (sax:attribute-qname attribute)
+      for qname = (fxml.sax:attribute-qname attribute)
       when (xmlns-attr-p qname)
-      collect (cons (attrname->prefix qname) (sax:attribute-value attribute))))
+      collect (cons (attrname->prefix qname) (fxml.sax:attribute-value attribute))))
 
 (defun declare-namespaces (attributes)
   (let ((ns-decls (find-namespace-declarations attributes)))
@@ -3992,21 +3992,21 @@
             (t
              (push (cons prefix (if (rod= #"" uri) nil uri))
                    *namespace-bindings*)
-             (sax:start-prefix-mapping (handler *ctx*)
+             (fxml.sax:start-prefix-mapping (handler *ctx*)
                                        (car ns-decl)
                                        (cdr ns-decl)))))))
     ns-decls))
 
 (defun undeclare-namespaces (ns-decls)
   (dolist (ns-decl ns-decls)
-    (sax:end-prefix-mapping (handler *ctx*) (car ns-decl))))
+    (fxml.sax:end-prefix-mapping (handler *ctx*) (car ns-decl))))
 
 (defun build-attribute-list (attr-alist)
   ;; fixme: if there is a reason this function reverses attribute order,
   ;; it should be documented.
   (let (attributes)
     (dolist (pair attr-alist)
-      (push (sax:make-attribute :qname (car pair)
+      (push (fxml.sax:make-attribute :qname (car pair)
                                 :value (cdr pair)
                                 :specified-p t)
             attributes))
@@ -4023,30 +4023,30 @@
   ;;
   ;; 1. is checked by read-tag-2, so we only deal with 2 here
   (loop for (attr-1 . rest) on attributes do
-        (when (and (sax:attribute-namespace-uri attr-1)
+        (when (and (fxml.sax:attribute-namespace-uri attr-1)
                    (find-if (lambda (attr-2)
-                              (and (rod= (sax:attribute-namespace-uri attr-1)
-                                         (sax:attribute-namespace-uri attr-2))
-                                   (rod= (sax:attribute-local-name attr-1)
-                                         (sax:attribute-local-name attr-2))))
+                              (and (rod= (fxml.sax:attribute-namespace-uri attr-1)
+                                         (fxml.sax:attribute-namespace-uri attr-2))
+                                   (rod= (fxml.sax:attribute-local-name attr-1)
+                                         (fxml.sax:attribute-local-name attr-2))))
                             rest))
           (wf-error nil
                     "Multiple definitions of attribute ~S in namespace ~S."
-                    (mu (sax:attribute-local-name attr-1))
-                    (mu (sax:attribute-namespace-uri attr-1))))))
+                    (mu (fxml.sax:attribute-local-name attr-1))
+                    (mu (fxml.sax:attribute-namespace-uri attr-1))))))
 
 (defun set-attribute-namespace (attribute)
-  (let ((qname (sax:attribute-qname attribute)))
-    (if (and sax:*use-xmlns-namespace* (rod= qname #"xmlns"))
-        (setf (sax:attribute-namespace-uri attribute)
+  (let ((qname (fxml.sax:attribute-qname attribute)))
+    (if (and fxml.sax:*use-xmlns-namespace* (rod= qname #"xmlns"))
+        (setf (fxml.sax:attribute-namespace-uri attribute)
               #"http://www.w3.org/2000/xmlns/")
         (multiple-value-bind (prefix local-name) (split-qname qname)
           (when (and prefix ;; default namespace doesn't apply to attributes
                      (or (not (rod= #"xmlns" prefix))
-                         sax:*use-xmlns-namespace*))
-            (setf (sax:attribute-namespace-uri attribute)
+                         fxml.sax:*use-xmlns-namespace*))
+            (setf (fxml.sax:attribute-namespace-uri attribute)
                   (decode-qname qname)))
-          (setf (sax:attribute-local-name attribute) local-name)))))
+          (setf (fxml.sax:attribute-local-name attribute) local-name)))))
 
 ;;;;;;;;;;;;;;;;;
 
@@ -4095,7 +4095,7 @@
 
    @pre{(let ((d (parse-file \"~/test.xml\" (fxml-dom:make-dom-builder)))
       (x (parse-dtd-file \"~/test.dtd\")))
-  (dom:map-document (fxml:make-validator x #\"foo\") d))}"
+  (fxml.dom:map-document (fxml:make-validator x #\"foo\") d))}"
   (make-instance 'validator
     :context (make-context
               :handler nil
@@ -4107,23 +4107,23 @@
                     (*validate* t))
                 (with-scratch-pads ()   ;nicht schoen
                   ,@body))))
-  (defmethod sax:start-element ((handler validator) uri lname qname attributes)
+  (defmethod fxml.sax:start-element ((handler validator) uri lname qname attributes)
     uri lname
     (with-context (handler)
       (validate-start-element *ctx* qname)
       (process-attributes *ctx* qname attributes)))
 
-  (defmethod sax:start-cdata ((handler validator))
+  (defmethod fxml.sax:start-cdata ((handler validator))
     (setf (cdatap handler) t))
 
-  (defmethod sax:characters ((handler validator) data)
+  (defmethod fxml.sax:characters ((handler validator) data)
     (with-context (handler)
       (validate-characters *ctx* (if (cdatap handler) #"hack" data))))
 
-  (defmethod sax:end-cdata ((handler validator))
+  (defmethod fxml.sax:end-cdata ((handler validator))
     (setf (cdatap handler) nil))
 
-  (defmethod sax:end-element ((handler validator) uri lname qname)
+  (defmethod fxml.sax:end-element ((handler validator) uri lname qname)
     uri lname
     (with-context (handler)
       (validate-end-element *ctx* qname))))

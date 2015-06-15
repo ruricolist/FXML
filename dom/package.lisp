@@ -5,7 +5,7 @@
 
 (in-package :cl-user)
 
-(defpackage :dom
+(defpackage :fxml.dom
   (:use)
   (:export
    ;; DOM 2 functions
@@ -143,19 +143,19 @@
    #:create-document
    #:map-document))
 
-(defclass dom:node () ())
-(defclass dom:document (dom:node) ())
-(defclass dom:document-fragment (dom:node) ())
-(defclass dom:character-data (dom:node) ())
-(defclass dom:attr (dom:node) ())
-(defclass dom:element (dom:node) ())
-(defclass dom:text (dom:character-data) ())
-(defclass dom:comment (dom:character-data) ())
-(defclass dom:cdata-section (dom:text) ())
-(defclass dom:document-type (dom:node) ())
-(defclass dom:notation (dom:node) ())
-(defclass dom:entity (dom:node) ())
-(defclass dom:entity-reference (dom:node) ())
-(defclass dom:processing-instruction (dom:node) ())
+(defclass fxml.dom:node () ())
+(defclass fxml.dom:document (fxml.dom:node) ())
+(defclass fxml.dom:document-fragment (fxml.dom:node) ())
+(defclass fxml.dom:character-data (fxml.dom:node) ())
+(defclass fxml.dom:attr (fxml.dom:node) ())
+(defclass fxml.dom:element (fxml.dom:node) ())
+(defclass fxml.dom:text (fxml.dom:character-data) ())
+(defclass fxml.dom:comment (fxml.dom:character-data) ())
+(defclass fxml.dom:cdata-section (fxml.dom:text) ())
+(defclass fxml.dom:document-type (fxml.dom:node) ())
+(defclass fxml.dom:notation (fxml.dom:node) ())
+(defclass fxml.dom:entity (fxml.dom:node) ())
+(defclass fxml.dom:entity-reference (fxml.dom:node) ())
+(defclass fxml.dom:processing-instruction (fxml.dom:node) ())
 
-(defclass dom:named-node-map () ())
+(defclass fxml.dom:named-node-map () ())

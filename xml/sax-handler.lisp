@@ -42,7 +42,7 @@
 ;;   * The whole ErrorHandler class, this is better handled using
 ;;     conditions (but isn't yet)
 
-(defpackage :sax
+(defpackage :fxml.sax
   (:use :common-lisp)
   (:export #:*namespace-processing*
            #:*include-xmlns-attributes*
@@ -97,7 +97,7 @@
            #:system-id
            #:xml-base))
 
-(in-package :sax)
+(in-package :fxml.sax)
 
 
 ;;;; SAX-PARSER interface
@@ -136,7 +136,7 @@
 (defgeneric xml-base (sax-parser)
   (:documentation
    "Return the [Base URI] of the current element.  This URI can differ from
-   the value returned by SAX:SYSTEM-ID if xml:base attributes are present.")
+   the value returned by FXML.SAX:SYSTEM-ID if xml:base attributes are present.")
   (:method ((handler sax-parser-mixin))
     (if (sax-parser handler)
         (xml-base (sax-parser handler))
@@ -273,8 +273,8 @@ Setting this variable has no effect unless both
 
 (defun find-attribute-ns (uri lname attrs)
   (find-if (lambda (attr)
-             (and (%rod= uri (sax:attribute-namespace-uri attr))
-                  (%rod= lname (sax:attribute-local-name attr))))
+             (and (%rod= uri (fxml.sax:attribute-namespace-uri attr))
+                  (%rod= lname (fxml.sax:attribute-local-name attr))))
            attrs))
 
 
@@ -296,7 +296,7 @@ Setting this variable has no effect unless both
                   (:method ((handler t) ,@args)
                     (declare (ignore ,@args))
                     (warn "deprecated SAX default method used by a handler ~
-                         that is not a subclass of SAX:ABSTRACT-HANDLER ~
+                         that is not a subclass of FXML.SAX:ABSTRACT-HANDLER ~
                          or HAX:ABSTRACT-HANDLER")
                     nil)
                   (:method ((handler abstract-handler) ,@args)
@@ -425,7 +425,7 @@ Setting this variable has no effect unless both
   (:method ((handler t) sax-parser)
     (declare (ignore sax-parser))
     (warn "deprecated sax default method used by a handler ~
-                          that is not a subclass of sax:abstract-handler ~
+                          that is not a subclass of fxml.sax:abstract-handler ~
                           or hax:abstract-handler")
     nil)
   (:method ((handler hax:abstract-handler) sax-parser)
@@ -435,15 +435,15 @@ Setting this variable has no effect unless both
 ;;;; HAX to SAX
 
 (defmethod hax:start-document ((handler abstract-handler) name pubid sysid)
-  (sax:start-document handler)
+  (fxml.sax:start-document handler)
   (when sysid
-    (sax:start-dtd handler name pubid sysid)
-    (sax:end-dtd handler)))
+    (fxml.sax:start-dtd handler name pubid sysid)
+    (fxml.sax:end-dtd handler)))
 
 (defmethod hax:start-element ((handler abstract-handler) name attributes)
   (setf name (runes:rod-downcase name))
   (when (equal name "html")
-    (sax:start-prefix-mapping handler "" "http://www.w3.org/1999/xhtml")
+    (fxml.sax:start-prefix-mapping handler "" "http://www.w3.org/1999/xhtml")
     (when *include-xmlns-attributes*
       (push (make-attribute :namespace-uri "http://www.w3.org/2000/xmlns/"
                             :local-name nil
@@ -451,7 +451,7 @@ Setting this variable has no effect unless both
                             :value "http://www.w3.org/1999/xhtml"
                             :specified-p t)
             attributes)))
-  (sax:start-element handler
+  (fxml.sax:start-element handler
                      "http://www.w3.org/1999/xhtml"
                      name
                      name
@@ -459,24 +459,24 @@ Setting this variable has no effect unless both
 
 (defmethod hax:end-element ((handler abstract-handler) name)
   (setf name (runes:rod-downcase name))
-  (sax:end-element handler
+  (fxml.sax:end-element handler
                    "http://www.w3.org/1999/xhtml"
                    name
                    name)
   (when (equal name "html")
-    (sax:end-prefix-mapping handler "")))
+    (fxml.sax:end-prefix-mapping handler "")))
 
 (defmethod hax:characters ((handler abstract-handler) data)
-  (sax:characters handler data))
+  (fxml.sax:characters handler data))
 
 (defmethod hax:unescaped ((handler abstract-handler) data)
-  (sax:unescaped handler data))
+  (fxml.sax:unescaped handler data))
 
 (defmethod hax:comment ((handler abstract-handler) str)
-  (sax:comment handler str))
+  (fxml.sax:comment handler str))
 
 (defmethod hax:end-document ((handler abstract-handler))
-  (sax:end-document handler))
+  (fxml.sax:end-document handler))
 
 ;;;; Callback handlers.
 
@@ -659,7 +659,7 @@ been parsed and is available as a string.")
     default     :REQUIRED, :IMPLIED, (:FIXED content), or (:DEFAULT content)")
 
 (setf (documentation 'entity-resolver 'function)
-      "Called between sax:end-dtd and sax:end-document to register an entity
+      "Called between fxml.sax:end-dtd and fxml.sax:end-document to register an entity
     resolver, a function of two arguments: An entity name and SAX handler.
     When called, the resolver function will parse the named entity's data.")
 

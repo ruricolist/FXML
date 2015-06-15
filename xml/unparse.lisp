@@ -72,7 +72,7 @@
 
 ;;;; SINK: an xml output sink
 
-(defclass sink (sax:content-handler)
+(defclass sink (fxml.sax:content-handler)
     ((ystream :initarg :ystream :accessor sink-ystream)
      (width :initform 79 :initarg :width :accessor width)
      (canonical :initform nil :initarg :canonical :accessor canonical)
@@ -152,7 +152,7 @@
    characters.
 
    The sink will return the string as a result from
-   @fun{sax:end-document}.
+   @fun{fxml.sax:end-document}.
 
    All sink creation functions share the same keyword arguments.
    Refer to @fun{make-octet-vector-sink} for details on keyword
@@ -160,7 +160,7 @@
   (apply #'make-rod-sink args))
 
 
-(defmethod sax:end-document ((sink sink))
+(defmethod fxml.sax:end-document ((sink sink))
   (close-ystream (sink-ystream sink)))
 
 
@@ -194,13 +194,13 @@
        @end{itemize}
 
        The sink will return the vector as a result from
-       @fun{sax:end-document}.
+       @fun{fxml.sax:end-document}.
 
        An internal subset will be included in the result regardless of the
        canonical setting. It is the responsibility of the caller to not
        report an internal subset for canonical <= 1, or only notations as
        required for canonical = 2. For example, the include-doctype argument
-       to dom:map-document should be set to nil for the former behaviour and
+       to fxml.dom:map-document should be set to nil for the former behaviour and
        :canonical-notations for the latter. ")
 
 (setf (documentation #'make-octet-stream-sink 'function)
@@ -211,7 +211,7 @@
        equivalent XML document to @var{stream}.
 
        The sink will return @var{stream} as a result from
-       @fun{sax:end-document}.
+       @fun{fxml.sax:end-document}.
 
        All sink creation functions share the same keyword arguments.
        Refer to @fun{make-octet-vector-sink} for details on keyword
@@ -225,7 +225,7 @@
        characters (or on implementations without unicode support: a rod).
 
        The sink will return the string (or rod) as a result from
-       @fun{sax:end-document}.
+       @fun{fxml.sax:end-document}.
 
        All sink creation functions share the same keyword arguments.
        Refer to @fun{make-octet-vector-sink} for details on keyword
@@ -239,7 +239,7 @@
        equivalent XML document to @var{stream}.
 
        The sink will return @var{stream} as a result from
-       @fun{sax:end-document}.
+       @fun{fxml.sax:end-document}.
 
        All sink creation functions share the same keyword arguments.
        Refer to @fun{make-octet-vector-sink} for details on keyword
@@ -248,7 +248,7 @@
 
 ;;;; doctype and notations
 
-(defmethod sax:start-document ((sink sink))
+(defmethod fxml.sax:start-document ((sink sink))
   (unless (or (canonical sink)
               (sink-omit-xml-declaration-p sink))
     (sink-write-rod #"<?xml version=\"1.0\" encoding=\"" sink)
@@ -256,7 +256,7 @@
     (sink-write-rod #"\"?>" sink)
     (sink-write-rune #/U+000A sink)))
 
-(defmethod sax:start-dtd ((sink sink) name public-id system-id)
+(defmethod fxml.sax:start-dtd ((sink sink) name public-id system-id)
   (setf (name-for-dtd sink) name)
   (unless (canonical sink)
     (ensure-doctype sink public-id system-id)))
@@ -278,7 +278,7 @@
         (sink-write-escapable-rod system-id sink)
         (sink-write-rod #"\"" sink)))))
 
-(defmethod sax:start-internal-subset ((sink sink))
+(defmethod fxml.sax:start-internal-subset ((sink sink))
   (when (have-internal-subset sink)
     (error "duplicate internal subset"))
   (setf (have-internal-subset sink) t)
@@ -286,11 +286,11 @@
   (sink-write-rod #" [" sink)
   (sink-write-rune #/U+000A sink))
 
-(defmethod sax:end-internal-subset ((sink sink))
+(defmethod fxml.sax:end-internal-subset ((sink sink))
   (ensure-doctype sink)
   (sink-write-rod #"]" sink))
 
-(defmethod sax:unparsed-internal-subset ((sink sink) str)
+(defmethod fxml.sax:unparsed-internal-subset ((sink sink) str)
   (when (have-internal-subset sink)
     (error "duplicate internal subset"))
   (setf (have-internal-subset sink) t)
@@ -309,7 +309,7 @@
     (sink-write-rod x sink)
     (sink-write-rune q sink)))
 
-(defmethod sax:notation-declaration ((sink sink) name public-id system-id)
+(defmethod fxml.sax:notation-declaration ((sink sink) name public-id system-id)
   (let ((prev (previous-notation sink)))
     (when (and (and (canonical sink) (>= (canonical sink) 2))
                prev
@@ -333,7 +333,7 @@
   (sink-write-rune #/> sink)
   (sink-write-rune #/U+000A sink))
 
-(defmethod sax:unparsed-entity-declaration
+(defmethod fxml.sax:unparsed-entity-declaration
     ((sink sink) name public-id system-id notation-name)
   (unless (and (canonical sink) (< (canonical sink) 3))
     (sink-write-rod #"<!ENTITY " sink)
@@ -355,7 +355,7 @@
     (sink-write-rune #/> sink)
     (sink-write-rune #/U+000A sink)))
 
-(defmethod sax:external-entity-declaration
+(defmethod fxml.sax:external-entity-declaration
     ((sink sink) kind name public-id system-id)
   (when (canonical sink)
     (error "cannot serialize parsed entities in canonical mode"))
@@ -378,7 +378,7 @@
   (sink-write-rune #/> sink)
   (sink-write-rune #/U+000A sink))
 
-(defmethod sax:internal-entity-declaration ((sink sink) kind name value)
+(defmethod fxml.sax:internal-entity-declaration ((sink sink) kind name value)
   (when (canonical sink)
     (error "cannot serialize parsed entities in canonical mode"))
   (sink-write-rod #"<!ENTITY " sink)
@@ -392,7 +392,7 @@
   (sink-write-rune #/> sink)
   (sink-write-rune #/U+000A sink))
 
-(defmethod sax:element-declaration ((sink sink) name model)
+(defmethod fxml.sax:element-declaration ((sink sink) name model)
   (when (canonical sink)
     (error "cannot serialize element type declarations in canonical mode"))
   (sink-write-rod #"<!ELEMENT " sink)
@@ -437,7 +437,7 @@
   (sink-write-rune #/> sink)
   (sink-write-rune #/U+000A sink))
 
-(defmethod sax:attribute-declaration ((sink sink) ename aname type default)
+(defmethod fxml.sax:attribute-declaration ((sink sink) ename aname type default)
   (when (canonical sink)
     (error "cannot serialize attribute type declarations in canonical mode"))
   (sink-write-rod #"<!ATTLIST " sink)
@@ -471,7 +471,7 @@
   (sink-write-rune #/> sink)
   (sink-write-rune #/U+000A sink))
 
-(defmethod sax:end-dtd ((sink sink))
+(defmethod fxml.sax:end-dtd ((sink sink))
   (when (have-doctype sink)
     (sink-write-rod #">" sink)
     (sink-write-rune #/U+000A sink)))
@@ -495,7 +495,7 @@
       (setf (tag-have-gt tag) t)
       (sink-write-rune #/> sink))))
 
-(defmethod sax:start-element
+(defmethod fxml.sax:start-element
     ((sink sink) namespace-uri local-name qname attributes)
   (declare (ignore namespace-uri local-name))
   (maybe-close-tag sink)
@@ -510,20 +510,20 @@
   (dolist (a (if (canonical sink)
                  (sort (copy-list attributes)
                        #'rod<
-                       :key #'sax:attribute-qname)
+                       :key #'fxml.sax:attribute-qname)
                  attributes))
     (sink-write-rune #/space sink)
-    (sink-write-rod (sax:attribute-qname a) sink)
+    (sink-write-rod (fxml.sax:attribute-qname a) sink)
     (sink-write-rune #/= sink)
     (sink-write-rune #/\" sink)
     (if (canonical sink)
-        (sink-write-escapable-rod/canonical (sax:attribute-value a) sink)
-        (sink-write-escapable-rod/attribute (sax:attribute-value a) sink))
+        (sink-write-escapable-rod/canonical (fxml.sax:attribute-value a) sink)
+        (sink-write-escapable-rod/attribute (fxml.sax:attribute-value a) sink))
     (sink-write-rune #/\" sink))
   (when (canonical sink)
     (maybe-close-tag sink)))
 
-(defmethod sax:end-element
+(defmethod fxml.sax:end-element
     ((sink sink) namespace-uri local-name qname)
   (declare (ignore namespace-uri local-name))
   (let ((tag (pop (stack sink))))
@@ -544,7 +544,7 @@
       (t
        (sink-write-rod #"/>" sink)))))
 
-(defmethod sax:processing-instruction ((sink sink) target data)
+(defmethod fxml.sax:processing-instruction ((sink sink) target data)
   (maybe-close-tag sink)
   (unless (rod-equal target '#.(string-rod "xml"))
     (sink-write-rod '#.(string-rod "<?") sink)
@@ -557,11 +557,11 @@
        (sink-write-rune #/space sink)))
     (sink-write-rod '#.(string-rod "?>") sink)))
 
-(defmethod sax:start-cdata ((sink sink))
+(defmethod fxml.sax:start-cdata ((sink sink))
   (maybe-close-tag sink)
   (push :cdata (stack sink)))
 
-(defmethod sax:characters ((sink sink) data)
+(defmethod fxml.sax:characters ((sink sink) data)
   (maybe-close-tag sink)
   (cond
     ((and (eq (car (stack sink)) :cdata)
@@ -581,11 +581,11 @@
               (sink-write-escapable-rod/canonical data sink)
               (sink-write-escapable-rod data sink))))))
 
-(defmethod sax:unescaped ((sink sink) data)
+(defmethod fxml.sax:unescaped ((sink sink) data)
   (maybe-close-tag sink)
   (sink-write-rod data sink))
 
-(defmethod sax:comment ((sink sink) data)
+(defmethod fxml.sax:comment ((sink sink) data)
   (maybe-close-tag sink)
   (unless (canonical sink)
     ;; XXX signal error if body is unprintable?
@@ -593,7 +593,7 @@
     (map nil (lambda (c) (sink-write-rune c sink)) data)
     (sink-write-rod #"-->" sink)))
 
-(defmethod sax:end-cdata ((sink sink))
+(defmethod fxml.sax:end-cdata ((sink sink))
   (unless (eq (pop (stack sink)) :cdata)
     (error "output does not nest: not in a cdata section")))
 
@@ -726,7 +726,7 @@
 (defmacro with-xml-output (sink &body body)
   "@arg[sink]{A @class{SAX handler}, evaluated}
    @arg[body]{forms}
-   @return{The result of calling @code{sax:end-document} on @code{sink}.}
+   @return{The result of calling @code{fxml.sax:end-document} on @code{sink}.}
 
    Evaluates sink and establishes it as the current output sink for
    the following \"convenience serialization\" macros and functions:
@@ -734,12 +734,12 @@
    @fun{with-element*}, @fun{attribute}, @fun{attribute*}, @fun{text}
    @fun{comment}, @fun{processing-instruction}, @fun{unescaped}.
 
-   Before @code{body} is evaluated, @fun{sax:start-document} is signalled
-   to the @code{sink}.  Afterwards, @fun{sax:end-document} is signalled.
+   Before @code{body} is evaluated, @fun{fxml.sax:start-document} is signalled
+   to the @code{sink}.  Afterwards, @fun{fxml.sax:end-document} is signalled.
 
    Note that convenience serialization delays some serialization events.
    For example, @fun{with-element} delays signalling an opening tag
-   using @fun{sax:start-element} until it has information about all
+   using @fun{fxml.sax:start-element} until it has information about all
    possible attributes of the element.  Because of this delay, it is
    not usually safe to signal SAX events to the sink during the extent
    of @code{with-xml-output}.  However, @fun{with-output-sink} can be
@@ -779,9 +779,9 @@
         (*current-element* nil)
         (*unparse-namespace-bindings* *initial-namespace-bindings*)
         (*current-namespace-bindings* nil))
-    (sax:start-document sink)
+    (fxml.sax:start-document sink)
     (funcall fn)
-    (sax:end-document sink)))
+    (fxml.sax:end-document sink)))
 
 (defun invoke-with-output-sink (fn)
   (maybe-emit-start-tag)
@@ -829,7 +829,7 @@
    @item{After the end of @var{body} has been reached.}
    @end{itemize}
 
-   Finally, sax:end-element is used to write an end tag, using the same
+   Finally, fxml.sax:end-element is used to write an end tag, using the same
    qualified name and namespace information as above."
   `(invoke-with-element* (lambda () ,@body) ,prefix ,lname))
 
@@ -856,16 +856,16 @@
 
    Writes a doctype declaration to the current output sink, using the
    specified name, public ID, system ID, and optionally an internal subset."
-  (sax:start-dtd sink name public-id system-id)
+  (fxml.sax:start-dtd sink name public-id system-id)
   (when internal-subset
-    (sax:unparsed-internal-subset sink internal-subset))
-  (sax:end-dtd sink))
+    (fxml.sax:unparsed-internal-subset sink internal-subset))
+  (fxml.sax:end-dtd sink))
 
 (defun maybe-emit-start-tag (&aux (current-element *current-element*))
   (when current-element
     ;; starting child node, need to emit opening tag of parent first:
     (destructuring-bind ((uri lname qname) &rest attributes) current-element
-      (sax:start-element *sink* uri lname qname (nreverse attributes)))
+      (fxml.sax:start-element *sink* uri lname qname (nreverse attributes)))
     (setf *current-element* nil)))
 
 (defun invoke-with-namespace (fn prefix uri &aux (sink *sink*))
@@ -873,10 +873,10 @@
          (acons prefix uri *unparse-namespace-bindings*))
         (*current-namespace-bindings*
          (acons prefix uri *current-namespace-bindings*)))
-    (sax:start-prefix-mapping sink prefix uri)
+    (fxml.sax:start-prefix-mapping sink prefix uri)
     (multiple-value-prog1
         (funcall fn)
-      (sax:end-prefix-mapping sink prefix))))
+      (fxml.sax:end-prefix-mapping sink prefix))))
 
 (defun invoke-with-element (fn qname)
   (setf qname (rod qname))
@@ -898,7 +898,7 @@
           (cons (list uri lname qname)
                 (mapcar (lambda (x)
                           (destructuring-bind (prefix &rest uri) x
-                            (sax:make-attribute
+                            (fxml.sax:make-attribute
                              :namespace-uri #"http://www.w3.org/2000/xmlns/"
                              :local-name prefix
                              :qname (if (zerop (length prefix))
@@ -910,7 +910,7 @@
         (let ((*current-namespace-bindings* nil))
           (funcall fn))
       (maybe-emit-start-tag)
-      (sax:end-element *sink* uri lname qname))))
+      (fxml.sax:end-element *sink* uri lname qname))))
 
 (defgeneric unparse-attribute (value))
 (defmethod unparse-attribute ((value string)) value)
@@ -959,7 +959,7 @@
   (when value
     (setf prefix (when prefix (rod prefix)))
     (setf lname (rod lname))
-    (push (sax:make-attribute
+    (push (fxml.sax:make-attribute
            :namespace-uri (find-unparse-namespace prefix)
            :local-name lname
            :qname (or qname
@@ -977,9 +977,9 @@
    Note: It is currently the caller's responsibily to ensure that the CDATA
    section will not contain forbidden character sequences."
   (maybe-emit-start-tag)
-  (sax:start-cdata sink)
-  (sax:characters sink (rod data))
-  (sax:end-cdata sink)
+  (fxml.sax:start-cdata sink)
+  (fxml.sax:characters sink (rod data))
+  (fxml.sax:end-cdata sink)
   data)
 
 (defun text (data)
@@ -992,7 +992,7 @@
    Note: It is currently the caller's responsibily to ensure that @code{data}
    does not contain characters forbidden for character data."
   (maybe-emit-start-tag)
-  (sax:characters *sink* (rod data))
+  (fxml.sax:characters *sink* (rod data))
   data)
 
 (defun comment (data)
@@ -1005,7 +1005,7 @@
    Note: It is currently the caller's responsibily to ensure that @code{data}
    does not contain character sequences forbidden for comments."
   (maybe-emit-start-tag)
-  (sax:comment *sink* (rod data))
+  (fxml.sax:comment *sink* (rod data))
   data)
 
 (defun processing-instruction (target data)
@@ -1020,7 +1020,7 @@
    @code{target} and @code{data} do not contain character sequences
    forbidden for processing instruction contents."
   (maybe-emit-start-tag)
-  (sax:processing-instruction *sink* (rod target) (rod data))
+  (fxml.sax:processing-instruction *sink* (rod target) (rod data))
   data)
 
 (defun unescaped (str)
@@ -1034,4 +1034,4 @@
    if you can. (Implementation note: This function is supported because
    XSLT's XML output method requires it.)"
   (maybe-emit-start-tag)
-  (sax:unescaped *sink* (rod str)))
+  (fxml.sax:unescaped *sink* (rod str)))
