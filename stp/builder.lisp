@@ -26,7 +26,7 @@
 ;;; NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 ;;; SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-(in-package :cxml-stp-impl)
+(in-package :fxml.stp.impl)
 
 #+sbcl
 (declaim (optimize (debug 2)))
@@ -39,9 +39,9 @@
    function generating such events, in particular with cxml:parse-file.
 
    Examples. Parsing a file:
-   @begin{pre}(cxml:parse #p\"example.xml\" (stp:make-builder))@end{pre}
+   @begin{pre}(cxml:parse #p\"example.xml\" (fxml.stp:make-builder))@end{pre}
    Parsing a string:
-   @begin{pre}(cxml:parse \"<example/>\" (stp:make-builder))@end{pre}
+   @begin{pre}(cxml:parse \"<example/>\" (fxml.stp:make-builder))@end{pre}
 
    @see{serialize}"
   (make-instance 'builder))

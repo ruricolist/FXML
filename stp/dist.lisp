@@ -1,9 +1,9 @@
 (asdf:operate 'asdf:load-op :atdoc)
-(asdf:operate 'asdf:load-op :cxml-stp)
+(asdf:operate 'asdf:load-op :fxml.stp)
 
 (atdoc:generate-html-documentation
- '(:cxml-stp)
+ '(:fxml.stp)
  (merge-pathnames
   "doc/"
-  (asdf:component-relative-pathname (asdf:find-system :cxml-stp)))
- :heading "cxml-stp")
+  (asdf:component-relative-pathname (asdf:find-system :fxml.stp)))
+ :heading "fxml.stp")

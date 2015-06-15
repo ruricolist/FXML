@@ -26,7 +26,7 @@
 ;;; NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 ;;; SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-(in-package :cxml-stp-impl)
+(in-package :fxml.stp.impl)
 
 #+sbcl
 (declaim (optimize (debug 2)))
@@ -83,7 +83,7 @@
     @return{a string}
     @short{Returns the node's base URI.}"))
 
-(defun cxml-stp:document (node)
+(defun fxml.stp:document (node)
   "@arg[node]{an instance of @class{node}}
    @return{a @class{document} or nil}
    @short{Returns the document node ancestor of @code{node}.}
@@ -93,7 +93,7 @@
   (check-type node node)
   (loop
      for parent = node then (parent parent)
-     while (and parent (not (typep parent 'cxml-stp:document)))
+     while (and parent (not (typep parent 'fxml.stp:document)))
      finally (return parent)))
 
 (defun root (node)
@@ -152,14 +152,14 @@
     a serialized XML document.
 
     Examples. Serializing to a stream:
-    @begin{pre}CL-USER> (stp:serialize (stp:make-document (stp:make-element \"test\"))
+    @begin{pre}CL-USER> (fxml.stp:serialize (fxml.stp:make-document (fxml.stp:make-element \"test\"))
 			(cxml:make-character-stream-sink *standard-output*))
 <?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <test/>
 #<SWANK-BACKEND::SLIME-OUTPUT-STREAM {10037EA611@}>
 @end{pre}
     Examples. Serializing to a string:
-    @begin{pre}CL-USER> (stp:serialize (stp:make-document (stp:make-element \"test\"))
+    @begin{pre}CL-USER> (fxml.stp:serialize (fxml.stp:make-document (fxml.stp:make-element \"test\"))
 			(cxml:make-string-sink))
 \"<?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\"?>
 <test/>\"
@@ -494,7 +494,7 @@
 				(list (list key value))))))
 			(slots-for-print-object node)))
 	 (constructor
-	  (intern (symbol-name (class-name (class-of node))) :cxml-stp-impl))
+	  (intern (symbol-name (class-name (class-of node))) :fxml.stp.impl))
 	 (level *print-level*)
 	 (length *print-length*)
 	 (*print-level* nil)
@@ -536,7 +536,7 @@
 				(list (list key value))))))
 			(slots-for-print-object node)))
 	 (constructor
-	  (intern (symbol-name (class-name (class-of node))) :cxml-stp-impl))
+	  (intern (symbol-name (class-name (class-of node))) :fxml.stp.impl))
 	 (level *print-level*)
 	 (length *print-length*)
 	 (*print-level* nil)
@@ -564,7 +564,7 @@
   (:method-combination progn))
 
 (defmacro defreader (name (&rest args) &body body)
-  (let ((fn (intern (symbol-name name) :cxml-stp-impl)))
+  (let ((fn (intern (symbol-name name) :fxml.stp.impl)))
     `(progn
        (defun ,fn (&rest keys)
 	 "@unexport{}"

@@ -1,6 +1,5 @@
-(defpackage :cxml-stp
+(defpackage :fxml.stp
   (:use :cl)
-  (:nicknames :stp)
   (:export #:*check-uri-syntax*
 	   #:stp-error
 
@@ -279,7 +278,7 @@
     @aboutfun{map-extra-namespaces}
     @end{section}"))
 
-(defpackage :cxml-stp-impl
-  (:use :cl :stp)
+(defpackage :fxml.stp.impl
+  (:use :cl :fxml.stp)
   (:shadow #:document #:document-type)
   (:import-from :xpath-protocol #:define-default-method))

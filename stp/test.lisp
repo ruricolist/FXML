@@ -27,11 +27,11 @@
 ;;; NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 ;;; SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-(defpackage :cxml-stp-test
+(defpackage :fxml.stp.test
   (:use :cl :rt :stp)
   #+openmcl (:shadow #:check-type))
 
-(in-package :cxml-stp-test)
+(in-package :fxml.stp.test)
 
 #+openmcl
 (defmacro check-type (place type)
@@ -44,13 +44,13 @@
   (declare (ignore handler))
   (apply #'cxml:parse-file
 	 filename
-	 (read-from-string "#.(cxml-stp:make-builder)")
+	 (read-from-string "#.(fxml.stp:make-builder)")
 	 :recode t
 	 args))
 
 
 #+(or)
-(let ((cxml-stp::*serialize-canonical-notations-only-p* t))
+(let ((fxml.stp::*serialize-canonical-notations-only-p* t))
   (xmlconf::run-all-tests 'xmlconf::stp-test
 			  "/home/david/2001/XML-Test-Suite/xmlconf/"))
 
@@ -841,7 +841,7 @@
     (let* ((root (make-element "root"))
 	   (document (make-document root))
 	   (new-root (make-element "new-root")))
-      (stp:prepend-child document (make-comment "test"))
+      (fxml.stp:prepend-child document (make-comment "test"))
       ;; change
       (setf (document-element document) new-root)
       (assert-equal (document-element document) new-root)

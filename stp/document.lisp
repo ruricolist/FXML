@@ -26,7 +26,7 @@
 ;;; NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 ;;; SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-(in-package :cxml-stp-impl)
+(in-package :fxml.stp.impl)
 
 #+sbcl
 (declaim (optimize (debug 2)))
@@ -65,8 +65,8 @@
   (assert-orphan child)
   (typecase child
     ((or comment processing-instruction))
-    (cxml-stp:document-type
-     (when (stp:document-type parent)
+    (fxml.stp:document-type
+     (when (fxml.stp:document-type parent)
        (stp-error "attempt to insert multiple document types"))
      (let ((j (child-position-if (alexandria:of-type 'element) parent)))
        (unless (<= i j)
@@ -88,23 +88,23 @@
     ((and (eq old-child (document-element parent))
 	  (typep new-child 'element))
       (setf (document-element parent) new-child))
-    ((and (eq old-child (stp:document-type parent))
-	  (typep new-child 'cxml-stp:document-type))
-      (setf (stp:document-type parent) new-child))
+    ((and (eq old-child (fxml.stp:document-type parent))
+	  (typep new-child 'fxml.stp:document-type))
+      (setf (fxml.stp:document-type parent) new-child))
     (t
       (call-next-method))))
 
-(defun cxml-stp:document-type (document)
+(defun fxml.stp:document-type (document)
   "@arg[document]{a @class{document}}
    @return{a @class{document-type}, or nil}
    This function returns the child node that is a document type, or nil.
    @see{document-element}"
-  (find-if (alexandria:of-type 'cxml-stp:document-type) (%children document)))
+  (find-if (alexandria:of-type 'fxml.stp:document-type) (%children document)))
 
 ;; zzz gefaellt mir nicht
-(defun (setf cxml-stp:document-type) (newval document)
-  (check-type newval cxml-stp:document-type)
-  (let ((old (cxml-stp:document-type document)))
+(defun (setf fxml.stp:document-type) (newval document)
+  (check-type newval fxml.stp:document-type)
+  (let ((old (fxml.stp:document-type document)))
     (unless (eq newval old)
       (assert-orphan newval)
       (if old

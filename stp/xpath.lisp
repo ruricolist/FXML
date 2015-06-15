@@ -28,7 +28,7 @@
 ;;; SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-(in-package :cxml-stp-impl)
+(in-package :fxml.stp.impl)
 
 (defun vector->pipe (vector &optional (start 0))
   (if (>= start (length vector))
@@ -41,49 +41,49 @@
 
 ;;;; FIXME: xpath-protocol:child-pipe destructively normalizes the STP tree!
 
-(define-default-method xpath-protocol:local-name ((node stp:node))
+(define-default-method xpath-protocol:local-name ((node fxml.stp:node))
   (local-name node))
 
-(define-default-method xpath-protocol:namespace-prefix ((node stp:node))
+(define-default-method xpath-protocol:namespace-prefix ((node fxml.stp:node))
   (namespace-prefix node))
 
-(define-default-method xpath-protocol:parent-node ((node stp:node))
-  (stp:parent node))
+(define-default-method xpath-protocol:parent-node ((node fxml.stp:node))
+  (fxml.stp:parent node))
 
-(define-default-method xpath-protocol:namespace-uri ((node stp:node))
+(define-default-method xpath-protocol:namespace-uri ((node fxml.stp:node))
   (namespace-uri node))
 
-(define-default-method xpath-protocol:qualified-name ((node stp:node))
+(define-default-method xpath-protocol:qualified-name ((node fxml.stp:node))
   (qualified-name node))
 
-(define-default-method xpath-protocol:base-uri ((node stp:element))
-  (stp:base-uri node))
+(define-default-method xpath-protocol:base-uri ((node fxml.stp:element))
+  (fxml.stp:base-uri node))
 
-(define-default-method xpath-protocol:base-uri ((node stp:document))
-  (stp:base-uri node))
+(define-default-method xpath-protocol:base-uri ((node fxml.stp:document))
+  (fxml.stp:base-uri node))
 
-(define-default-method xpath-protocol:base-uri ((node stp:node))
+(define-default-method xpath-protocol:base-uri ((node fxml.stp:node))
   nil)
 
-(define-default-method xpath-protocol:child-pipe ((node stp:node))
+(define-default-method xpath-protocol:child-pipe ((node fxml.stp:node))
   nil)
 
-(define-default-method xpath-protocol:child-pipe ((node stp:document))
+(define-default-method xpath-protocol:child-pipe ((node fxml.stp:document))
   (filter-children (alexandria:of-type '(not document-type)) node))
 
-(define-default-method xpath-protocol:child-pipe ((node stp:element))
+(define-default-method xpath-protocol:child-pipe ((node fxml.stp:element))
   (normalize-text-nodes! node)
   (vector->pipe (%children node)))
 
-(define-default-method xpath-protocol:attribute-pipe ((node stp:node))
+(define-default-method xpath-protocol:attribute-pipe ((node fxml.stp:node))
   nil)
 
-(define-default-method xpath-protocol:attribute-pipe ((node stp:element))
+(define-default-method xpath-protocol:attribute-pipe ((node fxml.stp:element))
   (list-attributes node))
 
-(define-default-method xpath-protocol:namespace-pipe ((node stp:node))
-  (when (stp:parent node)
-    (xpath-protocol:namespace-pipe (stp:parent node))))
+(define-default-method xpath-protocol:namespace-pipe ((node fxml.stp:node))
+  (when (fxml.stp:parent node)
+    (xpath-protocol:namespace-pipe (fxml.stp:parent node))))
 
 (defstruct (stp-namespace
 	     (:constructor make-stp-namespace (parent prefix uri)))
@@ -120,7 +120,7 @@
   "")
 
 (define-default-method xpath-protocol:namespace-pipe
-    ((original-node stp:element))
+    ((original-node fxml.stp:element))
   (let ((node original-node)
 	(table (make-hash-table :test 'equal))
 	(current '()))
@@ -136,15 +136,15 @@
 	     (recurse ()
 	       (etypecase node
 		 (null)
-		 (stp:element
-		   (let ((parent (stp:parent node)))
+		 (fxml.stp:element
+		   (let ((parent (fxml.stp:parent node)))
 		     (map-extra-namespaces #'yield node)
 		     (unless (and (zerop (length (%namespace-prefix node)))
 				  (zerop (length (%namespace-uri node)))
-				  (or (typep parent 'stp:document)
+				  (or (typep parent 'fxml.stp:document)
 				      (zerop
 				       (length
-					(stp:find-namespace "" parent)))))
+					(fxml.stp:find-namespace "" parent)))))
 		       (yield (%namespace-prefix node)
 			      (%namespace-uri node)))
 		     (dolist (a (%attributes node))
@@ -152,7 +152,7 @@
 			 (yield (namespace-prefix a) (namespace-uri a))))
 		     (setf node parent))
 		   (iterate))
-		 (stp:document
+		 (fxml.stp:document
 		  (yield "xml" "http://www.w3.org/XML/1998/namespace")
 		  #+nil (yield "xmlns" "http://www.w3.org/2000/xmlns/")
 		  (setf node nil)
@@ -189,7 +189,7 @@
   (deftypemapping stp-namespace :namespace))
 
 (defun normalize-text-nodes! (node)
-  (when (typep node 'stp:parent-node)
+  (when (typep node 'fxml.stp:parent-node)
     (let ((children (%children node)))
       (when (and children (loop
 			     for child across children
@@ -197,59 +197,59 @@
 			     for b = (typep child 'text)
 			     thereis
 			       (and b (or a
-					  (zerop (length (stp:data child)))))))
+					  (zerop (length (fxml.stp:data child)))))))
 	(let ((previous nil)
 	      (results '()))
-	  (stp:do-children (child node)
+	  (fxml.stp:do-children (child node)
 	    (cond
-	      ((not (typep child 'stp:text))
+	      ((not (typep child 'fxml.stp:text))
 	       (when previous
-		 (push (stp:make-text
+		 (push (fxml.stp:make-text
 			(apply #'concatenate 'string (nreverse previous)))
 		       results)
 		 (setf (%parent (car results)) node)
 		 (setf previous nil))
 	       (push child results))
 	      (previous
-	       (push (stp:data child) previous))
-	      ((zerop (length (stp:data child))))
+	       (push (fxml.stp:data child) previous))
+	      ((zerop (length (fxml.stp:data child))))
 	      (t
-	       (setf previous (list (stp:data child))))))
+	       (setf previous (list (fxml.stp:data child))))))
 	  (when previous
-	    (push (stp:make-text
+	    (push (fxml.stp:make-text
 		   (apply #'concatenate 'string (nreverse previous)))
 		  results)
 	    (setf (%parent (car results)) node))
-	  (setf (cxml-stp-impl::%children node)
+	  (setf (fxml.stp.impl::%children node)
 		(let ((n (length results)))
 		  (make-array n
 			      :fill-pointer n
 			      :initial-contents (nreverse results)))))))))
 
-(define-default-method xpath-protocol:get-element-by-id ((node stp:node) id)
-  (let* ((document (stp:document node))
-	 (dtd (when (stp:document-type document)
-		(stp:dtd (stp:document-type document)))))
+(define-default-method xpath-protocol:get-element-by-id ((node fxml.stp:node) id)
+  (let* ((document (fxml.stp:document node))
+	 (dtd (when (fxml.stp:document-type document)
+		(fxml.stp:dtd (fxml.stp:document-type document)))))
     (when dtd
       (block nil
 	(flet ((test (node)
-		 (when (typep node 'stp:element)
+		 (when (typep node 'fxml.stp:element)
 		   (let ((elmdef
-			  (cxml::find-element (stp:qualified-name node) dtd)))
+			  (cxml::find-element (fxml.stp:qualified-name node) dtd)))
 		     (when elmdef
 		       (dolist (attdef (cxml::elmdef-attributes elmdef))
 			 (when (eq :ID (cxml::attdef-type attdef))
 			   (let* ((name (cxml::attdef-name attdef))
-				  (value (stp:attribute-value node name)))
+				  (value (fxml.stp:attribute-value node name)))
 			     (when (and value (equal value id))
 			       (return node))))))))))
 	  (find-recursively-if #'test document))))))
 
 (define-default-method xpath-protocol:unparsed-entity-uri
-    ((node stp:node) name)
-  (let ((doctype (stp:document-type (stp:document node))))
+    ((node fxml.stp:node) name)
+  (let ((doctype (fxml.stp:document-type (fxml.stp:document node))))
     (when doctype
-      (let ((dtd (stp:dtd doctype)))
+      (let ((dtd (fxml.stp:dtd doctype)))
 	(when dtd
 	  (let ((entdef (cdr (gethash name (cxml::dtd-gentities dtd)))))
 	    (when (typep entdef 'cxml::external-entdef)
@@ -257,60 +257,60 @@
 		(when uri
 		  (puri:render-uri uri nil))))))))))
 
-(define-default-method xpath-protocol:local-name ((node stp:text)) "")
+(define-default-method xpath-protocol:local-name ((node fxml.stp:text)) "")
 
-(define-default-method xpath-protocol:namespace-prefix ((node stp:text)) "")
+(define-default-method xpath-protocol:namespace-prefix ((node fxml.stp:text)) "")
 
-(define-default-method xpath-protocol:namespace-uri ((node stp:text)) "")
+(define-default-method xpath-protocol:namespace-uri ((node fxml.stp:text)) "")
 
-(define-default-method xpath-protocol:qualified-name ((node stp:text)) "")
+(define-default-method xpath-protocol:qualified-name ((node fxml.stp:text)) "")
 
-(define-default-method xpath-protocol:local-name ((node stp:comment)) "")
+(define-default-method xpath-protocol:local-name ((node fxml.stp:comment)) "")
 
-(define-default-method xpath-protocol:namespace-prefix ((node stp:comment)) "")
+(define-default-method xpath-protocol:namespace-prefix ((node fxml.stp:comment)) "")
 
-(define-default-method xpath-protocol:namespace-uri ((node stp:comment)) "")
+(define-default-method xpath-protocol:namespace-uri ((node fxml.stp:comment)) "")
 
 (define-default-method xpath-protocol:qualified-name
-    ((node stp:comment))
+    ((node fxml.stp:comment))
   "")
 
 (define-default-method xpath-protocol:namespace-prefix
-    ((node stp:processing-instruction))
+    ((node fxml.stp:processing-instruction))
   "")
 
 (define-default-method xpath-protocol:local-name
-    ((node stp:processing-instruction))
-  (stp:target node))
+    ((node fxml.stp:processing-instruction))
+  (fxml.stp:target node))
 
 (define-default-method xpath-protocol:qualified-name
-    ((node stp:processing-instruction))
-  (stp:target node))
+    ((node fxml.stp:processing-instruction))
+  (fxml.stp:target node))
 
 (define-default-method xpath-protocol:namespace-uri
-    ((node stp:processing-instruction))
+    ((node fxml.stp:processing-instruction))
   "")
 
 (define-default-method xpath-protocol:namespace-uri
-    ((node stp:document))
+    ((node fxml.stp:document))
   "")
 
-(define-default-method xpath-protocol:namespace-prefix ((node stp:document))
+(define-default-method xpath-protocol:namespace-prefix ((node fxml.stp:document))
   "")
 
-(define-default-method xpath-protocol:qualified-name ((node stp:document)) "")
+(define-default-method xpath-protocol:qualified-name ((node fxml.stp:document)) "")
 
-(define-default-method xpath-protocol:local-name ((node stp:document)) "")
+(define-default-method xpath-protocol:local-name ((node fxml.stp:document)) "")
 
 (define-default-method xpath-protocol:processing-instruction-target
-    ((node stp:node))
+    ((node fxml.stp:node))
   node)
 
 (define-default-method xpath-protocol:processing-instruction-target
-    ((node stp:processing-instruction))
-  (stp:target node))
+    ((node fxml.stp:processing-instruction))
+  (fxml.stp:target node))
 
 (defun run-xpath-tests ()
-  (let ((xpath::*dom-builder* (stp:make-builder))
-	(xpath::*document-element* #'stp:document-element))
+  (let ((xpath::*dom-builder* (fxml.stp:make-builder))
+	(xpath::*document-element* #'fxml.stp:document-element))
     (xpath::run-all-tests)))

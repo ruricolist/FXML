@@ -26,7 +26,7 @@
 ;;; NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 ;;; SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-(in-package :cxml-stp-impl)
+(in-package :fxml.stp.impl)
 
 #+sbcl
 (declaim (optimize (debug 2)))
@@ -101,7 +101,7 @@
 
 (defmethod (setf local-name) (newval (node attribute))
   (check-nc-name newval)
-  (when (and (equal newval "xmlns") (equal (stp:namespace-uri node) ""))
+  (when (and (equal newval "xmlns") (equal (fxml.stp:namespace-uri node) ""))
     (stp-error "attempt to represent a namespace declaration as an ATTRIBUTE"))
   (setf (%local-name node) newval))
 
@@ -132,7 +132,7 @@
     ((zerop (length prefix))
       (unless (zerop (length uri))
 	(stp-error "attribute with URI but no prefix"))
-     (when (equal (stp:local-name attribute) "xmlns")
+     (when (equal (fxml.stp:local-name attribute) "xmlns")
        (stp-error
 	"attempt to represent a namespace declaration as an ATTRIBUTE"))
       (values
