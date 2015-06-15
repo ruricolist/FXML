@@ -22,12 +22,12 @@
 ;;; Free Software Foundation, Inc., 59 Temple Place - Suite 330, 
 ;;; Boston, MA  02111-1307  USA.
 
-(in-package :runes)
+(in-package :fxml.runes)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defparameter *fast* '(optimize (speed 3) (safety 3))))
 
-(deftype runes-encoding:encoding-error ()
+(deftype fxml.runes-encoding:encoding-error ()
   'ext:character-conversion-error)
 
 
@@ -114,7 +114,7 @@
 (defun xstream-position (input)
   (file-position input))
 
-(defun runes-encoding:find-encoding (encoding)
+(defun fxml.runes-encoding:find-encoding (encoding)
   encoding)
 
 (defun make-xstream (os-stream &key name

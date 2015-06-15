@@ -36,7 +36,7 @@
 ;;                      - Added rune reader
 ;;
 
-(in-package :runes)
+(in-package :fxml.runes)
 
 (deftype rune () '(unsigned-byte 16))
 (deftype rod () '(array rune (*)))

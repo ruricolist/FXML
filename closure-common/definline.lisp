@@ -24,7 +24,7 @@
 ;;; superseded by a newer version) or write to the Free Software
 ;;; Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-(in-package :runes)
+(in-package :fxml.runes)
 
 #-(or allegro openmcl)
 (defmacro definline (name args &body body)
@@ -33,7 +33,7 @@
      (defun ,name ,args .,body)))
 
 #+openmcl
-(defmacro runes::definline (fun args &body body)
+(defmacro fxml.runes::definline (fun args &body body)
   (if (consp fun)
       `(defun ,fun ,args
          ,@body)

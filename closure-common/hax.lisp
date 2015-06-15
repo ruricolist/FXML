@@ -30,7 +30,7 @@
 ;;; IN ANY WAY  OUT OF THE  USE OF THIS SOFTWARE,  EVEN IF ADVISED OF  THE
 ;;; POSSIBILITY OF SUCH DAMAGE.
 
-(defpackage :hax
+(defpackage :fxml.hax
   (:use :common-lisp)
   (:export #:abstract-handler
 	   #:default-handler
@@ -53,7 +53,7 @@
 	   #+rune-is-integer
 	   #:%want-strings-p))
 
-(in-package :hax)
+(in-package :fxml.hax)
 
 
 ;;;; ATTRIBUTE
@@ -79,7 +79,7 @@
     ((zerop (length x)) (zerop (length y)))
     ((zerop (length y)) nil)
     ((stringp x) (string= x y))
-    (t (runes:rod= x y))))
+    (t (fxml.runes:rod= x y))))
 
 (defun find-attribute (name attrs)
   (find name attrs :key #'attribute-name :test #'%rod=))
@@ -150,7 +150,7 @@
 
 ;;;; documentation
 
-(setf (documentation (find-package :hax) t)
+(setf (documentation (find-package :fxml.hax) t)
       "An event protocol for HTML serialization, this package is similar
        to the SAX protocol defined by cxml for XML serialization.
 

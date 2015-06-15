@@ -9,13 +9,13 @@
 
 #-fxml-system::utf8dom-file
 (defpackage :fxml.rune-dom
-  (:use :cl :runes)
+  (:use :cl :fxml.runes)
   #+rune-is-character (:nicknames :fxml-dom)
   (:export #:implementation #:make-dom-builder #:create-document))
 
 #+fxml-system::utf8dom-file
 (defpackage :fxml.utf8-dom
-  (:use :cl :utf8-runes)
+  (:use :cl :fxml.utf8-runes)
   (:nicknames :fxml-dom)
   (:export #:implementation #:make-dom-builder #:create-document))
 
@@ -157,7 +157,7 @@
   (etypecase x
     (null x)
     (rod x)
-    #+fxml-system::utf8dom-file (runes::rod (fxml::rod-to-utf8-string x))
+    #+fxml-system::utf8dom-file (fxml.runes::rod (fxml::rod-to-utf8-string x))
     (string (string-rod x))
     (vector x)))
 
@@ -169,7 +169,7 @@
 (defun real-rod (x)
   (etypecase x
     (null x)
-    (runes::rod x)
+    (fxml.runes::rod x)
     (string (fxml::utf8-string-to-rod x))))
 
 (defun valid-name-p (x)

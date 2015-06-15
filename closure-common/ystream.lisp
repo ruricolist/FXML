@@ -3,7 +3,7 @@
 ;;;
 ;;; ystream (for lack of a better name): a rune output "stream"
 
-(in-package :runes)
+(in-package :fxml.runes)
 
 (defconstant +ystream-bufsize+ 1024)
 
@@ -364,7 +364,7 @@
 (defun utf8-string-to-rod (str)
   (let* ((bytes (map '(vector (unsigned-byte 8)) #'char-code str))
          (buffer (make-array (length bytes) :element-type 'buffer-byte))
-         (n (runes-encoding:decode-sequence
+         (n (fxml.runes-encoding:decode-sequence
 	     :utf-8 bytes 0 (length bytes) buffer 0 0 nil))
          (result (make-array n :element-type 'rune)))
     (map-into result #'code-rune buffer)

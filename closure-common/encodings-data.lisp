@@ -1,4 +1,4 @@
-(in-package :runes-encoding)
+(in-package :fxml.runes-encoding)
 
 (progn
   (add-name :us-ascii "ANSI_X3.4-1968") 

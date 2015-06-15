@@ -1,4 +1,4 @@
-(in-package :runes-encoding)
+(in-package :fxml.runes-encoding)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defparameter +buffer-byte+

@@ -22,7 +22,7 @@
    (text-buffer   :initform nil :accessor text-buffer)))
 
 #+(and rune-is-integer (not fxml-system::utf8dom-file))
-(defmethod hax:%want-strings-p ((handler dom-builder))
+(defmethod fxml.hax:%want-strings-p ((handler dom-builder))
   nil)
 
 (defun make-dom-builder ()

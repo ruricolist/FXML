@@ -3380,7 +3380,7 @@
           (peek-rune xstream)
           (with-scratch-pads ()
             (apply #'p/document zstream handler args)))
-      (runes-encoding:encoding-error (c)
+      (fxml.runes-encoding:encoding-error (c)
         (wf-error xstream "~A" c)))))
 
 (defun parse-file (filename handler &rest args)
@@ -3902,7 +3902,7 @@
        (notany #'(lambda (rune) (rune= #/: rune)) name)))
 
 (defun split-qname (qname)
-  (declare (type runes:simple-rod qname))
+  (declare (type fxml.runes:simple-rod qname))
   (let ((pos (position  #/: qname)))
     (if pos
         (let ((prefix (subseq qname 0 pos))
@@ -3917,7 +3917,7 @@
 
 (defun decode-qname (qname)
   "decode-qname name => namespace-uri, prefix, local-name"
-  (declare (type runes:simple-rod qname))
+  (declare (type fxml.runes:simple-rod qname))
   (multiple-value-bind (prefix local-name) (split-qname qname)
     (let ((uri (find-namespace-binding prefix)))
       (if uri

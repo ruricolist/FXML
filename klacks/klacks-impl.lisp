@@ -60,7 +60,7 @@
        (handler-case
            (with-slots (,@slots) ,s
              ,@body)
-         (runes-encoding:encoding-error (c)
+         (fxml.runes-encoding:encoding-error (c)
            (wf-error (slot-value ,s 'error-culprit) "~A" c))))))
 
 (defun fill-source (source)
@@ -119,7 +119,7 @@
   (declare (ignore validate dtd root entity-resolver disallow-internal-subset))
   (etypecase input
     (xstream
-      (when (and (not buffering) (< 1 (runes::xstream-speed input)))
+      (when (and (not buffering) (< 1 (fxml.runes::xstream-speed input)))
         (warn "make-source called with !buffering, but xstream is buffering"))
       (let ((*ctx* nil))
         (let ((zstream (make-zstream :input-stack (list input))))

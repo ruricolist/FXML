@@ -4,7 +4,7 @@
 ;;; Rune emulation for the UTF-8-compatible DOM implementation.
 ;;; Used only with 8 bit characters on non-unicode Lisps.
 
-(in-package :utf8-runes)
+(in-package :fxml.utf8-runes)
 
 (deftype rune () 'character)
 (deftype rod () '(vector rune))
@@ -24,10 +24,10 @@
   (make-string size :element-type 'rune))
 
 (defun rune-reader (stream subchar arg)
-  (runes::rune-char (runes::rune-reader stream subchar arg)))
+  (fxml.runes::rune-char (fxml.runes::rune-reader stream subchar arg)))
 
 (defun rod-reader (stream subchar arg)
-  (runes::rod-string (runes::rod-reader stream subchar arg)))
+  (fxml.runes::rod-string (fxml.runes::rod-reader stream subchar arg)))
 
 (setf closure-common-system:*utf8-runes-readtable*
       (let ((rt (copy-readtable)))

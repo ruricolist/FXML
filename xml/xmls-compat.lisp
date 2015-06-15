@@ -7,7 +7,7 @@
 ;;;; Copyright: David Lichteblau
 
 (defpackage fxml.xmls
-  (:use :cl :runes)
+  (:use :cl :fxml.runes)
   (:export #:make-node #:node-name #:node-ns #:node-attrs #:node-children
            #:make-xmls-builder #:map-node #:make-xpath-navigator))
 

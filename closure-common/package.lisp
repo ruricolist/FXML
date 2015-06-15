@@ -8,7 +8,7 @@
 
 (in-package :cl-user)
 
-(defpackage :runes
+(defpackage :fxml.runes
   (:use :cl #-scl :trivial-gray-streams)
   (:export #:definline
 
@@ -89,14 +89,14 @@
 	   #:utf8-string-to-rod
 	   #:make-octet-input-stream))
 
-(defpackage :utf8-runes
+(defpackage :fxml.utf8-runes
   (:use :cl)
   (:export *utf8-runes-readtable*
 	   #:rune #:rod #:simple-rod #:rod-string #:rod= #:make-rod
 	   #:string-rod))
 
-(defpackage :runes-encoding
-  (:use :cl :runes)
+(defpackage :fxml.runes-encoding
+  (:use :cl :fxml.runes)
   (:export
    #:encoding-error
    #:find-encoding

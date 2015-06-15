@@ -90,7 +90,7 @@
      (encoding :initarg :encoding :reader sink-encoding)))
 
 #-rune-is-character
-(defmethod hax:%want-strings-p ((handler sink))
+(defmethod fxml.hax:%want-strings-p ((handler sink))
   nil)
 
 (defmethod initialize-instance :after ((instance sink) &key)
@@ -122,7 +122,7 @@
                 (let* ((encoding (or encoding "UTF-8"))
                        (ystream (,make-ystream ,@args)))
                   (setf (ystream-encoding ystream)
-                        (runes:find-output-encoding encoding))
+                        (fxml.runes:find-output-encoding encoding))
                   (apply #'make-instance
                          'sink
                          :ystream ystream

@@ -22,7 +22,7 @@
 ;;; Free Software Foundation, Inc., 59 Temple Place - Suite 330, 
 ;;; Boston, MA  02111-1307  USA.
 
-(in-package :runes)
+(in-package :fxml.runes)
 
 ;;; API
 ;; 
@@ -297,7 +297,7 @@
            :eof)
           (t
            (multiple-value-bind (fnw fnr) 
-               (runes-encoding:decode-sequence
+               (fxml.runes-encoding:decode-sequence
                 (xstream-encoding input) 
                 (xstream-os-buffer input) 0 n
                 (xstream-buffer input) 0 (1- (length (xstream-buffer input)))
