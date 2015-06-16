@@ -194,3 +194,21 @@
   :pathname "sanitize/"
   :perform (test-op (o c) (uiop:symbol-call :fxml.sanitize.test :run-tests))
   :components ((:file "test")))
+
+(asdf:defsystem #:fxml/html5
+  :serial t
+  :description "Bridge HTML5 and FXML"
+  :author "Paul M. Rodriguez <pmr@ruricolist.com>"
+  :license "MIT"
+  :pathname "html5/"
+  :depends-on (#:alexandria
+               #:serapeum
+               #:fset
+               #:fxml
+               #:fxml/stp
+               #:cl-html5-parser
+               #:puri)
+  :components ((:file "package")
+               (:file "html5-sax")
+               (:file "sink")
+               (:file "transform")))
