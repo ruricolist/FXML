@@ -66,7 +66,8 @@
    #+x&y-streams-are-stream (:file #+scl "stream-scl")
    (:file "hax"))
   :depends-on (#-scl :trivial-gray-streams
-               #+rune-is-character :babel))
+               #+rune-is-character :babel
+               #:named-readtables))
 
 (asdf:defsystem :fxml/xml
     :default-component-class closure-source-file
