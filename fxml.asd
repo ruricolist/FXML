@@ -211,7 +211,6 @@
   :components ((:file "package")
                (:file "html5-sax")
                (:file "sink")
-               (:file "transform")))
                (:file "transform")
                (:file "parse")))
 
@@ -222,3 +221,9 @@
   :components ((:file "dom")
                (:file "stp")))
 
+(asdf:defsystem #:fxml/cxml
+  :description "Bridge FXML and CXML."
+  :pathname "cxml/"
+  :depends-on (#:fxml #:cxml)
+  :components ((:file "package")
+               (:file "cxml")))
