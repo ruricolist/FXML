@@ -17,6 +17,7 @@
 ;;; Boston, MA  02111-1307  USA.
 
 (in-package :fxml)
+(in-readtable :runes)
 
 (defun fxml.klacks:make-tapping-source (upstream-source &optional sax-handler)
   (make-instance 'fxml.klacks:tapping-source

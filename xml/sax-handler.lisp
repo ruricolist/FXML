@@ -43,7 +43,7 @@
 ;;     conditions (but isn't yet)
 
 (defpackage :fxml.sax
-  (:use :common-lisp)
+  (:use :common-lisp :named-readtables)
   (:export #:*namespace-processing*
            #:*include-xmlns-attributes*
            #:*use-xmlns-namespace*
@@ -99,6 +99,7 @@
            #:standard-attribute))
 
 (in-package :fxml.sax)
+(in-readtable :runes)
 
 
 ;;;; SAX-PARSER interface

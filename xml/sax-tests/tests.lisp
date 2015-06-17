@@ -1,4 +1,5 @@
 (in-package :fxml.sax.tests)
+(named.readtables:in-readtable :runes)
 
 (defun first-start-element-event (string)
   (let ((events (fxml:parse-rod string (make-instance 'event-collecting-handler))))

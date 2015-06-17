@@ -148,8 +148,6 @@
   subchar arg
   (values (rune-from-read-name (read-rune-name stream))))
 
-(set-dispatch-macro-character #\# #\/ 'rune-reader)
-
 ;;; ROD ext syntax
 
 (defun rod-reader (stream subchar arg)
@@ -178,4 +176,9 @@
                (format stream "\\u~4,'0X" x))))
   (princ #\" stream))
 
-(set-dispatch-macro-character #\# #\" 'rod-reader)
+;;; Readtable.
+
+(defreadtable :runes
+  (:merge :standard)
+  (:dispatch-macro-char #\# #\" 'rod-reader)
+  (:dispatch-macro-char #\# #\/ 'rune-reader))

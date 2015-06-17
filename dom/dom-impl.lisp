@@ -7,23 +7,28 @@
 ;;;; Author: David Lichteblau <david@lichteblau.com>
 ;;;; Author: knowledgeTools Int. GmbH
 
-#-fxml-system::utf8dom-file
+#-rune-is-integer
 (defpackage :fxml.rune-dom
-  (:use :cl :fxml.runes)
+  (:use :cl :fxml.runes :named-readtables)
   #+rune-is-character (:nicknames :fxml-dom)
   (:export #:implementation #:make-dom-builder #:create-document))
 
-#+fxml-system::utf8dom-file
+#+rune-is-integer
 (defpackage :fxml.utf8-dom
   (:use :cl :fxml.utf8-runes)
   (:nicknames :fxml-dom)
   (:export #:implementation #:make-dom-builder #:create-document))
 
-#-fxml-system::utf8dom-file
+#-rune-is-integer
 (in-package :fxml.rune-dom)
 
-#+fxml-system::utf8dom-file
+#+rune-is-integer
 (in-package :fxml.utf8-dom)
+
+#-rune-is-integer
+(in-readtable :runes)
+#+rune-is-integer
+(in-readtable :utf8-runes)
 
 
 ;; Classes
@@ -157,15 +162,15 @@
   (etypecase x
     (null x)
     (rod x)
-    #+fxml-system::utf8dom-file (fxml.runes::rod (fxml::rod-to-utf8-string x))
+    #+rune-is-integer (fxml.runes::rod (fxml::rod-to-utf8-string x))
     (string (string-rod x))
     (vector x)))
 
-#-fxml-system::utf8dom-file
+#-rune-is-integer
 (defun real-rod (x)
   (%rod x))
 
-#+fxml-system::utf8dom-file
+#+rune-is-integer
 (defun real-rod (x)
   (etypecase x
     (null x)
@@ -1244,7 +1249,7 @@
     (when resolver
       (setf (document handler) owner)
       (push instance (element-stack handler))
-      #+fxml-system::utf8dom-file
+      #+rune-is-integer
       (setf handler (fxml:make-recoder handler #'fxml:rod-to-utf8-string))
       (funcall resolver (real-rod (fxml.dom:name instance)) handler)
       (flush-characters handler)))

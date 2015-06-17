@@ -32,8 +32,6 @@
        (pushnew :rune-is-utf-16 *features*)
        (pushnew :rune-is-character *features*)))))
 
-(defvar *utf8-runes-readtable*)
-
 (defclass closure-source-file (cl-source-file) ())
 
 #+scl

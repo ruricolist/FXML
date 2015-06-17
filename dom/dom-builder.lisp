@@ -8,11 +8,16 @@
 ;;;; Author: David Lichteblau <david@lichteblau.com>
 ;;;; Author: knowledgeTools Int. GmbH
 
-#-fxml-system::utf8dom-file
+#-rune-is-integer
 (in-package :fxml.rune-dom)
 
-#+fxml-system::utf8dom-file
+#+rune-is-integer
 (in-package :fxml.utf8-dom)
+
+#-rune-is-integer
+(in-readtable :runes)
+#+rune-is-integer
+(in-readtable :utf8-runes)
 
 
 (defclass dom-builder (fxml.sax:content-handler)
@@ -20,10 +25,6 @@
    (element-stack :initform '() :accessor element-stack)
    (internal-subset             :accessor internal-subset)
    (text-buffer   :initform nil :accessor text-buffer)))
-
-#+(and rune-is-integer (not fxml-system::utf8dom-file))
-(defmethod fxml.hax:%want-strings-p ((handler dom-builder))
-  nil)
 
 (defun make-dom-builder ()
   (make-instance 'dom-builder))

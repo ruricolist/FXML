@@ -23,6 +23,7 @@
 ;;; Boston, MA  02111-1307  USA.
 
 (in-package :fxml.runes)
+(in-readtable :runes)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defparameter *fast* '(optimize (speed 3) (safety 3))))

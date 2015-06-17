@@ -168,6 +168,7 @@
 ;;;; we check this VC together with the WFC even in non-validating mode.
 
 (in-package :fxml)
+(in-readtable :runes)
 
 #+allegro
 (setf (excl:named-readtable :runes) *readtable*)

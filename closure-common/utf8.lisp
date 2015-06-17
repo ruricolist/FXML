@@ -29,8 +29,7 @@
 (defun rod-reader (stream subchar arg)
   (fxml.runes::rod-string (fxml.runes::rod-reader stream subchar arg)))
 
-(setf closure-common-system:*utf8-runes-readtable*
-      (let ((rt (copy-readtable)))
-	(set-dispatch-macro-character #\# #\/ 'rune-reader rt)
-	(set-dispatch-macro-character #\# #\" 'rod-reader rt)
-	rt))
+(defreadtable :utf8-runes
+  (:merge :standard)
+  (:dispatch-macro-char #\# #\/ #'rune-reader)
+  (:dispatch-macro-char #\# #\" #'rod-reader))

@@ -7,6 +7,7 @@
 ;;;; Copyright: David Lichteblau
 
 (in-package :fxml)
+(in-readtable :runes)
 
 ;;; http://www.oasis-open.org/committees/entity/spec.html
 ;;;

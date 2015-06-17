@@ -4,6 +4,7 @@
 ;;; ystream (for lack of a better name): a rune output "stream"
 
 (in-package :fxml.runes)
+(in-readtable :runes)
 
 (defconstant +ystream-bufsize+ 1024)
 

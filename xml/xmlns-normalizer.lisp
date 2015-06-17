@@ -24,6 +24,7 @@
 ;;;; [1] http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407/namespaces-algorithms.html#normalizeDocumentAlgo
 
 (in-package :fxml)
+(in-readtable :runes)
 
 (defclass namespace-normalizer (sax-proxy)
     ((xmlns-stack :initarg :xmlns-stack :accessor xmlns-stack)))

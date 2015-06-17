@@ -6,6 +6,7 @@
 ;;;; Copyright (c) 2005 David Lichteblau
 
 (in-package :fxml)
+(in-readtable :runes)
 
 (defclass whitespace-normalizer (sax-proxy)
     ((attributes :initform '(t) :accessor xml-space-attributes)

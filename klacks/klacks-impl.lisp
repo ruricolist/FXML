@@ -17,6 +17,7 @@
 ;;; Boston, MA  02111-1307  USA.
 
 (in-package :fxml)
+(in-readtable :runes)
 
 (defclass fxml-source (fxml.klacks:source)
     (;; args to make-source

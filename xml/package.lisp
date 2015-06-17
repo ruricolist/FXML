@@ -7,6 +7,7 @@
 
 (defpackage :fxml
   (:use :cl :fxml.runes :fxml.runes-encoding #-scl :trivial-gray-streams)
+  (:import-from #:named-readtables #:in-readtable)
   (:export
    ;; meta
    #:xml-character-p
