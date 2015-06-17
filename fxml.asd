@@ -214,3 +214,11 @@
                (:file "transform")))
                (:file "transform")
                (:file "parse")))
+
+(asdf:defsystem #:fxml/css-selectors
+  :description "Bridge css-selectors and FXML."
+  :pathname "css/"
+  :depends-on (#:fxml #:fxml/stp #:css-selectors)
+  :components ((:file "dom")
+               (:file "stp")))
+
