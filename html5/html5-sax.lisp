@@ -46,7 +46,7 @@
   (declare (string string))
   (fbind ((test (if attr
                     (lambda (c)
-                      (and (xml-character? c)
+                      (and (fxml:xml-character-p c)
                            (not (eql c #\Newline))))
                     #'fxml:xml-character-p)))
     (escape string

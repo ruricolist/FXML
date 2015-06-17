@@ -212,3 +212,5 @@
                (:file "html5-sax")
                (:file "sink")
                (:file "transform")))
+               (:file "transform")
+               (:file "parse")))
