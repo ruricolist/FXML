@@ -2,6 +2,9 @@ This is a fork of CXML, an XML parser written in Common Lisp. Its
 interface is a superset of CXML’s, so refer to the
 [CXML documentation][cxml] for usage.
 
+
+https://common-lisp.net/project/cxml/saxoverview/
+
 This fork was originally created as a last resort, to fix a
 longstanding, critical bug in Klacks, namely its broken handling of
 namespaces.
