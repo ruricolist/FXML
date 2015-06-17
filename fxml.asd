@@ -2,11 +2,6 @@
   (:use :asdf :cl))
 (in-package :fxml-system)
 
-(defclass dummy-fxml-component () ())
-
-(defmethod asdf:component-name ((c dummy-fxml-component))
-  :fxml)
-
 (progn
   ;; (format t "~&;;; Checking for wide character support...")
   (flet ((test (code)
@@ -32,20 +27,10 @@
        (pushnew :rune-is-utf-16 *features*)
        (pushnew :rune-is-character *features*)))))
 
-(defclass closure-source-file (cl-source-file) ())
-
 #+scl
 (pushnew 'uri-is-namestring *features*)
 
-#+sbcl
-(defmethod perform :around ((o compile-op) (s closure-source-file))
-  ;; shut up already.  Correctness first.
-  (handler-bind ((sb-ext:compiler-note #'muffle-warning))
-    (let (#+sbcl (*compile-print* nil))
-      (call-next-method))))
-
 (defsystem :fxml/closure-common
-  :default-component-class closure-source-file
   :serial t
   :pathname "closure-common/"
   :components
@@ -68,7 +53,6 @@
                #:named-readtables))
 
 (asdf:defsystem :fxml/xml
-    :default-component-class closure-source-file
     :pathname "xml/"
     :components
     ((:file "package")
@@ -87,43 +71,16 @@
      (:file "atdoc-configuration" :depends-on ("package")))
     :depends-on (:fxml/closure-common :puri #-scl :trivial-gray-streams :flexi-streams))
 
-(defclass utf8dom-file (closure-source-file) ((of)))
-
-(defmethod output-files ((operation compile-op) (c utf8dom-file))
-  (let* ((normal (car (call-next-method)))
-         (name (concatenate 'string (pathname-name normal) "-utf8")))
-    (list (make-pathname :name name :defaults normal))))
-
-;; must be an extra method because of common-lisp-controller's :around method
-(defmethod output-files :around ((operation compile-op) (c utf8dom-file))
-  (let ((x (call-next-method)))
-    (setf (slot-value c 'of) (car x))
-    x))
-
-(defmethod perform ((o load-op) (c utf8dom-file))
-  (load (slot-value c 'of)))
-
-(defmethod perform ((operation compile-op) (c utf8dom-file))
-  (let ((*features* (cons 'utf8dom-file *features*))
-        (*readtable* *utf8-runes-readtable*))
-    (call-next-method)))
-
 (asdf:defsystem :fxml/dom
-    :default-component-class closure-source-file
     :pathname "dom/"
     :components
     ((:file "package")
-     (:file rune-impl :pathname "dom-impl" :depends-on ("package"))
-     (:file rune-builder :pathname "dom-builder" :depends-on (rune-impl))
-     #+rune-is-integer
-     (utf8dom-file utf8-impl :pathname "dom-impl" :depends-on ("package"))
-     #+rune-is-integer
-     (utf8dom-file utf8-builder :pathname "dom-builder" :depends-on (utf8-impl))
+     (:file "dom-impl" :depends-on ("package"))
+     (:file "dom-builder" :depends-on ("dom-impl"))
      (:file "dom-sax"         :depends-on ("package")))
     :depends-on (:fxml/xml))
 
 (asdf:defsystem :fxml/klacks
-    :default-component-class closure-source-file
     :pathname "klacks/"
     :serial t
     :components
@@ -134,7 +91,6 @@
     :depends-on (:fxml/xml))
 
 (asdf:defsystem :fxml/test
-  :default-component-class closure-source-file
   :pathname "test/"
   :serial t
   :perform (test-op (o c) (uiop:symbol-call :fxml.test :run-tests))
@@ -148,7 +104,6 @@
   :depends-on (:fxml/dom :fxml/klacks))
 
 (defsystem :fxml/stp
-  :default-component-class closure-source-file
   :serial t
   :in-order-to ((test-op (test-op #:fxml/stp/test)))
   :pathname "stp/"
@@ -170,7 +125,6 @@
   :depends-on (:fxml :alexandria :xpath))
 
 (defsystem :fxml/stp/test
-  :default-component-class closure-source-file
   :serial t
   :perform (test-op (o c) (uiop:symbol-call :fxml.stp.test :run-tests))
   :pathname "stp/"
