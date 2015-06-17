@@ -81,7 +81,8 @@
 
 (defun rod (x)
   (cond
-    ((stringp x)    x)
+    ((typep x 'rod) x)
+    ((stringp x)    (coerce x 'rod))
     ((symbolp x)    (string x))
     ((characterp x) (string x))
     ((vectorp x)    (coerce x 'string))
