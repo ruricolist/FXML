@@ -226,4 +226,5 @@
   :pathname "cxml/"
   :depends-on (#:fxml #:cxml)
   :components ((:file "package")
-               (:file "cxml")))
+               (:file "protocol" :depends-on "package")
+               (:file "attributes" :depends-on "package")))
