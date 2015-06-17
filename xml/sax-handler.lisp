@@ -95,7 +95,8 @@
            #:line-number
            #:column-number
            #:system-id
-           #:xml-base))
+           #:xml-base
+           #:standard-attribute))
 
 (in-package :fxml.sax)
 
