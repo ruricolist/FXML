@@ -53,23 +53,27 @@
                #:named-readtables))
 
 (asdf:defsystem :fxml/xml
-    :pathname "xml/"
-    :components
-    ((:file "package")
-     (:file "util"            :depends-on ("package"))
-     (:file "sax-handler")
-     (:file "xml-name-rune-p" :depends-on ("package" "util"))
-     (:file "split-sequence"  :depends-on ("package"))
-     (:file "xml-parse"       :depends-on ("package" "util" "sax-handler" "split-sequence" "xml-name-rune-p"))
-     (:file "unparse"         :depends-on ("xml-parse"))
-     (:file "xmls-compat"     :depends-on ("xml-parse"))
-     (:file "recoder"         :depends-on ("xml-parse"))
-     (:file "xmlns-normalizer" :depends-on ("xml-parse"))
-     (:file "space-normalizer" :depends-on ("xml-parse"))
-     (:file "catalog"         :depends-on ("xml-parse"))
-     (:file "sax-proxy"       :depends-on ("xml-parse"))
-     (:file "atdoc-configuration" :depends-on ("package")))
-    :depends-on (:fxml/closure-common :puri #-scl :trivial-gray-streams :flexi-streams))
+  :pathname "xml/"
+  :components
+  ((:file "package")
+   (:file "util"            :depends-on ("package"))
+   (:file "sax-handler")
+   (:file "xml-name-rune-p" :depends-on ("package" "util"))
+   (:file "split-sequence"  :depends-on ("package"))
+   (:file "xml-parse"       :depends-on ("package" "util" "sax-handler" "split-sequence" "xml-name-rune-p"))
+   (:file "unparse"         :depends-on ("xml-parse"))
+   (:file "xmls-compat"     :depends-on ("xml-parse"))
+   (:file "recoder"         :depends-on ("xml-parse"))
+   (:file "xmlns-normalizer" :depends-on ("xml-parse"))
+   (:file "space-normalizer" :depends-on ("xml-parse"))
+   (:file "catalog"         :depends-on ("xml-parse"))
+   (:file "sax-proxy"       :depends-on ("xml-parse"))
+   (:file "atdoc-configuration" :depends-on ("package")))
+  :depends-on (:fxml/closure-common
+               :puri #-scl
+               :trivial-gray-streams
+               :flexi-streams
+               #:alexandria))
 
 (asdf:defsystem :fxml/dom
     :pathname "dom/"
