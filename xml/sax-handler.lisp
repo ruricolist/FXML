@@ -225,42 +225,23 @@ Setting this variable has no effect unless both
 
 (defgeneric attribute-namespace-uri (attribute)
   (:method ((attribute standard-attribute))
-    (standard-attribute-namespace-uri attribute))
-  (:method ((attribute fxml.hax:standard-attribute))
-    ""))
+    (standard-attribute-namespace-uri attribute)))
 
 (defgeneric attribute-local-name (attribute)
   (:method ((attribute standard-attribute))
-    (standard-attribute-local-name attribute))
-  (:method ((attribute fxml.hax:standard-attribute))
-    (fxml.runes:rod-downcase (fxml.hax:attribute-name attribute))))
+    (standard-attribute-local-name attribute)))
 
 (defgeneric attribute-qname (attribute)
   (:method ((attribute standard-attribute))
-    (standard-attribute-qname attribute))
-  (:method ((attribute fxml.hax:standard-attribute))
-    (fxml.runes:rod-downcase (fxml.hax:attribute-name attribute))))
+    (standard-attribute-qname attribute)))
 
 (defgeneric attribute-value (attribute)
   (:method ((attribute standard-attribute))
-    (standard-attribute-value attribute))
-  (:method ((attribute fxml.hax:standard-attribute))
-    (fxml.hax:attribute-value attribute)))
+    (standard-attribute-value attribute)))
 
 (defgeneric attribute-specified-p (attribute)
   (:method ((attribute standard-attribute))
-    (standard-attribute-specified-p attribute))
-  (:method ((attribute fxml.hax:standard-attribute))
-    (fxml.hax:attribute-specified-p attribute)))
-
-(defmethod fxml.hax:attribute-name ((attribute standard-attribute))
-  (attribute-local-name attribute))
-
-(defmethod fxml.hax:attribute-value ((attribute standard-attribute))
-  (attribute-value attribute))
-
-(defmethod fxml.hax:attribute-specified-p ((attribute standard-attribute))
-  (attribute-specified-p attribute))
+    (standard-attribute-specified-p attribute)))
 
 (defun %rod= (x y)
   ;; allow rods *and* strings *and* null
@@ -289,8 +270,7 @@ Setting this variable has no effect unless both
 ;;;; EVENTS
 
 (defmacro define-event ((name default-handler-class)
-                        (&rest args)
-                        &body fxml.hax-body)
+                        (&rest args))
   `(defgeneric ,name (handler ,@args)
      (:method ((handler null) ,@args)
        (declare (ignore ,@args))
@@ -298,8 +278,7 @@ Setting this variable has no effect unless both
      (:method ((handler t) ,@args)
        (declare (ignore ,@args))
        (warn "deprecated SAX default method used by a handler ~
-                         that is not a subclass of FXML.SAX:ABSTRACT-HANDLER ~
-                         or FXML.HAX:ABSTRACT-HANDLER")
+                         that is not a subclass of FXML.SAX:ABSTRACT-HANDLER")
        nil)
      (:method ((handler abstract-handler) ,@args)
        (declare (ignore ,@args))
@@ -307,115 +286,82 @@ Setting this variable has no effect unless both
               ',name))
      (:method ((handler ,default-handler-class) ,@args)
        (declare (ignore ,@args))
-       nil)
-     (:method ((handler fxml.hax:abstract-handler) ,@args)
-       (declare (ignorable ,@args))
-       ,@fxml.hax-body)))
+       nil)))
 
 (define-event (start-document default-handler)
-    ()
-  nil)
+    ())
 
 (define-event (start-element default-handler)
-    (namespace-uri local-name qname attributes)
-  (setf attributes
-        (remove "http://www.w3.org/2000/xmlns/"
-                attributes
-                :key #'attribute-namespace-uri
-                :test #'equal))
-  (fxml.hax:start-element handler local-name attributes))
+    (namespace-uri local-name qname attributes))
 
 (define-event (start-prefix-mapping content-handler)
-    (prefix uri)
-  nil)
+    (prefix uri))
 
 (define-event (characters default-handler)
-    (data)
-  (fxml.hax:characters handler data))
+    (data))
 
 (define-event (unescaped default-handler)
-    (data)
-  (fxml.hax:unescaped handler data))
+    (data))
 
 (define-event (processing-instruction default-handler)
-    (target data)
-  nil)
+    (target data))
 
 (define-event (end-prefix-mapping content-handler)
-    (prefix)
-  nil)
+    (prefix))
 
 (define-event (end-element default-handler)
-    (namespace-uri local-name qname)
-  (fxml.hax:end-element handler local-name))
+    (namespace-uri local-name qname))
 
 (define-event (end-document default-handler)
-    ()
-  (fxml.hax:end-document handler))
+    ())
 
 (define-event (comment content-handler)
-    (data)
-  (fxml.hax:comment handler data))
+    (data))
 
 (define-event (start-cdata content-handler)
-    ()
-  nil)
+    ())
 
 (define-event (end-cdata content-handler)
-    ()
-  nil)
+    ())
 
 (define-event (start-dtd content-handler)
-    (name public-id system-id)
-  (fxml.hax:start-document handler name public-id system-id))
+    (name public-id system-id))
 
 (define-event (end-dtd content-handler)
-    ()
-  nil)
+    ())
 
 (define-event (start-internal-subset content-handler)
-    ()
-  nil)
+    ())
 
 (define-event (end-internal-subset content-handler)
-    ()
-  nil)
+    ())
 
 (define-event (unparsed-internal-subset content-handler)
-    (str)
-  nil)
+    (str))
 
 (define-event (unparsed-entity-declaration content-handler)
-    (name public-id system-id notation-name)
-  nil)
+    (name public-id system-id notation-name))
 
 (define-event (external-entity-declaration content-handler)
-    (kind name public-id system-id)
-  nil)
+    (kind name public-id system-id))
 
 (define-event (internal-entity-declaration content-handler)
-    (kind name value)
-  nil)
+    (kind name value))
 
 (define-event (notation-declaration content-handler)
-    (name public-id system-id)
-  nil)
+    (name public-id system-id))
 
 (define-event (element-declaration content-handler)
-    (name model)
-  nil)
+    (name model))
 
 (define-event (attribute-declaration content-handler)
-    (element-name attribute-name type default)
-  nil)
+    (element-name attribute-name type default))
 
 (define-event (entity-resolver content-handler)
-    (resolver)
-  nil)
+    (resolver))
 
 (define-event (dtd content-handler)
-    (dtd)
-  nil)
+    (dtd))
 
 ;;; special case: this method is defined on abstract-handler through
 ;;; sax-parser-mixin
@@ -428,58 +374,8 @@ Setting this variable has no effect unless both
   (:method ((handler t) sax-parser)
     (declare (ignore sax-parser))
     (warn "deprecated sax default method used by a handler ~
-                          that is not a subclass of fxml.sax:abstract-handler ~
-                          or fxml.hax:abstract-handler")
-    nil)
-  (:method ((handler fxml.hax:abstract-handler) sax-parser)
-    (declare (ignorable sax-parser)) nil))
-
-
-;;;; FXML.HAX to SAX
-
-(defmethod fxml.hax:start-document ((handler abstract-handler) name pubid sysid)
-  (fxml.sax:start-document handler)
-  (when sysid
-    (fxml.sax:start-dtd handler name pubid sysid)
-    (fxml.sax:end-dtd handler)))
-
-(defmethod fxml.hax:start-element ((handler abstract-handler) name attributes)
-  (setf name (fxml.runes:rod-downcase name))
-  (when (equal name "html")
-    (fxml.sax:start-prefix-mapping handler "" "http://www.w3.org/1999/xhtml")
-    (when *include-xmlns-attributes*
-      (push (make-attribute :namespace-uri "http://www.w3.org/2000/xmlns/"
-                            :local-name nil
-                            :qname "xmlns"
-                            :value "http://www.w3.org/1999/xhtml"
-                            :specified-p t)
-            attributes)))
-  (fxml.sax:start-element handler
-                     "http://www.w3.org/1999/xhtml"
-                     name
-                     name
-                     attributes))
-
-(defmethod fxml.hax:end-element ((handler abstract-handler) name)
-  (setf name (fxml.runes:rod-downcase name))
-  (fxml.sax:end-element handler
-                   "http://www.w3.org/1999/xhtml"
-                   name
-                   name)
-  (when (equal name "html")
-    (fxml.sax:end-prefix-mapping handler "")))
-
-(defmethod fxml.hax:characters ((handler abstract-handler) data)
-  (fxml.sax:characters handler data))
-
-(defmethod fxml.hax:unescaped ((handler abstract-handler) data)
-  (fxml.sax:unescaped handler data))
-
-(defmethod fxml.hax:comment ((handler abstract-handler) str)
-  (fxml.sax:comment handler str))
-
-(defmethod fxml.hax:end-document ((handler abstract-handler))
-  (fxml.sax:end-document handler))
+                          that is not a subclass of fxml.sax:abstract-handler")
+    nil))
 
 ;;;; Callback handlers.
 

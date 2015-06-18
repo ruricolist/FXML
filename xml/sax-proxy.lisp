@@ -96,10 +96,6 @@
 (defmethod (setf proxy-chained-handler) (newval (instance sax-proxy))
   (setf (broadcast-handler-handlers instance) (list newval)))
 
-#-rune-is-character
-(defmethod fxml.hax:%want-strings-p ((handler broadcast-handler))
-  (fxml.hax:%want-strings-p (car (broadcast-handler-handlers instance))))
-
 (macrolet ((define-proxy-method (name (&rest args))
              `(defmethod ,name ((handler broadcast-handler) ,@args)
                 (let (result)

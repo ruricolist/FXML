@@ -46,8 +46,7 @@
    #-x&y-streams-are-stream (:file "encodings-data")
    #-x&y-streams-are-stream (:file "xstream")
    #-x&y-streams-are-stream (:file "ystream")
-   #+x&y-streams-are-stream (:file #+scl "stream-scl")
-   (:file "hax"))
+   #+x&y-streams-are-stream (:file #+scl "stream-scl"))
   :depends-on (#-scl :trivial-gray-streams
                #+rune-is-character :babel
                #:named-readtables))

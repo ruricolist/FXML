@@ -90,10 +90,6 @@
                                   :accessor sink-omit-xml-declaration-p)
      (encoding :initarg :encoding :reader sink-encoding)))
 
-#-rune-is-character
-(defmethod fxml.hax:%want-strings-p ((handler sink))
-  nil)
-
 (defmethod initialize-instance :after ((instance sink) &key)
   (when (eq (canonical instance) t)
     (setf (canonical instance) 1))
