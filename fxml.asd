@@ -173,6 +173,7 @@
   :license "LLGPL"
   :depends-on (#:alexandria #:serapeum #:fxml #:quri)
   :pathname "sanitize/"
+  :in-order-to ((test-op (test-op #:fxml/sanitize/test)))
   :components ((:file "package")
                (:file "sax-sanitize")))
 

@@ -1,14 +1,15 @@
-(in-package #:sax-sanitize)
+(in-package #:fxml.sanitize)
 
-(defpackage #:sax-sanitize.test
+(defpackage #:fxml.sanitize.test
   (:use #:cl #:alexandria #:serapeum
-        #:sax-sanitize #:fiveam))
+        #:fxml.sanitize #:fiveam)
+  (:export #:run-sanitize-test))
 
-(in-package #:sax-sanitize.test)
+(in-package #:fxml.sanitize.test)
 
 (def-suite sanitize :description "Sanitize tests suite")
 
-(defun run-sanitize-test ()
+(defun run-test ()
   (run! 'sanitize))
 
 #+ () (defmethod asdf:perform ((op asdf:test-op) (system (eql (asdf:find-system '#:sanitize-test))))
