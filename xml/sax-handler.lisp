@@ -399,6 +399,7 @@ Setting this variable has no effect unless both
 ;;; special case: this method is defined on abstract-handler through
 ;;; sax-parser-mixin
 (defgeneric register-sax-parser (handler sax-parser)
+  (:documentation "Set the SAX-PARSER instance of this handler.")
   (:method ((handler null) sax-parser)
     (declare (ignore sax-parser))
     nil)
@@ -596,5 +597,4 @@ been parsed and is available as a string.")
     resolver, a function of two arguments: An entity name and SAX handler.
     When called, the resolver function will parse the named entity's data.")
 
-(setf (documentation 'register-sax-parser 'function)
-      "Set the SAX-PARSER instance of this handler.")
+
