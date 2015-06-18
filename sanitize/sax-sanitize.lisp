@@ -4,6 +4,9 @@
 
 ;;; "sax-sanitize" goes here. Hacks and glory await!
 
+(deftype protocol ()
+  '(member :http :https :ftp :mailto :relative))
+
 (def html-ns "http://www.w3.org/1999/xhtml"
   "The XHTML namespace.")
 
@@ -131,9 +134,19 @@
   (assoc string alist :test #'string-equal))
 
 (defun uri-protocol (uri)
-  (if-let (colon (position #\: uri))
-    (find-keyword (string-upcase (nsubseq uri 0 colon)))
-    :relative))
+  (multiple-value-bind (data start end got-scheme)
+      (quri:parse-scheme uri)
+    (if data 
+        (let ((scheme (or got-scheme (nsubseq uri start end))))
+          (if scheme
+              (string-case scheme
+                ("http" :http)
+                ("https" :https)
+                ("ftp" :ftp)
+                ("mailto" :mailto)
+                (otherwise :relative))
+              :relative))
+        :relative)))
 
 (defmethod fxml.sax:characters ((self sanitizer) data)
   (declare (ignore data))

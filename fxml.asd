@@ -171,7 +171,7 @@
   :description "Streaming HTML sanitizer"
   :author "Paul M. Rodriguez"
   :license "LLGPL"
-  :depends-on (#:alexandria #:serapeum #:fxml)
+  :depends-on (#:alexandria #:serapeum #:fxml #:quri)
   :pathname "sanitize/"
   :components ((:file "package")
                (:file "sax-sanitize")))
