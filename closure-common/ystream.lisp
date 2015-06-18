@@ -21,10 +21,7 @@
               :fill-pointer 0))
 
 (defmacro while (test &body body)
-  `(until (not ,test) ,@body))
-
-(defmacro until (test &body body)
-  `(do () (,test) ,@body))
+  `(loop while ,test do ,@body))
 
 (defun find-output-encoding (name)
   (when (stringp name)

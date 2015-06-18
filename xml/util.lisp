@@ -53,10 +53,7 @@
 ;;;  while and until
 
 (defmacro while (test &body body)
-  `(until (not ,test) ,@body))
-
-(defmacro until (test &body body)
-  `(do () (,test) ,@body))
+  `(loop while ,test do ,@body))
 
 ;; prime numbers
 
