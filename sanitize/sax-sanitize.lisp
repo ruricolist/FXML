@@ -4,6 +4,8 @@
 
 ;;; "sax-sanitize" goes here. Hacks and glory await!
 
+(defconst pass nil)
+
 (deftype protocol ()
   '(member :http :https :ftp :mailto :relative))
 
@@ -42,17 +44,17 @@
   (fxml.sax:end-document (chained-handler self)))
 
 (defclass sanitizer (fxml:sax-proxy)
-  ((rules :type hash-table :accessor rules)
-   (removed :initform 0 :type fixnum :accessor removed-count)
-   (stack :initform '() :type list :accessor stack)
-   (allow-comments :accessor allow-comments?)
-   (allow-data-attributes :accessor allow-data-attributes?))
+  ((rules :type hash-table :accessor sanitizer.rules)
+   (removed :initform 0 :type fixnum :accessor sanitizer.removed-count)
+   (stack :initform '() :type list :accessor sanitizer.stack)
+   (allow-comments :accessor sanitizer.allow-comments?)
+   (allow-data-attributes :accessor sanitizer.allow-data-attributes?))
   (:documentation "The state of a sanitizer."))
 
 (defmethod initialize-instance :after ((self sanitizer) &key mode)
-  (setf (rules self) (rules mode)
-        (allow-comments? self) (allow-comments? mode)
-        (allow-data-attributes? self) (allow-data-attributes? mode)))
+  (setf (sanitizer.rules self) (mode.rules mode)
+        (sanitizer.allow-comments? self) (mode.allow-comments? mode)
+        (sanitizer.allow-data-attributes? self) (mode.allow-data-attributes? mode)))
 
 (defclass sanitizer/comments (sanitizer)
   ()
@@ -65,10 +67,10 @@
 (defclass base-mode () ())
 
 (defclass mode (base-mode)
-  ((name :initarg :name :type symbol :accessor name)
-   (rules :initarg :rules :type hash-table :accessor rules)
-   (allow-comments :initarg :allow-comments :accessor allow-comments?)
-   (allow-data-attributes :initarg :allow-data-attributes :accessor allow-data-attributes?))
+  ((name :initarg :name :type symbol :accessor mode.name)
+   (rules :initarg :rules :type hash-table :accessor mode.rules)
+   (allow-comments :initarg :allow-comments :accessor mode.allow-comments?)
+   (allow-data-attributes :initarg :allow-data-attributes :accessor mode.allow-data-attributes?))
   (:default-initargs
    :allow-comments nil
    :allow-data-attributes nil
@@ -80,7 +82,7 @@
 
 (defmethod print-object ((self mode) stream)
   (print-unreadable-object (self stream :type t)
-    (princ (name self) stream)))
+    (princ (mode.name self) stream)))
 
 (defmethod print-object ((self text-only-mode) stream)
   (print-unreadable-object (self stream :type t :identity t)))
@@ -88,11 +90,12 @@
 (defun attrs->sax (attrs)
   "Convert ATTRS, an alist of (name . value), to SAX attributes."
   (loop for (name . value) in attrs
-        collect (fxml.sax:make-attribute :namespace-uri html-ns
-                                    :local-name name
-                                    :qname name
-                                    :value value
-                                    :specified-p t)))
+        collect (fxml.sax:make-attribute
+                 :namespace-uri html-ns
+                 :local-name name
+                 :qname name
+                 :value value
+                 :specified-p t)))
 
 (defmethod initialize-instance :after ((self mode)
                                        &key elements remove-elements
@@ -111,7 +114,7 @@
                            (cdr (assoc :all attributes))))
             (protocols (cdr (assoc-string element protocols)))
             (add-attrs (cdr (assoc-string element add-attributes))))
-        (setf (gethash element (rules self))
+        (setf (gethash element (mode.rules self))
               (make-element-rule :allowed (and ok t)
                                  :removed (and removed t)
                                  :whitespace (and ws t)
@@ -121,7 +124,7 @@
 
 (defun tag-rule (self tag)
   "Lookup the rule for TAG in SELF."
-  (gethash tag (rules self) null-rule))
+  (gethash tag (sanitizer.rules self) null-rule))
 
 (defun string-member (string list)
   "Like `member' with `string-equal'."
@@ -150,15 +153,15 @@
 
 (defmethod fxml.sax:characters ((self sanitizer) data)
   (declare (ignore data))
-  (unless (plusp (removed-count self))
-    (when-let (parent (car (stack self)))
+  (unless (plusp (sanitizer.removed-count self))
+    (when-let (parent (car (sanitizer.stack self)))
       (incf (cdr parent)))
     (call-next-method)))
 
 (defmethod fxml.sax:comment ((self sanitizer) data)
   (declare (ignore data))
-  (when (allow-comments? self)
-    (unless (plusp (removed-count self))
+  (when (sanitizer.allow-comments? self)
+    (unless (plusp (sanitizer.removed-count self))
       (call-next-method))))
 
 (defun check-protocol (value protocols)
@@ -168,20 +171,20 @@
            (member (uri-protocol value) protocols))))
 
 (defun attribute-ok? (self rule name value)
-  (or (and (allow-data-attributes? self)
+  (or (and (sanitizer.allow-data-attributes? self)
            (string^= "data-" name))
       (and (string-member name (element.attributes rule))
            (let ((protocols (assoc-string name (element.protocols rule))))
              (check-protocol value protocols)))))
 
 (defmethod fxml.sax:start-element ((self sanitizer) ns lname qname attrs)
-  (when-let (parent (car (stack self)))
+  (when-let (parent (car (sanitizer.stack self)))
     (incf (cdr parent)))
   (let ((rule (tag-rule self lname)))
-    (push (cons rule 0) (stack self))
+    (push (cons rule 0) (sanitizer.stack self))
     (cond ((element.removed rule)
-           (incf (removed-count self)))
-          ((plusp (removed-count self)))
+           (incf (sanitizer.removed-count self)))
+          ((plusp (sanitizer.removed-count self)))
           ((not (element.allowed rule))
            (when (element.whitespace rule)
              (fxml.sax:characters self " ")))
@@ -197,10 +200,11 @@
 (defmethod fxml.sax:end-element ((self sanitizer) ns lname qname)
   (declare (ignore lname ns qname))
   (destructuring-bind (rule . child-count)
-      (pop (stack self))
+      (pop (sanitizer.stack self))
     (cond ((element.removed rule)
-           (decf (removed-count self)))
-          ((plusp (removed-count self)))
+           (decf (sanitizer.removed-count self)))
+          ((plusp (sanitizer.removed-count self))
+           pass)
           ((element.allowed rule)
            (call-next-method))
           ((element.whitespace rule)
