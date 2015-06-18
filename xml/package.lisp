@@ -8,6 +8,7 @@
 (defpackage :fxml
   (:use :cl :fxml.runes :fxml.runes-encoding #-scl :trivial-gray-streams)
   (:import-from #:named-readtables #:in-readtable)
+  (:import-from #:alexandria #:compose #:curry #:rcurry)
   (:export
    ;; meta
    #:xml-character-p

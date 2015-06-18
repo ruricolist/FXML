@@ -35,21 +35,6 @@
 (in-package :fxml)
 
 ;;; --------------------------------------------------------------------------------
-;;;  Meta functions
-
-(defun curry (fun &rest args)
-  #'(lambda (&rest more)
-      (apply fun (append args more))))
-
-(defun rcurry (fun &rest args)
-  #'(lambda (&rest more)
-      (apply fun (append more args))))
-
-(defun compose (f g)
-  #'(lambda (&rest args)
-      (funcall f (apply g args))))
-
-;;; --------------------------------------------------------------------------------
 ;;;  while and until
 
 (defmacro while (test &body body)
