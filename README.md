@@ -1,21 +1,52 @@
-This is a fork of CXML, an XML parser written in Common Lisp. Its
-interface is a superset of CXML’s, so refer to the
-[CXML documentation][cxml] for usage.
+FXML is a fork of CXML emphasizing security and tolerance. If you are
+dealing with well-formed XML from trusted sources, FXML has few if any
+advantages over CXML proper. But if you are dealing with potentially
+faulty XML, from untrusted sources – if, for example, you are running
+a feed reader – then FXML is probably the better choice.
 
-https://common-lisp.net/project/cxml/saxoverview/
-http://lichteblau.blogspot.com/2007/03/klacks-parsing.html
+FXML does not conflict with CXML. They can both be loaded into the
+same Lisp system, and in fact they can be made to interoperate. This
+means that, although FXML’s API is very close to CXML’s, and for the
+most part, you can refer to the [CXML documentation][cxml] for usage,
+all package names have been changed:
 
-This fork was originally created as a last resort, to fix a
-longstanding, critical bug in Klacks, namely its broken handling of
-namespaces.
+```
+CXML     -> FXML
+CXML-DOM -> FXML-DOM
+DOM      -> FXML.DOM
+KLACKS   -> FXML.KLACKS
+SAX      -> FXML.SAX
+STP      -> FXML.STP
+```
 
-(Klacks maintained a namespace stack, but never popped it when
-namespaces went out of scope. This meant that, when the default
-namespace was changed, it never got changed back. Thus Klacks could
-not, say, parse Feedburner feeds.)
+# Differences from CXML
 
-Since then this fork has been extended with additional features.
+Bug fixes:
+- Klacks handles namespaces correctly.
+- XML parser does not reverse attribute lists.
 
+Security: 
+- DTDs are forbidden by default.
+- Entity definitions in DTDs are forbidden by default.
+- External references in DTDS are forbidden by default.
+
+New features:
+- Restarts allow recovery from many simple XML problems.
+- Inline (callback-based) SAX handlers.
+- Multiplexing SAX handlers.
+- Document fragment support in STP.
+
+Removed features:
+- FXML does not support HAX.
+
+# CXML compatibility
+
+You can make FXML and CXML interoperable by loading the system
+`fxml/cxml`. This defines SAX methods for FXML, and FXML.SAX methods
+for CXML. You can then mix CXML and FXML sinks and sources:
+
+     (cxml:parse xml-document (fxml.stp:make-builder))
+     (fxml:parse xml-document (stp:make-builder))
 
 # Security
 
@@ -140,3 +171,5 @@ you can do it in one pass:
 [cxml]: http://common-lisp.net/project/fxml/
 [defusedxml]: https://pypi.python.org/pypi/defusedxml
 [billion laughs]: https://en.wikipedia.org/wiki/Billion_laughs
+[sax]: https://common-lisp.net/project/cxml/saxoverview/
+[klacks]: http://lichteblau.blogspot.com/2007/03/klacks-parsing.html
