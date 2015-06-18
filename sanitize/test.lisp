@@ -23,9 +23,7 @@
 (defun clean (string &optional (mode default))
   ;; Collapse whitespace.
   (~> string
-      html5-parser:parse-html5
-      (html5-sax:serialize-dom (wrap-sanitize (html5-sax:make-html5-sink)
-                                              mode))
+      (fxml.html5:parse (wrap-sanitize (fxml.html5:make-html5-sink) mode))
       (ppcre:regex-replace-all "\\s+" _ " ")))
 
 ;;; basic

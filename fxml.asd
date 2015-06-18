@@ -177,7 +177,7 @@
                (:file "sax-sanitize")))
 
 (defsystem #:fxml/sanitize/test
-  :depends-on (#:fxml/sanitize #:fiveam #:html5-sax)
+  :depends-on (#:fxml/sanitize #:fiveam #:fxml/html5)
   :pathname "sanitize/"
   :perform (test-op (o c) (uiop:symbol-call :fxml.sanitize.test :run-tests))
   :components ((:file "test")))
