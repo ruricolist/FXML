@@ -96,7 +96,13 @@
            #:column-number
            #:system-id
            #:xml-base
-           #:standard-attribute))
+           #:standard-attribute
+           
+           #:sax-condition
+           #:sax-condition.handler
+           #:sax-condition.event
+           #:deprecated-sax-default-method
+           #:not-implemented))
 
 (in-package :fxml.sax)
 (in-readtable :runes)
@@ -267,6 +273,31 @@ Setting this variable has no effect unless both
 (defclass content-handler (abstract-handler) ())
 (defclass default-handler (content-handler) ())
 
+;;;; CONDITIONS
+
+(define-condition sax-condition ()
+  ((handler
+    :initarg :handler
+    :reader sax-condition.handler)
+   (event
+    :initarg :event
+    :reader sax-condition.event)))
+
+(define-condition deprecated-sax-default-method (warning sax-condition)
+  ()
+  (:report (lambda (c s)
+             (format s "Deprecated SAX default method used by handler ~
+             ~a, which is not a subclass of ~
+             FXML.SAX:ABSTRACT-HANDLER"
+                     (sax-condition.handler c)))))
+
+(define-condition not-implemented (error sax-condition)
+  ()
+  (:report (lambda (c s)
+             (format s "SAX event ~a not implemented by ~a"
+                     (sax-condition.event c)
+                     (sax-condition.handler c)))))
+
 ;;;; EVENTS
 
 (defmacro define-event ((name default-handler-class)
@@ -277,13 +308,15 @@ Setting this variable has no effect unless both
        nil)
      (:method ((handler t) ,@args)
        (declare (ignore ,@args))
-       (warn "deprecated SAX default method used by a handler ~
-                         that is not a subclass of FXML.SAX:ABSTRACT-HANDLER")
+       (warn 'deprecated-sax-default-method
+             :handler handler
+             :event ',name)
        nil)
      (:method ((handler abstract-handler) ,@args)
        (declare (ignore ,@args))
-       (error "SAX event ~A not implemented by this handler"
-              ',name))
+       (error 'not-implemented
+              :handler handler
+              :event ',name))
      (:method ((handler ,default-handler-class) ,@args)
        (declare (ignore ,@args))
        nil)))
@@ -373,8 +406,9 @@ Setting this variable has no effect unless both
     (setf (slot-value handler 'sax-parser) sax-parser))
   (:method ((handler t) sax-parser)
     (declare (ignore sax-parser))
-    (warn "deprecated sax default method used by a handler ~
-                          that is not a subclass of fxml.sax:abstract-handler")
+    (warn 'deprecated-sax-default-method
+          :handler handler
+          :event 'register-sax-parser)
     nil))
 
 ;;;; Callback handlers.
