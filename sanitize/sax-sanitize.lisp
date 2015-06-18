@@ -188,13 +188,14 @@
           ((not (element.allowed rule))
            (when (element.whitespace rule)
              (fxml.sax:characters self " ")))
-          (t (let ((attrs-out (element.add-attributes rule)))
-               ;; SAX supplies the attributes backward.
-               (dolist (attr attrs)
-                 (let ((name (fxml.sax:attribute-local-name attr))
-                       (value (fxml.sax:attribute-value attr)))
-                   (when (attribute-ok? self rule name value)
-                     (push attr attrs-out))))
+          (t (let ((attrs-out
+                     (append (element.add-attributes rule)
+                             (filter
+                              (lambda (attr)
+                                (let ((name (fxml.sax:attribute-local-name attr))
+                                      (value (fxml.sax:attribute-value attr)))
+                                  (attribute-ok? self rule name value)))
+                              attrs))))
                (call-next-method self ns lname qname attrs-out))))))
 
 (defmethod fxml.sax:end-element ((self sanitizer) ns lname qname)
