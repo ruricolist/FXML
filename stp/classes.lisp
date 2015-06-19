@@ -28,14 +28,19 @@
 
 (in-package :fxml.stp.impl)
 
+(deftype children ()
+  '(or null vector))
+
 (defclass named-node-mixin ()
-  ((local-name :reader local-name :accessor %local-name)
+  ((local-name :reader local-name :accessor %local-name :accessor node.local-name)
    (prefix :initform nil
 	   :reader namespace-prefix
-	   :accessor %namespace-prefix)
+	   :accessor %namespace-prefix
+           :accessor node.namespace-prefix)
    (namespace-uri :initform nil
 		  :reader namespace-uri
-		  :accessor %namespace-uri)))
+		  :accessor %namespace-uri
+                  :accessor node.namespace-uri)))
 
 (defclass attribute (leaf-node named-node-mixin)
   ((value :accessor value))
@@ -101,9 +106,12 @@
 (setf (find-class 'document) (find-class 'fxml.stp:document))
 #+clozure (deftype document () (find-class 'fxml.stp:document))
 
+(defclass fxml.stp:document-fragment (parent-node) ()
+  (:documentation "A document fragment."))
+
 (defclass element (parent-node named-node-mixin)
-  ((attributes :initform nil :accessor %attributes)
-   (namespaces :initform nil :accessor %namespaces))
+  ((attributes :initform nil :accessor %attributes :accessor element.attributes)
+   (namespaces :initform nil :accessor %namespaces :accessor element.namespaces))
   (:documentation
    "@short{Instances of this class represent XML elements with their attributes
     and namespaces.}
@@ -136,7 +144,9 @@
 (defclass leaf-node (node) ())
 
 (defclass node ()
-  ((parent :initform nil :reader parent :writer (setf %parent)))
+  ((parent :initform nil :reader parent
+           :writer (setf %parent)
+           :writer (setf node.parent)))
   (:documentation
    "@short{The superclass of all nodes.}
 
@@ -173,7 +183,10 @@
 
 (defclass parent-node (node)
   ((%base-uri :initform nil)
-   (%children :initform nil :accessor %children))
+   (%children :initform nil
+              :type children
+              :accessor %children
+              :accessor node.children))
   (:documentation
    "@short{Instances of this class can have children.}
 
