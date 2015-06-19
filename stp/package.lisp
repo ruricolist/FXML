@@ -38,6 +38,8 @@
 	   #:make-document
 	   #:document-element
 
+           #:document-fragment
+
 	   #:parent-node
 	   #:prepend-child
 	   #:append-child
