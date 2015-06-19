@@ -77,7 +77,7 @@
   (check-type name runes:rod)
   (let ((result (make-instance 'element)))
     (multiple-value-bind (prefix local-name)
-	(fxml::split-qname name)
+	(fxml:split-qname name)
       (setf prefix (or prefix ""))
       (setf (namespace-prefix result) prefix)
       (setf (namespace-uri result) uri)

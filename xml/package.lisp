@@ -132,4 +132,5 @@
    #:sax-proxy
    #:proxy-chained-handler
 
-   #:make-source))
+   #:make-source
+   #:split-qname))
