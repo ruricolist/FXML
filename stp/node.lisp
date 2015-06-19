@@ -190,7 +190,7 @@
    Executes @code{body} with @code{var} bound to successive child
      nodes."
   `(block nil
-     (map-children nil (lambda (,var) ,@body) ,node)
+     (map-children nil (lambda (,var) (tagbody ,@body)) ,node)
      (let (,var)
        (declare (ignorable ,var))
        ,result)))
@@ -403,7 +403,7 @@
    Executes @code{bode} with @code{var} bound to successive descendants of
    @code{node} in pre-order."
   `(block nil
-     (map-recursively (lambda (,var) ,@body) ,node)
+     (map-recursively (lambda (,var) (tagbody ,@body)) ,node)
      (let (,var)
        (declare (ignorable ,var))
        ,result)))
