@@ -4006,9 +4006,9 @@
   ;; fixme: if there is a reason this function reverses attribute order,
   ;; it should be documented.
   (loop for (qname . value) in attr-alist
-        collect (sax:make-attribute :qname qname
-                                    :value value
-                                    :specified-p t)))
+        collect (fxml.sax:make-attribute :qname qname
+                                         :value value
+                                         :specified-p t)))
 
 (defun check-attribute-uniqueness (attributes)
   ;; 5.3 Uniqueness of Attributes
