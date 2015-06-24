@@ -258,7 +258,7 @@
 	  (t (stp-error "prefix ~A does not match uri ~A" prefix uri)))))
     (values local-name uri)))
 
-(defun attribute-value (element name &optional (uri "" urip))
+(defmethod attribute-value (element name &optional (uri "" urip))
   "@arg[element]{an instance of @class{element}}
    @arg[name]{string, an NCName} 
    @arg[uri]{string, a namespace URI} 
@@ -324,7 +324,7 @@
     @code{map-children} returns nil if @code{result-type} is nil."
   (map result-type fn (%attributes element)))
 
-(defun qualified-name (node)
+(defmethod qualified-name (node)
   "@arg[node]{an @class{element} or @class{attribute}}
    @return{string, a QName}
    @short{Returns the node's qualified name.}

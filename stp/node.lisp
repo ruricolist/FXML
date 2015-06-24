@@ -83,7 +83,7 @@
     @return{a string}
     @short{Returns the node's base URI.}"))
 
-(defun fxml.stp:document (node)
+(defmethod fxml.stp:document (node)
   "@arg[node]{an instance of @class{node}}
    @return{a @class{document} or nil}
    @short{Returns the document node ancestor of @code{node}.}
@@ -214,7 +214,7 @@
    if n is negative or as large or larger that the number of child nodes."
   (elt (%children parent) n))
 
-(defun first-child (node)
+(defmethod first-child (node)
   "@arg[node]{a @class{node}}
    @return{a @class{node} or nil}
    Returns first child of @code{node}, or nil."
@@ -222,7 +222,7 @@
     (when (plusp (length c))
       (elt c 0))))
 
-(defun last-child (node)
+(defmethod last-child (node)
   "@arg[node]{a @class{node}}
    @return{a @class{node} or nil}
    Returns last child of @code{node}, or nil."
@@ -231,7 +231,7 @@
     (when (plusp l)
       (elt c (1- l)))))
 
-(defun previous-sibling (node)
+(defmethod previous-sibling (node)
   "@arg[node]{a @class{node}}
    @return{a @class{node} or nil}
    @short{Returns the child preceding @code{node} in the child list of its
@@ -247,7 +247,7 @@
 	(stp-error "node has no previous sibling"))
       (nth-child idx p))))
 
-(defun next-sibling (node)
+(defmethod next-sibling (node)
   "@arg[node]{a @class{node}}
    @return{a @class{node} or nil}
    @short{Returns the child following @code{node} in the child list of its
@@ -389,7 +389,7 @@
   (declare (ignore from-end start end count key))
   (apply #'remove-if-not predicate (list-children parent) args))
 
-(defun map-recursively (fn node)
+(defmethod map-recursively (fn node)
   "@arg[fn]{a designator for a function of one argument}
    @arg[node]{a @class{node}}
    @return{nil}
