@@ -126,10 +126,15 @@
     In contrast to functions for child nodes, this function can also remove
     an attribute from its parent.
 
-    @see{parent}"))
-(defmethod detach ((node node))
-  (when (parent node)
-    (delete-child node (parent node))))
+    Returns the original node.
+
+    @see{parent}")
+  (:method :around ((node t))
+    (call-next-method)
+    node)
+  (:method ((node node))
+    (when (parent node)
+      (delete-child node (parent node)))))
 
 (defgeneric copy (node)
   (:documentation
