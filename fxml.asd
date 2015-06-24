@@ -118,7 +118,7 @@
    (:file "leaf-node")
    (:file "document")
    (:file "element")
-   (:file "fragment")
+   (:file "document-fragment")
    (:file "attribute")
    (:file "document-type")
    (:file "comment")
