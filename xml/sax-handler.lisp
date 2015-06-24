@@ -102,7 +102,8 @@
            #:sax-condition.handler
            #:sax-condition.event
            #:deprecated-sax-default-method
-           #:not-implemented))
+           #:not-implemented
+           #:dtd))
 
 (in-package :fxml.sax)
 (in-readtable :runes)
