@@ -46,10 +46,6 @@
    @see{serialize}"
   (make-instance 'builder))
 
-(defun make-fragment-builder ()
-  "Like `make-builder', but return a document fragment instead of a document."
-  (make-instance 'builder :document-class 'document-fragment))
-
 (defclass builder (fxml.sax:content-handler)
   ((nodes :initform nil :accessor builder-nodes)
    (doctype :initform nil :accessor builder-doctype)

@@ -100,8 +100,7 @@
 	   #:text
 	   #:make-text
 
-	   #:make-builder
-           #:make-fragment-builder)
+	   #:make-builder)
   (:documentation
    "STP is a data structure for well-formed XML documents.
 
