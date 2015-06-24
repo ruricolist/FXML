@@ -13,6 +13,7 @@
     result))
 
 (defmethod check-insertion-allowed ((parent document-fragment) child i)
+  ;; XXX same as for element
   (declare (ignore i))
   (check-type child node)
   (assert-orphan child)

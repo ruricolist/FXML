@@ -46,15 +46,23 @@
    @see{serialize}"
   (make-instance 'builder))
 
+(defun make-fragment-builder ()
+  "Like `make-builder', but return a document fragment instead of a document."
+  (make-instance 'builder :document-class 'document-fragment))
+
 (defclass builder (fxml.sax:content-handler)
   ((nodes :initform nil :accessor builder-nodes)
    (doctype :initform nil :accessor builder-doctype)
    (namespace-declarations :initform nil :accessor namespace-declarations)
    (internal-subset-sink :initform nil
-			 :accessor builder-internal-subset-sink)))
+			 :accessor builder-internal-subset-sink)
+   (document-class :initarg :document-class
+                   :reader builder.document-class))
+  (:default-initargs :document-class 'document))
 
 (defmethod fxml.sax:start-document ((builder builder))
-  (push (make-instance 'document) (builder-nodes builder)))
+  (let ((document (builder.document-class builder)))
+    (push (make-instance document) (builder-nodes builder))))
 
 (defun builder-append (builder x)
   (let ((parent (car (builder-nodes builder))))
@@ -86,7 +94,7 @@
 		      (builder-internal-subset-sink builder))))
   (setf (builder-internal-subset-sink builder) nil))
 
-(defmethod fxml.sax::dtd ((builder builder) dtd)
+(defmethod fxml.sax:dtd ((builder builder) dtd)
   (when (builder-doctype builder)
     (setf (dtd (builder-doctype builder)) dtd)))
 
