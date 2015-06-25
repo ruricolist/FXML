@@ -31,10 +31,12 @@ Security:
 - External references in DTDS are forbidden by default.
 
 New features:
+- Backward compatibility with CXML.
 - Restarts allow recovery from many simple XML problems.
 - Inline (callback-based) SAX handlers.
 - Multiplexing SAX handlers.
 - Document fragment support in STP.
+- DOM and STP are (partially) compatible.
 
 Removed features:
 - FXML does not support HAX.
@@ -47,6 +49,15 @@ for CXML. You can then mix CXML and FXML sinks and sources:
 
      (cxml:parse xml-document (fxml.stp:make-builder))
      (fxml:parse xml-document (stp:make-builder))
+
+# DOM and STP compatibility
+
+DOM and STP overlap significantly in some respect. In particular,
+read-only functions that return strings – functions that, for example,
+look up attribute values or tag names – are effectively equivalent.
+When FXML/STP is loaded, it specializes a number of STP methods for
+DOM, and a number of DOM methods for STP. (At the moment, looking at
+[the code](stp/dom.lisp) is the best way to see what is defined.)
 
 # Security
 
