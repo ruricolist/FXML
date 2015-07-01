@@ -26,38 +26,7 @@
 
 (in-package :fxml.runes)
 
-#-(or allegro openmcl)
 (defmacro definline (name args &body body)
   `(progn
      (declaim (inline ,name))
-     (defun ,name ,args .,body)))
-
-#+openmcl
-(defmacro fxml.runes::definline (fun args &body body)
-  (if (consp fun)
-      `(defun ,fun ,args
-         ,@body)
-      `(progn
-         (defun ,fun ,args .,body)
-         (define-compiler-macro ,fun (&rest .args.)
-           (cons '(lambda ,args .,body)
-                 .args.)))))
-
-#+allegro
-(defmacro definline (fun args &body body)
-  (if (and (consp fun) (eq (car fun) 'setf))
-      (let ((fnam (intern (concatenate 'string "(SETF " (symbol-name (cadr fun)) ")")
-                          (symbol-package (cadr fun)))))
-        `(progn
-           (defsetf ,(cadr fun) (&rest ap) (new-value) (list* ',fnam new-value ap))
-           (definline ,fnam ,args .,body)))
-    (labels ((declp (x)
-               (and (consp x) (eq (car x) 'declare))))
-      `(progn
-         (defun ,fun ,args .,body)
-         (define-compiler-macro ,fun (&rest .args.)
-           (cons '(lambda ,args
-                   ,@(remove-if-not #'declp body)
-                   (block ,fun 
-                     ,@(remove-if #'declp body)))
-                 .args.))))))
+     (defun ,name ,args ,@body)))
