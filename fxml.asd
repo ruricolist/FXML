@@ -30,9 +30,9 @@
 #+scl
 (pushnew 'uri-is-namestring *features*)
 
-(defsystem :fxml/closure-common
+(defsystem :fxml/runes
   :serial t
-  :pathname "closure-common/"
+  :pathname "runes/"
   :components
   ((:file "package")
    (:file "definline")
@@ -68,7 +68,7 @@
    (:file "catalog"         :depends-on ("xml-parse"))
    (:file "sax-proxy"       :depends-on ("xml-parse"))
    (:file "atdoc-configuration" :depends-on ("package")))
-  :depends-on (:fxml/closure-common
+  :depends-on (:fxml/runes
                :puri #-scl
                :trivial-gray-streams
                :flexi-streams
