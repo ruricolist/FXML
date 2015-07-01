@@ -1295,12 +1295,8 @@
   (unwind-protect
       (funcall fn zstream)
     (dolist (input (zstream-input-stack zstream))
-      (cond #-x&y-streams-are-stream
-            ((xstream-p input)
-             (close-xstream input))
-            #+x&y-streams-are-stream
-            ((streamp input)
-             (close input))))))
+      (when (xstream-p input)
+        (close-xstream input)))))
 
 (defmacro with-zstream ((zstream &rest args) &body body)
   `(call-with-zstream (lambda (,zstream) ,@body)

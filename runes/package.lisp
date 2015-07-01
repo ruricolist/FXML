@@ -9,7 +9,7 @@
 (in-package :cl-user)
 
 (defpackage :fxml.runes
-  (:use :cl #-scl :trivial-gray-streams :named-readtables)
+  (:use :cl :named-readtables)
   (:export #:definline
 
            ;; runes.lisp

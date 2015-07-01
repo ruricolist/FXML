@@ -27,9 +27,6 @@
        (pushnew :rune-is-utf-16 *features*)
        (pushnew :rune-is-character *features*)))))
 
-#+scl
-(pushnew 'uri-is-namestring *features*)
-
 (defsystem :fxml/runes
   :serial t
   :pathname "runes/"
@@ -42,13 +39,11 @@
     #+rune-is-character "characters")
    #+rune-is-integer (:file "utf8")
    (:file "syntax")
-   #-x&y-streams-are-stream (:file "encodings")
-   #-x&y-streams-are-stream (:file "encodings-data")
-   #-x&y-streams-are-stream (:file "xstream")
-   #-x&y-streams-are-stream (:file "ystream")
-   #+x&y-streams-are-stream (:file #+scl "stream-scl"))
-  :depends-on (#-scl :trivial-gray-streams
-               #+rune-is-character :babel
+   (:file "encodings")
+   (:file "encodings-data")
+   (:file "xstream")
+   (:file "ystream"))
+  :depends-on (#+rune-is-character :babel
                #:named-readtables))
 
 (asdf:defsystem :fxml/xml
@@ -69,8 +64,7 @@
    (:file "sax-proxy"       :depends-on ("xml-parse"))
    (:file "atdoc-configuration" :depends-on ("package")))
   :depends-on (:fxml/runes
-               :puri #-scl
-               :trivial-gray-streams
+               :puri 
                :flexi-streams
                #:alexandria))
 

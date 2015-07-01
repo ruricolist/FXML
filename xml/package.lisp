@@ -6,7 +6,7 @@
 (in-package :cl-user)
 
 (defpackage :fxml
-  (:use :cl :fxml.runes :fxml.runes-encoding #-scl :trivial-gray-streams)
+  (:use :cl :fxml.runes :fxml.runes-encoding)
   (:import-from #:named-readtables #:in-readtable)
   (:import-from #:alexandria #:compose #:curry #:rcurry)
   (:export
