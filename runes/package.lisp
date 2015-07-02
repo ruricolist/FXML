@@ -75,14 +75,7 @@
            #:make-octet-vector-ystream
            #:make-octet-stream-ystream
            #:make-rod-ystream
-           #+rune-is-character #:make-character-stream-ystream
-	   ;; These don't make too much sense on Unicode-enabled,
-	   ;; implementations but for those applications using them anyway,
-	   ;; I have commented out the reader conditionals now:
-           ;; #+rune-is-integer
-	   #:make-string-ystream/utf8
-           ;; #+rune-is-integer
-	   #:make-character-stream-ystream/utf8
+           #:make-character-stream-ystream
 	   #:runes-to-utf8/adjustable-string
 
 	   #:rod-to-utf8-string

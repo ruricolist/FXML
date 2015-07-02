@@ -161,21 +161,6 @@
               (setf c (read-char stream t nil t))))
        (princ c bag)))))
 
-#-rune-is-character
-(defun rod-printer (stream rod)
-  (princ #\# stream)
-  (princ #\" stream)
-  (loop for x across rod do
-        (cond ((or (rune= x #.(char-rune #\\))
-                   (rune= x #.(char-rune #\")))
-               (princ #\\ stream)
-               (princ (code-char x) stream))
-              ((< x char-code-limit)
-               (princ (code-char x) stream))
-              (t
-               (format stream "\\u~4,'0X" x))))
-  (princ #\" stream))
-
 ;;; Readtable.
 
 (defreadtable :runes

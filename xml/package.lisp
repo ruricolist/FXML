@@ -51,13 +51,8 @@
    #:make-octet-vector-sink
    #:make-octet-stream-sink
    #:make-rod-sink
-   #+rune-is-character #:make-string-sink
-   #+rune-is-character #:make-character-stream-sink
-   ;; See comment in runes/package.lisp
-   ;; #-rune-is-character
-   #:make-string-sink/utf8
-   ;; #-rune-is-character
-   #:make-character-stream-sink/utf8
+   #:make-string-sink
+   #:make-character-stream-sink
 
    #:sink-encoding
    #:sink-omit-xml-declaration-p

@@ -8,17 +8,9 @@
 ;;;; Author: David Lichteblau <david@lichteblau.com>
 ;;;; Author: knowledgeTools Int. GmbH
 
-#-rune-is-integer
 (in-package :fxml.rune-dom)
 
-#+rune-is-integer
-(in-package :fxml.utf8-dom)
-
-#-rune-is-integer
 (in-readtable :runes)
-#+rune-is-integer
-(in-readtable :utf8-runes)
-
 
 (defclass dom-builder (fxml.sax:content-handler)
   ((document      :initform nil :accessor document)

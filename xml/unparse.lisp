@@ -128,19 +128,9 @@
   (define-maker make-octet-vector-sink make-octet-vector-ystream)
   (define-maker make-octet-stream-sink make-octet-stream-ystream stream)
   (define-maker make-rod-sink make-rod-ystream)
+  
+  (define-maker make-character-stream-sink make-character-stream-ystream stream))
 
-  #+rune-is-character
-  (define-maker make-character-stream-sink make-character-stream-ystream stream)
-
-  #-rune-is-character
-  (define-maker make-string-sink/utf8 make-string-ystream/utf8)
-
-  #-rune-is-character
-  (define-maker make-character-stream-sink/utf8
-      make-character-stream-ystream/utf8
-    stream))
-
-#+rune-is-character
 (defun make-string-sink (&rest args)
   "@return{A serialization sink, i.e. a @class{SAX handler}}
 

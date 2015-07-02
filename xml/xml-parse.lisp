@@ -383,49 +383,11 @@
         (return)))
     (values new-value key)))
 
-#-rune-is-character
-(defun rod-subseq* (source start &optional (end (length source)))
-  (unless (and (typep start 'fixnum) (>= start 0))
-    (error "~S is not a non-negative fixnum." start))
-  (unless (and (typep end 'fixnum) (>= end start))
-    (error "END argument, ~S, is not a fixnum no less than START, ~S." end start))
-  (when (> start (length source))
-    (error "START argument, ~S, should be no greater than length of rod." start))
-  (when (> end (length source))
-    (error "END argument, ~S, should be no greater than length of rod." end))
-  (locally
-      (declare (type fixnum start end))
-    (let ((res (make-rod (- end start))))
-      (declare (type rod res))
-      (do ((i (- (- end start) 1) (the fixnum (- i 1))))
-          ((< i 0) res)
-        (declare (type fixnum i))
-        (setf (%rune res i) (aref source (the fixnum (+ i start))))))))
-
-#+rune-is-character
 (defun rod-subseq* (source start &optional (end (length source)))
   (subseq source start end))
 
 (deftype ufixnum () `(unsigned-byte ,(integer-length most-positive-fixnum)))
 
-#-rune-is-character
-(defun rod-subseq** (source start &optional (end (length source)))
-  (declare (type (simple-array rune (*)) source)
-           (type ufixnum start)
-           (type ufixnum end)
-           (optimize (speed 3) (safety 0)))
-  (let ((res (make-array (%- end start) :element-type 'rune)))
-    (declare (type (simple-array rune (*)) res))
-    (let ((i (%- end start)))
-      (declare (type ufixnum i))
-      (loop
-        (setf i (- i 1))
-        (when (= i 0)
-          (return))
-        (setf (%rune res i) (%rune source (the ufixnum (+ i start))))))
-    res))
-
-#+rune-is-character
 (defun rod-subseq** (source start &optional (end (length source)))
   (subseq source start end))
 
@@ -1166,9 +1128,7 @@
   ;; is also a home-made hash table for rods defined below, written by
   ;; Gilbert (I think).  We could also use that one, but I would prefer the
   ;; first method, even if it's unportable.
-  (make-hash-table :test
-                   #+rune-is-character 'equal
-                   #-rune-is-character 'equalp))
+  (make-hash-table :test 'equal))
 
 (defstruct dtd
   (elements (%make-rod-hash-table))     ;elmdefs
@@ -2792,9 +2752,6 @@
   (check-type forbid-dtd boolean)
   (check-type *forbid-entities* boolean)
   (check-type forbid-external boolean)
-  #+rune-is-integer
-  (when recode
-    (setf handler (make-recoder handler #'rod-to-utf8-string)))
   (when ignore-dtd
     (setf entity-resolver #'void-entity-resolver))
   (when forbid-external
@@ -3499,9 +3456,6 @@
   (check-type system-id (or null puri:uri))
   (check-type entity-resolver (or null function symbol))
   (check-type recode boolean)
-  #+rune-is-integer
-  (when recode
-    (setf handler (make-recoder handler #'rod-to-utf8-string)))
   (let ((*ctx*
          (make-context :handler handler :entity-resolver entity-resolver))
         (*validate* nil)

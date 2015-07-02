@@ -12,12 +12,7 @@
     (handler document
      &key (include-xmlns-attributes fxml.sax:*include-xmlns-attributes*)
 	  include-doctype
-          include-default-values
-	  (recode (and #+rune-is-integer (typep document 'fxml.utf8-dom::node))))
-  (declare (ignorable recode))
-  #+rune-is-integer
-  (when recode
-    (setf handler (make-recoder handler #'utf8-string-to-rod)))
+          include-default-values)
   (fxml.sax:start-document handler)
   (when include-doctype
     (let ((doctype (fxml.dom:doctype document)))

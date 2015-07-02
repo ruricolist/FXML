@@ -32,11 +32,6 @@
      :utf-8)
     ((find name '(:utf-8 :utf_8 :utf8))
      :utf-8)
-    #-rune-is-character
-    (t
-     (warn "Unknown encoding ~A, falling back to UTF-8" name)
-     :utf-8)
-    #+rune-is-character
     (t
      (handler-case
 	 (babel-encodings:get-character-encoding name)
@@ -55,7 +50,7 @@
 ;;;  \-- character-stream-ystream
 
 (defstruct ystream
-  #+rune-is-character (encoding)
+  (encoding)
   (column 0 :type integer)
   (in-ptr 0 :type fixnum)
   (in-buffer (make-rod +ystream-bufsize+) :type simple-rod))
@@ -105,20 +100,12 @@
     (setf (elt tmp 0) rune)
     (ystream-write-escapable-rod tmp ystream)))
 
-#-rune-is-character
-;;
-;; on non-unicode lisps, we only support UTF-8 anyway, so this is like
-;; ystream-write-rod, which will never signal an error in this configuration.
-(defun ystream-write-escapable-rod (rod ystream)
-  (ystream-write-rod rod ystream))
-
 ;; Writes a rod to the buffer.  If a rune in the rod not encodable, it is
 ;; replaced by a character reference.
 ;;
-#+rune-is-character
 (defun ystream-write-escapable-rod (rod ystream)
   ;;
-  ;; OPTIMIZE ME
+  ;; TODO OPTIMIZE ME
   ;;
   (if (ystream-unicode-p ystream)
       (ystream-write-rod rod ystream)
@@ -131,7 +118,6 @@
 	       (let ((cr (string-rod (format nil "&#~D;" (rune-code rune)))))
 		 (ystream-write-rod cr ystream))))))
 
-#+rune-is-character
 (defun encodablep (character encoding)
   (handler-case
       (babel:string-to-octets (string character) :encoding encoding)
@@ -149,11 +135,6 @@
 
 (defgeneric ystream-device-write (ystream buf nbytes))
 
-#-rune-is-character
-(defun encode-runes (out in ptr encoding)
-  (runes-to-utf8 out in ptr))
-
-#+rune-is-character
 (defun encode-runes (out in ptr encoding)
   (case encoding
     (:utf-8
@@ -273,22 +254,20 @@
 
 ;;;; CHARACTER-STREAM-YSTREAM
 
-#+rune-is-character
-(progn
-  (defstruct (character-stream-ystream
-	      (:constructor make-character-stream-ystream (target-stream))
-	      (:include ystream)
-	      (:conc-name "YSTREAM-"))
-    (target-stream nil))
+(defstruct (character-stream-ystream
+            (:constructor make-character-stream-ystream (target-stream))
+            (:include ystream)
+            (:conc-name "YSTREAM-"))
+  (target-stream nil))
 
-  (defmethod flush-ystream ((ystream character-stream-ystream))
-    (write-string (ystream-in-buffer ystream)
-		  (ystream-target-stream ystream)
-		  :end (ystream-in-ptr ystream))
-    (setf (ystream-in-ptr ystream) 0))
+(defmethod flush-ystream ((ystream character-stream-ystream))
+  (write-string (ystream-in-buffer ystream)
+                (ystream-target-stream ystream)
+                :end (ystream-in-ptr ystream))
+  (setf (ystream-in-ptr ystream) 0))
 
-  (defmethod close-ystream ((ystream character-stream-ystream))
-    (ystream-target-stream ystream)))
+(defmethod close-ystream ((ystream character-stream-ystream))
+  (ystream-target-stream ystream))
 
 
 ;;;; OCTET-VECTOR-YSTREAM
@@ -324,33 +303,7 @@
 
 ;;;; CHARACTER-STREAM-YSTREAM/UTF8
 
-;; #+rune-is-integer
-(progn
-  (defstruct (character-stream-ystream/utf8
-	      (:constructor make-character-stream-ystream/utf8 (os-stream))
-	      (:include %stream-ystream)
-	      (:conc-name "YSTREAM-")))
-
-  (defmethod ystream-device-write
-      ((ystream character-stream-ystream/utf8) buf nbytes)
-    (declare (type (simple-array (unsigned-byte 8) (*)) buf))
-    (let ((out (ystream-os-stream ystream)))
-      (dotimes (x nbytes)
-	(write-char (code-char (elt buf x)) out)))))
-
-
 ;;;; STRING-YSTREAM/UTF8
-
-;; #+rune-is-integer
-(progn
-  (defstruct (string-ystream/utf8
-	      (:include character-stream-ystream/utf8
-			(os-stream (make-string-output-stream)))
-	      (:conc-name "YSTREAM-")))
-
-  (defmethod close-ystream ((ystream string-ystream/utf8))
-    (get-output-stream-string (ystream-os-stream ystream))))
-
 
 ;;;; helper functions
 
