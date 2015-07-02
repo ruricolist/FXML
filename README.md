@@ -41,6 +41,12 @@ New features:
 Removed features:
 - FXML does not support HAX.
 
+Implementation differences:
+- Monolithic project (absorbs closure-common, cxml-stp).
+- Uses named-readtables.
+- Does not support SCL.
+- Does not support non-Unicode Lisps.
+
 # CXML compatibility
 
 You can make FXML and CXML interoperable by loading the system
