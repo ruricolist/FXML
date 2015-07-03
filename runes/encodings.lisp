@@ -125,7 +125,7 @@
 ;; into the `output' as possible and return the indexes to the first
 ;; not read and first not written element of `input' and `output'
 ;; respectively.  If there are not enough bytes in `input' to decode a
-;; full character, decoding shold be abandomed; the caller has to
+;; full character, decoding shold be abandoned; the caller has to
 ;; ensure that the remaining bytes of `input' are passed to the
 ;; decoder again with more bytes appended.
 ;;
@@ -144,6 +144,18 @@
 ;;
 ;;  defmethod DECODE-SEQUENCE ((encoding (eql :utf-8)) ...)
 ;;
+
+(defmacro decode-sequence* (&key encoding
+                                 in out
+                                 in-start in-end
+                                 out-start out-end
+                                 eof)
+  "Wrapper around `decode-sequence' with friendlier args."
+  `(decode-sequence ,encoding
+                    ,in ,in-start ,in-end
+                    ,out ,out-start ,out-end
+                    ,eof))
+
 
 (defmethod decode-sequence ((encoding (eql :utf-16-big-endian))
                             in in-start in-end out out-start out-end eof?)

@@ -260,50 +260,63 @@
 
 (defmethod xstream-underflow ((input xstream))
   (declare (type xstream input))
-  ;; we are about to fill new data into the buffer, so we need to
-  ;; adjust buffer-start.
-  (incf (xstream-buffer-start input)
-        (- (xstream-fill-ptr input) 0))
-  (let (n m)
+  (with-accessors ((buffer-start  xstream-buffer-start)
+                   (read-ptr      xstream-read-ptr)
+                   (fill-ptr      xstream-fill-ptr)
+                   (os-left-start xstream-os-left-start)
+                   (os-left-end   xstream-os-left-end)
+                   (os-buffer     xstream-os-buffer)
+                   (os-stream     xstream-os-stream)
+                   (speed         xstream-speed)
+                   (buffer        xstream-buffer)
+                   (encoding      xstream-encoding))
+      input
+    ;; we are about to fill new data into the buffer, so we need to
+    ;; adjust buffer-start.
+    (incf buffer-start (- fill-ptr 0))
     ;; when there is something left in the os-buffer, we move it to
     ;; the start of the buffer.
-    (setf m (- (xstream-os-left-end input) (xstream-os-left-start input)))
-    (unless (zerop m)
-      (replace (xstream-os-buffer input) (xstream-os-buffer input)
-               :start1 0 :end1 m
-               :start2 (xstream-os-left-start input)
-               :end2 (xstream-os-left-end input))
-      ;; then we take care that the buffer is large enough to carry at
-      ;; least 100 bytes (a random number)
-      ;;
-      ;; David: My understanding is that any number of octets large enough
-      ;; to record the longest UTF-8 sequence or UTF-16 sequence is okay,
-      ;; so 100 is plenty for this purpose.
-      (unless (>= (length (xstream-os-buffer input)) 
-		  +default-buffer-size+)
-        (error "You lost")))
-    (setf n
-      (read-octets (xstream-os-buffer input) (xstream-os-stream input)
-                   m (min (1- (length (xstream-os-buffer input)))
-                          (+ m (xstream-speed input)))))
-    (cond ((%= n 0)
-           (setf (xstream-read-ptr input) 0
-                 (xstream-fill-ptr input) n)
-           (setf (aref (xstream-buffer input) (xstream-fill-ptr input)) +end+)
-           :eof)
-          (t
-           (multiple-value-bind (fnw fnr) 
-               (fxml.runes-encoding:decode-sequence
-                (xstream-encoding input) 
-                (xstream-os-buffer input) 0 n
-                (xstream-buffer input) 0 (1- (length (xstream-buffer input)))
-                (= n m))
-             (setf (xstream-os-left-start input) fnr
-                   (xstream-os-left-end input) n
-                   (xstream-read-ptr input) 0
-                   (xstream-fill-ptr input) fnw)
-             (setf (aref (xstream-buffer input) (xstream-fill-ptr input)) +end+)
-             (read-rune input))))))
+    (let ((m (- os-left-end os-left-start)))
+      (unless (zerop m)
+        (replace os-buffer os-buffer
+                 :start1 0 :end1 m
+                 :start2 os-left-start
+                 :end2 os-left-end)
+        ;; then we take care that the buffer is large enough to carry at
+        ;; least 100 bytes (a random number)
+        ;;
+        ;; David: My understanding is that any number of octets large enough
+        ;; to record the longest UTF-8 sequence or UTF-16 sequence is okay,
+        ;; so 100 is plenty for this purpose.
+        (assert (>= (length os-buffer) +default-buffer-size+)))
+      (let ((n (read-octets os-buffer
+                            os-stream
+                            m
+                            (min (1- (length os-buffer))
+                                 (+ m speed)))))
+        (cond ((%= n 0)
+               (setf read-ptr 0
+                     fill-ptr n)
+               (setf (aref buffer fill-ptr) +end+)
+               :eof)
+              (t
+               ;; first-not-written, first-not-read
+               (multiple-value-bind (fnw fnr) 
+                   (fxml.runes-encoding:decode-sequence*
+                    :encoding encoding
+                    :in os-buffer
+                    :in-start 0
+                    :in-end n
+                    :out buffer
+                    :out-start 0
+                    :out-end (1- (length buffer))
+                    :eof (= n m))
+                 (setf os-left-start fnr
+                       os-left-end n
+                       read-ptr 0
+                       fill-ptr fnw
+                       (aref buffer fill-ptr) +end+)
+                 (read-rune input))))))))
 
 ;;; constructor
 

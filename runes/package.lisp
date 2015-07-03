@@ -90,4 +90,5 @@
   (:export
    #:encoding-error
    #:find-encoding
-   #:decode-sequence))
+   #:decode-sequence
+   #:decode-sequence*))
