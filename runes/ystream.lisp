@@ -21,19 +21,27 @@
               :fill-pointer 0))
 
 (defun find-output-encoding (name)
-  (when (stringp name)
-    (setf name (find-symbol (string-upcase name) :keyword)))
-  (case name
-    ((nil)
-     (warn "Unknown encoding ~A, falling back to UTF-8" name)
-     :utf-8)
-    ((:utf-8 :utf_8 :utf8)
-     :utf-8)
-    (t (handler-case
-           (babel-encodings:get-character-encoding name)
-         (error ()
-           (warn "Unknown encoding ~A, falling back to UTF-8" name)
-           :utf-8)))))
+  (etypecase name
+    (string
+     (or (case (length name)
+           (4 (and (string-equal name :utf8)
+                   :utf-8))
+           (5 (and (member name '(:utf-8 :utf_8) :test #'string-equal)
+                   :utf-8)))
+         (find-output-encoding
+          (find-symbol (string-upcase name) :keyword))))
+    (symbol
+     (case name
+       ((nil)
+        (warn "Unknown encoding ~A, falling back to UTF-8" name)
+        :utf-8)
+       ((:utf-8 :utf_8 :utf8)
+        :utf-8)
+       (t (handler-case
+              (babel-encodings:get-character-encoding name)
+            (error ()
+              (warn "Unknown encoding ~A, falling back to UTF-8" name)
+              :utf-8)))))))
 
 ;;; ystream
 ;;;  +- encoding-ystream
