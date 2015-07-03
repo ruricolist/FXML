@@ -1,8 +1,9 @@
 (in-package :fxml.runes-encoding)
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (defparameter +buffer-byte+
-    '(unsigned-byte 32)))
+(eval-when (:compile-toplevel :load-toplevel)
+  (alexandria:define-constant +buffer-byte+
+      '(unsigned-byte 32)
+    :test 'equal))
 
 (define-condition encoding-error (simple-error) ())
 
