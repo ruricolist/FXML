@@ -23,18 +23,17 @@
 (defun find-output-encoding (name)
   (when (stringp name)
     (setf name (find-symbol (string-upcase name) :keyword)))
-  (cond
-    ((null name)
+  (case name
+    ((nil)
      (warn "Unknown encoding ~A, falling back to UTF-8" name)
      :utf-8)
-    ((find name '(:utf-8 :utf_8 :utf8))
+    ((:utf-8 :utf_8 :utf8)
      :utf-8)
-    (t
-     (handler-case
-	 (babel-encodings:get-character-encoding name)
-       (error ()
-	 (warn "Unknown encoding ~A, falling back to UTF-8" name)
-	 :utf-8)))))
+    (t (handler-case
+           (babel-encodings:get-character-encoding name)
+         (error ()
+           (warn "Unknown encoding ~A, falling back to UTF-8" name)
+           :utf-8)))))
 
 ;;; ystream
 ;;;  +- encoding-ystream
