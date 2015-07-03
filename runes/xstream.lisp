@@ -132,7 +132,7 @@
   (full-speed    0 :type buffer-index)
   
   ;; Some stream object obeying to a certain protcol
-  os-stream
+  (os-stream (error "No stream"))
 
   ;; The external format 
   ;; (some object offering the ENCODING protocol)
@@ -142,9 +142,10 @@
   (name nil)
 
   ;; Stream Position
-  (line-number 1 :type integer)         ;current line number
-  (line-start  0 :type integer)         ;stream position the current line starts at
-  (buffer-start 0 :type integer)        ;stream position the current buffer starts at
+  ;; TODO Can these be tightened to fixnums? Especially with 64 bits.
+  (line-number  1 :type (integer 1 *))  ;current line number
+  (line-start   0 :type (integer 0 *)) ;stream position the current line starts at
+  (buffer-start 0 :type (integer 0 *)) ;stream position the current buffer starts at
   
   ;; There is no need to maintain a column counter for each character
   ;; read, since we can easily compute it from `line-start' and
