@@ -43,7 +43,8 @@
 ;; handler in case of stream underflows. This will yield to quite a
 ;; performance boost vs calling READ-BYTE per character.
 
-;; Also we need to do encoding t conversion on ; this better done at large chunks of data rather than on a character
+;; Also we need to do encoding and character set conversion on input,
+;; this better done at large chunks of data rather than on a character
 ;; by character basis. This way we need a dispatch on the active
 ;; encoding only once in a while, instead of for each character. This
 ;; allows us to use a CLOS interface to do the underflow handling.
