@@ -10,6 +10,7 @@
 
 (defpackage :fxml.runes
   (:use :cl :named-readtables)
+  (:import-from #:alexandria #:array-index)
   (:export #:definline
 
            ;; runes.lisp
