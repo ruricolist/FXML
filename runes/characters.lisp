@@ -141,7 +141,7 @@
 
 (definline rod-subseq (source start &optional (end (length source)))
   (unless (stringp source)
-    (error "~S is not of type ~S." source 'rod))
+    (error 'type-error :datum source :expected-type 'rod))
   (subseq source start end))
 
 (definline rod-subseq* (source start &optional (end (length source)))
