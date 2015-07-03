@@ -1296,8 +1296,8 @@
                  (t
                   (read-token-3 input)))))))
 
-(defvar *data-behaviour*
-    )           ;either :DTD or :DOC
+(defvar *data-behaviour*)
+(declaim (type (member :dtd :doc) *data-behaviour*))
 
 (defun read-token-3 (zinput)
   (let ((input (car (zstream-input-stack zinput))))
