@@ -20,9 +20,6 @@
               :adjustable t
               :fill-pointer 0))
 
-(defmacro while (test &body body)
-  `(loop while ,test do ,@body))
-
 (defun find-output-encoding (name)
   (when (stringp name)
     (setf name (find-symbol (string-upcase name) :keyword)))
@@ -257,7 +254,7 @@
   (let* ((result (ystream-result ystream))
 	 (start (length result))
 	 (size (array-dimension result 0)))
-    (while (> (+ start nbytes) size)
+    (loop while (> (+ start nbytes) size) do
       (setf size (* 2 size)))
     (adjust-array result size :fill-pointer (+ start nbytes))
     (replace result buf :start1 start :end2 nbytes)))
