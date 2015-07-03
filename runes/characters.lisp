@@ -87,14 +87,14 @@
   (digit-char-p char radix))
 
 (defun rod (x)
-  (cond
-    ((typep x 'rod) x)
-    ((stringp x)    (coerce x 'rod))
-    ((symbolp x)    (string x))
-    ((characterp x) (string x))
-    ((vectorp x)    (coerce x 'string))
-    ((integerp x)   (string (code-char x)))
-    (t              (error "Cannot convert ~S to a ~S" x 'rod))))
+  (typecase x
+    (rod       x)
+    (string    (coerce x 'rod))
+    (symbol    (string x))
+    (character (string x))
+    (vector    (coerce x 'string))
+    (integer   (string (code-char x)))
+    (t         (error "Cannot convert ~S to a ~S" x 'rod))))
 
 (definline runep (x)
   (characterp x))
