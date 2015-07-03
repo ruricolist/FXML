@@ -31,7 +31,7 @@
 (definline rune (rod index)
   (char rod index))
 
-(defun (setf rune) (new rod index)
+(definline (setf rune) (new rod index)
   (setf (char rod index) new))
 
 ;;; TODO simple-string or simple-rod?
@@ -42,7 +42,7 @@
 (definline (setf %rune) (new rod index)
   (setf (aref (the simple-string rod) (the fixnum index)) new))
 
-(defun rod-capitalize (rod)
+(definline rod-capitalize (rod)
   (string-upcase rod))
 
 (definline code-rune (x) (code-char x))
@@ -51,25 +51,25 @@
 (definline rune= (x y) 
   (char= x y))
 
-(defun rune-downcase (rune)
+(definline rune-downcase (rune)
   (char-downcase rune))
 
 (definline rune-upcase (rune)
   (char-upcase rune))
 
-(defun rune-upper-case-letter-p (rune)
+(definline rune-upper-case-letter-p (rune)
   (upper-case-p rune))
 
-(defun rune-lower-case-letter-p (rune)
+(definline rune-lower-case-letter-p (rune)
   (lower-case-p rune))
 
-(defun rune-equal (x y)
+(definline rune-equal (x y)
   (char-equal x y))
 
-(defun rod-downcase (rod)
+(definline rod-downcase (rod)
   (string-downcase rod))
 
-(defun rod-upcase (rod)
+(definline rod-upcase (rod)
   (string-upcase rod))
 
 (definline white-space-rune-p (char)
@@ -91,32 +91,30 @@
     ((integerp x)   (string (code-char x)))
     (t              (error "Cannot convert ~S to a ~S" x 'rod))))
 
-(defun runep (x)
+(definline runep (x)
   (characterp x))
 
-(defun rod= (x y)
-  (if (zerop (length x))
-      (zerop (length y))
-      (and (plusp (length y)) (string= x y))))
+(definline rod= (x y)
+  (string= x y))
 
-(defun rod-equal (x y)
+(definline rod-equal (x y)
   (string-equal x y))
 
 (definline make-rod (size)
   (make-string size :element-type 'rune))
 
-(defun char-rune (char)
+(definline char-rune (char)
   char)
 
-(defun rune-char (rune &optional default)
+(definline rune-char (rune &optional default)
   (declare (ignore default))
   rune)
 
-(defun rod-string (rod &optional (default-char #\?))
+(definline rod-string (rod &optional (default-char #\?))
   (declare (ignore default-char))
   rod)
 
-(defun string-rod (string)
+(definline string-rod (string)
   string)
 
 ;;;;
@@ -133,16 +131,16 @@
       while b
       always (char>= a b)))
 
-(defun rodp (object)
+(definline rodp (object)
   (stringp object))
 
-(defun rod-subseq (source start &optional (end (length source)))
+(definline rod-subseq (source start &optional (end (length source)))
   (unless (stringp source)
     (error "~S is not of type ~S." source 'rod))
   (subseq source start end))
 
-(defun rod-subseq* (source start &optional (end (length source)))
+(definline rod-subseq* (source start &optional (end (length source)))
   (rod-subseq source start end))
 
-(defun rod< (rod1 rod2)
+(definline rod< (rod1 rod2)
   (string< rod1 rod2))
