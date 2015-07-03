@@ -125,16 +125,16 @@
 ;;;;
 
 (defun rune<= (rune &rest more-runes)
-  (loop
-      for (a b) on (cons rune more-runes)
-      while b
-      always (char<= a b)))
+  (every #'char<= (cons rune more-runes)))
+
+(define-compiler-macro rune<= (rune &rest more-runes)
+  `(char<= ,rune ,@more-runes))
 
 (defun rune>= (rune &rest more-runes)
-  (loop
-      for (a b) on (cons rune more-runes)
-      while b
-      always (char>= a b)))
+  (every #'char>= (cons rune more-runes)))
+
+(define-compiler-macro rune>= (rune &rest more-runes)
+  `(char>= ,rune ,@more-runes))
 
 (definline rodp (object)
   (stringp object))
