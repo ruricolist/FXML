@@ -31,7 +31,6 @@
            #:rune>=
            #:rune-equal
            #:runep
-           #:sloopy-rod-p
            #:rod=
            #:rod-equal
            #:make-rod

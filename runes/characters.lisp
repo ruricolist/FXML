@@ -92,9 +92,6 @@
 (defun runep (x)
   (characterp x))
 
-(defun sloopy-rod-p (x)
-  (stringp x))
-
 (defun rod= (x y)
   (if (zerop (length x))
       (zerop (length y))
