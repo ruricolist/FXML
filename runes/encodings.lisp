@@ -2,8 +2,7 @@
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defparameter +buffer-byte+
-    #+rune-is-utf-16 '(unsigned-byte 16)
-    #-rune-is-utf-16 '(unsigned-byte 32)))
+    '(unsigned-byte 32)))
 
 (define-condition encoding-error (simple-error) ())
 
@@ -171,7 +170,6 @@
 		 (y (logior (ash hi2 8) lo2)))
 	    (unless (<= #xDC00 x #xDFFF)
 	      (xerror "expected a high surrogate but found: #x~X" x))
-	    #-rune-is-utf-16
 	    (progn
 	      (setf x (logior (ash (%- x #xd7c0) 10) (%and y #x3FF)))
 	      (setf rptr (%+ 2 rptr))))
@@ -208,7 +206,6 @@
 		 (y (logior (ash hi2 8) lo2)))
 	    (unless (<= #xDC00 x #xDFFF)
 	      (xerror "expected a high surrogate but found: #x~X" x))
-	    #-rune-is-utf-16
 	    (progn
 	      (setf x (logior (ash (%- x #xd7c0) 10) (%and y #x3FF)))
 	      (setf rptr (%+ 2 rptr))))
@@ -238,7 +235,6 @@
 				(eql x #xFFFE)
 				(eql x #xFFFF))
                             (xerror "not a valid code point: #x~X" x))
-			   #+rune-is-utf-16
 		           ((%> x #xFFFF)
                             (setf (aref out (%+ 0 wptr)) (%+ #xD7C0 (ash x -10))
                                   (aref out (%+ 1 wptr)) (%ior #xDC00 (%and x #x3FF)))

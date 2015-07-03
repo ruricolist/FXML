@@ -84,10 +84,7 @@
   `(unsigned-byte ,(integer-length array-total-size-limit)))
 
 (deftype buffer-byte ()
-  #+rune-is-utf-16
-  `(unsigned-byte 16)
-  #-rune-is-utf-16
-  `(unsigned-byte 32))
+  '(unsigned-byte 32))
 
 (deftype octet ()
   `(unsigned-byte 8))
