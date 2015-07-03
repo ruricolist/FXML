@@ -403,16 +403,6 @@
    #-CLISP read-sequence
            sequence stream :start start :end end))
 
-#+cmu
-(defmethod read-octets :around (sequence (stream stream) start end)
-  ;; CMUCL <= 19a on non-SunOS accidentally triggers EFAULT in read(2)
-  ;; if SEQUENCE has been write protected by GC.  Workaround: Touch all pages
-  ;; in SEQUENCE and make sure no GC happens between that and the read(2).
-  (ext::without-gcing
-   (loop for i from start below end
-         do (setf (elt sequence i) (elt sequence i)))
-   (call-next-method)))
-
 (defmethod read-octets (sequence (stream null) start end)
   (declare (ignore sequence start end))
   0)
