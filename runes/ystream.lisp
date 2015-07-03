@@ -55,8 +55,8 @@
 
 (defstruct ystream
   (encoding)
-  (column 0 :type integer)
-  (in-ptr 0 :type fixnum)
+  (column 0 :type (integer 0 *))
+  (in-ptr 0 :type (integer 0 #.most-positive-fixnum))
   (in-buffer (make-rod +ystream-bufsize+) :type simple-rod))
 
 (defun ystream-unicode-p (ystream)
@@ -73,7 +73,7 @@
 (defstruct (%stream-ystream
 	     (:include encoding-ystream)
 	     (:conc-name "YSTREAM-"))
-  (os-stream nil))
+  (os-stream (error "No stream")))
 
 ;; writes a rune to the buffer.  If the rune is not encodable, an error
 ;; might be signalled later during flush-ystream.
@@ -238,7 +238,7 @@
             (:constructor make-character-stream-ystream (target-stream))
             (:include ystream)
             (:conc-name "YSTREAM-"))
-  (target-stream nil))
+  (target-stream (error "No target stream")))
 
 (defmethod flush-ystream ((ystream character-stream-ystream))
   (write-string (ystream-in-buffer ystream)
