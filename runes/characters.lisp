@@ -34,6 +34,8 @@
 (defun (setf rune) (new rod index)
   (setf (char rod index) new))
 
+;;; TODO simple-string or simple-rod?
+
 (definline %rune (rod index)
   (aref (the simple-string rod) (the fixnum index)))
 
