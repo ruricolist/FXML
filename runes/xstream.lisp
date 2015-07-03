@@ -140,10 +140,7 @@
 
   ;;A STREAM-NAME object
   (name nil)
-  
-  ;; a plist a struct keeps the hack away
-  (plist nil)
-  
+
   ;; Stream Position
   (line-number 1 :type integer)         ;current line number
   (line-start  0 :type integer)         ;stream position the current line starts at

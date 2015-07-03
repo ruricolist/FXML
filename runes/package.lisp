@@ -56,7 +56,6 @@
            #:xstream-position
            #:xstream-line-number
            #:xstream-column-number
-           #:xstream-plist
            #:xstream-encoding
            #:set-to-full-speed
            #:xstream-name
