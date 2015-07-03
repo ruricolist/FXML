@@ -145,7 +145,7 @@
        (error "Meaningless rune name ~S." name)))))
 
 (defun rune-reader (stream subchar arg)
-  subchar arg
+  (declare (ignore subchar arg))
   (values (rune-from-read-name (read-rune-name stream))))
 
 ;;; ROD ext syntax
