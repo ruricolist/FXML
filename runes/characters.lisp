@@ -73,10 +73,15 @@
   (string-upcase rod))
 
 (definline white-space-rune-p (char)
-  (or (char= char #\tab)
-      (char= char #.(code-char 10))     ;Linefeed
-      (char= char #.(code-char 13))     ;Carriage Return
-      (char= char #\space)))
+  ;; tab, linefeed, carriage return, space
+  (declare (optimize (speed 3) (debug 0) (safety 0)))
+  (case (char-code char)
+    ((#.(char-code #\Tab)
+      10                                ;Linefeed
+      13                                ;Carriage return
+      #.(char-code #\Space))
+     t)
+    (otherwise nil)))
 
 (definline digit-rune-p (char &optional (radix 10))
   (digit-char-p char radix))
