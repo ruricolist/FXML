@@ -398,6 +398,7 @@
 ;;; controller implementations
 
 (defmethod read-octets (sequence (stream stream) start end)
+  (declare (type (simple-array octet (*)) sequence))
   (#+CLISP ext:read-byte-sequence
    #-CLISP read-sequence
            sequence stream :start start :end end))
