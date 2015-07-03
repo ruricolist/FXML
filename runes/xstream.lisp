@@ -351,23 +351,19 @@
 (defun make-rod-xstream (string &key name)
   (unless (typep string 'simple-array)
     (setf string (coerce string 'simple-string)))
-  (let ((n (length string)))
-    (let ((buffer (make-array (1+ n) :element-type 'buffer-byte)))
-      (declare (type (simple-array buffer-byte (*)) buffer))
-      ;; copy the rod
-      (do ((i (1- n) (- i 1)))
-          ((< i 0))
-        (declare (type fixnum i))
-        (setf (aref buffer i) (rune-code (%rune string i))))
-      (setf (aref buffer n) +end+)
-      ;;
-      (make-xstream/low :buffer buffer
-                        :read-ptr 0
-                        :fill-ptr n
-                        ;; :os-buffer nil
-                        :speed 1
-                        :os-stream nil
-                        :name name))))
+  (let* ((n (length string))
+         (buffer (make-array (1+ n) :element-type 'buffer-byte)))
+    (declare (type (simple-array buffer-byte (*)) buffer))
+    ;; copy the rod
+    (loop for i of-type fixnum from (1- n) downto 0
+          do (setf (aref buffer i) (rune-code (%rune string i))))
+    (setf (aref buffer n) +end+)
+    (make-xstream/low :buffer buffer
+                      :read-ptr 0
+                      :fill-ptr n
+                      :speed 1
+                      :os-stream nil
+                      :name name)))
 
 (defmethod figure-encoding ((stream null))
   (values :utf-8 nil))
