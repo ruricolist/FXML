@@ -75,17 +75,24 @@
 	     (:conc-name "YSTREAM-"))
   (os-stream (error "No stream")))
 
+(definline rune-newline-p (rune)
+  (eql rune #/U+000A))
+
 ;; writes a rune to the buffer.  If the rune is not encodable, an error
 ;; might be signalled later during flush-ystream.
 (definline ystream-write-rune (rune ystream)
-  (let ((in (ystream-in-buffer ystream)))
-    (when (eql (ystream-in-ptr ystream) (length in))
-      (flush-ystream ystream)
-      (setf in (ystream-in-buffer ystream)))
-    (setf (elt in (ystream-in-ptr ystream)) rune)
-    (incf (ystream-in-ptr ystream))
-    (setf (ystream-column ystream)
-	  (if (eql rune #/U+000A) 0 (1+ (ystream-column ystream))))
+  (with-accessors ((in     ystream-in-buffer)
+                   (in-ptr ystream-in-ptr)
+                   (column ystream-column))
+      ystream
+    (when (eql in-ptr (length in))
+      (flush-ystream ystream))
+    (setf (elt in in-ptr) rune)
+    (incf in-ptr)
+    (setf column
+          (if (rune-newline-p rune)
+              0
+              (1+ column)))
     rune))
 
 (defmacro with-character-as-temp-string ((string char) &body body)
