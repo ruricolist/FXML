@@ -156,6 +156,8 @@
                     ,out ,out-start ,out-end
                     ,eof))
 
+;;; TODO It should be possible to generate some of this code, or use
+;;; some kind of pattern matching.
 
 (defmethod decode-sequence ((encoding (eql :utf-16-big-endian))
                             in in-start in-end out out-start out-end eof?)
