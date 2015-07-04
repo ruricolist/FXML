@@ -88,6 +88,13 @@
 	  (if (eql rune #/U+000A) 0 (1+ (ystream-column ystream))))
     rune))
 
+(defmacro with-character-as-temp-string ((string char) &body body)
+  (alexandria:once-only (char)
+    `(let ((,string (make-string 1)))
+       (declare (dynamic-extent ,string))
+       (setf (schar ,string 0) ,char)
+       ,@body)))
+
 ;; Writes a rod to the buffer.  If a rune in the rod not encodable, an error
 ;; might be signalled later during flush-ystream.
 (defun ystream-write-rod (rod ystream)
@@ -100,8 +107,7 @@
   ;;
   ;; OPTIMIZE ME
   ;;
-  (let ((tmp (make-rod 1)))
-    (setf (elt tmp 0) rune)
+  (with-character-as-temp-string (tmp rune)
     (ystream-write-escapable-rod tmp ystream)))
 
 ;; Writes a rod to the buffer.  If a rune in the rod not encodable, it is
@@ -119,14 +125,18 @@
 	 do
 	   (if (encodablep rune encoding)
 	       (ystream-write-rune rune ystream)
-	       (let ((cr (string-rod (format nil "&#~D;" (rune-code rune)))))
-		 (ystream-write-rod cr ystream))))))
+               (ystream-escape-rune rune ystream)))))
+
+(defun ystream-escape-rune (rune ystream)
+  (let ((cr (string-rod (format nil "&#~D;" (rune-code rune)))))
+    (ystream-write-rod cr ystream)))
 
 (defun encodablep (character encoding)
-  (handler-case
-      (babel:string-to-octets (string character) :encoding encoding)
-    (babel-encodings:character-encoding-error ()
-      nil)))
+  (with-character-as-temp-string (s character)
+    (handler-case
+        (babel:string-size-in-octets s :encoding encoding)
+      (babel-encodings:character-encoding-error ()
+        nil))))
 
 (defmethod close-ystream :before ((ystream ystream))
   (flush-ystream ystream))
@@ -146,6 +156,7 @@
     (t
      ;; by lucky coincidence, babel::unicode-string is the same as simple-rod
      #+nil (coerce string 'babel::unicode-string)
+     ;; XXX
      (let* ((babel::*suppress-character-coding-errors* nil)
 	    (mapping (babel::lookup-mapping babel::*string-vector-mappings*
 					    encoding)))
