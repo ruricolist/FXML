@@ -124,14 +124,12 @@
                       (cond ((equal name "lang")
                              (fxml:attribute* "xml" "lang" value))
                             ((and base (equal name "href"))
-                             (ignoring error ;Unfortunately PURI does
-                                             ;not name all its errors.
+                             (ignoring quri:uri-error
                                (let ((value
                                        (~> value
-                                           puri:parse-uri
-                                           (puri:merge-uris base)
-                                           (write-to-string :pretty nil
-                                                            :escape nil)
+                                           quri:uri
+                                           (quri:merge-uris base)
+                                           (quri:render-uri)
                                            (escape-text t))))
                                  (fxml:attribute name value))))
                             ((string^= "xmlns" name))
@@ -148,8 +146,8 @@
           (string-case name
             ("base"
              (when-let (href (nth-value 2 (find-attribute node "href")))
-               (ignoring puri:uri-parse-error
-                 (setf *base* (puri:parse-uri href)))))
+               (ignoring quri:uri-error
+                 (setf *base* (quri:uri href)))))
             ("math" (fxml:with-namespace ("" mathml-ns)
                       (fxml:with-namespace ("xlink" xlink-ns)
                         (serialize))))

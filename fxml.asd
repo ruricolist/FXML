@@ -121,7 +121,7 @@
                #:fxml
                #:fxml/stp
                #:cl-html5-parser
-               #:puri)
+               #:quri)
   :components ((:file "package")
                (:file "html5-sax")
                (:file "sink")
