@@ -75,6 +75,36 @@
 	     (:conc-name "YSTREAM-"))
   (os-stream (error "No stream")))
 
+(defun map-splits (fn split-fn string &key start end)
+  (let ((start (or start 0))
+        (end (or end (length string))))
+    (loop with len = (length string)
+          for left = start then (1+ right)
+          for right = (min (or (position-if split-fn string
+                                            :start left)
+                               len)
+                           end)
+          do (let ((char (if (= right end)
+                             nil
+                             (aref string right))))
+               (funcall fn left right char))
+          until (>= right end))))
+
+(defmacro do-splits (((l r char)
+                      (string &optional (start 0) end)
+                      split-fn
+                      &optional return)
+                     &body body)
+  `(block nil
+     (map-splits (lambda (,l ,r ,char)
+                   (tagbody ,@body))
+                 ,split-fn
+                 ,string
+                 :start ,start :end ,end)
+     (let (,l ,r ,char)
+       (declare (ignorable ,l ,r ,char))
+       (return ,return))))
+
 (definline rune-newline-p (rune)
   (eql rune #/U+000A))
 
@@ -95,7 +125,13 @@
               (1+ column)))
     rune))
 
+(defun ystream-room (ystream)
+  (- (length (ystream-in-buffer ystream))
+     (ystream-in-ptr ystream)))
+
 (defmacro with-character-as-temp-string ((string char) &body body)
+  "Bind STRING to a stack-allocated string whose sole character is
+CHAR."
   (alexandria:once-only (char)
     `(let ((,string (make-string 1)))
        (declare (dynamic-extent ,string))
@@ -104,35 +140,43 @@
 
 ;; Writes a rod to the buffer.  If a rune in the rod not encodable, an error
 ;; might be signalled later during flush-ystream.
-(defun ystream-write-rod (rod ystream)
-  ;;
-  ;; OPTIMIZE ME
-  ;;
-  (loop for rune across rod do (ystream-write-rune rune ystream)))
+(defun ystream-write-rod (rod ystream &key (start 0) (end (length rod)))
+  (with-accessors ((in     ystream-in-buffer)
+                   (in-ptr ystream-in-ptr)
+                   (column ystream-column))
+      ystream
+    (do-splits ((l r nl?) (rod start end) #'rune-newline-p)
+      (when (= in-ptr (length in))
+        (flush-ystream ystream))
+      (let* ((room (- (length in) in-ptr))
+             (size (- r l))
+             (allowed-size (min room size)))
+        (replace in rod :start1 in-ptr :start2 l :end2 (+ l allowed-size))
+        (incf in-ptr allowed-size)
+        (incf column allowed-size)
+        (when (< allowed-size size)
+          (ystream-write-rod rod ystream :start (+ l room) :end r)))
+      (when nl?
+        (setf column 0)))))
 
 (defun ystream-write-escapable-rune (rune ystream)
-  ;;
-  ;; OPTIMIZE ME
-  ;;
   (with-character-as-temp-string (tmp rune)
     (ystream-write-escapable-rod tmp ystream)))
 
 ;; Writes a rod to the buffer.  If a rune in the rod not encodable, it is
 ;; replaced by a character reference.
 ;;
-(defun ystream-write-escapable-rod (rod ystream)
-  ;;
-  ;; TODO OPTIMIZE ME
-  ;;
+(defun ystream-write-escapable-rod (rod ystream &key (start 0) (end (length rod)))
   (if (ystream-unicode-p ystream)
       (ystream-write-rod rod ystream)
-      (loop
-	 with encoding = (ystream-encoding ystream)
-	 for rune across rod
-	 do
-	   (if (encodablep rune encoding)
-	       (ystream-write-rune rune ystream)
-               (ystream-escape-rune rune ystream)))))
+      (let ((encoding (ystream-encoding ystream)))
+        (flet ((encodablep (rune)
+                 (encodablep rune encoding)))
+          (do-splits ((l r rune) (rod start end) #'encodablep)
+            (unless (= l r)
+              (ystream-write-rod rod ystream :start l :end r))
+            (when rune
+              (ystream-escape-rune rune ystream)))))))
 
 (defun ystream-escape-rune (rune ystream)
   (let ((cr (string-rod (format nil "&#~D;" (rune-code rune)))))

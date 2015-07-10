@@ -79,7 +79,8 @@
 
 	   #:rod-to-utf8-string
 	   #:utf8-string-to-rod
-	   #:make-octet-input-stream))
+	   #:make-octet-input-stream
+           #:do-splits))
 
 (defpackage :fxml.utf8-runes
   (:use :cl :named-readtables)

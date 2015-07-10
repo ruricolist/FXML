@@ -37,10 +37,10 @@
 ;;; TODO simple-string or simple-rod?
 
 (definline %rune (rod index)
-  (aref (the simple-string rod) (the array-index index)))
+  (schar (the simple-string rod) (the array-index index)))
 
 (definline (setf %rune) (new rod index)
-  (setf (aref (the simple-string rod) (the array-index index)) new))
+  (setf (schar (the simple-string rod) (the array-index index)) new))
 
 (definline rod-capitalize (rod)
   (string-upcase rod))

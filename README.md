@@ -46,6 +46,7 @@ Implementation differences:
 - Uses named-readtables.
 - Does not support SCL.
 - Does not support non-Unicode Lisps.
+- Building XML documents (“unparsing”) is much faster.
 
 # CXML compatibility
 

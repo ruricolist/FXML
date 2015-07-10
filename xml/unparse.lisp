@@ -616,85 +616,77 @@
               (setf need-whitespace-p (< w n))
               (setf pos next))))
         (t
-          (sink-write-rune #/U+0020 sink))))))
+         (sink-write-rune #/U+0020 sink))))))
+
+(defun sink-write-escapable-aux (rod sink start end escape-fn)
+  (check-type escape-fn function)
+  (let ((y (sink-ystream sink))
+        esc)
+    (flet ((needs-escape? (c)
+             (alexandria:when-let (e (funcall escape-fn c))
+               (setq esc e))))
+      (fxml.runes:do-splits ((l r rune) (rod start end) #'needs-escape?)
+        (unless (= l r)
+          (ystream-write-escapable-rod rod y :start l :end r))
+        (when rune
+          (ystream-write-escapable-rod esc y))))))
 
 (defun sink-write-escapable-rod (rod sink &key (start 0) (end (length rod)))
-  ;;
-  ;; OPTIMIZE ME
-  ;;
-  (let ((y (sink-ystream sink)))
-    (loop
-       for i from start below end
-       for c = (rune rod i)
-       do
-         (case c
-           (#/& (ystream-write-escapable-rod #.(string-rod "&amp;") y))
-           (#/< (ystream-write-escapable-rod #.(string-rod "&lt;") y))
-           ;; there's no need to escape > per se, but we're supposed to
-           ;; escape -->, which is harder to check for
-           (#/> (ystream-write-escapable-rod #.(string-rod "&gt;") y))
-           (#/U+000D (ystream-write-escapable-rod #.(string-rod "&#13;") y))
-           (t (ystream-write-escapable-rune c y))))))
+  (sink-write-escapable-aux
+   rod sink start end
+   (lambda (c)
+     (case c
+       (#/& #.(string-rod "&amp;"))
+       (#/< #.(string-rod "&lt;"))
+       ;; there's no need to escape > per se, but we're supposed to
+       ;; escape -->, which is harder to check for
+       (#/> #.(string-rod "&gt;"))
+       (#/U+000D #.(string-rod "&#13;"))))))
 
 (defun sink-write-escapable-rod/attribute
     (rod sink &key (start 0) (end (length rod)))
-  ;;
-  ;; OPTIMIZE ME
-  ;;
-  (let ((y (sink-ystream sink)))
-    (loop
-       for i from start below end
-       for c = (rune rod i)
-       do
-         (case c
-           (#/& (ystream-write-escapable-rod #.(string-rod "&amp;") y))
-           (#/< (ystream-write-escapable-rod #.(string-rod "&lt;") y))
-           ;; there's no need to escape > per se, but we're supposed to
-           ;; escape -->, which is harder to check for
-           (#/> (ystream-write-escapable-rod #.(string-rod "&gt;") y))
-           (#/\" (ystream-write-escapable-rod #.(string-rod "&quot;") y))
-           (#/U+0009 (ystream-write-escapable-rod #.(string-rod "&#9;") y))
-           (#/U+000A (ystream-write-escapable-rod #.(string-rod "&#10;") y))
-           (#/U+000D (ystream-write-escapable-rod #.(string-rod "&#13;") y))
-           (t (ystream-write-escapable-rune c y))))))
+  (sink-write-escapable-aux
+   rod sink start end
+   (lambda (c) 
+     (case c
+       (#/& #.(string-rod "&amp;"))
+       (#/< #.(string-rod "&lt;"))
+       ;; there's no need to escape > per se, but we're supposed to
+       ;; escape -->, which is harder to check for
+       (#/> #.(string-rod "&gt;"))
+       (#/\" #.(string-rod "&quot;"))
+       (#/U+0009 #.(string-rod "&#9;"))
+       (#/U+000A #.(string-rod "&#10;"))
+       (#/U+000D #.(string-rod "&#13;"))))))
 
 (defun sink-write-escapable-rod/canonical
     (rod sink &key (start 0) (end (length rod)))
-  ;;
-  ;; OPTIMIZE ME
-  ;;
-  (let ((y (sink-ystream sink)))
-    (loop
-       for i from start below end
-       for c = (rune rod i)
-       do
-         (case c
-           (#/& (ystream-write-escapable-rod #.(string-rod "&amp;") y))
-           (#/< (ystream-write-escapable-rod #.(string-rod "&lt;") y))
-           (#/> (ystream-write-escapable-rod #.(string-rod "&gt;") y))
-           (#/\" (ystream-write-escapable-rod #.(string-rod "&quot;") y))
-           (#/U+0009 (ystream-write-escapable-rod #.(string-rod "&#9;") y))
-           (#/U+000A (ystream-write-escapable-rod #.(string-rod "&#10;") y))
-           (#/U+000D (ystream-write-escapable-rod #.(string-rod "&#13;") y))
-           (t (ystream-write-escapable-rune c y))))))
+  (sink-write-escapable-aux
+   rod sink start end
+   (lambda (c)
+     (case c
+       (#/& #.(string-rod "&amp;"))
+       (#/< #.(string-rod "&lt;"))
+       (#/> #.(string-rod "&gt;"))
+       (#/\" #.(string-rod "&quot;"))
+       (#/U+0009 #.(string-rod "&#9;"))
+       (#/U+000A #.(string-rod "&#10;"))
+       (#/U+000D #.(string-rod "&#13;"))))))
 
 (defun sink-write-escapable-rod/dtd
     (rod sink &key (start 0) (end (length rod)))
-  (let ((y (sink-ystream sink)))
-    (loop
-       for i from start below end
-       for c = (rune rod i)
-       do
-         (case c
-           (#/% (ystream-write-escapable-rod #.(string-rod "&#37;") y))
-           (#/& (ystream-write-escapable-rod #.(string-rod "&amp;") y))
-           (#/< (ystream-write-escapable-rod #.(string-rod "&lt;") y))
-           (#/> (ystream-write-escapable-rod #.(string-rod "&gt;") y))
-           (#/\" (ystream-write-escapable-rod #.(string-rod "&quot;") y))
-           (#/U+0009 (ystream-write-escapable-rod #.(string-rod "&#9;") y))
-           (#/U+000A (ystream-write-escapable-rod #.(string-rod "&#10;") y))
-           (#/U+000D (ystream-write-escapable-rod #.(string-rod "&#13;") y))
-           (t (ystream-write-escapable-rune c y))))))
+  (sink-write-escapable-aux
+   rod sink start end
+   (lambda (c)
+     (case c
+       (#/% #.(string-rod "&#37;"))
+       (#/& #.(string-rod "&amp;"))
+       (#/< #.(string-rod "&lt;"))
+       (#/> #.(string-rod "&gt;"))
+       (#/\" #.(string-rod "&quot;"))
+       (#/U+0009 #.(string-rod "&#9;"))
+       (#/U+000A #.(string-rod "&#10;"))
+       (#/U+000D #.(string-rod "&#13;"))))))
 
 (defun sink-write-rune (c sink)
   (ystream-write-rune c (sink-ystream sink)))
