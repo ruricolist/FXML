@@ -3121,7 +3121,6 @@
 ;;;; ---------------------------------------------------------------------------
 ;;;; User interface ;;;;
 
-#-fxml-system::uri-is-namestring
 (defun specific-or (component &optional (alternative nil))
   (if (eq component :unspecific)
       alternative
@@ -3132,7 +3131,6 @@
       alternative
       str))
 
-#-fxml-system::uri-is-namestring
 (defun make-uri (&rest initargs &key path query &allow-other-keys)
   (apply #'make-instance
          'puri:uri
@@ -3140,11 +3138,9 @@
          :query (and query (escape-query query))
          initargs))
 
-#-fxml-system::uri-is-namestring
 (defun escape-path (list)
   (puri::render-parsed-path list t))
 
-#-fxml-system::uri-is-namestring
 (defun escape-query (pairs)
   (flet ((escape (str)
            (puri::encode-escaped-encoding str puri::*reserved-characters* t)))
@@ -3158,7 +3154,6 @@
           (write-char #\= s)
           (write-string (escape (cdr pair)) s))))))
 
-#-fxml-system::uri-is-namestring
 (defun uri-parsed-query (uri)
   (flet ((unescape (str)
            (puri::decode-escaped-encoding str t puri::*reserved-characters*)))
@@ -3174,11 +3169,9 @@
         (t
           nil)))))
 
-#-fxml-system::uri-is-namestring
 (defun query-value (name alist)
   (cdr (assoc name alist :test #'equal)))
 
-#-fxml-system::uri-is-namestring
 (defun pathname-to-uri (pathname)
   (let ((path
          ;; FIXME: should we really leave ".." in base URIs?
@@ -3202,11 +3195,6 @@
                           (specific-or (pathname-device pathname)))
                   :path path))))
 
-#+fxml-system::uri-is-namestring
-(defun pathname-to-uri (pathname)
-  (puri:parse-uri (namestring pathname)))
-
-#-fxml-system::uri-is-namestring
 (defun parse-name.type (str)
   (if str
       (let ((i (position #\. str :from-end t)))
@@ -3215,7 +3203,6 @@
             (values str nil)))
       (values nil nil)))
 
-#-fxml-system::uri-is-namestring
 (defun uri-to-pathname (uri)
   (let ((scheme (puri:uri-scheme uri))
         (path (loop for e in (puri:uri-parsed-path uri)
@@ -3242,12 +3229,6 @@
                            :directory (cons :absolute (butlast (cdr path)))
                            :name name
                            :type type))))))
-#+fxml-system::uri-is-namestring
-(defun uri-to-pathname (uri)
-  (let ((pathname (puri:render-uri uri nil)))
-    (when (equalp (pathname-host pathname) "+")
-      (setf (slot-value pathname 'lisp::host) "localhost"))
-    pathname))
 
 (defun parse
     (input handler &rest args
