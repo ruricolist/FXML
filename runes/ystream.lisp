@@ -164,11 +164,12 @@
      ;; by lucky coincidence, babel::unicode-string is the same as simple-rod
      #+nil (coerce string 'babel::unicode-string)
      ;; XXX
-     (let* ((babel::*suppress-character-coding-errors* nil)
-	    (mapping (babel::lookup-mapping babel::*string-vector-mappings*
-					    encoding)))
-       (funcall (babel::encoder mapping) in 0 ptr out 0)
-       (funcall (babel::octet-counter mapping) in 0 ptr -1)))))
+     (let* ((babel-encodings:*suppress-character-coding-errors* nil)
+	    (mapping (babel-encodings:lookup-mapping
+                      babel::*string-vector-mappings*
+                      encoding)))
+       (funcall (babel-encodings:encoder mapping) in 0 ptr out 0)
+       (funcall (babel-encodings:octet-counter mapping) in 0 ptr -1)))))
 
 (defmethod flush-ystream ((ystream encoding-ystream))
   (let ((ptr (ystream-in-ptr ystream)))
