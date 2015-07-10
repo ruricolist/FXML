@@ -475,8 +475,8 @@
   (:method-combination append))
 
 (defun maybe-uri->string (thing)
-  (if (puri:uri-p thing)
-      (princ-to-string thing)
+  (if (quri:uri-p thing)
+      (quri:render-uri thing)
       (non-empty-string thing)))
 
 (defmethod slots-for-print-object append ((node parent-node))

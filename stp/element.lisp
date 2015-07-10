@@ -617,7 +617,8 @@
 	     (%base-uri node)))
 	(parent (parent node)))
     (if parent
-	(puri:render-uri (puri:merge-uris xml-base (base-uri parent)) nil)
+	(quri:render-uri (quri:merge-uris (quri:uri xml-base)
+                                          (base-uri parent)))
 	xml-base)))
 
 ;;; below a literal translation of XOM's Java code for BASE-URI.

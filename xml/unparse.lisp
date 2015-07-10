@@ -829,7 +829,7 @@
 (defun doctype (name public-id system-id &optional internal-subset &aux (sink *sink*))
   "@arg[name]{Element name, a string.}
    @arg[public-id]{String}
-   @arg[system-id]{A system ID as a @class{puri:uri}.}
+   @arg[system-id]{A system ID as a @class{quri:uri}.}
    @arg[internal-subset]{nil or a string}
    @return{undocumented}
 

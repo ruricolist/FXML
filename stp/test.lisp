@@ -2009,7 +2009,7 @@
       (assert-equal (base-uri document) "")
       (setf (base-uri root) "file://etc")
       (setf (base-uri child) "passwd")
-      (assert (puri:uri= (puri:parse-uri "file://etc/passwd")
+      (assert (quri:uri= (quri:uri "file:///etc/passwd")
 			 (base-uri child)))
       (values)))
 

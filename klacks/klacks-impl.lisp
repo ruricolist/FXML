@@ -498,7 +498,7 @@
   (let ((x (car (base-stack (slot-value source 'context)))))
     (if (stringp x)
         x
-        (puri:render-uri x nil))))
+        (quri:render-uri x nil))))
 
 (defmethod fxml.klacks:map-current-namespace-declarations (fn (source fxml-source))
   (loop

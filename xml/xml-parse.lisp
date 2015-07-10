@@ -183,6 +183,8 @@
 
 (defvar *ctx* nil)
 
+(defvar *original-rods* nil)
+
 (defstruct (context (:conc-name nil))
   handler
   (dtd nil)
@@ -726,7 +728,7 @@
   (let ((uri (car (base-stack (slot-value parser 'ctx)))))
     (if (or (null uri) (stringp uri))
         uri
-        (puri:render-uri uri nil))))
+        (quri:render-uri uri nil))))
 
 (defvar *validate* t)
 (defvar *external-subset-p* nil)
@@ -937,12 +939,12 @@
   (let ((base-sysid (zstream-base-sysid source-stream)))
     ;; XXX is the IF correct?
     (if base-sysid
-        (puri:merge-uris sysid base-sysid)
+        (quri:merge-uris sysid base-sysid)
         sysid)))
 
 (defstruct (extid (:constructor make-extid (public system)))
   (public nil :type (or rod null))
-  (system (error "missing argument") :type (or puri:uri null)))
+  (system (error "missing argument") :type (or quri:uri null)))
 
 (setf (documentation 'extid 'type)
       "Represents an External ID, consisting of a Public ID and a System ID.
@@ -953,7 +955,7 @@
 
 (setf (documentation #'make-extid 'function)
       "@arg[publicid]{string or nil}
-       @arg[systemid]{@class{puri:uri} or nil}
+       @arg[systemid]{@class{quri:uri} or nil}
        @return{an instance of @class{extid}}
 
        Create an object representing the External ID composed
@@ -967,7 +969,7 @@
 
 (setf (documentation #'extid-system 'function)
       "@arg[extid]{A @class{extid}}
-       @return[sytemid]{puri:uri or nil}
+       @return[sytemid]{quri:uri or nil}
 
        Returns the System ID part of this External ID.")
 
@@ -1132,26 +1134,22 @@
   (notations (%make-rod-hash-table)))
 
 (defun make-dtd-cache ()
-  (puri:make-uri-space))
+  (make-hash-table :test 'equalp))
 
 (defvar *cache-all-dtds* nil)
 (defvar *dtd-cache* (make-dtd-cache))
 
 (defun remdtd (uri dtd-cache)
-  (setf uri (puri:intern-uri uri dtd-cache))
-  (prog1
-      (and (getf (puri:uri-plist uri) 'dtd) t)
-    (puri:unintern-uri uri dtd-cache)))
+  (remhash uri dtd-cache))
 
 (defun clear-dtd-cache (dtd-cache)
-  (puri:unintern-uri t dtd-cache))
+  (clrhash dtd-cache))
 
 (defun getdtd (uri dtd-cache)
-  (getf (puri:uri-plist (puri:intern-uri uri dtd-cache)) 'dtd))
+  (gethash uri dtd-cache))
 
 (defun (setf getdtd) (newval uri dtd-cache)
-  (setf (getf (puri:uri-plist (puri:intern-uri uri dtd-cache)) 'dtd) newval)
-  newval)
+  (setf (gethash uri dtd-cache) newval))
 
 
 ;;;;
@@ -2145,23 +2143,15 @@
 ;; uri-string can be different from the one parsed originally.
 (defun uri-rod (uri)
   (if uri
-      (or (getf (puri:uri-plist uri) 'original-rod)
-          (rod (puri:render-uri uri nil)))
+      (or (gethash uri *original-rods*)
+          (rod (quri:render-uri uri nil)))
       nil))
-
-(defun safe-parse-uri (str)
-  ;; puri doesn't like strings starting with file:///, although that is a very
-  ;; common is practise.  Cut it away, we don't distinguish between scheme
-  ;; :FILE and NIL anway.
-  (when (eql (search "file://" str) 0)
-    (setf str (subseq str (length "file://"))))
-  (puri:parse-uri (coerce str 'simple-string)))
 
 (defun p/system-literal (input)
   (let* ((rod (p/id input))
-         (result (safe-parse-uri (rod-string rod))))
-    (setf (getf (puri:uri-plist result) 'original-rod) rod)
-    result))
+         (uri (quri:uri (rod-string rod))))
+    (setf (gethash uri *original-rods*) rod)
+    uri))
 
 (defun p/pubid-literal (input)
   (let ((result (p/id input)))
@@ -2759,7 +2749,8 @@
                          :base-stack (list (or base ""))
                          :disallow-internal-subset disallow-internal-subset))
          (*validate* validate)
-         (*namespace-bindings* *initial-namespace-bindings*))
+         (*namespace-bindings* *initial-namespace-bindings*)
+         (*original-rods* (make-hash-table :test 'equalp)))
     (fxml.sax:register-sax-parser handler (make-instance 'fxml-parser :ctx *ctx*))
     (fxml.sax:start-document handler)
     ;; document ::= XMLDecl? Misc* (doctypedecl Misc*)? element Misc*
@@ -2928,7 +2919,9 @@
   (let ((new (fxml.sax:find-attribute #"xml:base" attrs))
         (current (car (base-stack *ctx*))))
     (if new
-        (puri:merge-uris (escape-uri (fxml.sax:attribute-value new)) current)
+        (quri:merge-uris
+         (quri:uri (escape-uri (fxml.sax:attribute-value new)))
+         (quri:uri current))
         current)))
 
 (defun process-characters (input sem)
@@ -3131,69 +3124,8 @@
       alternative
       str))
 
-(defun make-uri (&rest initargs &key path query &allow-other-keys)
-  (apply #'make-instance
-         'puri:uri
-         :path (and path (escape-path path))
-         :query (and query (escape-query query))
-         initargs))
-
-(defun escape-path (list)
-  (puri::render-parsed-path list t))
-
-(defun escape-query (pairs)
-  (flet ((escape (str)
-           (puri::encode-escaped-encoding str puri::*reserved-characters* t)))
-    (let ((first t))
-      (with-output-to-string (s)
-        (dolist (pair pairs)
-          (if first
-              (setf first nil)
-              (write-char #\& s))
-          (write-string (escape (car pair)) s)
-          (write-char #\= s)
-          (write-string (escape (cdr pair)) s))))))
-
-(defun uri-parsed-query (uri)
-  (flet ((unescape (str)
-           (puri::decode-escaped-encoding str t puri::*reserved-characters*)))
-    (let ((str (puri:uri-query uri)))
-      (cond
-        (str
-          (let ((pairs '()))
-            (dolist (s (split-sequence-if (lambda (x) (eql x #\&)) str))
-              (destructuring-bind (name value)
-                  (split-sequence-if (lambda (x) (eql x #\=)) s)
-                (push (cons (unescape name) (unescape value)) pairs)))
-            (reverse pairs)))
-        (t
-          nil)))))
-
-(defun query-value (name alist)
-  (cdr (assoc name alist :test #'equal)))
-
 (defun pathname-to-uri (pathname)
-  (let ((path
-         ;; FIXME: should we really leave ".." in base URIs?
-         (append (mapcar (lambda (x)
-                           (cond ((member x '(:up :back)) "..")
-                                 (t x)))
-                         (pathname-directory pathname))
-                 (list
-                  (if (specific-or (pathname-type pathname))
-                      (concatenate 'string
-                        (pathname-name pathname)
-                        "."
-                        (pathname-type pathname))
-                      (pathname-name pathname))))))
-    (if (eq (car path) :relative)
-        (make-uri :path path)
-        (make-uri :scheme :file
-                  :host (concatenate 'string
-                          (string-or (host-namestring pathname))
-                          "+"
-                          (specific-or (pathname-device pathname)))
-                  :path path))))
+  (quri:uri (format nil "file://~a" (uiop:native-namestring pathname))))
 
 (defun parse-name.type (str)
   (if str
@@ -3204,31 +3136,15 @@
       (values nil nil)))
 
 (defun uri-to-pathname (uri)
-  (let ((scheme (puri:uri-scheme uri))
-        (path (loop for e in (puri:uri-parsed-path uri)
-                 collect (if (stringp e)
-                             (puri::decode-escaped-encoding e t nil)
-                             e))))
-    (unless (member scheme '(nil :file))
-      (error 'xml-parse-error
-             :format-control "URI scheme ~S not supported"
-             :format-arguments (list scheme)))
-    (if (eq (car path) :relative)
-        (multiple-value-bind (name type)
-            (parse-name.type (car (last path)))
-          (make-pathname :directory (butlast path)
-                         :name name
-                         :type type))
-        (multiple-value-bind (name type)
-            (parse-name.type (car (last (cdr path))))
-          (destructuring-bind (host device)
-              (split-sequence-if (lambda (x) (eql x #\+))
-                                 (or (puri:uri-host uri) "+"))
-            (make-pathname :host (string-or host)
-                           :device (string-or device)
-                           :directory (cons :absolute (butlast (cdr path)))
-                           :name name
-                           :type type))))))
+  (let ((uri (if (quri:uri-p uri)
+                 uri
+                 (quri:uri uri))))
+    (let ((scheme (quri:uri-scheme uri)))
+      (unless (or (null scheme) (string-equal scheme "file"))
+        (error 'xml-parse-error
+               :format-control "URI scheme ~S not supported"
+               :format-arguments (list scheme))))
+    (quri:uri-file-pathname uri)))
 
 (defun parse
     (input handler &rest args
@@ -3401,7 +3317,7 @@
    @arg[qname]{a string or nil}
    @arg[handler]{a @class{SAX handler}}
    @arg[public-id]{a string or nil}
-   @arg[system-id]{a @type{puri:uri} or nil}
+   @arg[system-id]{a @type{quri:uri} or nil}
    @arg[entity-resolver]{@code{nil} or a function of two arguments which
      is invoked for every entity referenced by the document with the
      entity's Public ID (a rod) and System ID (an URI object) as arguments.
@@ -3427,7 +3343,7 @@
   (check-type uri (or null rod))
   (check-type qname (or null rod))
   (check-type public-id (or null rod))
-  (check-type system-id (or null puri:uri))
+  (check-type system-id (or null quri:uri))
   (check-type entity-resolver (or null function symbol))
   (check-type recode boolean)
   (let ((*ctx*

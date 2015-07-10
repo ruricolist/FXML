@@ -255,7 +255,7 @@
 	    (when (typep entdef 'fxml::external-entdef)
 	      (let ((uri (fxml::extid-system (fxml::entdef-extid entdef))))
 		(when uri
-		  (puri:render-uri uri nil))))))))))
+		  (quri:render-uri uri nil))))))))))
 
 (define-default-method xpath-protocol:local-name ((node fxml.stp:text)) "")
 

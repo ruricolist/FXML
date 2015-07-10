@@ -27,7 +27,7 @@
 (defstruct (catalog (:constructor %make-catalog ()))
   main-files
   (dtd-cache (make-dtd-cache))
-  (file-table (puri:make-uri-space)))
+  (file-table (make-hash-table :test 'equalp)))
 
 (defstruct (entry-file (:conc-name ""))
   (system-entries)                      ;extid 2
@@ -66,8 +66,8 @@
                       (write-char c out))))))))))
 
 (defun normalize-uri (str)
-  (when (typep str 'puri:uri)
-    (setf str (puri:render-uri str nil)))
+  (when (typep str 'quri:uri)
+    (setf str (quri:render-uri str nil)))
   (setf str (rod-to-utf8-string (rod str)))
   (with-output-to-string (out)
     (loop for ch across str do
@@ -202,13 +202,12 @@
                   (setf files (append (next-catalog-entries file) files))))))))))
 
 (defun find-catalog-file (uri catalog)
-  (setf uri (if (stringp uri) (safe-parse-uri uri) uri))
+  (setf uri (if (stringp uri) (quri:uri uri) uri))
   (let* ((*dtd-cache* (catalog-dtd-cache catalog))
          (*cache-all-dtds* t)
          (file (parse-catalog-file uri)))
     (when file
-      (let ((interned (puri:intern-uri uri (catalog-file-table catalog))))
-        (setf (getf (puri:uri-plist interned) 'catalog) file)))
+      (setf (gethash uri (catalog-file-table catalog)) file))
     file))
 
 (defun make-catalog (&optional (uris *default-catalog*))
@@ -241,10 +240,10 @@
 (defun parse-catalog-file/strict (uri)
   (let* ((*catalog* nil)
          (dtd-sysid
-          (puri:parse-uri "http://www.oasis-open.org/committees/entity/release/1.0/catalog.dtd")))
+          (quri:uri "http://www.oasis-open.org/committees/entity/release/1.0/catalog.dtd")))
     (flet ((entity-resolver (public system)
              (declare (ignore public))
-             (if (puri:uri= system dtd-sysid)
+             (if (quri:uri= system dtd-sysid)
                  (make-octet-input-stream *catalog-dtd*)
                  nil)))
       (with-open-stream (s (open (uri-to-pathname uri)
@@ -296,8 +295,8 @@
   (push (string-or (get-attribute/lname "base" attrs) (base handler))
         (catalog-base-stack handler))
   (flet ((geturi (lname)
-           (puri:merge-uris
-            (safe-parse-uri (get-attribute/lname lname attrs))
+           (quri:merge-uris
+            (quri:uri (get-attribute/lname lname attrs))
             (base handler))))
     (cond
       ((string= lname "public")

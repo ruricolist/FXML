@@ -46,6 +46,7 @@ Implementation differences:
 - Uses named-readtables.
 - Does not support SCL.
 - Does not support non-Unicode Lisps.
+- uses QURI instead of PURI.
 - Building XML documents (“unparsing”) is much faster.
 
 # CXML compatibility

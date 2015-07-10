@@ -42,7 +42,7 @@
    (:file "sax-proxy"       :depends-on ("xml-parse"))
    (:file "atdoc-configuration" :depends-on ("package")))
   :depends-on (:fxml/runes
-               :puri 
+               :quri
                :flexi-streams
                #:alexandria))
 
