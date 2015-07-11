@@ -1,15 +1,5 @@
 (defpackage :fxml.stp
   (:use :cl)
-  (:import-from #:fxml.dom
-                #:local-name
-                #:namespace-uri
-                #:previous-sibling
-                #:next-sibling
-                #:first-child
-                #:last-child
-                #:data
-                #:entities
-                )
   (:export #:*check-uri-syntax*
 	   #:stp-error
 
