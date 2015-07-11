@@ -46,3 +46,21 @@
 
 (test allow-expansion
   (finishes (parse-test-file xml-bomb2 :forbid-entities nil)))
+
+(def-suite xmlconf :in fxml)
+
+(in-suite xmlconf)
+
+(defun run-xmlconf-suite (name)
+  (multiple-value-bind (nfailed ntried nskipped)
+      (let ((fxml.xmlconf::*debug-tests* *debug-on-error*))
+        (fxml.xmlconf:run-all-tests name))
+    (is (zerop nfailed)
+        "~d test~:p passed, ~d failed, ~d skipped"
+        ntried nfailed nskipped)))
+
+(test sax
+  (run-xmlconf-suite 'fxml.xmlconf:sax-test))
+
+(test klacks
+  (run-xmlconf-suite 'fxml.xmlconf:klacks-test))

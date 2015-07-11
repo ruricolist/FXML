@@ -70,6 +70,7 @@
   :serial t
   :perform (test-op (o c) (uiop:symbol-call :fxml.test :run-tests))
   :components ((:file "test")
+               (:file "xmlconf")
                (:file "suite"))
   :depends-on (:fxml/xml :fxml/klacks :fxml/dom :fiveam))
 
