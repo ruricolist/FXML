@@ -92,7 +92,11 @@
       (s (apply #'fxml:make-source (pathname filename) args))
     (fxml.klacks:serialize-source s handler)))
 
-(defun run-all-tests (parser-fn directory)
+(defun run-all-tests (parser-fn
+                      &optional
+                        (directory
+                         (asdf:system-relative-pathname
+                          :fxml "test/xmlconf/")))
   (let* ((*parser-fn* parser-fn)
 	 (pathname (merge-pathnames "xmlconf.xml" directory))
          (builder (fxml.rune-dom:make-dom-builder))
