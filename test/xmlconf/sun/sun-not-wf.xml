@@ -116,7 +116,7 @@
 <TEST URI="not-wf/encoding06.xml" ID="encoding06" TYPE="not-wf" SECTIONS="4.3.3 [81]">
     Illegal character "+" in encoding name</TEST>
 
-<TEST URI="not-wf/encoding07.xml" ID="encoding07" TYPE="not-wf" SECTIONS="4.3.1 [77]" ENTITIES="parameter">
+<TEST URI="not-wf/encoding07.xml" ID="encoding07" TYPE="not-wf" SECTIONS="4.3.1 [77]" ENTITIES="general">
     Text declarations (which optionally begin any external entity)
     are required to have "encoding=...". </TEST>
 

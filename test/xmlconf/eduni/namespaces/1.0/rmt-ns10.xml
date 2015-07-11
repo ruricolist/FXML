@@ -147,5 +147,10 @@ Colon in ID attribute name
 <TEST RECOMMENDATION="NS1.0" SECTIONS="NE08" URI="046.xml" ID="rmt-ns10-046" TYPE="invalid">
 Colon in ID attribute name
 </TEST>
-
+<TEST RECOMMENDATION="NS1.0" SECTIONS="NE03" URI="047.xml" ID="ht-ns10-047" TYPE="valid">
+Reserved name: _not_ an error
+</TEST>
+<TEST RECOMMENDATION="NS1.0" SECTIONS="NE03" URI="048.xml" ID="ht-ns10-048" TYPE="valid">
+Reserved name: _not_ an error
+</TEST>
 </TESTCASES>

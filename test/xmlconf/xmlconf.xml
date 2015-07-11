@@ -40,6 +40,7 @@
     <!ENTITY eduni-errata3e	SYSTEM "eduni/errata-3e/errata3e.xml">
     <!ENTITY eduni-nse		SYSTEM "eduni/namespaces/errata-1e/errata1e.xml">
     <!ENTITY eduni-errata4e	SYSTEM "eduni/errata-4e/errata4e.xml">
+    <!ENTITY eduni-misc         SYSTEM "eduni/misc/ht-bh.xml">
 ] >
 <TESTSUITE PROFILE="XML 1.0 (2nd edition) W3C Conformance Test Suite, 6 October 2000">
 <TESTCASES PROFILE="James Clark  XML 1.0 Tests" xml:base="xmltest/">
@@ -93,6 +94,9 @@
 </TESTCASES>
 <TESTCASES xml:base="eduni/namespaces/errata-1e/">
     &eduni-nse;
+</TESTCASES>
+<TESTCASES xml:base="eduni/namespaces/misc/">
+    &eduni-misc;
 </TESTCASES>
 
 </TESTSUITE>

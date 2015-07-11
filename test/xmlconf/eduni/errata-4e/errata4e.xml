@@ -20,6 +20,8 @@ a document with version=1.7, legal in XML 1.0 from 5th edition
 </TEST>
  <TEST NAMESPACE="yes" ENTITIES="none" RECOMMENDATION="XML1.0-errata4e" SECTIONS="2.3" URI="014.xml" ID="x-rmt5-014" TYPE="invalid" EDITION="5" VERSION="1.0">Has
 a "long s" in a name, legal in XML 1.1, legal in XML 1.0 5th edition</TEST>
+ <TEST NAMESPACE="yes" ENTITIES="none" RECOMMENDATION="XML1.0-errata4e" SECTIONS="2.3" URI="014a.xml" ID="x-rmt5-014a" TYPE="valid" EDITION="5" VERSION="1.0">Has
+a "long s" in a name, legal in XML 1.1, legal in XML 1.0 5th edition</TEST>
  <TEST NAMESPACE="yes" ENTITIES="none" RECOMMENDATION="XML1.0-errata4e" SECTIONS="2.3" URI="016.xml" ID="x-rmt5-016" TYPE="invalid" VERSION="1.0" EDITION="5">Has
 a Byzantine Musical Symbol Kratimata in a name, legal in XML 1.1, legal in
 XML 1.0 5th edition</TEST>

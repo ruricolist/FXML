@@ -857,6 +857,11 @@ everyting between the CDStart and CDEnd is recognized as character data not mark
 	URI="valid/sa/036.xml" SECTIONS="2.6 [16]"
 	OUTPUT="valid/sa/out/036.xml">
     Test demonstrates a valid processing instruction. </TEST>
+<TEST TYPE="valid" ENTITIES="none" ID="valid-sa-017a"
+	URI="valid/sa/017a.xml" SECTIONS="2.6 3.1 [16] [43]"
+	OUTPUT="valid/sa/out/017a.xml">
+    Test demonstrates that two apparently wrong Processing Instructions make a
+right one, with very odd content "some data ? > &lt;?". </TEST>
 <TEST TYPE="valid" ENTITIES="none" ID="valid-sa-037"
 	URI="valid/sa/037.xml" SECTIONS="2.6 [15]"
 	OUTPUT="valid/sa/out/037.xml">
