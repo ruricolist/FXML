@@ -600,7 +600,7 @@
                (format s "Forbidden DTD (~a, ~a, ~a)"
                        name sysid pubid)))))
 
-(defvar *forbid-entities* nil)
+(defvar *forbid-entities* t)
 
 (define-condition entities-forbidden (xml-security-error)
   ((name :initarg :name :reader entity-name)
@@ -2722,7 +2722,7 @@
      &key validate dtd root entity-resolver disallow-internal-subset
           (recode t) ignore-dtd
           forbid-dtd
-          ((:forbid-entities *forbid-entities*) t)
+          ((:forbid-entities *forbid-entities*) *forbid-entities*)
           (forbid-external t))
   ;; check types of user-supplied arguments for better error messages:
   (check-type validate boolean)
