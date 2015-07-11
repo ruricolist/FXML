@@ -129,7 +129,8 @@
           (t
             (incf nskipped)))))
     (format t "~&~D/~D tests failed; ~D test~:P were skipped"
-            nfailed ntried nskipped)))
+            nfailed ntried nskipped)
+    (values nfailed ntried nskipped)))
 
 (defmethod run-test :around (class pathname output description &rest args)
   (declare (ignore class pathname output args))
