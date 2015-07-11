@@ -95,7 +95,7 @@
 <TESTCASES xml:base="eduni/namespaces/errata-1e/">
     &eduni-nse;
 </TESTCASES>
-<TESTCASES xml:base="eduni/namespaces/misc/">
+<TESTCASES xml:base="eduni/misc/">
     &eduni-misc;
 </TESTCASES>
 

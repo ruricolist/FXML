@@ -30,7 +30,7 @@
 <TESTCASES xml:base="namespaces/errata-1e/">
     &eduni-nse;
 </TESTCASES>
-<TESTCASES xml:base="namespaces/misc/">
+<TESTCASES xml:base="misc/">
     &eduni-misc;
 </TESTCASES>
 
