@@ -1564,11 +1564,12 @@
 (definline data-rune-p (rune)
   ;; Any Unicode character, excluding FFFE, and FFFF.
   ;; Allow surrogates if using UTF-16, else allow >= 0x10000.
-  (let ((c (rune-code rune)))
-    (or (= c #x9) (= c #xA) (= c #xD)
-        (<= #x20 c #xD7FF)
-        (<= #xE000 c #xFFFD)
-        (<= #x10000 c #x10FFFF))))
+  (and rune
+       (let ((c (rune-code rune)))
+         (or (= c #x9) (= c #xA) (= c #xD)
+             (<= #x20 c #xD7FF)
+             (<= #xE000 c #xFFFD)
+             (<= #x10000 c #x10FFFF)))))
 
 (defun read-att-value (zinput input mode &optional canon-space-p (delim nil))
   (with-rune-collector-2 (collect)
@@ -1720,7 +1721,9 @@
           (when (eq d :eof)
             (eox input))
           (unless (data-rune-p d)
-            (wf-error input "Illegal char: ~S." d))
+            (if d
+                (wf-error input "Illegal char: ~S." d)
+                (setf d #/U+FFFD)))
           (when (rune= d #/?) (go state-2))
           (collect d)
           (go state-1)
@@ -1729,7 +1732,9 @@
           (when (eq d :eof)
             (eox input))
           (unless (data-rune-p d)
-            (wf-error input "Illegal char: ~S." d))
+            (if d
+                (wf-error input "Illegal char: ~S." d)
+                (setf d #/U+FFFD)))
           (when (rune= d #/>) (return))
           (when (rune= d #/?)
             (collect #/?)
