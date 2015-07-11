@@ -66,7 +66,7 @@
 
 (defun builder-append (builder x)
   (let ((parent (car (builder-nodes builder))))
-    (append-child parent x)))
+    (%unchecked-insert-child parent x (length (%children parent)))))
 
 (defmethod fxml.sax:start-dtd ((builder builder) name publicid systemid)
   (setf (builder-doctype builder)
