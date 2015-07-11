@@ -238,12 +238,3 @@
       ;; das erlauben wir mal auch, denn valide => wf
       (format t " invalid")
       t)))
-
-(defun really-run (&key ((:debug-tests *debug-tests*) nil))
-  (run-all-tests 'sax-test
-                 (asdf:system-relative-pathname
-                  :fxml "test/xmlconf/"))
-
-  (run-all-tests 'klacks-test
-                 (asdf:system-relative-pathname
-                  :fxml "test/xmlconf/")))
