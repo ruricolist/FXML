@@ -600,7 +600,7 @@
                (format s "Forbidden DTD (~a, ~a, ~a)"
                        name sysid pubid)))))
 
-(defvar *forbid-entities* t)
+(defvar *forbid-entities*)
 
 (define-condition entities-forbidden (xml-security-error)
   ((name :initarg :name :reader entity-name)
@@ -2727,7 +2727,7 @@
      &key validate dtd root entity-resolver disallow-internal-subset
           (recode t) ignore-dtd
           forbid-dtd
-          ((:forbid-entities *forbid-entities*) *forbid-entities*)
+          (forbid-entities *forbid-entities*)
           (forbid-external t))
   ;; check types of user-supplied arguments for better error messages:
   (check-type validate boolean)
@@ -2738,7 +2738,7 @@
   (check-type disallow-internal-subset boolean)
   (check-type ignore-dtd boolean)
   (check-type forbid-dtd boolean)
-  (check-type *forbid-entities* boolean)
+  (check-type forbid-entities boolean)
   (check-type forbid-external boolean)
   (when ignore-dtd
     (setf entity-resolver #'void-entity-resolver))
@@ -3155,7 +3155,9 @@
     (input handler &rest args
      &key validate dtd root entity-resolver disallow-internal-subset
           recode pathname ignore-dtd
-          forbid-dtd (forbid-entities t) (forbid-external t))
+          forbid-dtd
+          (forbid-entities t)
+          (forbid-external t))
   "@arg[input]{A string, pathname, octet vector, or stream.}
    @arg[handler]{A @class{SAX handler}}
    @arg[validate]{Boolean.  Defaults to @code{nil}.  If true, parse in
@@ -3200,12 +3202,9 @@
    All SAX parsing functions share the same keyword arguments.  Refer to
    @fun{parse} for details on keyword arguments."
   (declare (ignore validate dtd root entity-resolver disallow-internal-subset
-                   recode ignore-dtd forbid-dtd forbid-entities forbid-external))
-  (let ((args
-         (loop
-            for (name value) on args by #'cddr
-            unless (eq name :pathname)
-            append (list name value))))
+                   recode ignore-dtd forbid-dtd forbid-external))
+  (let ((*forbid-entities* forbid-entities)
+        (args (alexandria:remove-from-plist args :pathname)))
     (etypecase input
       (xstream  (apply #'parse-xstream input handler args))
       (pathname (apply #'parse-file input handler args))
