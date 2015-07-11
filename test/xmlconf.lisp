@@ -1,6 +1,8 @@
 (defpackage #:fxml.xmlconf
   (:use :cl :fxml.runes)
-  (:export #:run-all-tests))
+  (:export #:run-all-tests
+           #:sax-test
+           #:klacks-test))
 (in-package :fxml.xmlconf)
 
 (defvar *debug-tests* nil)
