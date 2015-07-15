@@ -37,7 +37,7 @@
 ;; For reading runes, I defined my own streams, called xstreams,
 ;; because we want to be fast. A function call or even a method call
 ;; per character is not acceptable, instead of that we define a
-;; buffered stream with and advertised buffer layout, so that we
+;; buffered stream with an advertised buffer layout, so that we
 ;; could use the trick stdio uses: READ-RUNE and PEEK-RUNE are macros,
 ;; directly accessing the buffer and only calling some underflow
 ;; handler in case of stream underflows. This will yield to quite a
