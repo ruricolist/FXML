@@ -454,12 +454,8 @@
             (:intern
              `(intern-name ,b 0 ,i))
             (:copy
-             `(let ((,rod (make-rod ,i)))
-                (while (not (%= ,i 0))
-                  (setf ,i (%- ,i 1))
-                  (setf (%rune ,rod ,i)
-                        (svref ,b ,i)))
-                ,rod))
+             `(serapeum:lret ((,rod (make-rod ,i)))
+                (replace ,rod ,b)))
             (:raw
              `(values ,b 0 ,i)))))))
 
