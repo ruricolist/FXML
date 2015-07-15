@@ -446,7 +446,7 @@
                       (setf ,',b
                             (setf ,',scratch
                                   (adjust-array-by-copying ,',b ,',n))))
-                    (setf (aref (the (simple-array rune (*)) ,',b) ,',i) x)
+                    (setf (svref ,',b ,',i) x)
                     (incf ,',i)))
                 ,x)))
          ,@body
@@ -458,7 +458,7 @@
                 (while (not (%= ,i 0))
                   (setf ,i (%- ,i 1))
                   (setf (%rune ,rod ,i)
-                        (aref (the (simple-array rune (*)) ,b) ,i)))
+                        (svref ,b ,i)))
                 ,rod))
             (:raw
              `(values ,b 0 ,i)))))))
