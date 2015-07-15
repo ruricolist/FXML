@@ -44,7 +44,8 @@
   :depends-on (:fxml/runes
                :quri
                :flexi-streams
-               #:alexandria))
+               #:alexandria
+               #:serapeum))
 
 (asdf:defsystem :fxml/dom
     :pathname "dom/"
