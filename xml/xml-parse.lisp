@@ -432,10 +432,10 @@
 
 (defmacro with-rune-collector-aux (scratch collect body mode)
   (alexandria:with-gensyms (rod n i b)
-    `(let ((,n (length ,scratch))
-           (,i 0)
-           (,b ,scratch))
-       (declare (type fixnum ,n ,i))
+    `(let* ((,b ,scratch)
+            (,n (length ,b))
+            (,i 0))
+       (declare (type alexandria:array-index ,n ,i))
        (macrolet
            ((,collect (x)
               `((lambda (x)
@@ -445,7 +445,7 @@
                       (setf ,',n (* 2 ,',n))
                       (setf ,',b
                             (setf ,',scratch
-                                  (adjust-array-by-copying ,',scratch ,',n))))
+                                  (adjust-array-by-copying ,',b ,',n))))
                     (setf (aref (the (simple-array rune (*)) ,',b) ,',i) x)
                     (incf ,',i)))
                 ,x)))
@@ -461,8 +461,7 @@
                         (aref (the (simple-array rune (*)) ,b) ,i)))
                 ,rod))
             (:raw
-             `(values ,b 0 ,i))
-            )))))
+             `(values ,b 0 ,i)))))))
 
 (defmacro with-rune-collector ((collect) &body body)
   `(with-rune-collector-aux *scratch-pad* ,collect ,body :copy))
