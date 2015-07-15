@@ -588,7 +588,6 @@
          (format nil "Document not well-formed: ~?" fmt fmt-args)
          args))
 
-;; TODO Should include the entity name.
 (define-condition undefined-entity (well-formedness-violation)
   ((name :initarg :name :reader undefined-entity-name)))
 
@@ -600,7 +599,6 @@
                (list name)
                :name name)))
 
-;; TODO Should include prefix.
 (define-condition undeclared-namespace (well-formedness-violation)
   ((prefix :initarg :prefix :reader undeclared-namespace-prefix)))
 
