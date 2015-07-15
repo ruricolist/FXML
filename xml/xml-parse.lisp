@@ -614,10 +614,11 @@
           stream
           (format nil "End of file~@[: ~?~]" x args)))
 
-(defclass fxml-parser (fxml.sax:sax-parser) ((ctx :initarg :ctx)))
+(defclass fxml-parser (fxml.sax:sax-parser)
+  ((ctx :initarg :ctx :reader parser.ctx)))
 
 (defun parser-xstream (parser)
-  (car (zstream-input-stack (main-zstream (slot-value parser 'ctx)))))
+  (car (zstream-input-stack (main-zstream (parser.ctx parser)))))
 
 (defun parser-stream-name (parser)
   (let ((xstream (parser-xstream parser)))
@@ -644,7 +645,7 @@
         nil)))
 
 (defmethod fxml.sax:xml-base ((parser fxml-parser))
-  (let ((uri (car (base-stack (slot-value parser 'ctx)))))
+  (let ((uri (car (base-stack (parser.ctx parser)))))
     (if (or (null uri) (stringp uri))
         uri
         (quri:render-uri uri nil))))
