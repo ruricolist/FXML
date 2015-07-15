@@ -237,7 +237,8 @@
     (close-xstream stream)))
 
 (defmacro with-open-xstream ((var value) &body body)
-  `(call-with-open-xstream (lambda (,var) ,@body) ,value))
+  (serapeum:with-thunk (body var)
+    `(call-with-open-xstream ,body ,value)))
 
 (defun call-with-open-xfile (continuation &rest open-args)
   (let ((input (apply #'open (car open-args) :element-type '(unsigned-byte 8) (cdr open-args))))
@@ -247,7 +248,8 @@
       (close input))))
 
 (defmacro with-open-xfile ((stream &rest open-args) &body body)
-  `(call-with-open-xfile (lambda (,stream) .,body) .,open-args))
+  (serapeum:with-thunk (body stream)
+    `(call-with-open-xfile ,body ,@open-args)))
 
 ;;;; -------------------------------------------------------------------
 ;;;; Rechnen mit Runen
@@ -314,10 +316,9 @@
   table         ;
   )
 
-(defun make-rod-hashtable (&key (size 200))
-  (setf size (nearest-greater-prime size))
+(defun make-rod-hashtable (&key (size 200) (real-size (nearest-greater-prime size)))
   (make-rod-hashtable/low
-   :size size
+   :size real-size
    :table (make-array size :initial-element nil)))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -1206,8 +1207,8 @@
         (close-xstream input)))))
 
 (defmacro with-zstream ((zstream &rest args) &body body)
-  `(call-with-zstream (lambda (,zstream) ,@body)
-                      (make-zstream ,@args)))
+  (serapeum:with-thunk (body zstream)
+    `(call-with-zstream ,body (make-zstream ,@args))))
 
 (defun read-token (input)
   (cond ((zstream-token-category input)
@@ -3445,23 +3446,25 @@
 
 (defun recurse-on-entity (zstream name kind continuation &optional internalp)
   (assert (not (zstream-token-category zstream)))
-  (with-simple-restart (continue "Skip entity")
-    (call-with-entity-expansion-as-stream
-     zstream
-     (lambda (new-xstream)
-       (push :stop (zstream-input-stack zstream))
-       (zstream-push new-xstream zstream)
-       (prog1
-           (funcall continuation zstream)
-         (assert (eq (peek-token zstream) :eof))
-         (assert (eq (pop (zstream-input-stack zstream)) new-xstream))
-         (close-xstream new-xstream)
-         (assert (eq (pop (zstream-input-stack zstream)) :stop))
-         (setf (zstream-token-category zstream) nil)
-         '(consume-token zstream)) )
-     name
-     kind
-     internalp)))
+  (flet ((rec (new-xstream)
+           (push :stop (zstream-input-stack zstream))
+           (zstream-push new-xstream zstream)
+           (prog1
+               (funcall continuation zstream)
+             (assert (eq (peek-token zstream) :eof))
+             (assert (eq (pop (zstream-input-stack zstream)) new-xstream))
+             (close-xstream new-xstream)
+             (assert (eq (pop (zstream-input-stack zstream)) :stop))
+             (setf (zstream-token-category zstream) nil)
+             '(consume-token zstream))))
+    (declare (dynamic-extent #'rec))
+    (with-simple-restart (continue "Skip entity")
+      (call-with-entity-expansion-as-stream
+       zstream
+       #'rec
+       name
+       kind
+       internalp))))
 
 #||
 (defmacro read-data-until* ((predicate input res res-start res-end) &body body)
