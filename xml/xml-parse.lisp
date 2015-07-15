@@ -481,36 +481,6 @@
 (defmacro with-rune-collector/raw ((collect) &body body)
   `(with-rune-collector-aux *scratch-pad* ,collect ,body :raw))
 
-#|
-(defmacro while-reading-runes ((reader stream-in) &rest body)
-  ;; Thou shalt not leave body via a non local exit
-  (let ((stream (make-symbol "STREAM"))
-        (rptr (make-symbol "RPTR"))
-        (fptr (make-symbol "FPTR"))
-        (buf  (make-symbol "BUF")) )
-    `(let* ((,stream ,stream-in)
-            (,rptr (xstream-read-ptr ,stream))
-            (,fptr (xstream-fill-ptr ,stream))
-            (,buf  (xstream-buffer ,stream)))
-       (declare (type fixnum ,rptr ,fptr)
-                (type xstream ,stream))
-       (macrolet ((,reader (res-var)
-                    `(cond ((%= ,',rptr ,',fptr)
-                            (setf (xstream-read-ptr ,',stream) ,',rptr)
-                            (setf ,res-var (xstream-underflow ,',stream))
-                            (setf ,',rptr (xstream-read-ptr ,',stream))
-                            (setf ,',fptr (xstream-fill-ptr ,',stream))
-                            (setf ,',buf  (xstream-buffer ,',stream)))
-                           (t
-                            (setf ,res-var
-                              (aref (the (simple-array read-element (*)) ,',buf)
-                                    (the fixnum ,',rptr)))
-                            (setf ,',rptr (%+ ,',rptr 1))))))
-         (prog1
-             (let () .,body)
-           (setf (xstream-read-ptr ,stream) ,rptr) )))))
-|#
-
 ;;;;  ---------------------------------------------------------------------------
 ;;;;  DTD
 ;;;;
