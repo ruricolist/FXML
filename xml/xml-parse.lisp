@@ -1039,12 +1039,6 @@
 ;; when the element type declaration is processed.
 
 (defun %make-rod-hash-table ()
-  ;; XXX with portable hash tables, this is the only way to case-sensitively
-  ;; use rods.  However, EQUALP often has horrible performance!  Most Lisps
-  ;; provide extensions for user-defined equality, we should use them!  There
-  ;; is also a home-made hash table for rods defined below, written by
-  ;; Gilbert (I think).  We could also use that one, but I would prefer the
-  ;; first method, even if it's unportable.
   (make-hash-table :test 'equal))
 
 (defstruct dtd
