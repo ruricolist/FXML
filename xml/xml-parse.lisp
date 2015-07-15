@@ -14,6 +14,7 @@
 ;;;  (c) copyright 2004 David Lichteblau
 ;;;  (c) copyright 2005 David Lichteblau
 ;;;  (c) copyright 2014 Paul M. Rodriguez
+;;;  (c) copyright 2015 Paul M. Rodriguez
 
 ;;; This library is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU Library General Public
