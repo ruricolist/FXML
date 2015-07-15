@@ -312,9 +312,8 @@
 ;;;
 
 (defstruct (rod-hashtable (:constructor make-rod-hashtable/low))
-  size          ;size of table
-  table         ;
-  )
+  (size (error "No size") :type alexandria:array-index) ;size of table
+  (table (error "No table") :type simple-vector))
 
 (defun make-rod-hashtable (&key (size 200) (real-size (nearest-greater-prime size)))
   (make-rod-hashtable/low
