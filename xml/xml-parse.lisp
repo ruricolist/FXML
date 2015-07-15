@@ -408,12 +408,16 @@
 (declaim (type (simple-array rune (*))
                *scratch-pad* *scratch-pad-2* *scratch-pad-3* *scratch-pad-4*))
 
+(defun call-with-scratch-pads (thunk)
+  (let ((*scratch-pad*   (make-array 1024 :element-type 'rune))
+        (*scratch-pad-2* (make-array 1024 :element-type 'rune))
+        (*scratch-pad-3* (make-array 1024 :element-type 'rune))
+        (*scratch-pad-4* (make-array 1024 :element-type 'rune)))
+    (funcall thunk)))
+
 (defmacro with-scratch-pads ((&optional) &body body)
-  `(let ((*scratch-pad* (make-array 1024 :element-type 'rune))
-         (*scratch-pad-2* (make-array 1024 :element-type 'rune))
-         (*scratch-pad-3* (make-array 1024 :element-type 'rune))
-         (*scratch-pad-4* (make-array 1024 :element-type 'rune)))
-     ,@body))
+  (serapeum:with-thunk (body)
+    `(call-with-scratch-pads ,body)))
 
 (defmacro %put-unicode-char (code-var put)
   `(,put (code-rune ,code-var)))
