@@ -472,42 +472,6 @@
              `(values ,b 0 ,i))
             )))))
 
-'(defmacro with-rune-collector-aux (scratch collect body mode)
-  (let ((rod (gensym))
-        (n (gensym))
-        (i (gensym))
-        (b (gensym)))
-    `(let ((,n (length ,scratch))
-           (,i 0))
-       (declare (type fixnum ,n ,i))
-       (macrolet
-           ((,collect (x)
-              `((lambda (x)
-                  (locally
-                      (declare #.*fast*)
-                    (when (%>= ,',i ,',n)
-                      (setf ,',n (* 2 ,',n))
-                      (setf ,',scratch
-                            (setf ,',scratch
-                                  (adjust-array-by-copying ,',scratch ,',n))))
-                    (setf (aref (the (simple-array rune (*)) ,',scratch) ,',i) x)
-                    (incf ,',i)))
-                ,x)))
-         ,@body
-         ,(ecase mode
-            (:intern
-             `(intern-name ,scratch 0 ,i))
-            (:copy
-             `(let ((,rod (make-rod ,i)))
-                (while (%> ,i 0)
-                       (setf ,i (%- ,i 1))
-                       (setf (%rune ,rod ,i)
-                         (aref (the (simple-array rune (*)) ,scratch) ,i)))
-                ,rod))
-            (:raw
-             `(values ,scratch 0 ,i))
-            )))))
-
 (defmacro with-rune-collector ((collect) &body body)
   `(with-rune-collector-aux *scratch-pad* ,collect ,body :copy))
 
