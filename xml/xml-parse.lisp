@@ -363,6 +363,12 @@
       (when (rod=** (car q) rod 0 (length (the (simple-array rune (*)) (car q))) start end)
         (return (values (cdr q) t (car q)))))))
 
+(definline rod-subseq* (source start &optional (end (length source)))
+  (subseq source start end))
+
+(definline rod-subseq** (source start &optional (end (length source)))
+  (subseq source start end))
+
 (defun rod-hash-set (new-value hashtable rod &optional (start 0) (end (length rod)))
   (let ((j (%mod (rod-hash rod start end)
                  (rod-hashtable-size hashtable)))
@@ -377,12 +383,6 @@
         (setf (cdr q) new-value)
         (return)))
     (values new-value key)))
-
-(defun rod-subseq* (source start &optional (end (length source)))
-  (subseq source start end))
-
-(defun rod-subseq** (source start &optional (end (length source)))
-  (subseq source start end))
 
 (defun (setf rod-hash-get) (new-value hashtable rod &optional (start 0) (end (length rod)))
   (rod-hash-set new-value hashtable rod start end))
