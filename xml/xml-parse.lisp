@@ -179,6 +179,8 @@
   (defparameter *fast* '(optimize (speed 3) (safety 0) (debug 0)
                          (compilation-speed 0) (space 0))))
 
+(deftype ufixnum () `(unsigned-byte ,(integer-length most-positive-fixnum)))
+
 ;;; parser context
 
 (defvar *ctx* nil)
@@ -378,8 +380,6 @@
 
 (defun rod-subseq* (source start &optional (end (length source)))
   (subseq source start end))
-
-(deftype ufixnum () `(unsigned-byte ,(integer-length most-positive-fixnum)))
 
 (defun rod-subseq** (source start &optional (end (length source)))
   (subseq source start end))
