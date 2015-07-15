@@ -431,10 +431,7 @@
     res))
 
 (defmacro with-rune-collector-aux (scratch collect body mode)
-  (let ((rod (gensym))
-        (n (gensym))
-        (i (gensym))
-        (b (gensym)))
+  (alexandria:with-gensyms (rod n i b)
     `(let ((,n (length ,scratch))
            (,i 0)
            (,b ,scratch))
@@ -459,9 +456,9 @@
             (:copy
              `(let ((,rod (make-rod ,i)))
                 (while (not (%= ,i 0))
-                       (setf ,i (%- ,i 1))
-                       (setf (%rune ,rod ,i)
-                         (aref (the (simple-array rune (*)) ,b) ,i)))
+                  (setf ,i (%- ,i 1))
+                  (setf (%rune ,rod ,i)
+                        (aref (the (simple-array rune (*)) ,b) ,i)))
                 ,rod))
             (:raw
              `(values ,b 0 ,i))
