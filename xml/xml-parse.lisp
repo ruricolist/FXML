@@ -175,9 +175,8 @@
 (setf (excl:named-readtable :runes) *readtable*)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (defparameter *fast* '(optimize (speed 3) (safety 0)))
-  ;;(defparameter *fast* '(optimize (speed 2) (safety 3)))
-  )
+  (defparameter *fast* '(optimize (speed 3) (safety 0) (debug 0)
+                         (compilation-speed 0) (space 0))))
 
 ;;; parser context
 
