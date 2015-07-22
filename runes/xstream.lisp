@@ -102,6 +102,20 @@
             (:constructor make-xstream/low)
             (:copier nil)
             (:print-function print-xstream))
+  "For reading runes, I defined my own streams, called xstreams,
+because we want to be fast. A function call or even a method call
+per character is not acceptable, instead of that we define a
+buffered stream with an advertised buffer layout, so that we
+could use the trick stdio uses: READ-RUNE and PEEK-RUNE are macros,
+directly accessing the buffer and only calling some underflow
+handler in case of stream underflows. This will yield to quite a
+performance boost vs calling READ-BYTE per character.
+
+Also we need to do encoding and character set conversion on input,
+this better done at large chunks of data rather than on a character
+by character basis. This way we need a dispatch on the active
+encoding only once in a while, instead of for each character. This
+allows us to use a CLOS interface to do the underflow handling."
   
   ;;; Read buffer
   
@@ -151,6 +165,19 @@
   ;; read, since we can easily compute it from `line-start' and
   ;; `buffer-start'.
   )
+
+(setf (documentation 'xstream-encoding 'function)
+      "Switching the encoding on the fly is only possible when the
+stream's buffer is empty; therefore to be able to switch the
+encoding, while some runes are already read, set the stream's speed
+to 1 initially (via the initial-speed argument for MAKE-XSTREAM)
+and later set it to full speed. (The encoding of the runes
+sequence, you fetch off with READ-RUNE is always UTF-16 though).
+After switching the encoding, SET-TO-FULL-SPEED can be used to bump the
+speed up to a full buffer length.
+
+An encoding is simply something, which provides the DECODE-SEQUENCE
+method.")
 
 (defun print-xstream (self sink depth)
   (declare (ignore depth))
@@ -224,9 +251,11 @@
     (unaccount-for-line-break input)))
 
 (defun fread-rune (input)
+  "Same as `read-rune', but not a macro."
   (read-rune input))
 
 (defun fpeek-rune (input)
+  "Same as `peek-rune', but not a macro."
   (peek-rune input))
 
 ;;; Line counting
@@ -245,11 +274,15 @@
 ;; User API:
 
 (defun xstream-position (input)
+  "Return the position of the underlying stream in INPUT, an xstream."
   (+ (xstream-buffer-start input) (xstream-read-ptr input)))
 
 ;; xstream-line-number is structure accessor
+(setf (documentation 'xstream-line-number 'function)
+      "The line number of the underlying stream.")
 
 (defun xstream-column-number (input)
+  "The column number of the underlying stream in INPUT, an xstream."
   (+ (- (xstream-position input)
         (xstream-line-start input))
      1))
@@ -324,6 +357,7 @@
                                     (speed 8192)
                                     (initial-speed 1)
                                     (initial-encoding :guess))
+  "Make an xstream from OS-STREAM."
   ;; XXX if initial-speed isn't 1, encoding will me munged up
   (assert (eql initial-speed 1))
   (multiple-value-bind (encoding preread)
@@ -349,6 +383,7 @@
        :name name))))
 
 (defun make-rod-xstream (string &key name)
+  "Make an xstream that reads from STRING."
   (unless (typep string 'simple-array)
     (setf string (coerce string 'simple-string)))
   (let* ((n (length string))
@@ -390,9 +425,11 @@
 ;;; misc
 
 (defun close-xstream (input)
+  "Close INPUT, an xstream."
   (xstream/close (xstream-os-stream input)))
 
 (defun set-to-full-speed (xstream)
+  "Cf. `xstream-encoding'."
   (setf (xstream-speed xstream) (xstream-full-speed xstream)))
 
 ;;; controller implementations
