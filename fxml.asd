@@ -31,8 +31,7 @@
    (:file "util"            :depends-on ("package"))
    (:file "sax-handler")
    (:file "xml-name-rune-p" :depends-on ("package" "util"))
-   (:file "split-sequence"  :depends-on ("package"))
-   (:file "xml-parse"       :depends-on ("package" "util" "sax-handler" "split-sequence" "xml-name-rune-p"))
+   (:file "xml-parse"       :depends-on ("package" "util" "sax-handler" "xml-name-rune-p"))
    (:file "unparse"         :depends-on ("xml-parse"))
    (:file "xmls-compat"     :depends-on ("xml-parse"))
    (:file "recoder"         :depends-on ("xml-parse"))
@@ -45,7 +44,8 @@
                :quri
                :flexi-streams
                #:alexandria
-               #:serapeum))
+               #:serapeum
+               #:split-sequence))
 
 (asdf:defsystem :fxml/dom
     :pathname "dom/"
