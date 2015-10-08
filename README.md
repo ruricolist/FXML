@@ -25,16 +25,16 @@ Bug fixes:
 - Klacks handles namespaces correctly.
 - XML parser does not reverse attribute lists.
 
-Security: 
+Security:
 - DTDs are forbidden by default.
 - Entity definitions in DTDs are forbidden by default.
 - External references in DTDS are forbidden by default.
 
 New features:
-- Backward compatibility with CXML.
+- Backward compatibility with CXML (system `fxml/cxml`).
 - Restarts allow recovery from many simple XML problems.
 - Inline (callback-based) SAX handlers.
-- Multiplexing SAX handlers.
+- SAX handlers that return multiple values.
 - Document fragment support in STP.
 - DOM and STP are (partially) compatible.
 
@@ -47,7 +47,6 @@ Implementation differences:
 - Does not support SCL.
 - Does not support non-Unicode Lisps.
 - uses QURI instead of PURI.
-- Building XML documents (“unparsing”) is much faster.
 
 # CXML compatibility
 
@@ -69,13 +68,15 @@ DOM, and a number of DOM methods for STP. (At the moment, looking at
 
 # Security
 
-This fork of CXML tries to be *secure by default*, following the lead
-of Python’s [`defusedxml`][defusedxml] library. CXML is secure by
-default in some respects – it does not fetch external resources unless
-you tell it to – but it still vulnerable to other attacks, like the
+FXML tries to be *secure by default*, following the model of Python’s
+[`defusedxml`][defusedxml] library. CXML is secure by default in some
+respects – it does not fetch external resources unless you tell it to
+– but it still vulnerable to other attacks, like the
 [billion laughs][].
 
-All of the new conditions are subtypes of `fxml:xml-security-error`, which is *not* a subtype of any other FXML error: you must handle it directly.
+All of the new conditions are subtypes of `fxml:xml-security-error`,
+which is *not* a subtype of any other FXML error: you must handle it
+directly.
 
 Three extra keyword arguments for `fxml:parse`:
 
@@ -128,13 +129,13 @@ wild: leading and trailing junk, unescaped ampersands, illegal
 characters, and DTDs (a feature which is largely indistinguishable
 from a bug).
 
-Although I do not care much about conformance, I do not think that
+(Although I do not care much about conformance, I do not think that
 providing restarts can be said to be non-conforming. My invoking a
 restart is no different than my stopping, editing the document, and
 re-submitting it to the parser, except that it saves time. The fact
 that the XML spec was written in an era when *programming language*
 was a euphemism for *Java* does not mean we should have to write Java
-in Lisp to deal with XML.
+in Lisp to deal with XML.)
 
 ## Undefined entities
 
@@ -172,7 +173,7 @@ Values handlers and callback handlers can work together.
 
 Suppose, for example, that you want to both parse an XML file, and
 extract all of its text. Of course you could parse the DOM and then
-recurse on it; but by combining callback handlers and values handlers,
+recurse on it. But by combining callback handlers and values handlers,
 you can do it in one pass:
 
     (multiple-value-bind (dom text)
