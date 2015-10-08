@@ -221,15 +221,30 @@ CHAR."
       (let* ((in (ystream-in-buffer ystream))
 	     (out (ystream-out-buffer ystream))
              (n (encode-runes out in ptr (ystream-encoding ystream))))
-        (ystream-device-write ystream out n)
-        (setf (ystream-in-ptr ystream) 0)))))
+	     #+rune-is-utf-16
+	     (surrogatep (<= #xD800 (rune-code (elt in (1- ptr))) #xDBFF))
+	     n)
+	#+rune-is-utf-16
+	(when surrogatep
+	  (decf ptr))
+	(when (plusp ptr)
+	  (setf n (encode-runes out in ptr (ystream-encoding ystream)))
+	  (ystream-device-write ystream out n)
+	  (cond
+	    #+rune-is-utf-16
+	    (surrogatep
+	      (setf (elt in 0) (elt in (1- ptr)))
+	      (setf (ystream-in-ptr ystream) 1))
+	    (t
+	      (setf (ystream-in-ptr ystream) 0)))))))
 
 (defun fast-push (new-element vector)
   (vector-push-extend new-element vector (max 1 (array-dimension vector 0))))
 
 (macrolet ((define-utf8-writer (name (byte &rest aux) result &body body)
 	     `(defun ,name (out in n)
-		(let (,@aux)
+		(let (#+rune-is-utf-16 (high-surrogate nil)
+		      ,@aux)
 		  (labels
 		      ((write0 (,byte)
 			 ,@body)
@@ -263,10 +278,22 @@ CHAR."
 			     (write0 (logior #b10000000 (ldb (byte 6 6) r)))
 			     (write0 (logior #b10000000 (ldb (byte 6 0) r))))))
 		       (write2 (r)
-			 (if (<= #xD800 r #xDFFF)
-                             (error
-                              "Surrogates not allowed in this configuration")
-                             (write1 r))))
+			 (cond
+			   #+rune-is-utf-16
+			   ((<= #xD800 r #xDBFF)
+			     (setf high-surrogate r))
+			   #+rune-is-utf-16
+			   ((<= #xDC00 r #xDFFF)
+			     (let ((q (logior (ash (- high-surrogate #xD7C0) 10)
+					      (- r #xDC00))))
+			       (write1 q))
+			     (setf high-surrogate nil))
+			   #-rune-is-utf-16
+			   ((<= #xD800 r #xDFFF)
+			    (error
+			     "surrogates not allowed in this configuration"))
+			   (t
+			     (write1 r)))))
 		    (dotimes (j n)
 		      (write2 (rune-code (elt in j)))))
 		  ,result))))

@@ -62,8 +62,9 @@
         (eql code 10)
         (eql code 13)
         (<= 32 code #xd7ff)
+        #+rune-is-utf-16 (<= #xD800 code #xDFFF)
         (<= #xe000 code #xfffd)
-        (<= #x10000 code #x10ffff))))
+        #-rune-is-utf-16 (<= #x10000 code #x10ffff))))
 
 (defun xml-characters-p (str)
   (declare (optimize speed (safety 0)))

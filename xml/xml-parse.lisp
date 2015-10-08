@@ -419,7 +419,13 @@
     `(call-with-scratch-pads ,body)))
 
 (defmacro %put-unicode-char (code-var put)
-  `(,put (code-rune ,code-var)))
+  `(progn
+     (cond #+rune-is-utf-16
+           ((%> ,code-var #xFFFF)
+          (,put (the rune (code-rune (%+ #xD7C0 (%ash ,code-var -10)))))
+          (,put (the rune (code-rune (%ior #xDC00 (%and ,code-var #x03FF))))))
+         (t
+          (,put (code-rune ,code-var))))))
 
 (defun adjust-array-by-copying (old-array new-size)
   "Adjust an array by copying and thus ensures, that result is a SIMPLE-ARRAY."
@@ -1477,12 +1483,12 @@
 (definline data-rune-p (rune)
   ;; Any Unicode character, excluding FFFE, and FFFF.
   ;; Allow surrogates if using UTF-16, else allow >= 0x10000.
-  (and rune
-       (let ((c (rune-code rune)))
-         (or (= c #x9) (= c #xA) (= c #xD)
-             (<= #x20 c #xD7FF)
-             (<= #xE000 c #xFFFD)
-             (<= #x10000 c #x10FFFF)))))
+  (let ((c (rune-code rune)))
+    (or (= c #x9) (= c #xA) (= c #xD)
+        (<= #x20 c #xD7FF)
+        #+rune-is-utf-16 (<= #xD800 c #xDFFF)
+        (<= #xE000 c #xFFFD)
+        #-rune-is-utf-16 (<= #x10000 c #x10FFFF))))
 
 (defun read-att-value (zinput input mode &optional canon-space-p (delim nil))
   (with-rune-collector-2 (collect)
@@ -1754,8 +1760,9 @@
   ;; Allow surrogates if using UTF-16, else allow >= 0x10000.
   (or (= c #x9) (= c #xA) (= c #xD)
       (<= #x20 c #xD7FF)
+      #+rune-is-utf-16 (<= #xD800 c #xDFFF)
       (<= #xE000 c #xFFFD)
-      (<= #x10000 c #x10FFFF)))
+      #-rune-is-utf-16 (<= #x10000 c #x10FFFF)))
 
 (defun pubid-char-p (c)
   (or (rune= c #/u+0020) (rune= c #/u+000D) (rune= c #/u+000A)
