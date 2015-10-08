@@ -42,7 +42,8 @@
    #:attribute-value
 
    #:parse
-
+   #:parse-rod                          ;For STP and testing.
+   
    #:make-octet-vector-sink
    #:make-octet-stream-sink
    #:make-rod-sink
