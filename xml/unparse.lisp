@@ -77,21 +77,21 @@
 ;;;; SINK: an xml output sink
 
 (defclass sink (fxml.sax:content-handler)
-    ((ystream :initarg :ystream :accessor sink-ystream)
-     (width :initform 79 :initarg :width :accessor width)
-     (canonical :initform nil :initarg :canonical :accessor canonical)
-     (indentation :initform nil :initarg :indentation :accessor indentation)
-     (current-indentation :initform 0 :accessor current-indentation)
-     (notations :initform (make-buffer :element-type t) :accessor notations)
-     (name-for-dtd :accessor name-for-dtd)
-     (previous-notation :initform nil :accessor previous-notation)
-     (have-doctype :initform nil :accessor have-doctype)
-     (have-internal-subset :initform nil :accessor have-internal-subset)
-     (stack :initform nil :accessor stack)
-     (sink-omit-xml-declaration-p :initform nil
-                                  :initarg :omit-xml-declaration-p
-                                  :accessor sink-omit-xml-declaration-p)
-     (encoding :initarg :encoding :reader sink-encoding)))
+  ((ystream :initarg :ystream :accessor sink-ystream)
+   (width :initform 79 :initarg :width :accessor width)
+   (canonical :initform nil :initarg :canonical :accessor canonical)
+   (indentation :initform nil :initarg :indentation :accessor indentation)
+   (current-indentation :initform 0 :accessor current-indentation)
+   (notations :initform (make-buffer :element-type t) :accessor notations)
+   (name-for-dtd :accessor name-for-dtd)
+   (previous-notation :initform nil :accessor previous-notation)
+   (have-doctype :initform nil :accessor have-doctype)
+   (have-internal-subset :initform nil :accessor have-internal-subset)
+   (stack :initform nil :accessor stack)
+   (sink-omit-xml-declaration-p :initform nil
+                                :initarg :omit-xml-declaration-p
+                                :accessor sink-omit-xml-declaration-p)
+   (encoding :initarg :encoding :reader sink-encoding)))
 
 (defmethod initialize-instance :after ((instance sink) &key)
   (when (eq (canonical instance) t)
@@ -117,8 +117,7 @@
 ;; bisschen unschoen hier die ganze api zu duplizieren, aber die
 ;; ystreams sind noch undokumentiert
 (macrolet ((define-maker (make-sink make-ystream &rest args)
-             `(defun ,make-sink (,@args &rest initargs
-                                 &key ,@+basic-keywords+ &allow-other-keys)
+             `(defun ,make-sink (,@args &rest initargs &key ,@+basic-keywords+)
                 (declare (ignore ,@(remove 'encoding +basic-keywords+)))
                 (let* ((encoding (or encoding "UTF-8"))
                        (ystream (,make-ystream ,@args)))
@@ -260,15 +259,15 @@
     (sink-write-rod (name-for-dtd sink) sink)
     (cond
       ((not (zerop (length public-id)))
-        (sink-write-rod #" PUBLIC \"" sink)
-        (sink-write-escapable-rod public-id sink)
-        (sink-write-rod #"\" \"" sink)
-        (sink-write-escapable-rod system-id sink)
-        (sink-write-rod #"\"" sink))
+       (sink-write-rod #" PUBLIC \"" sink)
+       (sink-write-escapable-rod public-id sink)
+       (sink-write-rod #"\" \"" sink)
+       (sink-write-escapable-rod system-id sink)
+       (sink-write-rod #"\"" sink))
       ((not (zerop (length system-id)))
-        (sink-write-rod #" SYSTEM \"" sink)
-        (sink-write-escapable-rod system-id sink)
-        (sink-write-rod #"\"" sink)))))
+       (sink-write-rod #" SYSTEM \"" sink)
+       (sink-write-escapable-rod system-id sink)
+       (sink-write-rod #"\"" sink)))))
 
 (defmethod fxml.sax:start-internal-subset ((sink sink))
   (when (have-internal-subset sink)
@@ -312,16 +311,16 @@
   (sink-write-rod name sink)
   (cond
     ((zerop (length public-id))
-      (sink-write-rod #" SYSTEM " sink)
-      (write-quoted-rod system-id sink))
+     (sink-write-rod #" SYSTEM " sink)
+     (write-quoted-rod system-id sink))
     ((zerop (length system-id))
-      (sink-write-rod #" PUBLIC " sink)
-      (write-quoted-rod public-id sink))
+     (sink-write-rod #" PUBLIC " sink)
+     (write-quoted-rod public-id sink))
     (t
-      (sink-write-rod #" PUBLIC " sink)
-      (write-quoted-rod public-id sink)
-      (sink-write-rod #" " sink)
-      (write-quoted-rod system-id sink)))
+     (sink-write-rod #" PUBLIC " sink)
+     (write-quoted-rod public-id sink)
+     (sink-write-rod #" " sink)
+     (write-quoted-rod system-id sink)))
   (sink-write-rune #/> sink)
   (sink-write-rune #/U+000A sink))
 
@@ -332,16 +331,16 @@
     (sink-write-rod name sink)
     (cond
       ((zerop (length public-id))
-        (sink-write-rod #" SYSTEM " sink)
-        (write-quoted-rod system-id sink))
+       (sink-write-rod #" SYSTEM " sink)
+       (write-quoted-rod system-id sink))
       ((zerop (length system-id))
-        (sink-write-rod #" PUBLIC " sink)
-        (write-quoted-rod public-id sink))
+       (sink-write-rod #" PUBLIC " sink)
+       (write-quoted-rod public-id sink))
       (t
-        (sink-write-rod #" PUBLIC " sink)
-        (write-quoted-rod public-id sink)
-        (sink-write-rod #" " sink)
-        (write-quoted-rod system-id sink)))
+       (sink-write-rod #" PUBLIC " sink)
+       (write-quoted-rod public-id sink)
+       (sink-write-rod #" " sink)
+       (write-quoted-rod system-id sink)))
     (sink-write-rod #" NDATA " sink)
     (sink-write-rod notation-name sink)
     (sink-write-rune #/> sink)
@@ -357,16 +356,16 @@
   (sink-write-rod name sink)
   (cond
     ((zerop (length public-id))
-      (sink-write-rod #" SYSTEM " sink)
-      (write-quoted-rod system-id sink))
+     (sink-write-rod #" SYSTEM " sink)
+     (write-quoted-rod system-id sink))
     ((zerop (length system-id))
-      (sink-write-rod #" PUBLIC " sink)
-      (write-quoted-rod public-id sink))
+     (sink-write-rod #" PUBLIC " sink)
+     (write-quoted-rod public-id sink))
     (t
-      (sink-write-rod #" PUBLIC " sink)
-      (write-quoted-rod public-id sink)
-      (sink-write-rod #" " sink)
-      (write-quoted-rod system-id sink)))
+     (sink-write-rod #" PUBLIC " sink)
+     (write-quoted-rod public-id sink)
+     (sink-write-rod #" " sink)
+     (write-quoted-rod system-id sink)))
   (sink-write-rune #/> sink)
   (sink-write-rune #/U+000A sink))
 
@@ -393,38 +392,38 @@
   (labels ((walk (m)
              (cond
                ((eq m :EMPTY)
-                 (sink-write-rod "EMPTY" sink))
+                (sink-write-rod "EMPTY" sink))
                ((eq m :PCDATA)
-                 (sink-write-rod "#PCDATA" sink))
+                (sink-write-rod "#PCDATA" sink))
                ((eq m :ANY)
-                 (sink-write-rod "ANY" sink))
+                (sink-write-rod "ANY" sink))
                ((atom m)
-                 (sink-write-escapable-rod m sink))
+                (sink-write-escapable-rod m sink))
                (t
-                 (ecase (car m)
-                   (and
-                     (sink-write-rune #/\( sink)
-                     (loop for (n . rest) on (cdr m) do
-                           (walk n)
-                           (when rest
-                             (sink-write-rune #\, sink)))
-                     (sink-write-rune #/\) sink))
-                   (or
-                     (sink-write-rune #/\( sink)
-                     (loop for (n . rest) on (cdr m) do
-                           (walk n)
-                           (when rest
-                             (sink-write-rune #\| sink)))
-                     (sink-write-rune #/\) sink))
-                   (*
-                     (walk (second m))
-                     (sink-write-rune #/* sink))
-                   (+
-                     (walk (second m))
-                     (sink-write-rune #/+ sink))
-                   (?
-                     (walk (second m))
-                     (sink-write-rune #/? sink)))))))
+                (ecase (car m)
+                  (and
+                   (sink-write-rune #/\( sink)
+                   (loop for (n . rest) on (cdr m) do
+                     (walk n)
+                     (when rest
+                       (sink-write-rune #\, sink)))
+                   (sink-write-rune #/\) sink))
+                  (or
+                   (sink-write-rune #/\( sink)
+                   (loop for (n . rest) on (cdr m) do
+                     (walk n)
+                     (when rest
+                       (sink-write-rune #\| sink)))
+                   (sink-write-rune #/\) sink))
+                  (*
+                   (walk (second m))
+                   (sink-write-rune #/* sink))
+                  (+
+                   (walk (second m))
+                   (sink-write-rune #/+ sink))
+                  (?
+                   (walk (second m))
+                   (sink-write-rune #/? sink)))))))
     (walk model))
   (sink-write-rune #/> sink)
   (sink-write-rune #/U+000A sink))
