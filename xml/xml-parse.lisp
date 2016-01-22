@@ -445,7 +445,7 @@
                       (setf ,',b
                             (setf ,',scratch
                                   (adjust-array-by-copying ,',b ,',n))))
-                    (setf (svref ,',b ,',i) x)
+                    (setf (aref (the (simple-array rune (*)) ,',b) ,',i) x)
                     (incf ,',i)))
                 ,x)))
          ,@body
