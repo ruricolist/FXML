@@ -4,6 +4,9 @@ advantages over CXML proper. But if you are dealing with potentially
 faulty XML, from untrusted sources – if, for example, you are running
 a feed reader – then FXML is probably the better choice.
 
+Also, FXML does not support Lisps that use UTF-16 as their character
+encoding; if you use one of those, you will have to use CXML.
+
 FXML does not conflict with CXML. They can both be loaded into the
 same Lisp system, and in fact they can be made to interoperate. This
 means that, although FXML’s API is very close to CXML’s, and for the
@@ -42,6 +45,7 @@ Removed features:
 - FXML does not support HAX.
 
 Implementation differences:
+- FXML does not support Lisps that use UTF-16
 - Monolithic project (absorbs closure-common, cxml-stp).
 - Uses named-readtables.
 - Does not support SCL.
