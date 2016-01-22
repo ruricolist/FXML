@@ -487,9 +487,16 @@
   (when (and *print-readably* (not *read-eval*))
     (error "cannot print STP nodes readably without *read-eval*"))
   ;; zzz pretty printing on clisp introduces spurious closing parens
-  (if (and *print-pretty* #+clisp nil)
-      (pretty-print-node object stream)
-      (ugly-print-node object stream)))
+  (if *print-escape*
+      (if (and *print-pretty* #+clisp nil)
+          (pretty-print-node object stream)
+          (ugly-print-node object stream))
+      (let ((sink (fxml:make-character-stream-sink
+                   stream
+                   :indentation (and *print-pretty* 2))))
+        (serialize object sink)
+        ;; This does nothing if the object is a document.
+        (fxml.sax:end-document sink))))
 
 (defun pretty-print-node (node stream)
   (let* ((slots (mapcan (lambda (spec)
