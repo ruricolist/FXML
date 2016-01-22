@@ -93,7 +93,14 @@
 
 (defmethod print-object ((object element) stream)
   (print-unreadable-object (object stream :type t :identity t)
-    (princ (rod-string (fxml.dom:tag-name object)) stream)))
+    (let ((class (fxml.dom:get-attribute object "class"))
+          (id (fxml.dom:get-attribute object "id"))
+          (tag-name (fxml.dom:tag-name object)))
+      (format stream "~a~@[.~{~a~^.~}~]~@[#~a~]"
+              tag-name
+              (and (not (alexandria:emptyp class))
+                   (serapeum:tokens class))
+              (and (not (alexandria:emptyp id)) id)))))
 
 (defclass text (character-data fxml.dom:text)
   ())
