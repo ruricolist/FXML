@@ -516,21 +516,3 @@
       (values (and prefix (find-namespace-binding prefix))
               local-name
               prefix))))
-
-
-;;;; debugging
-
-#+(or)
-(trace FXML::KLACKS/DOCTYPE
-       FXML::KLACKS/EXT-PARSED-ENT
-       FXML::KLACKS/MISC*-2
-       FXML::KLACKS/ENTITY-REFERENCE
-       FXML::KLACKS/ENTITY-REFERENCE-2
-       FXML::KLACKS/ELEMENT
-       FXML::KLACKS/ZTAG
-       FXML::KLACKS/XMLDECL
-       FXML::KLACKS/FINISH-DOCTYPE
-       FXML::KLACKS/ELEMENT-3
-       FXML::KLACKS/EOF
-       FXML::KLACKS/ELEMENT-2
-       FXML::KLACKS/CONTENT )
