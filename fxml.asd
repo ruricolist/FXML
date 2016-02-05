@@ -14,8 +14,8 @@
    (:file "encodings-data")
    (:file "xstream")
    (:file "ystream"))
-  :depends-on (#:babel
-               #:named-readtables))
+  :depends-on (:babel
+               :named-readtables))
 
 (asdf:defsystem :fxml/xml
   :pathname "xml/"
@@ -36,9 +36,9 @@
   :depends-on (:fxml/runes
                :quri
                :flexi-streams
-               #:alexandria
-               #:serapeum
-               #:split-sequence))
+               :alexandria
+               :serapeum
+               :split-sequence))
 
 (asdf:defsystem :fxml/dom
     :pathname "dom/"
@@ -70,12 +70,12 @@
 
 (asdf:defsystem :fxml
   :components ()
-  :in-order-to ((test-op (test-op #:fxml/test)))
+  :in-order-to ((test-op (test-op :fxml/test)))
   :depends-on (:fxml/dom :fxml/klacks))
 
 (defsystem :fxml/stp
   :serial t
-  :in-order-to ((test-op (test-op #:fxml/stp/test)))
+  :in-order-to ((test-op (test-op :fxml/stp/test)))
   :pathname "stp/"
   :components
   ((:file "package")
@@ -104,53 +104,53 @@
   ((:file "test"))
   :depends-on (:fxml/stp :rt))
 
-(asdf:defsystem #:fxml/html5
+(asdf:defsystem :fxml/html5
   :serial t
   :description "Bridge HTML5 and FXML"
   :author "Paul M. Rodriguez <pmr@ruricolist.com>"
   :license "MIT"
   :pathname "html5/"
-  :depends-on (#:alexandria
-               #:serapeum
-               #:fset
-               #:fxml
-               #:fxml/stp
-               #:cl-html5-parser
-               #:quri)
+  :depends-on (:alexandria
+               :serapeum
+               :fset
+               :fxml
+               :fxml/stp
+               :cl-html5-parser
+               :quri)
   :components ((:file "package")
                (:file "html5-sax")
                (:file "sink")
                (:file "transform")
                (:file "parse")))
 
-(asdf:defsystem #:fxml/css-selectors
+(asdf:defsystem :fxml/css-selectors
   :description "Bridge css-selectors and FXML."
   :pathname "css/"
-  :depends-on (#:fxml #:fxml/stp #:css-selectors)
+  :depends-on (:fxml :fxml/stp :css-selectors)
   :components ((:file "dom")
                (:file "stp")))
 
-(asdf:defsystem #:fxml/cxml
+(asdf:defsystem :fxml/cxml
   :description "Bridge FXML and CXML."
   :pathname "cxml/"
-  :depends-on (#:fxml #:cxml)
+  :depends-on (:fxml :cxml)
   :components ((:file "package")
                (:file "protocol" :depends-on ("package"))
                (:file "attributes" :depends-on ("package"))))
 
-(defsystem #:fxml/sanitize
+(defsystem :fxml/sanitize
   :serial t
   :description "Streaming HTML sanitizer"
   :author "Paul M. Rodriguez"
   :license "LLGPL"
-  :depends-on (#:alexandria #:serapeum #:fxml #:quri)
+  :depends-on (:alexandria :serapeum :fxml :quri)
   :pathname "sanitize/"
-  :in-order-to ((test-op (test-op #:fxml/sanitize/test)))
+  :in-order-to ((test-op (test-op :fxml/sanitize/test)))
   :components ((:file "package")
                (:file "sax-sanitize")))
 
-(defsystem #:fxml/sanitize/test
-  :depends-on (#:fxml/sanitize #:fiveam #:fxml/html5)
+(defsystem :fxml/sanitize/test
+  :depends-on (:fxml/sanitize :fiveam :fxml/html5)
   :pathname "sanitize/"
   :perform (test-op (o c) (uiop:symbol-call :fxml.sanitize.test :run-tests))
   :components ((:file "test")))
