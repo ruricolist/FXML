@@ -2,13 +2,6 @@
   (:use :asdf :cl))
 (in-package :fxml-system)
 
-(progn
-  ;; (format t "~&;;; Checking for wide character support...")
-  (flet ((test (code)
-           (and (< code char-code-limit) (code-char code))))
-    (unless (test 70000)
-      (pushnew :rune-is-utf-16 *features*))))
-
 (defsystem :fxml/runes
   :serial t
   :pathname "runes/"
