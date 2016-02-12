@@ -1,17 +1,16 @@
-FXML is a fork of CXML emphasizing security and tolerance. If you are
-dealing with well-formed XML from trusted sources, FXML has few if any
-advantages over CXML proper. But if you are dealing with potentially
-faulty XML, from untrusted sources – if, for example, you are running
-a feed reader – then FXML is probably the better choice.
+FXML is a fork of CXML. You should use FXML instead of CXML if:
 
-Also, FXML does not support Lisps that use UTF-16 as their character
-encoding; if you use one of those, you will have to use CXML.
+- You need to use Klacks with namespaces.
+- You are parsing potentially ill-formed XML.
+- You are parsing potentially malicious XML.
 
-FXML does not conflict with CXML. They can both be loaded into the
-same Lisp system, and in fact they can be made to interoperate. This
-means that, although FXML’s API is very close to CXML’s, and for the
-most part, you can refer to the [CXML documentation][cxml] for usage,
-all package names have been changed:
+Note that FXML includes compatibility with CXML. If you load the
+`fxml/cxml` system, you can (for example) use the FXML parser to build
+a CXML DOM.
+
+FXML’s API is very close to CXML’s, and for the most part, you can
+refer to the [CXML documentation][cxml] for usage, but all package
+names have been changed:
 
 ```
 CXML     -> FXML
