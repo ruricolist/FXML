@@ -99,8 +99,11 @@
 (definline runep (x)
   (characterp x))
 
-(definline rod= (x y)
-  (string= x y))
+(defun rod= (x y)
+  (cond
+    ((emptyp x) (emptyp y))
+    ((emptyp y) nil)
+    (t (string= x y))))
 
 (definline rod-equal (x y)
   (string-equal x y))
