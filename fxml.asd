@@ -136,7 +136,8 @@
   :depends-on (:fxml :cxml)
   :components ((:file "package")
                (:file "protocol" :depends-on ("package"))
-               (:file "attributes" :depends-on ("package"))))
+               (:file "attributes" :depends-on ("package"))
+               (:file "class" :depends-on ("package"))))
 
 (defsystem :fxml/sanitize
   :serial t

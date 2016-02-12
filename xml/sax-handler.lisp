@@ -292,6 +292,12 @@ Setting this variable has no effect unless both
              FXML.SAX:ABSTRACT-HANDLER"
                      (sax-condition.handler c)))))
 
+(defgeneric deprecated-sax-default-method (handler event)
+  (:method (handler event)
+    (warn 'deprecated-sax-default-method
+          :handler handler
+          :event event)))
+
 (define-condition not-implemented (error sax-condition)
   ()
   (:report (lambda (c s)
@@ -309,9 +315,7 @@ Setting this variable has no effect unless both
        nil)
      (:method ((handler t) ,@args)
        (declare (ignore ,@args))
-       (warn 'deprecated-sax-default-method
-             :handler handler
-             :event ',name)
+       (deprecated-sax-default-method handler ',name)
        nil)
      (:method ((handler abstract-handler) ,@args)
        (declare (ignore ,@args))
@@ -408,9 +412,7 @@ Setting this variable has no effect unless both
     (setf (slot-value handler 'sax-parser) sax-parser))
   (:method ((handler t) sax-parser)
     (declare (ignore sax-parser))
-    (warn 'deprecated-sax-default-method
-          :handler handler
-          :event 'register-sax-parser)
+    (deprecated-sax-default-method handler 'register-sax-parser)
     nil))
 
 ;;;; Callback handlers.
