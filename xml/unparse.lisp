@@ -71,8 +71,9 @@
 ;; -- James Clark (jjc@jclark.com)
 
 
-(defconstant +basic-keywords+
-  '(canonical indentation encoding omit-xml-declaration))
+(eval-when (:compile-toplevel :load-toplevel)
+  (defconstant +basic-keywords+
+    '(canonical indentation encoding omit-xml-declaration)))
 
 ;;;; SINK: an xml output sink
 
