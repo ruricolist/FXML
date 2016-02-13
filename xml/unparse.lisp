@@ -72,7 +72,7 @@
 
 
 (eval-when (:compile-toplevel :load-toplevel)
-  (defconstant +basic-keywords+
+  (defvar *basic-keywords*
     '(canonical indentation encoding omit-xml-declaration)))
 
 ;;;; SINK: an xml output sink
@@ -118,8 +118,8 @@
 ;; bisschen unschoen hier die ganze api zu duplizieren, aber die
 ;; ystreams sind noch undokumentiert
 (macrolet ((define-maker (make-sink make-ystream &rest args)
-             `(defun ,make-sink (,@args &rest initargs &key ,@+basic-keywords+)
-                (declare (ignore ,@(remove 'encoding +basic-keywords+)))
+             `(defun ,make-sink (,@args &rest initargs &key ,@*basic-keywords*)
+                (declare (ignore ,@(remove 'encoding *basic-keywords*)))
                 (let* ((encoding (or encoding "UTF-8"))
                        (ystream (,make-ystream ,@args)))
                   (setf (ystream-encoding ystream)
@@ -135,7 +135,7 @@
   
   (define-maker make-character-stream-sink make-character-stream-ystream stream))
 
-(defun make-string-sink #.`(&rest args &key ,@+basic-keywords+)
+(defun make-string-sink #.`(&rest args &key ,@*basic-keywords*)
   "@return{A serialization sink, i.e. a @class{SAX handler}}
 
    Returns a handler that writes processes SAX events by writing an
@@ -148,7 +148,7 @@
    All sink creation functions share the same keyword arguments.
    Refer to @fun{make-octet-vector-sink} for details on keyword
    arguments."
-  (declare #.`(ignorable ,@+basic-keywords+))
+  (declare #.`(ignorable ,@*basic-keywords*))
   (apply #'make-rod-sink args))
 
 
