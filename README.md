@@ -62,7 +62,7 @@ for CXML. You can then mix CXML and FXML sinks and sources:
 
 # DOM and STP compatibility
 
-DOM and STP overlap significantly in some respect. In particular,
+DOM and STP overlap significantly in some respects. In particular,
 read-only functions that return strings – functions that, for example,
 look up attribute values or tag names – are effectively equivalent.
 When FXML/STP is loaded, it specializes a number of STP methods for
