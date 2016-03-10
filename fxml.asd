@@ -92,7 +92,7 @@
    (:file "processing-instruction")
    (:file "text")
    (:file "builder")
-   (:file "xpath")
+   #+ () (:file "xpath")
    (:file "dom"))
   :depends-on (:fxml :alexandria :xpath))
 
