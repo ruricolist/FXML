@@ -31,6 +31,7 @@
 
 (defgeneric fxml.klacks:peek (source))
 (defgeneric fxml.klacks:peek-value (source))
+(defgeneric fxml.klacks:peek-next (source))
 (defgeneric fxml.klacks:consume (source))
 
 (defgeneric fxml.klacks:map-attributes (fn source))
