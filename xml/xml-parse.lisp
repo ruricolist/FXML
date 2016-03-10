@@ -480,6 +480,31 @@
 ;;;;  DTD
 ;;;;
 
+(defvar *validate* t)
+(defvar *external-subset-p* nil)
+
+(defstruct attdef
+  ;; an attribute definition
+  element       ;name of element this attribute belongs to
+  name          ;name of attribute
+  type          ;type of attribute; either one of :CDATA, :ID, :IDREF, :IDREFS,
+                                        ; :ENTITY, :ENTITIES, :NMTOKEN, :NMTOKENS, or
+                                        ; (:NOTATION <name>*)
+                                        ; (:ENUMERATION <name>*)
+  default       ;default value of attribute:
+                                        ; :REQUIRED, :IMPLIED, (:FIXED content) or (:DEFAULT content)
+  (external-p *external-subset-p*)
+  )
+
+(defstruct elmdef
+  ;; an element definition
+  name          ;name of the element
+  content       ;content model            [*]
+  attributes    ;list of defined attributes
+  compiled-cspec ;cons of validation function for contentspec
+  (external-p *external-subset-p*)
+  )
+
 (define-condition xml-parse-error (simple-error) ()
   (:documentation
    "Superclass of all conditions signalled by the FXML parser."))
@@ -540,7 +565,12 @@
               ((eq :main (stream-name-entity-kind name))
                 (stream-name-uri name))
               (t
-                name)))))
+               name)))))
+
+(defstruct zstream
+  token-category
+  token-semantic
+  input-stack)
 
 (defun build-error-message (stream message)
   (with-output-to-string (s)
@@ -648,9 +678,6 @@
     (if (or (null uri) (stringp uri))
         uri
         (quri:render-uri uri nil))))
-
-(defvar *validate* t)
-(defvar *external-subset-p* nil)
 
 (defun validate-start-element (ctx name)
   (when *validate*
@@ -898,6 +925,12 @@
     (setf (extid-system result) (absolute-uri sysid source-stream))
     result))
 
+(defstruct dtd
+  (elements (%make-rod-hash-table))     ;elmdefs
+  (gentities (%make-rod-hash-table))    ;general entities
+  (pentities (%make-rod-hash-table))    ;parameter entities
+  (notations (%make-rod-hash-table)))
+
 (defun define-entity (source-stream name kind def)
   (setf name (intern-name name))
   (when (and fxml.sax:*namespace-processing* (find #/: name))
@@ -1009,28 +1042,6 @@
   (define-entity nil #"apos" :general (make-internal-entdef #"'"))
   (define-entity nil #"quot" :general (make-internal-entdef #"\"")))
 
-(defstruct attdef
-  ;; an attribute definition
-  element       ;name of element this attribute belongs to
-  name          ;name of attribute
-  type          ;type of attribute; either one of :CDATA, :ID, :IDREF, :IDREFS,
-                ; :ENTITY, :ENTITIES, :NMTOKEN, :NMTOKENS, or
-                ; (:NOTATION <name>*)
-                ; (:ENUMERATION <name>*)
-  default       ;default value of attribute:
-                ; :REQUIRED, :IMPLIED, (:FIXED content) or (:DEFAULT content)
-  (external-p *external-subset-p*)
-  )
-
-(defstruct elmdef
-  ;; an element definition
-  name          ;name of the element
-  content       ;content model            [*]
-  attributes    ;list of defined attributes
-  compiled-cspec ;cons of validation function for contentspec
-  (external-p *external-subset-p*)
-  )
-
 ;; [*] in XML it is possible to define attributes before the element
 ;; itself is defined and since we hang attribute definitions into the
 ;; relevant element definitions, the `content' slot indicates whether an
@@ -1039,12 +1050,6 @@
 
 (defun %make-rod-hash-table ()
   (make-hash-table :test 'equal))
-
-(defstruct dtd
-  (elements (%make-rod-hash-table))     ;elmdefs
-  (gentities (%make-rod-hash-table))    ;general entities
-  (pentities (%make-rod-hash-table))    ;parameter entities
-  (notations (%make-rod-hash-table)))
 
 (defun make-dtd-cache ()
   (make-hash-table :test 'equalp))
@@ -1152,14 +1157,9 @@
 ;;;;  z streams and lexer
 ;;;;
 
-(defstruct zstream
-  token-category
-  token-semantic
-  input-stack)
-
 (defun call-with-zstream (fn zstream)
   (unwind-protect
-      (funcall fn zstream)
+       (funcall fn zstream)
     (dolist (input (zstream-input-stack zstream))
       (when (xstream-p input)
         (close-xstream input)))))
@@ -2460,6 +2460,11 @@
     (when xstream
       (xstream-encoding xstream))))
 
+(defstruct xml-header
+  version
+  encoding
+  (standalone-p nil))
+
 (defun setup-encoding (input xml-header)
   (when (xml-header-encoding xml-header)
     (let ((enc (find-encoding (xml-header-encoding xml-header)))
@@ -2899,11 +2904,6 @@
 
 ;; [78] extParsedEnt ::= TextDecl? contentw
 ;; [79]        extPE ::= TextDecl? extSubsetDecl
-
-(defstruct xml-header
-  version
-  encoding
-  (standalone-p nil))
 
 (defun p/ext-parsed-ent (input)
   ;; [78] extParsedEnt ::= '<?xml' VersionInfo? EncodingDecl S? '?>' content

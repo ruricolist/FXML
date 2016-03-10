@@ -964,16 +964,6 @@
       (fxml.dom:append-child node (fxml.dom:create-text-node owner rod))))
   new-value)
 
-(defun attribute-to-string (attribute)
-  (let ((stream (make-rod-stream)))
-    (flet ((doit ()
-             (dovector (child (fxml.dom:child-nodes attribute))
-               (write-attribute-child child stream))))
-      (doit)
-      (initialize-rod-stream stream)
-      (doit))
-    (rod-stream-buf stream)))
-
 (defmethod write-attribute-child ((node node) stream)
   (put-rod (fxml.dom:node-value node) stream))
 
@@ -989,6 +979,16 @@
 (defstruct rod-stream
   (buf nil)
   (position 0))
+
+(defun attribute-to-string (attribute)
+  (let ((stream (make-rod-stream)))
+    (flet ((doit ()
+             (dovector (child (fxml.dom:child-nodes attribute))
+               (write-attribute-child child stream))))
+      (doit)
+      (initialize-rod-stream stream)
+      (doit))
+    (rod-stream-buf stream)))
 
 (defun put-rod (rod rod-stream)
   (let ((buf (rod-stream-buf rod-stream)))
