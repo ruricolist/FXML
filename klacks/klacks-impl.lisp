@@ -117,7 +117,7 @@
     (input &rest args
      &key validate dtd root entity-resolver disallow-internal-subset
           (buffering t) pathname)
-  (declare (ignore validate dtd root entity-resolver disallow-internal-subset))
+  (declare (ignore validate dtd root entity-resolver disallow-internal-subset pathname))
   (etypecase input
     (xstream
       (when (and (not buffering) (< 1 (fxml.runes::xstream-speed input)))
