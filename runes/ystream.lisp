@@ -369,7 +369,7 @@ CHAR."
 
 (defmethod close ((stream octet-input-stream) &key abort)
   (declare (ignore abort))
-  (open-stream-p stream))
+  (values (open-stream-p stream)))
 
 (defmethod stream-read-byte ((stream octet-input-stream))
   (with-slots (octets pos) stream
