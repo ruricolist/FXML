@@ -28,8 +28,7 @@
   (let ((dtd (xml-space-dtd handler)))
     (when dtd
       (let ((xml-space
-	     (fxml.sax:find-attribute (if (stringp qname) "xml:space" #"xml:space")
-				 attrs)))
+              (fxml.sax:find-attribute "xml:space" attrs)))
 	(push (if xml-space
 		  (rod= (rod (fxml.sax:attribute-value xml-space)) #"default")
 		  (car (xml-space-attributes handler)))
