@@ -66,7 +66,6 @@
         (<= #x10000 code #x10ffff))))
 
 (defun xml-characters-p (str)
-  (declare (optimize speed (safety 0)))
   (etypecase str
     ((simple-array character (*))
      (loop for c across str
