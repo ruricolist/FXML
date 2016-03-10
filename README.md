@@ -1,6 +1,6 @@
-FXML is a fork of CXML. You should use FXML instead of CXML if:
+FXML is a fork of [CXML][]. You should use FXML instead of CXML if:
 
-- You need to use Klacks with namespaces.
+- You need to use [Klacks][] with namespaces.
 - You are parsing potentially ill-formed XML.
 - You are parsing potentially malicious XML.
 
@@ -8,8 +8,8 @@ Note that FXML includes compatibility with CXML. If you load the
 `fxml/cxml` system, you can (for example) use the FXML parser to build
 a CXML DOM.
 
-FXML’s API is very close to CXML’s, and for the most part, you can
-refer to the [CXML documentation][cxml] for usage, but all package
+FXML’s API is very close to CXML’s, and for the most part you can
+refer to the [CXML documentation][CXML] for usage, but all package
 names have been changed:
 
 ```
@@ -44,12 +44,12 @@ Removed features:
 - FXML does not support HAX.
 
 Implementation differences:
-- FXML does not support Lisps that use UTF-16
+- FXML does not support Lisps that use UTF-16.
 - Monolithic project (absorbs closure-common, cxml-stp).
 - Uses named-readtables.
 - Does not support SCL.
 - Does not support non-Unicode Lisps.
-- uses QURI instead of PURI.
+- Uses QURI instead of PURI.
 
 # CXML compatibility
 
@@ -72,10 +72,9 @@ DOM, and a number of DOM methods for STP. (At the moment, looking at
 # Security
 
 FXML tries to be *secure by default*, following the model of Python’s
-[`defusedxml`][defusedxml] library. CXML is secure by default in some
-respects – it does not fetch external resources unless you tell it to
-– but it still vulnerable to other attacks, like the
-[billion laughs][].
+[defusedxml][] library. CXML is secure by default in some respects –
+it does not fetch external resources unless you tell it to – but it
+still vulnerable to other attacks, like the [billion laughs][].
 
 All of the new conditions are subtypes of `fxml:xml-security-error`,
 which is *not* a subtype of any other FXML error: you must handle it
@@ -109,7 +108,7 @@ You can restart with `continue` to skip the entity being defined.
 Default true. Signal `fxml:external-reference-forbidden` if the
 document’s DTD contains external references.
 
-(This is actually an error by default in FXML, but it doesn’t have its
+(This is actually an error by default in CXML, but it doesn’t have its
 own condition.)
 
 The pubid and sysid of the reference can be read with
@@ -191,8 +190,8 @@ you can do it in one pass:
                                          (get-output-stream-string text))))))
       ...)
 
-[cxml]: http://common-lisp.net/project/fxml/
+[CXML]: http://common-lisp.net/project/fxml/
 [defusedxml]: https://pypi.python.org/pypi/defusedxml
 [billion laughs]: https://en.wikipedia.org/wiki/Billion_laughs
 [sax]: https://common-lisp.net/project/cxml/saxoverview/
-[klacks]: http://lichteblau.blogspot.com/2007/03/klacks-parsing.html
+[Klacks]: http://lichteblau.blogspot.com/2007/03/klacks-parsing.html
