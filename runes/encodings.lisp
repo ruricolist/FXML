@@ -75,10 +75,11 @@
      ',name))
 
 (defun find-encoding (name)
-  (let ((x (gethash (resolve-name name) *encodings*)))
-    (and x
-         (or (first x)
-             (setf (first x) (funcall (second x)))))))
+  (if (string-equal name "us-ascii") :utf-8
+      (let ((x (gethash (resolve-name name) *encodings*)))
+        (and x
+             (or (first x)
+                 (setf (first x) (funcall (second x))))))))
 
 (defclass encoding () ())
 
