@@ -168,7 +168,7 @@ CHAR."
 ;;
 (defun ystream-write-escapable-rod (rod ystream &key (start 0) (end (length rod)))
   (if (ystream-unicode-p ystream)
-      (ystream-write-rod rod ystream)
+      (ystream-write-rod rod ystream :start start :end end)
       (let ((encoding (ystream-encoding ystream)))
         (flet ((encodablep (rune)
                  (encodablep rune encoding)))
