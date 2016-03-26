@@ -90,6 +90,7 @@
    (have-internal-subset :initform nil :accessor have-internal-subset)
    (stack :initform nil :accessor stack)
    (sink-omit-xml-declaration-p :initform nil
+                                :initarg :omit-xml-declaration
                                 :initarg :omit-xml-declaration-p
                                 :accessor sink-omit-xml-declaration-p)
    (encoding :initarg :encoding :reader sink-encoding)))
