@@ -1,14 +1,56 @@
 (defpackage #:fxml.xmlconf
-  (:use :cl :fxml.runes)
+  (:use :cl)
   (:export #:run-all-tests
            #:sax-test
-           #:klacks-test))
+           #:klacks-test
+           #:with-cxml
+           #:with-fxml))
 (in-package :fxml.xmlconf)
 
 (defvar *debug-tests* nil)
 
+(defvar *impl*)
+(declaim (type (member :fxml :cxml) *impl*))
+
+(defvar *xml*)
+(defvar *runes*)
+(defvar *dom*)
+(defvar *rune-dom*)
+(defvar *klacks*)
+(declaim (type keyword *xml* *runes* *dom* *rune-dom* *klacks*))
+
+(defun call/cxml (fn)
+  (let ((*impl* :cxml)
+        (*xml* :cxml)
+        (*runes* :runes)
+        (*dom* :dom)
+        (*rune-dom* :rune-dom)
+        (*klacks* :klacks))
+    (funcall fn)))
+
+(defun call/fxml (fn)
+  (let ((*impl* :fxml)
+        (*xml* :fxml)
+        (*runes* :fxml.runes)
+        (*dom* :fxml.dom)
+        (*rune-dom* :fxml.rune-dom)
+        (*klacks* :fxml.klacks))
+    (funcall fn)))
+
+(defmacro with-cxml ((&key) &body body)
+  `(call/cxml (lambda () ,@body)))
+
+(defmacro with-fxml ((&key) &body body)
+  `(call/fxml (lambda () ,@body)))
+
 (defun get-attribute (element name)
-  (rod-string (fxml.dom:get-attribute element name)))
+  (case *impl*
+    (:cxml
+     (runes:rod-string
+      (dom:get-attribute element name)))
+    (:fxml
+     (fxml.runes:rod-string
+      (fxml.dom:get-attribute element name)))))
 
 (defparameter *bad-tests*
     '(;; TS14
@@ -47,7 +89,7 @@
 (defun test-pathnames (directory test)
   (let* ((sub-directory
           (loop
-              for parent = test then (fxml.dom:parent-node parent)
+              for parent = test then (uiop:symbol-call *dom* :parent-node parent)
               for base = (get-attribute parent "xml:base")
               until (plusp (length base))
               finally (return (merge-pathnames base directory))))
@@ -58,7 +100,8 @@
               (merge-pathnames output sub-directory)))))
 
 (defmethod serialize-document ((document t))
-  (fxml.dom:map-document (fxml:make-octet-vector-sink :canonical 2)
+  (uiop:symbol-call *dom* :map-document
+                    (uiop:symbol-call *xml* :make-octet-vector-sink :canonical 2)
 		    document
 		    :include-doctype :canonical-notations
 		    :include-default-values t))
@@ -70,19 +113,13 @@
       (read-sequence result s )
       result)))
 
-(defun dribble-tests (parser-fn directory)
-  (let ((base (slot-value (asdf:find-system :cxml) 'asdf::relative-pathname)))
-    (with-open-file (*standard-output*
-		     (merge-pathnames "XMLCONF" base)
-		     :direction :output
-		     :external-format :iso-8859-1
-		     :if-exists :supersede)
-      (run-all-tests parser-fn directory))))
-
 (defvar *parser-fn* 'sax-test)
 
 (defun sax-test (filename handler &rest args)
-  (apply #'fxml:parse filename handler
+  (apply #'uiop:symbol-call
+         *xml* :parse
+         filename handler
+         :allow-other-keys t
          :recode nil
          :forbid-entities nil
          :forbid-dtd nil
@@ -90,9 +127,15 @@
          args))
 
 (defun klacks-test (filename handler &rest args)
-  (fxml.klacks:with-open-source
-      (s (apply #'fxml:make-source (pathname filename) args))
-    (fxml.klacks:serialize-source s handler)))
+  (case *impl*
+    (:fxml
+     (fxml.klacks:with-open-source
+         (s (apply #'fxml:make-source (pathname filename) args))
+       (fxml.klacks:serialize-source s handler)))
+    (:cxml
+     (klacks:with-open-source
+         (s (apply #'cxml:make-source (pathname filename) args))
+       (klacks:serialize-source s handler)))))
 
 (defun run-all-tests (parser-fn
                       &optional
@@ -101,47 +144,63 @@
                           :fxml "test/xmlconf/")))
   (let* ((*parser-fn* parser-fn)
 	 (pathname (merge-pathnames "xmlconf.xml" directory))
-         (builder (fxml.rune-dom:make-dom-builder))
-         (xmlconf (fxml:parse pathname builder
-                              :recode nil
-                              :forbid-entities nil
-                              :forbid-external nil))
+         (builder (uiop:symbol-call *rune-dom* :make-dom-builder))
+         (xmlconf (uiop:symbol-call *xml* :parse
+                                    pathname builder
+                                    :allow-other-keys t
+                                    :recode nil
+                                    :forbid-entities nil
+                                    :forbid-external nil))
          (ntried 0)
          (nfailed 0)
-         (nskipped 0))
-    (fxml.dom:do-node-list (test (fxml.dom:get-elements-by-tag-name xmlconf "TEST"))
-      (let ((description
-             (apply #'concatenate
-		    'string
-		    (map 'list
-		      (lambda (child)
-			(if (fxml.dom:text-node-p child)
-			    (rod-string (fxml.dom:data child))
-			    ""))
-		      (fxml.dom:child-nodes test))))
-            (class (test-class test)))
-        (cond
-          (class
-            (incf ntried)
-            (multiple-value-bind (pathname output)
-                (test-pathnames directory test)
-              (princ (enough-namestring pathname directory))
-              (unless (probe-file pathname)
-                (error "file not found: ~A" pathname))
-              (with-simple-restart (skip-test "Skip this test")
-                (unless (run-test class pathname output description)
-                  (incf nfailed))
-                (fresh-line))))
-          (t
-            (incf nskipped)))))
+         (nskipped 0)
+         (lines '()))
+    (uiop:symbol-call *dom*
+                      :map-node-list
+                      (lambda (test)
+                        (let ((description
+                                (apply #'concatenate
+                                       'string
+                                       (map 'list
+                                            (lambda (child)
+                                              (if (uiop:symbol-call *dom* :text-node-p child)
+                                                  (uiop:symbol-call *runes* :rod-string
+                                                                    (uiop:symbol-call *dom* :data child))
+                                                  ""))
+                                            (uiop:symbol-call *dom* :child-nodes test))))
+                              (class (test-class test)))
+                          (cond
+                            (class
+                             (push
+                              (with-output-to-string (*standard-output*)
+                                (incf ntried)
+                                (multiple-value-bind (pathname output)
+                                    (test-pathnames directory test)
+                                  (princ (enough-namestring pathname directory))
+                                  (unless (probe-file pathname)
+                                    (error "file not found: ~A" pathname))
+                                  (with-simple-restart (skip-test "Skip this test")
+                                    (unless (run-test class pathname output description)
+                                      (incf nfailed)))))
+                              lines))
+                            (t
+                             (incf nskipped)))))
+                      (uiop:symbol-call *dom* :get-elements-by-tag-name xmlconf "TEST"))
     (format t "~&~D/~D tests failed; ~D test~:P were skipped"
             nfailed ntried nskipped)
-    (values nfailed ntried nskipped)))
+    (values lines nfailed ntried nskipped)))
 
 (defmethod run-test :around (class pathname output description &rest args)
   (declare (ignore class pathname output args))
   (block nil
-    (handler-bind ((serious-condition
+    (handler-bind (((or puri:uri-parse-error
+                        quri:uri-malformed-string)
+                     (lambda (c) (declare (ignore c))
+                       (unless *debug-tests*
+                         (ignore-errors
+                          (format t " FAILED: bad uri: ~a" description))
+                         (return nil))))
+                   (serious-condition
                      (lambda (c)
                        (unless *debug-tests*
                          (ignore-errors
@@ -153,14 +212,14 @@
   (declare (ignore description))
   (let ((document (apply *parser-fn*
                          pathname
-                         (fxml.rune-dom:make-dom-builder)
+                         (uiop:symbol-call *rune-dom* :make-dom-builder)
                          args)))
     ;; If we got here, parsing worked.  Let's try to serialize the same
     ;; document.  (We do the same thing in canonical mode below to check the
     ;; content model of the output, but that doesn't even catch obvious
     ;; errors in DTD serialization, so even a simple here is an
     ;; improvement.)
-    (apply *parser-fn* pathname (fxml:make-rod-sink) args)
+    (apply *parser-fn* pathname (uiop:symbol-call *xml* :make-rod-sink) args)
     (cond
       ((null output)
         (format t " input"))
@@ -198,11 +257,11 @@
              (format t " [validating:]")
              (funcall *parser-fn*
 		      pathname
-		      (fxml.rune-dom:make-dom-builder)
+                      (uiop:symbol-call *rune-dom* :make-dom-builder)
 		      :validate t)
              (error "validity error not detected")
              nil)
-         (fxml:validity-error ()
+         ((or fxml:validity-error cxml:validity-error) ()
            (format t " invalid")
            t))))
 
@@ -215,11 +274,11 @@
          (format t " [not validating:]")
 	(funcall *parser-fn*
 		 pathname
-		 (fxml.rune-dom:make-dom-builder)
+                 (uiop:symbol-call *rune-dom* :make-dom-builder)
 		 :validate nil)
 	(error "well-formedness violation not detected")
       nil)
-    (fxml:well-formedness-violation ()
+    ((or fxml:well-formedness-violation cxml:well-formedness-violation) ()
       (format t " not-wf")
       t))
   (handler-case
@@ -227,14 +286,14 @@
 	(format t " [validating:]")
 	(funcall *parser-fn*
 		 pathname
-		 (fxml.rune-dom:make-dom-builder)
+                 (uiop:symbol-call *rune-dom* :make-dom-builder)
 		 :validate t)
 	(error "well-formedness violation not detected")
       nil)
-    (fxml:well-formedness-violation ()
+    ((or fxml:well-formedness-violation cxml:well-formedness-violation) ()
       (format t " not-wf")
       t)
-    (fxml:validity-error ()
+    ((or fxml:validity-error cxml:validity-error) ()
       ;; das erlauben wir mal auch, denn valide => wf
       (format t " invalid")
       t)))

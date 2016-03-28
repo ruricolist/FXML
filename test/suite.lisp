@@ -51,16 +51,31 @@
 
 (in-suite xmlconf)
 
-(defun run-xmlconf-suite (name)
-  (multiple-value-bind (nfailed ntried nskipped)
-      (let ((fxml.xmlconf::*debug-tests* *debug-on-error*))
-        (fxml.xmlconf:run-all-tests name))
-    (is (zerop nfailed)
-        "~d test~:p passed, ~d failed, ~d skipped"
-        ntried nfailed nskipped)))
+(defun intern* (name pkg)
+  (intern (string name) pkg))
+
+(defun run-xmlconf-suite (name impl)
+  (let ((fxml.xmlconf::*debug-tests* *debug-on-error*))
+    (ecase impl
+      (:cxml
+       (fxml.xmlconf:with-cxml ()
+         (fxml.xmlconf:run-all-tests name)))
+      (:fxml
+       (fxml.xmlconf:with-fxml ()
+         (fxml.xmlconf:run-all-tests name))))))
+
+(defun compare-results (fn)
+  (let ((fxml-results (run-xmlconf-suite fn :fxml))
+        (cxml-results (run-xmlconf-suite fn :cxml)))
+    (is-true fxml-results)
+    (is-true cxml-results)
+    (is (= (length fxml-results) (length cxml-results)))
+    (loop for fxml-result in fxml-results
+          for cxml-result in cxml-results
+          do (is (equal fxml-result cxml-result)))))
 
 (test sax
-  (run-xmlconf-suite 'fxml.xmlconf:sax-test))
+  (compare-results 'fxml.xmlconf:sax-test))
 
 (test klacks
-  (run-xmlconf-suite 'fxml.xmlconf:klacks-test))
+  (compare-results 'fxml.xmlconf:klacks-test))

@@ -66,7 +66,10 @@
   :components ((:file "test")
                (:file "xmlconf")
                (:file "suite"))
-  :depends-on (:fxml/xml :fxml/klacks :fxml/dom :fiveam))
+  :depends-on (:uiop
+               :fiveam
+               :fxml/xml :fxml/klacks :fxml/dom
+               :cxml :cxml-dom :cxml-klacks))
 
 (asdf:defsystem :fxml
   :components ()
