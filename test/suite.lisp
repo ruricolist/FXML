@@ -72,7 +72,9 @@
     (is (= (length fxml-results) (length cxml-results)))
     (loop for fxml-result in fxml-results
           for cxml-result in cxml-results
-          do (is (equal fxml-result cxml-result)))))
+          ;; We don't care about cases where QURI is stricter than PURI.
+          do (unless (search "bad uri" fxml-result)
+               (is (equal fxml-result cxml-result))))))
 
 (test sax
   (compare-results 'fxml.xmlconf:sax-test))
