@@ -185,8 +185,6 @@
 
 (defvar *ctx* nil)
 
-(defvar *original-rods* nil)
-
 (defstruct (context (:conc-name nil))
   handler
   (dtd nil)
@@ -200,7 +198,8 @@
   (standalone-p nil)
   (entity-resolver nil)
   (disallow-internal-subset nil)
-  main-zstream)
+  main-zstream
+  (original-rods (make-hash-table :test 'equalp)))
 
 (defvar *expand-pe-p* nil)
 
@@ -233,7 +232,7 @@
 
 (defun call-with-open-xstream (fn stream)
   (unwind-protect
-      (funcall fn stream)
+       (funcall fn stream)
     (close-xstream stream)))
 
 (defmacro with-open-xstream ((var value) &body body)
@@ -243,8 +242,8 @@
 (defun call-with-open-xfile (continuation &rest open-args)
   (let ((input (apply #'open (car open-args) :element-type '(unsigned-byte 8) (cdr open-args))))
     (unwind-protect
-        (progn
-          (funcall continuation (make-xstream input)))
+         (progn
+           (funcall continuation (make-xstream input)))
       (close input))))
 
 (defmacro with-open-xfile ((stream &rest open-args) &body body)
@@ -322,11 +321,11 @@
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defconstant +fixnum-bits+
-      (1- (integer-length most-positive-fixnum))
+    (1- (integer-length most-positive-fixnum))
     "Pessimistic approximation of the number of bits of fixnums.")
 
   (defconstant +fixnum-mask+
-      (1- (expt 2 +fixnum-bits+))
+    (1- (expt 2 +fixnum-bits+))
     "Pessimistic approximation of the largest bit-mask, still being a fixnum."))
 
 (definline stir (a b)
@@ -378,10 +377,10 @@
                  (rod-hashtable-size hashtable)))
         (key nil))
     (dolist (q (svref (rod-hashtable-table hashtable) j)
-              (progn
-                (setf key (rod-subseq* rod start end))
-                (push (cons key new-value)
-                      (aref (rod-hashtable-table hashtable) j))))
+               (progn
+                 (setf key (rod-subseq* rod start end))
+                 (push (cons key new-value)
+                       (aref (rod-hashtable-table hashtable) j))))
       (when (rod=* (car q) rod :start2 start :end2 end)
         (setf key (car q))
         (setf (cdr q) new-value)
@@ -396,7 +395,7 @@
     (declare (ignore value))
     (if successp
         key
-      (nth-value 1 (rod-hash-set t (name-hashtable *ctx*) rod start end)))))
+        (nth-value 1 (rod-hash-set t (name-hashtable *ctx*) rod start end)))))
 
 ;;;; ---------------------------------------------------------------------------
 ;;;;
@@ -565,9 +564,9 @@
           (let ((name (xstream-name x)))
             (cond
               ((null name)
-                "<anonymous stream>")
+               "<anonymous stream>")
               ((eq :main (stream-name-entity-kind name))
-                (stream-name-uri name))
+               (stream-name-uri name))
               (t
                name)))))
 
@@ -726,42 +725,42 @@
   (let ((e (find-element name (dtd ctx))))
     (cond
       (e
-        (dolist (ad (elmdef-attributes e)) ;handle default values
-          (unless (get-attribute (attdef-name ad) attlist)
-            (case (attdef-default ad)
-              (:IMPLIED)
-              (:REQUIRED
-                (when *validate*
-                  (validity-error "(18) Required Attribute: ~S not specified"
-                                  (rod-string (attdef-name ad)))))
-              (t
-                (when (standalone-check-necessary-p ad)
-                  (validity-error "(02) Standalone Document Declaration: missing attribute value"))
-                (push (fxml.sax:make-attribute :qname (attdef-name ad)
-                                          :value (cadr (attdef-default ad))
-                                          :specified-p nil)
-                      attlist)))))
-        (dolist (a attlist)		;normalize non-CDATA values
-          (let* ((qname (fxml.sax:attribute-qname a))
-                 (adef (find-attribute e qname)))
-            (when adef
-              (when (and *validate*
-                         fxml.sax:*namespace-processing*
-                         (eq (attdef-type adef) :ID)
-                         (find #/: (fxml.sax:attribute-value a)))
-                (validity-error "colon in ID attribute"))
-              (unless (eq (attdef-type adef) :CDATA)
-                (let ((canon (canon-not-cdata-attval (fxml.sax:attribute-value a))))
-                  (when (and (standalone-check-necessary-p adef)
-                             (not (rod= (fxml.sax:attribute-value a) canon)))
-                    (validity-error "(02) Standalone Document Declaration: attribute value not normalized"))
-                  (setf (fxml.sax:attribute-value a) canon))))))
-        (when *validate*		;maybe validate attribute values
-          (dolist (a attlist)
-            (validate-attribute ctx e a))))
+       (dolist (ad (elmdef-attributes e)) ;handle default values
+         (unless (get-attribute (attdef-name ad) attlist)
+           (case (attdef-default ad)
+             (:IMPLIED)
+             (:REQUIRED
+              (when *validate*
+                (validity-error "(18) Required Attribute: ~S not specified"
+                                (rod-string (attdef-name ad)))))
+             (t
+              (when (standalone-check-necessary-p ad)
+                (validity-error "(02) Standalone Document Declaration: missing attribute value"))
+              (push (fxml.sax:make-attribute :qname (attdef-name ad)
+                                             :value (cadr (attdef-default ad))
+                                             :specified-p nil)
+                    attlist)))))
+       (dolist (a attlist)		;normalize non-CDATA values
+         (let* ((qname (fxml.sax:attribute-qname a))
+                (adef (find-attribute e qname)))
+           (when adef
+             (when (and *validate*
+                        fxml.sax:*namespace-processing*
+                        (eq (attdef-type adef) :ID)
+                        (find #/: (fxml.sax:attribute-value a)))
+               (validity-error "colon in ID attribute"))
+             (unless (eq (attdef-type adef) :CDATA)
+               (let ((canon (canon-not-cdata-attval (fxml.sax:attribute-value a))))
+                 (when (and (standalone-check-necessary-p adef)
+                            (not (rod= (fxml.sax:attribute-value a) canon)))
+                   (validity-error "(02) Standalone Document Declaration: attribute value not normalized"))
+                 (setf (fxml.sax:attribute-value a) canon))))))
+       (when *validate*		;maybe validate attribute values
+         (dolist (a attlist)
+           (validate-attribute ctx e a))))
       ((and *validate* attlist)
-        (validity-error "(04) Attribute Value Type: no definition for element ~A"
-                        (rod-string name)))))
+       (validity-error "(04) Attribute Value Type: no definition for element ~A"
+                       (rod-string name)))))
   attlist)
 
 (defun get-attribute (name attributes)
@@ -771,9 +770,9 @@
   (when (fxml.sax:attribute-specified-p a)   ;defaults checked by DEFINE-ATTRIBUTE
     (let* ((qname (fxml.sax:attribute-qname a))
            (adef
-            (or (find-attribute e qname)
-                (validity-error "(04) Attribute Value Type: not declared: ~A"
-                                (rod-string qname)))))
+             (or (find-attribute e qname)
+                 (validity-error "(04) Attribute Value Type: not declared: ~A"
+                                 (rod-string qname)))))
       (validate-attribute* ctx adef (fxml.sax:attribute-value a)))))
 
 (defun validate-attribute* (ctx adef value)
@@ -787,39 +786,39 @@
                       (rod-string value)))
     (ecase (if (listp type) (car type) type)
       (:ID
-        (unless (valid-name-p value)
-          (validity-error "(08) ID: not a name: ~S" (rod-string value)))
-        (when (eq (gethash value (id-table ctx)) t)
-          (validity-error "(08) ID: ~S not unique" (rod-string value)))
-        (setf (gethash value (id-table ctx)) t))
+       (unless (valid-name-p value)
+         (validity-error "(08) ID: not a name: ~S" (rod-string value)))
+       (when (eq (gethash value (id-table ctx)) t)
+         (validity-error "(08) ID: ~S not unique" (rod-string value)))
+       (setf (gethash value (id-table ctx)) t))
       (:IDREF
-        (validate-idref ctx value))
+       (validate-idref ctx value))
       (:IDREFS
-        (let ((names (split-names value)))
-          (unless names
-            (validity-error "(11) IDREF: malformed names"))
-          (mapc (curry #'validate-idref ctx) names)))
+       (let ((names (split-names value)))
+         (unless names
+           (validity-error "(11) IDREF: malformed names"))
+         (mapc (curry #'validate-idref ctx) names)))
       (:NMTOKEN
-        (validate-nmtoken value))
+       (validate-nmtoken value))
       (:NMTOKENS
-        (let ((tokens (split-names value)))
-          (unless tokens
-            (validity-error "(13) Name Token: malformed NMTOKENS"))
-          (mapc #'validate-nmtoken tokens)))
+       (let ((tokens (split-names value)))
+         (unless tokens
+           (validity-error "(13) Name Token: malformed NMTOKENS"))
+         (mapc #'validate-nmtoken tokens)))
       (:ENUMERATION
-        (unless (member value (cdr type) :test #'rod=)
-          (validity-error "(17) Enumeration: value not declared: ~S"
-                          (rod-string value))))
+       (unless (member value (cdr type) :test #'rod=)
+         (validity-error "(17) Enumeration: value not declared: ~S"
+                         (rod-string value))))
       (:NOTATION
-        (unless (member value (cdr type) :test #'rod=)
-          (validity-error "(14) Notation Attributes: ~S" (rod-string value))))
+       (unless (member value (cdr type) :test #'rod=)
+         (validity-error "(14) Notation Attributes: ~S" (rod-string value))))
       (:ENTITY
-        (validate-entity value))
+       (validate-entity value))
       (:ENTITIES
-        (let ((names (split-names value)))
-          (unless names
-            (validity-error "(13) Name Token: malformed NMTOKENS"))
-          (mapc #'validate-entity names)))
+       (let ((names (split-names value)))
+         (unless names
+           (validity-error "(13) Name Token: malformed NMTOKENS"))
+         (mapc #'validate-entity names)))
       (:CDATA))))
 
 (defun validate-idref (ctx value)
@@ -854,13 +853,13 @@
   (unless (valid-name-p value)
     (validity-error "(12) Entity Name: not a name: ~S" (rod-string value)))
   (let ((def (let ((*validate*
-                    ;; Similarly the entity refs are internal and
-                    ;; don't need normalization ... the unparsed
-                    ;; entities (and entities) aren't "references"
-                    ;;   -- sun/valid/sa03.xml
-                    nil))
+                     ;; Similarly the entity refs are internal and
+                     ;; don't need normalization ... the unparsed
+                     ;; entities (and entities) aren't "references"
+                     ;;   -- sun/valid/sa03.xml
+                     nil))
                (get-entity-definition value :general (dtd *ctx*)
-                                      :errorp nil))))
+                                            :errorp nil))))
     (unless (and (typep def 'external-entdef) (entdef-ndata def))
       ;; unparsed entity
       (validity-error "(12) Entity Name: ~S" (rod-string value)))))
@@ -880,9 +879,9 @@
 
 (defun zstream-base-sysid (zstream)
   (let ((base-sysid
-         (dolist (k (zstream-input-stack zstream))
-           (let ((base-sysid (stream-name-uri (xstream-name k))))
-             (when base-sysid (return base-sysid))))))
+          (dolist (k (zstream-input-stack zstream))
+            (let ((base-sysid (stream-name-uri (xstream-name k))))
+              (when base-sysid (return base-sysid))))))
     base-sysid))
 
 (defun absolute-uri (sysid source-stream)
@@ -940,9 +939,9 @@
   (when (and fxml.sax:*namespace-processing* (find #/: name))
     (wf-error source-stream "colon in entity name"))
   (let ((table
-         (ecase kind
-           (:general (dtd-gentities (dtd *ctx*)))
-           (:parameter (dtd-pentities (dtd *ctx*))))))
+          (ecase kind
+            (:general (dtd-gentities (dtd *ctx*)))
+            (:parameter (dtd-pentities (dtd *ctx*))))))
     (unless (gethash name table)
       (when (and source-stream (handler *ctx*))
         (report-entity (handler *ctx*) kind name def))
@@ -1012,10 +1011,10 @@
 
 (defun xstream-open-extid* (entity-resolver pubid sysid)
   (let* ((stream
-          (or (funcall (or entity-resolver (constantly nil)) pubid sysid)
-              (open (uri-to-pathname sysid)
-                    :element-type '(unsigned-byte 8)
-                    :direction :input))))
+           (or (funcall (or entity-resolver (constantly nil)) pubid sysid)
+               (open (uri-to-pathname sysid)
+                     :element-type '(unsigned-byte 8)
+                     :direction :input))))
     (make-xstream stream
                   :name (make-stream-name :uri sysid)
                   :initial-speed 1)))
@@ -1030,7 +1029,7 @@
   (let ((in (entity->xstream zstream name kind internalp)))
     (push (stream-name-uri (xstream-name in)) (base-stack *ctx*))
     (unwind-protect
-        (funcall cont in)
+         (funcall cont in)
       (pop (base-stack *ctx*))
       (close-xstream in))))
 
@@ -1089,21 +1088,21 @@
          (when content-model
            (fxml.sax:element-declaration (handler *ctx*) element-name content-model))))
       ((null content-model)
-        e)
+       e)
       (t
-        (when *validate*
-          (when (elmdef-content e)
-            (validity-error "(05) Unique Element Type Declaration"))
-          (when (eq content-model :EMPTY)
-            (dolist (ad (elmdef-attributes e))
-              (let ((type (attdef-type ad)))
-                (when (and (listp type) (eq (car type) :NOTATION))
-                  (validity-error "(16) No Notation on Empty Element: ~S"
-                                  (rod-string element-name)))))))
-        (fxml.sax:element-declaration (handler *ctx*) element-name content-model)
-        (setf (elmdef-content e) content-model)
-        (setf (elmdef-external-p e) *external-subset-p*)
-        e))))
+       (when *validate*
+         (when (elmdef-content e)
+           (validity-error "(05) Unique Element Type Declaration"))
+         (when (eq content-model :EMPTY)
+           (dolist (ad (elmdef-attributes e))
+             (let ((type (attdef-type ad)))
+               (when (and (listp type) (eq (car type) :NOTATION))
+                 (validity-error "(16) No Notation on Empty Element: ~S"
+                                 (rod-string element-name)))))))
+       (fxml.sax:element-declaration (handler *ctx*) element-name content-model)
+       (setf (elmdef-content e) content-model)
+       (setf (elmdef-external-p e) *external-subset-p*)
+       e))))
 
 (defvar *redefinition-warning* nil)
 
@@ -1206,8 +1205,8 @@
                          (close-xstream (pop (zstream-input-stack input)))
                          (if (null (zstream-input-stack input))
                              (values :eof nil)
-                           (values :S nil) ;fake #x20 after PE expansion
-                           ))))
+                             (values :S nil) ;fake #x20 after PE expansion
+                             ))))
                  (t
                   (read-token-3 input)))))))
 
@@ -1219,62 +1218,62 @@
     ;; PI Comment
     (let ((c (read-rune input)))
       (cond
-       ;; first the common tokens
-       ((rune= #/< c)
-        (read-token-after-|<| zinput input))
-       ;; now dispatch
-       (t
-        (ecase *data-behaviour*
-          (:DTD
-           (cond ((rune= #/\[ c) :\[)
-                 ((rune= #/\] c) :\])
-                 ((rune= #/\( c) :\()
-                 ((rune= #/\) c) :\))
-                 ((rune= #/\| c) :\|)
-                 ((rune= #/\> c) :\>)
-                 ((rune= #/\" c) :\")
-                 ((rune= #/\' c) :\')
-                 ((rune= #/\, c) :\,)
-                 ((rune= #/\? c) :\?)
-                 ((rune= #/\* c) :\*)
-                 ((rune= #/\+ c) :\+)
-                 ((name-rune-p c)
-                  (unread-rune c input)
-                  (values :nmtoken (read-name-token input)))
-                 ((rune= #/# c)
-                  (let ((q (read-name-token input)))
-                    (cond ((rod= q '#.(string-rod "REQUIRED")) :|#REQUIRED|)
-                          ((rod= q '#.(string-rod "IMPLIED")) :|#IMPLIED|)
-                          ((rod= q '#.(string-rod "FIXED"))   :|#FIXED|)
-                          ((rod= q '#.(string-rod "PCDATA"))  :|#PCDATA|)
-                          (t
-                           (wf-error zinput "Unknown token: ~S." q)))))
-                 ((or (rune= c #/U+0020)
-                      (rune= c #/U+0009)
-                      (rune= c #/U+000D)
-                      (rune= c #/U+000A))
-                  (values :S nil))
-                 ((rune= #/% c)
-                  (cond ((name-start-rune-p (peek-rune input))
-                         ;; an entity reference
-                         (read-pe-reference zinput))
-                        (t
-                         (values :%))))
-                 (t
-                  (wf-error zinput "Unexpected character ~S." c))))
-          (:DOC
-           (cond
-            ((rune= c #/&)
-             (multiple-value-bind (kind data) (read-entity-like input)
-               (cond ((eq kind :ENTITY-REFERENCE)
-                      (values :ENTITY-REF data))
-                     ((eq kind :CHARACTER-REFERENCE)
-                      (values :CDATA
-                              (with-rune-collector (collect)
-                                (%put-unicode-char data collect)))))))
-            (t
-             (unread-rune c input)
-             (values :CDATA (read-cdata input)))))))))))
+        ;; first the common tokens
+        ((rune= #/< c)
+         (read-token-after-|<| zinput input))
+        ;; now dispatch
+        (t
+         (ecase *data-behaviour*
+           (:DTD
+            (cond ((rune= #/\[ c) :\[)
+                  ((rune= #/\] c) :\])
+                  ((rune= #/\( c) :\()
+                  ((rune= #/\) c) :\))
+                  ((rune= #/\| c) :\|)
+                  ((rune= #/\> c) :\>)
+                  ((rune= #/\" c) :\")
+                  ((rune= #/\' c) :\')
+                  ((rune= #/\, c) :\,)
+                  ((rune= #/\? c) :\?)
+                  ((rune= #/\* c) :\*)
+                  ((rune= #/\+ c) :\+)
+                  ((name-rune-p c)
+                   (unread-rune c input)
+                   (values :nmtoken (read-name-token input)))
+                  ((rune= #/# c)
+                   (let ((q (read-name-token input)))
+                     (cond ((rod= q '#.(string-rod "REQUIRED")) :|#REQUIRED|)
+                           ((rod= q '#.(string-rod "IMPLIED")) :|#IMPLIED|)
+                           ((rod= q '#.(string-rod "FIXED"))   :|#FIXED|)
+                           ((rod= q '#.(string-rod "PCDATA"))  :|#PCDATA|)
+                           (t
+                            (wf-error zinput "Unknown token: ~S." q)))))
+                  ((or (rune= c #/U+0020)
+                       (rune= c #/U+0009)
+                       (rune= c #/U+000D)
+                       (rune= c #/U+000A))
+                   (values :S nil))
+                  ((rune= #/% c)
+                   (cond ((name-start-rune-p (peek-rune input))
+                          ;; an entity reference
+                          (read-pe-reference zinput))
+                         (t
+                          (values :%))))
+                  (t
+                   (wf-error zinput "Unexpected character ~S." c))))
+           (:DOC
+            (cond
+              ((rune= c #/&)
+               (multiple-value-bind (kind data) (read-entity-like input)
+                 (cond ((eq kind :ENTITY-REFERENCE)
+                        (values :ENTITY-REF data))
+                       ((eq kind :CHARACTER-REFERENCE)
+                        (values :CDATA
+                                (with-rune-collector (collect)
+                                  (%put-unicode-char data collect)))))))
+              (t
+               (unread-rune c input)
+               (values :CDATA (read-cdata input)))))))))))
 
 (definline check-rune (input actual expected)
   (unless (eql actual expected)
@@ -2065,14 +2064,14 @@
 ;; uri-string can be different from the one parsed originally.
 (defun uri-rod (uri)
   (if uri
-      (or (gethash uri *original-rods*)
+      (or (gethash uri (original-rods *ctx*))
           (rod (quri:render-uri uri nil)))
       nil))
 
 (defun p/system-literal (input)
   (let* ((rod (p/id input))
          (uri (quri:uri (rod-string rod))))
-    (setf (gethash uri *original-rods*) rod)
+    (setf (gethash uri (original-rods *ctx*)) rod)
     uri))
 
 (defun p/pubid-literal (input)
@@ -2676,8 +2675,7 @@
                          :base-stack (list (or base ""))
                          :disallow-internal-subset disallow-internal-subset))
          (*validate* validate)
-         (*namespace-bindings* *initial-namespace-bindings*)
-         (*original-rods* (make-hash-table :test 'equalp)))
+         (*namespace-bindings* *initial-namespace-bindings*))
     (fxml.sax:register-sax-parser handler (make-instance 'fxml-parser :ctx *ctx*))
     (fxml.sax:start-document handler)
     ;; document ::= XMLDecl? Misc* (doctypedecl Misc*)? element Misc*
