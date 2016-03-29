@@ -162,6 +162,7 @@
 
 (defmethod decode-sequence ((encoding (eql :utf-16-big-endian))
                             in in-start in-end out out-start out-end eof?)
+  (declare (ignore eof?))
   ;; -> new wptr, new rptr
   (let ((wptr out-start)
         (rptr in-start))
@@ -198,6 +199,7 @@
 
 (defmethod decode-sequence ((encoding (eql :utf-16-little-endian))
                             in in-start in-end out out-start out-end eof?)
+  (declare (ignore eof?))
   ;; -> new wptr, new rptr
   (let ((wptr out-start)
         (rptr in-start))
@@ -251,10 +253,6 @@
 				(eql x #xFFFE)
 				(eql x #xFFFF))
                             (xerror "not a valid code point: #x~X" x))
-		           ((%> x #xFFFF)
-                            (setf (aref out (%+ 0 wptr)) (%+ #xD7C0 (ash x -10))
-                                  (aref out (%+ 1 wptr)) (%ior #xDC00 (%and x #x3FF)))
-                            (setf wptr (%+ wptr 2)))
                            (t
                             (setf (aref out wptr) x)
                             (setf wptr (%+ wptr 1)))))
@@ -287,15 +285,15 @@
                       ;; singleton CR, pass it as NL
                       (put #x0A)
                       (setf rptr (%+ rptr 1)))))
-                    
+              
               ((%<= #|#b00000000|# byte0 #b01111111)
                (put1 byte0)
                (setf rptr (%+ rptr 1)))
-            
+              
               ((%<= #|#b10000000|# byte0 #b10111111)
                (xerror "Corrupted UTF-8 input (initial byte was #b~8,'0B)" byte0)
                (setf rptr (%+ rptr 1)))
-            
+              
               ((%<= #|#b11000000|# byte0 #b11011111)
                (cond ((<= (%+ rptr 2) in-end)
                       (put
@@ -305,7 +303,7 @@
                       (setf rptr (%+ rptr 2)))
                      (t
                       (return))))
-            
+              
               ((%<= #|#b11100000|# byte0 #b11101111)
                (cond ((<= (%+ rptr 3) in-end)
                       (put
@@ -316,7 +314,7 @@
                       (setf rptr (%+ rptr 3)))
                      (t
                       (return))))
-            
+              
               ((%<= #|#b11110000|# byte0 #b11110111)
                (cond ((<= (%+ rptr 4) in-end)
                       (put
@@ -328,7 +326,7 @@
                       (setf rptr (%+ rptr 4)))
                      (t
                       (return))))
-            
+              
               ((%<= #|#b11111000|# byte0 #b11111011)
                (cond ((<= (%+ rptr 5) in-end)
                       (put
@@ -341,7 +339,7 @@
                       (setf rptr (%+ rptr 5)))
                      (t
                       (return))))
-            
+              
               ((%<= #|#b11111100|# byte0 #b11111101)
                (cond ((<= (%+ rptr 6) in-end)
                       (put
@@ -355,7 +353,7 @@
                       (setf rptr (%+ rptr 6)))
                      (t
                       (return))))
-            
+              
               (t
                (xerror "Corrupted UTF-8 input (initial byte was #b~8,'0B)" byte0)) ) )) 
     (values wptr rptr))  )
