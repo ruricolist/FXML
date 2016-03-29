@@ -6,7 +6,9 @@ FXML is a fork of [CXML][]. You should use FXML instead of CXML if:
 
 Note that FXML includes compatibility with CXML. If you load the
 `fxml/cxml` system, you can (for example) use the FXML parser to build
-a CXML DOM.
+a CXML DOM:
+
+    (fxml:parse #p"file.xml" (cxml-dom:make-dom-builder))
 
 FXML’s API is very close to CXML’s, and for the most part you can
 refer to the [CXML documentation][CXML] for usage, but all package
