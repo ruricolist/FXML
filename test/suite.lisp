@@ -65,16 +65,17 @@
          (fxml.xmlconf:run-all-tests name))))))
 
 (defun compare-results (fn)
-  (let ((fxml-results (run-xmlconf-suite fn :fxml))
-        (cxml-results (run-xmlconf-suite fn :cxml)))
-    (is-true fxml-results)
-    (is-true cxml-results)
-    (is (= (length fxml-results) (length cxml-results)))
-    (loop for fxml-result in fxml-results
-          for cxml-result in cxml-results
-          ;; We don't care about cases where QURI is stricter than PURI.
-          do (unless (search "bad uri" fxml-result)
-               (is (equal fxml-result cxml-result))))))
+  (handler-bind ((warning #'muffle-warning))
+    (let ((fxml-results (run-xmlconf-suite fn :fxml))
+          (cxml-results (run-xmlconf-suite fn :cxml)))
+      (is-true fxml-results)
+      (is-true cxml-results)
+      (is (= (length fxml-results) (length cxml-results)))
+      (loop for fxml-result in fxml-results
+            for cxml-result in cxml-results
+            ;; We don't care about cases where QURI is stricter than PURI.
+            do (unless (search "bad uri" fxml-result)
+                 (is (equal fxml-result cxml-result)))))))
 
 (test sax
   (compare-results 'fxml.xmlconf:sax-test))
