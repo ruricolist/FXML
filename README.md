@@ -1,14 +1,8 @@
 FXML is a fork of [CXML][]. You should use FXML instead of CXML if:
 
-- You need to use [Klacks][] with namespaces.
 - You are parsing potentially ill-formed XML.
 - You are parsing potentially malicious XML.
-
-Note that FXML includes compatibility with CXML. If you load the
-`fxml/cxml` system, you can (for example) use the FXML parser to build
-a CXML DOM:
-
-    (fxml:parse #p"file.xml" (cxml-dom:make-dom-builder))
+- You need to use [Klacks][] with namespaces.
 
 FXML’s API is very close to CXML’s, and for the most part you can
 refer to the [CXML documentation][CXML] for usage, but all package
@@ -22,6 +16,23 @@ KLACKS   -> FXML.KLACKS
 SAX      -> FXML.SAX
 STP      -> FXML.STP
 ```
+
+Because the package names are different, it is possible to load FXML
+and CXML in the same image. In fact, if you load the `fxml/cxml`
+compatibility system, you can freely mix SAX sources and sinks from
+FXML and CXML. Most usefully, you can keep any existing CXML code for
+querying and manipulating documents but drop in the FXML parser:
+
+    (fxml:parse #p"file.xml" (cxml-dom:make-dom-builder))
+
+# Testing
+
+FXML’s standard of behavior is that, if security restrictions are
+relaxed, it should do the same thing as CXML. This is ensured with a
+test suite which runs both FXML and CXML against the OASIS XML test
+suite, and checks that they get the same results. (One exception –
+because FXML uses QURI, it rejects some tests with invalid URIs that
+CXML, using PURI, accepts.)
 
 # Differences from CXML
 
@@ -41,6 +52,9 @@ New features:
 - SAX handlers that return multiple values.
 - Document fragment support in STP.
 - DOM and STP are (partially) compatible.
+- A streaming sanitizer (system `fxml/sanitizer`).
+- Integration with [cl-html5-parser][] (system `fxml/html5`).
+- Integration with [css-selectors][] (system `fxml/css-selectors`).
 
 Removed features:
 - FXML does not support HAX.
@@ -53,23 +67,15 @@ Implementation differences:
 - Does not support non-Unicode Lisps.
 - Uses QURI instead of PURI.
 
-# CXML compatibility
-
-You can make FXML and CXML interoperable by loading the system
-`fxml/cxml`. This defines SAX methods for FXML, and FXML.SAX methods
-for CXML. You can then mix CXML and FXML sinks and sources:
-
-     (cxml:parse xml-document (fxml.stp:make-builder))
-     (fxml:parse xml-document (stp:make-builder))
-
 # DOM and STP compatibility
 
 DOM and STP overlap significantly in some respects. In particular,
 read-only functions that return strings – functions that, for example,
 look up attribute values or tag names – are effectively equivalent.
-When FXML/STP is loaded, it specializes a number of STP methods for
-DOM, and a number of DOM methods for STP. (At the moment, looking at
-[the code](stp/dom.lisp) is the best way to see what is defined.)
+When the system `fxml/stp` is loaded, it specializes a number of STP
+methods for DOM, and a number of DOM methods for STP. (At the moment,
+looking at [the code](stp/dom.lisp) is the best way to see what is
+defined.)
 
 # Security
 
@@ -128,7 +134,7 @@ restart.
     (handler-bind ((fxml:well-formedness-violation #'continue))
       (fxml:parse ...))
 
-This is enough to handle many characteristic problems with XML in the
+This is enough to handle most practical problems with XML in the
 wild: leading and trailing junk, unescaped ampersands, illegal
 characters, and DTDs (a feature which is largely indistinguishable
 from a bug).
@@ -197,3 +203,5 @@ you can do it in one pass:
 [billion laughs]: https://en.wikipedia.org/wiki/Billion_laughs
 [sax]: https://common-lisp.net/project/cxml/saxoverview/
 [Klacks]: http://lichteblau.blogspot.com/2007/03/klacks-parsing.html
+[cl-html5-parser]: https://github.com/copyleft/cl-html5-parser
+[css-selectors]: https://github.com/AccelerationNet/css-selectors
