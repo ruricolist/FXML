@@ -1,4 +1,7 @@
-FXML is a fork of [CXML][]. You should use FXML instead of CXML if:
+FXML is a fork of [CXML][]. Like CXML, it is released under the
+[Lisp-LGPL][].
+
+You should use FXML instead of CXML if:
 
 - You are parsing potentially ill-formed XML.
 - You are parsing potentially malicious XML.
@@ -58,6 +61,7 @@ New features:
 
 Removed features:
 - FXML does not support HAX.
+- FXML does not support XPath.
 
 Implementation differences:
 - FXML does not support Lisps that use UTF-16.
@@ -205,3 +209,4 @@ you can do it in one pass:
 [Klacks]: http://lichteblau.blogspot.com/2007/03/klacks-parsing.html
 [cl-html5-parser]: https://github.com/copyleft/cl-html5-parser
 [css-selectors]: https://github.com/AccelerationNet/css-selectors
+[Lisp-LGPL]: http://opensource.franz.com/preamble.html
