@@ -51,6 +51,7 @@
   (let ((s (gensym)))
     `(let* ((,s ,source)
             (*ctx* (slot-value ,s 'context))
+            (*forbid-entities* (slot-value ,s 'forbid-entities))
             (*validate* (slot-value ,s 'validate))
             (*data-behaviour* (slot-value ,s 'data-behaviour))
             (*namespace-bindings* (car (slot-value ,s 'namespace-stack)))
@@ -116,8 +117,12 @@
 (defun make-source
     (input &rest args
      &key validate dtd root entity-resolver disallow-internal-subset
-          (buffering t) pathname)
-  (declare (ignore validate dtd root entity-resolver disallow-internal-subset pathname))
+          (buffering t) pathname
+          forbid-entities forbid-external
+          ignore-dtd forbid-dtd)
+  (declare (ignore validate dtd root entity-resolver disallow-internal-subset pathname
+                   forbid-entities forbid-external
+                   ignore-dtd forbid-dtd))
   (etypecase input
     (xstream
       (when (and (not buffering) (< 1 (fxml.runes::xstream-speed input)))
@@ -168,13 +173,25 @@
 
 (defun %make-source
     (input &key validate dtd root entity-resolver disallow-internal-subset
-                error-culprit)
+                error-culprit
+                ignore-dtd
+                forbid-dtd
+                (forbid-entities t)
+                (forbid-external t))
   ;; check types of user-supplied arguments for better error messages:
   (check-type validate boolean)
   (check-type dtd (or null extid))
   (check-type root (or null rod))
   (check-type entity-resolver (or null function symbol))
   (check-type disallow-internal-subset boolean)
+  (check-type ignore-dtd boolean)
+  (check-type forbid-dtd boolean)
+  (check-type forbid-entities boolean)
+  (check-type forbid-external boolean)
+  (when ignore-dtd
+    (setf entity-resolver #'void-entity-resolver))
+  (when forbid-external
+    (setf entity-resolver #'external-reference-forbidden))
   (let* ((xstream (car (zstream-input-stack input)))
          (name (xstream-name xstream))
          (base (when name (stream-name-uri name)))
@@ -187,6 +204,7 @@
           (make-instance 'fxml-source
             :context context
             :validate validate
+            :forbid-entities forbid-entities
             :dtd dtd
             :root root
             :error-culprit error-culprit
@@ -196,10 +214,12 @@
             :scratch-pad-4 *scratch-pad-4*)))
     (setf (handler context) (make-instance 'klacks-dtd-handler :source source))
     (setf (slot-value source 'continuation)
-          (lambda () (klacks/xmldecl source input)))
+          (lambda ()
+            (let ((*forbid-entities* forbid-entities))
+              (klacks/xmldecl source input :forbid-dtd forbid-dtd))))
     source))
 
-(defun klacks/xmldecl (source input)
+(defun klacks/xmldecl (source input &key forbid-dtd)
   (with-source (source current-key current-values)
     (let ((hd (p/xmldecl input)))
       (setf current-key :start-document)
@@ -211,7 +231,7 @@
       (lambda ()
         (klacks/misc*-2 source input
                         (lambda ()
-                          (klacks/doctype source input)))))))
+                          (klacks/doctype source input :forbid-dtd forbid-dtd)))))))
 
 (defun klacks/misc*-2 (source input successor)
   (with-source (source current-key current-values)
@@ -233,14 +253,15 @@
         (t
           (funcall successor))))))
 
-(defun klacks/doctype (source input)
+(defun klacks/doctype (source input &key forbid-dtd)
   (with-source (source current-key current-values validate dtd)
     (let ((cont (lambda () (klacks/finish-doctype source input)))
           l)
       (prog1
           (cond
             ((eq (peek-token input) :<!DOCTYPE)
-              (setf l (cdr (p/doctype-decl input :dtd dtd)))
+              (setf l (cdr (p/doctype-decl input :dtd dtd
+                                                 :forbid-dtd forbid-dtd)))
               (lambda () (klacks/misc*-2 source input cont)))
             (dtd
               (setf l (cdr (synthesize-doctype dtd input)))

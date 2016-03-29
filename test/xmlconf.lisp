@@ -130,7 +130,10 @@
   (case *impl*
     (:fxml
      (fxml.klacks:with-open-source
-         (s (apply #'fxml:make-source (pathname filename) args))
+         (s (apply #'fxml:make-source (pathname filename)
+                   :forbid-entities nil
+                   :forbid-external nil
+                   args))
        (fxml.klacks:serialize-source s handler)))
     (:cxml
      (klacks:with-open-source

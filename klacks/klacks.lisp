@@ -25,7 +25,8 @@
      (internal-declarations)
      (external-declarations :initform nil)
      (dom-impl-dtd :initform nil)
-     (dom-impl-entity-resolver :initform nil)))
+     (dom-impl-entity-resolver :initform nil)
+     (forbid-entities :type boolean :initarg :forbid-entities)))
 
 (defgeneric fxml.klacks:close-source (source))
 
