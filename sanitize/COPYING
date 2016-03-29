@@ -1,7 +1,7 @@
-SAX-SANITIZE -  whitelist-based Common Lisp HTML sanitizer
+FXML.SANITIZE -  whitelist-based Common Lisp HTML sanitizer
 
 Copyright (c) 2011 Moskvitin Andrey
-Copyright (c) 2014 Paul M. Rodriguez
+Copyright (c) 2014, 2015, 2016 Paul M. Rodriguez
 
 Preamble to the Gnu Lesser General Public License
 
