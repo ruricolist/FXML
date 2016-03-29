@@ -349,9 +349,13 @@
   `(rod=** ,x ,y ,start1 ,end1 ,start2 ,end2))
 
 (definline rod=** (x y start1 end1 start2 end2)
-  (declare (type rod x y) (inline string=))
-  (string= x y :start1 start1 :end1 end1
-               :start2 start2 :end2 end2))
+  (and (%= (%- end1 start1) (%- end2 start2))
+       (do ((i start1 (%+ i 1))
+            (j start2 (%+ j 1)))
+           ((%= i end1)
+            t)
+         (unless (rune= (%rune x i) (%rune y j))
+           (return nil)))))
 
 (defun rod-hash-get (hashtable rod &optional (start 0) (end (length rod)))
   (declare (type (simple-array rune (*)) rod))
