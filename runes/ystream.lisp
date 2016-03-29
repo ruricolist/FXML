@@ -157,6 +157,7 @@ CHAR."
         (when (< allowed-size size)
           (ystream-write-rod rod ystream :start (+ l room) :end r)))
       (when nl?
+        (ystream-write-rune #/U+000A ystream)
         (setf column 0)))))
 
 (defun ystream-write-escapable-rune (rune ystream)
