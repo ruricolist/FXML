@@ -29,7 +29,7 @@
 (defmethod document-of ((n fxml.stp:node))
   (fxml.stp:document n))
 
-(defun stp-do-query (matcher elt first?)
+(defun stp-do-query/fxml (matcher elt first?)
   (if first?
       (fxml.stp:find-recursively-if
        (lambda (node)
@@ -43,8 +43,7 @@
         (nreverse matches))))
 
 (defmethod %do-query (matcher (elt fxml.stp:element) &key (first? nil))
-  (stp-do-query matcher elt first?))
+  (stp-do-query/fxml matcher elt first?))
 
 (defmethod %do-query (matcher (elt fxml.stp:document) &key (first? nil))
-  (stp-do-query matcher elt first?))
-
+  (stp-do-query/fxml matcher elt first?))
