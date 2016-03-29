@@ -183,8 +183,6 @@
 
 ;;; parser context
 
-(defvar *ctx* nil)
-
 (defstruct (context (:conc-name nil))
   handler
   (dtd nil)
@@ -200,6 +198,9 @@
   (disallow-internal-subset nil)
   main-zstream
   (original-rods (make-hash-table :test 'equalp)))
+
+(defvar *ctx* nil)
+(declaim (type (or null context) *ctx*))
 
 (defvar *expand-pe-p* nil)
 
@@ -2064,14 +2065,17 @@
 ;; uri-string can be different from the one parsed originally.
 (defun uri-rod (uri)
   (if uri
-      (or (gethash uri (original-rods *ctx*))
-          (rod (quri:render-uri uri nil)))
+      (let ((ctx *ctx*))
+        (or (and ctx (gethash uri (original-rods ctx)))
+            (rod (quri:render-uri uri nil))))
       nil))
 
 (defun p/system-literal (input)
   (let* ((rod (p/id input))
-         (uri (quri:uri (rod-string rod))))
-    (setf (gethash uri (original-rods *ctx*)) rod)
+         (uri (quri:uri (rod-string rod)))
+         (ctx *ctx*))
+    (when ctx
+      (setf (gethash uri (original-rods ctx)) rod))
     uri))
 
 (defun p/pubid-literal (input)
