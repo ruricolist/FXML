@@ -318,7 +318,7 @@
 (defun make-rod-hashtable (&key (size 200) (real-size (nearest-greater-prime size)))
   (make-rod-hashtable/low
    :size real-size
-   :table (make-array size :initial-element nil)))
+   :table (make-array real-size :initial-element nil)))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defconstant +fixnum-bits+
