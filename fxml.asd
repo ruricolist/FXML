@@ -123,7 +123,6 @@
   :components ((:file "package")
                (:file "html5-sax")
                (:file "sink")
-               (:file "transform")
                (:file "parse")))
 
 (asdf:defsystem :fxml/css-selectors
