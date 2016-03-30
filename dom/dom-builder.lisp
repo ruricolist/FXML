@@ -69,18 +69,18 @@
 	     `(defmethod ,name ((handler dom-builder) ,@args)
 		(when (slot-boundp handler 'internal-subset)
 		  (push (list ',name ,@args) (internal-subset handler))))))
-  (defhandler fxml.sax:unparsed-entity-declaration
-      name public-id system-id notation-name)
-  (defhandler fxml.sax:external-entity-declaration
-      kind name public-id system-id)
-  (defhandler fxml.sax:internal-entity-declaration
-      kind name value)
-  (defhandler fxml.sax:notation-declaration
-      name public-id system-id)
+  #+ () (defhandler fxml.sax:unparsed-entity-declaration
+          name public-id system-id notation-name)
+  #+ () (defhandler fxml.sax:external-entity-declaration
+          kind name public-id system-id)
+  #+ () (defhandler fxml.sax:internal-entity-declaration
+          kind name value)
+  #+ () (defhandler fxml.sax:notation-declaration
+          name public-id system-id)
   (defhandler fxml.sax:element-declaration
-      name model)
+    name model)
   (defhandler fxml.sax:attribute-declaration
-      element-name attribute-name type default))
+    element-name attribute-name type default))
 
 (defmethod fxml.sax:start-element
     ((handler dom-builder) namespace-uri local-name qname attributes)
