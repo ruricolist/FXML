@@ -348,6 +348,8 @@
                           (start2 0) (end2 (length y)))
   `(rod=** ,x ,y ,start1 ,end1 ,start2 ,end2))
 
+;;; NB This is *not* the same thing as string=. In particular, the
+;;; start and end arguments may be called with invalid indices.
 (definline rod=** (x y start1 end1 start2 end2)
   (and (%= (%- end1 start1) (%- end2 start2))
        (do ((i start1 (%+ i 1))
