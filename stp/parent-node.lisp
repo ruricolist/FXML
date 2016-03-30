@@ -69,8 +69,6 @@
      while (and (equal uri "") parent)
      finally (return uri)))
 
-(defgeneric (setf base-uri) (newval node))
-
 
 ;;;; Children
 

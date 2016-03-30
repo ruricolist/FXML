@@ -112,11 +112,6 @@
     (setf (internal-subset result) (internal-subset node))
     result))
 
-(defun namep (str)
-  (and (not (zerop (length str)))
-       (fxml::name-start-rune-p (elt str 0))
-       (every #'fxml::name-rune-p str)))
-
 (defun check-xml-name (str)
   (unless (namep str)
     (stp-error "not a Name: ~S" str)))

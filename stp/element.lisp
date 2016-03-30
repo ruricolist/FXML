@@ -61,13 +61,6 @@
     @see{local-name}
     @see{namespace-uri}"))
 
-(defgeneric (setf value) (newval attribute)
-  (:documentation
-   "@arg[newval]{a string of XML characters}
-    @arg[attribute]{an @class{attribute}}
-    @return{the value}
-    @short{Sets the attribute's value.}"))
-
 
 (defun make-element (name &optional (uri ""))
   "@arg[name]{string, a QName or NCName}
