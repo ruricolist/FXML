@@ -102,6 +102,7 @@
   (push (cons (or prefix "") uri) (namespace-declarations builder)))
 
 (defmethod fxml.sax:start-element ((builder builder) uri lname qname attrs)
+  (declare (ignore lname))
   (let ((element (make-element qname uri)))
     (setf (%base-uri element) (fxml.sax:xml-base builder))
     (dolist (a attrs)

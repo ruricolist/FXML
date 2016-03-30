@@ -38,4 +38,5 @@
   nil)
 
 (defmethod map-children (result-type fn (node leaf-node))
+  (declare (ignore fn))
   (and result-type (make-sequence result-type 0)))

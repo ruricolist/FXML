@@ -79,8 +79,10 @@
      (stp-error "not a valid child of a document: ~A" child))))
 
 (defmethod check-deletion-allowed ((parent document) (child node) i)
+  (declare (ignore i))
   nil)
 (defmethod check-deletion-allowed ((parent document) (child element) i)
+  (declare (ignore i))
   (stp-error "attempt to remove document element"))
 
 (defmethod replace-child ((parent document) old-child new-child)

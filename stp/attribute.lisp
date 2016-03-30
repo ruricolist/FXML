@@ -141,6 +141,7 @@
   attribute)
 
 (defmethod serialize ((node attribute) handler)
+  (declare (ignore handler))
   (stp-error "attempt to serialize an attribute in isolation"))
 
 

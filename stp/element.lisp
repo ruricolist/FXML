@@ -471,6 +471,7 @@
      thereis (eq node b)))
 
 (defmethod check-insertion-allowed ((parent element) child i)
+  (declare (ignore i))
   (check-type child node)
   (assert-orphan child)
   (typecase child
@@ -481,7 +482,8 @@
     (t
      (stp-error "not a valid child of an element: ~A" child))))
 
-(defmethod check-deletion-allowed ((parent element) (child node) i))
+(defmethod check-deletion-allowed ((parent element) (child node) i)
+  (declare (ignore i)))
 
 ;; ;; trivial optimization
 ;; (defmethod replace-children

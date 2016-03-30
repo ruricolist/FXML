@@ -85,6 +85,7 @@
 
 (defmethod fxml.sax:start-element
     ((handler xmls-builder) namespace-uri local-name qname attributes)
+  (declare (ignore qname))
   (let* ((include-default-values (include-default-values handler))
 	 (include-namespace-uri (include-namespace-uri handler))
 	 (attributes

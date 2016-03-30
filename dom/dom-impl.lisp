@@ -70,6 +70,7 @@
    (specified-p :initarg :specified-p   :reader fxml.dom:specified)))
 
 (defmethod (setf fxml.dom:prefix) :before (newval (node attribute))
+  (declare (ignore newval))
   (when (rod= (fxml.dom:node-name node) #"xmlns")
     (dom-error :NAMESPACE_ERR "must not change xmlns attribute prefix")))
 
