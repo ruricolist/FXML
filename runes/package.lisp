@@ -9,7 +9,7 @@
 (in-package :cl-user)
 
 (defpackage :fxml.runes
-  (:use :cl :named-readtables)
+  (:use :cl :named-readtables :trivial-gray-streams)
   (:import-from #:alexandria #:array-index #:emptyp)
   (:export #:definline
 

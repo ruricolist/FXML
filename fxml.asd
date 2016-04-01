@@ -15,7 +15,8 @@
    (:file "xstream")
    (:file "ystream"))
   :depends-on (:babel
-               :named-readtables))
+               :named-readtables
+               :trivial-gray-streams))
 
 (asdf:defsystem :fxml/xml
   :pathname "xml/"
