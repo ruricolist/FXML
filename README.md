@@ -193,9 +193,9 @@ you can do it in one pass:
     (multiple-value-bind (dom text)
         (fxml:parse document
                     (fxml:make-values-handler
-                     (stp:make-builder)
+                     (fxml.stp:make-builder)
                      (let ((text (make-string-output-stream)))
-                       (sax:make-callback-handler
+                       (fxml.sax:make-callback-handler
                         :characters (λ (data)
                                        (write-string data text))
                         :end-document (λ ()
