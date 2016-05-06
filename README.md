@@ -99,7 +99,7 @@ Three extra keyword arguments for `fxml:parse`:
 Default false. Signal `fxml:dtd-forbidden` if the document contains a
 DTD processing declarations.
 
-The name, pubid, and sysid can be read with `cxl:dtd-name`,
+The name, pubid, and sysid can be read with `fxml:dtd-name`,
 `fxml:dtd-pubid`, and `fxml:dtd-sysid`, respectively.
 
 You can restart with `continue` if you want to parse the DTD anyway.
