@@ -202,7 +202,7 @@ you can do it in one pass:
                                          (get-output-stream-string text))))))
       ...)
 
-[CXML]: http://common-lisp.net/project/fxml/
+[CXML]: http://common-lisp.net/project/cxml/
 [defusedxml]: https://pypi.python.org/pypi/defusedxml
 [billion laughs]: https://en.wikipedia.org/wiki/Billion_laughs
 [sax]: https://common-lisp.net/project/cxml/saxoverview/
