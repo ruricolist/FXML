@@ -2586,7 +2586,8 @@
                  (let ((xi2 (xstream-open-extid effective-extid)))
                    (with-zstream (zi2 :input-stack (list xi2))
                      (ensure-dtd)
-                     (fxml.sax:start-internal-subset (handler *ctx*))
+                     (unless (ignore-errors (have-internal-subset (handler *ctx*)))
+                       (fxml.sax:start-internal-subset (handler *ctx*)))
                      (p/ext-subset zi2)
                      (when (and fresh-dtd-p
                                 *cache-all-dtds*
@@ -3669,8 +3670,10 @@
        (name-start-rune-p (rune name 0))
        (notany #'(lambda (rune) (rune= #/: rune)) name)))
 
+(declaim (ftype (function (string) (values (or string null) string)) split-qname))
 (defun split-qname (qname)
-  (declare (type fxml.runes:simple-rod qname))
+  (declare (type fxml.runes:simple-rod qname)
+           (optimize speed (safety 1) (debug 0)))
   (let ((pos (position  #/: qname)))
     (if pos
         (let ((prefix (subseq qname 0 pos))
