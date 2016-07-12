@@ -96,7 +96,12 @@
 	    (let ((y (copy x)))
 	      (setf (%parent y) new)
 	      y))
-	  (%attributes old)))
+          (%attributes old)))
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun check-of-name (name)
+    (when (find #\: name)
+      (stp-error "of-name used with QName as an argument"))))
 
 (defun of-name (name &optional (uri ""))
   "@arg[name]{an NCName string or @code{nil}}
@@ -112,12 +117,28 @@
 
    @see{local-name}
    @see{namespace-uri}"
-  (when (find #\: name)
-    (stp-error "of-name used with QName as an argument"))
+  (check-of-name name)
   (lambda (x)
     (and (typep x '(or attribute element))
 	 (or (null name) (equal (local-name x) name))
-	 (equal (namespace-uri x) uri))))
+         (equal (namespace-uri x) uri))))
+
+(define-compiler-macro of-name (&whole call name &optional (uri "") &environment env)
+  (if (and (constantp name env)
+           (constantp uri  env))
+      (let ((name-check
+              (if (constantp name)
+                  (progn
+                    (check-of-name (eval name))
+                    nil)
+                  `(check-of-name ,name))))
+        `(progn
+           ,name-check
+           (lambda (x)
+             (and (typep x '(or attribute element))
+                  (or (null ,name) (equal (local-name x) ,name))
+                  (equal (namespace-uri x) ,uri)))))
+      call))
 
 (defun qualified-of-name (qname element)
   "@arg[qname]{string, a QName}
