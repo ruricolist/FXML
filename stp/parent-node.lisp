@@ -236,21 +236,24 @@
 
 (defmethod delete-child-if
     (predicate (parent parent-node) &key from-end start end count key)
-  (let ((c (%children parent))
-	(result nil))
+  (declare (type (or alexandria:array-index null) start end count))
+  (let* ((predicate (alexandria:ensure-function predicate))
+         (c (the children (%children parent)))
+         (result nil)
+         (len (length c)))
     (setf start (or start 0))
-    (setf key (or key #'identity))
-    (setf count (or count (length c)))
-    (setf end (or end (length c)))
-    (unless (and (<= 0 start (length c))
-		 (<= end (length c))
+    (setf key (alexandria:ensure-function (or key #'identity)))
+    (setf count (or count len))
+    (setf end (or end len))
+    (unless (and (<= 0 start len)
+                 (<= end len)
 		 (<= start end))
       (stp-error "invalid bounding index designators"))
     (when c			  ;nothing to delete if not a vector yet
       (if from-end
 	  (let ((i (1- end)))
 	    (loop while (and (>= i start) (plusp count)) do
-	      (let ((loser (elt c i)))
+              (let ((loser (aref c i)))
 		(when (funcall predicate (funcall key loser))
 		  (check-deletion-allowed parent loser i)
 		  (maybe-fill-in-base-uri loser)
@@ -263,7 +266,7 @@
 	  (let ((tbd (- end start))
 		(i start))
 	    (loop while (and (plusp tbd) (plusp count)) do
-	      (let ((loser (elt c i)))
+              (let ((loser (aref c i)))
 		(cond
 		  ((funcall predicate (funcall key loser))
 		   (check-deletion-allowed parent loser i)
