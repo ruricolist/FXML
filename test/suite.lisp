@@ -70,7 +70,7 @@
           (cxml-results (run-xmlconf-suite fn :cxml)))
       (is-true fxml-results)
       (is-true cxml-results)
-      (is (= (length fxml-results) (length cxml-results)))
+      (assert (= (length fxml-results) (length cxml-results)))
       (loop for fxml-result in fxml-results
             for cxml-result in cxml-results
             ;; We don't care about cases where QURI is stricter than PURI.
