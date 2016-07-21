@@ -21,7 +21,7 @@
 (defun omit-whitespace? (sink)
   (not (keep-whitespace? sink)))
 
-(defun make-html5-sink (&rest args)
+(defun make-html5-sink (&rest args &key keep-comments keep-whitespace stream close)
   "Create an HTML5 sink.
 The arguments are KEEP-COMMENTS (default `nil'),
 KEEP-WHITESPACE (default `t'), STREAM, and CLOSE.
@@ -31,6 +31,7 @@ will be closed when serialization is finished. If you want it left
 open, pass `:close nil`.
 
 The stream is returned as a second value."
+  (declare (ignore keep-comments keep-whitespace stream close))
   (apply #'make 'html5-sink args))
 
 (def text-escapes
