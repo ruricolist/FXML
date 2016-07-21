@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE colHAREM SYSTEM "harem.dtd" [
+<!ELEMENT EM #PCDATA>
+<!ATTLIST EM ID CDATA #REQUIRED>
+<!ATTLIST EM CATEG CDATA #IMPLIED>
+<!ATTLIST EM TIPO CDATA #IMPLIED>
+<!ATTLIST EM COMENT CDATA #IMPLIED>
+<!ATTLIST EM SUBTIPO CDATA #IMPLIED>
+<!ELEMENT ALT (#PCDATA|EM)*>
+<!ELEMENT OMITIDO (#PCDATA|EM|ALT|p)*>
+<!ELEMENT colHAREM (DOC)*>
+<!ATTLIST colHAREM versao CDATA #REQUIRED>
+<!ELEMENT p (#PCDATA|EM|OMITIDO|ALT)*>
+<!ATTLIST p xml:space (default|preserve) "default">
+<!ELEMENT DOC (#PCDATA|p|OMITIDO)*>
+<!ATTLIST DOC DOCID CDATA #REQUIRED>
+]>
+<colHAREM versao="Segundo_dourada_com_relacoes_14Abril2010">
+  <DOC DOCID="H2-dftre765">
+    <p xml:space="default"/>
+  </DOC>
+</colHAREM>

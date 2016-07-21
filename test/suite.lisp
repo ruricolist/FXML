@@ -47,6 +47,16 @@
 (test allow-expansion
   (finishes (parse-test-file xml-bomb2 :forbid-entities nil)))
 
+(test dtd-embedding
+  ;; https://stackoverflow.com/questions/26738465/non-valid-output-of-broadcast-handler-in-common-lisp-closure-xml-package/28528117#28528117
+  (let ((teste
+          (with-output-to-string (out)
+            (let ((h (make-instance 'fxml:sax-proxy :chained-handler (fxml:make-character-stream-sink out))))
+              (fxml:parse (test-file-path xml-harem) h
+                          :validate t
+                          :forbid-external nil)))))
+    (is (equal teste (read-file-into-string (test-file-path xml-teste))))))
+
 (def-suite xmlconf :in fxml)
 
 (in-suite xmlconf)

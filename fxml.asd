@@ -70,7 +70,8 @@
   :depends-on (:uiop
                :fiveam
                :fxml/xml :fxml/klacks :fxml/dom
-               :cxml :cxml-dom :cxml-klacks))
+               :cxml :cxml-dom :cxml-klacks
+               :alexandria))
 
 (asdf:defsystem :fxml
   :components ()

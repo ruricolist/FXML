@@ -2,6 +2,7 @@
 
 (defpackage #:fxml.test
   (:use #:cl #:5am)
+  (:import-from :alexandria :read-file-into-string)
   (:export #:run-tests))
 
 (in-package #:fxml.test)
@@ -16,7 +17,9 @@
   (def xml-simple-ns "simple-ns.xml")
   (def xml-bomb "xmlbomb.xml")
   (def xml-bomb2 "xmlbomb2.xml")
-  (def xml-cyclic "cyclic.xml"))
+  (def xml-cyclic "cyclic.xml")
+  (def xml-harem "harem.xml")
+  (def xml-teste "teste.xml"))
 
 (defun test-file-path (name)
   (asdf:system-relative-pathname
