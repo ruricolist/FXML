@@ -16,7 +16,7 @@
   (:default-initargs :keep-whitespace t
                      :keep-comments nil
                      :close t
-                     :stream  (make-string-output-stream)))
+                     :stream (make-string-output-stream)))
 
 (defun omit-whitespace? (sink)
   (not (keep-whitespace? sink)))
