@@ -159,3 +159,7 @@
   :perform (test-op (o c) (uiop:symbol-call :fxml.sanitize.test :run-tests))
   :components ((:file "test")))
 
+(asdf:register-system-packages :fxml '(:fxml :fxml-dom :fxml.dom :fxml.klacks :fxml.sax))
+(asdf:register-system-packages :fxml/stp '(:fxml.stp))
+(asdf:register-system-packages :fxml/html5 '(:fxml.html5))
+(asdf:register-system-packages :fxml/sanitize '(:fxml.sanitize))
