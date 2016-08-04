@@ -3442,49 +3442,49 @@
           (fptr (xstream-fill-ptr ,input))
           (buf  (xstream-buffer ,input))
           ,res ,res-start ,res-end)
-    (declare (type fixnum rptr fptr p0)
-             (type (simple-array read-element (*)) buf))
-    (loop
-      (cond ((%= rptr fptr)
-             ;; underflow -- hmm inject the scratch-pad with what we
-             ;; read and continue, while using read-rune and collecting
-             ;; d.h. besser waere hier auch while-reading zu benutzen.
-             (setf (xstream-read-ptr ,input) rptr)
-             (multiple-value-setq (,res ,res-start ,res-end)
-               (with-rune-collector/raw (collect)
-                 (do ((i p0 (%+ i 1)))
-                     ((%= i rptr))
-                   (collect (%rune buf i)))
-                 (let (c)
-                   (loop
-                     (cond ((%= rptr fptr)
-                            (setf (xstream-read-ptr ,input) rptr)
-                            (setf c (peek-rune input))
-                            (cond ((eq c :eof)
-                                   (return)))
-                            (setf rptr (xstream-read-ptr ,input)
-                                  fptr (xstream-fill-ptr ,input)
-                                  buf  (xstream-buffer ,input)))
-                           (t
-                            (setf c (%rune buf rptr))))
-                     (cond ((,predicate c)
-                            ;; we stop
-                            (setf (xstream-read-ptr ,input) rptr)
-                            (return))
-                           (t
-                            ;; we continue
-                            (collect c)
-                            (setf rptr (%+ rptr 1))) )))))
-             (return))
-            ((,predicate (%rune buf rptr))
-             ;; we stop
-             (setf (xstream-read-ptr ,input) rptr)
-             (setf ,res buf ,res-start p0 ,res-end rptr)
-             (return) )
-            (t
-            we continue
-             (sf rptr (%+ rptr 1))) ))
-    ,@body ))
+     (declare (type fixnum rptr fptr p0)
+              (type (simple-array read-element (*)) buf))
+     (loop
+       (cond ((%= rptr fptr)
+              ;; underflow -- hmm inject the scratch-pad with what we
+              ;; read and continue, while using read-rune and collecting
+              ;; d.h. besser waere hier auch while-reading zu benutzen.
+              (setf (xstream-read-ptr ,input) rptr)
+              (multiple-value-setq (,res ,res-start ,res-end)
+                (with-rune-collector/raw (collect)
+                  (do ((i p0 (%+ i 1)))
+                      ((%= i rptr))
+                    (collect (%rune buf i)))
+                  (let (c)
+                    (loop
+                      (cond ((%= rptr fptr)
+                             (setf (xstream-read-ptr ,input) rptr)
+                             (setf c (peek-rune input))
+                             (cond ((eq c :eof)
+                                    (return)))
+                             (setf rptr (xstream-read-ptr ,input)
+                                   fptr (xstream-fill-ptr ,input)
+                                   buf  (xstream-buffer ,input)))
+                            (t
+                             (setf c (%rune buf rptr))))
+                      (cond ((,predicate c)
+                             ;; we stop
+                             (setf (xstream-read-ptr ,input) rptr)
+                             (return))
+                            (t
+                             ;; we continue
+                             (collect c)
+                             (setf rptr (%+ rptr 1))) )))))
+              (return))
+             ((,predicate (%rune buf rptr))
+              ;; we stop
+              (setf (xstream-read-ptr ,input) rptr)
+              (setf ,res buf ,res-start p0 ,res-end rptr)
+              (return) )
+             (t
+              we continue
+              (sf rptr (%+ rptr 1))) ))
+     ,@body ))
 ||#
 
 (defmacro read-data-until* ((predicate input res res-start res-end) &body body)
@@ -3500,21 +3500,24 @@
   (let ((input-var (gensym))
         (collect (gensym))
         (c (gensym)))
-    `(let ((,input-var ,input))
-       (multiple-value-bind (,res ,res-start ,res-end)
-           (with-rune-collector/raw (,collect)
-             (loop
-               (let ((,c (peek-rune ,input-var)))
-                 (cond ((eq ,c :eof)
-                        ;; xxx error message
-                        (return))
-                       ((funcall ,predicate ,c)
-                        (return))
-                       (t
-                        (,collect ,c)
-                        (consume-rune ,input-var))))))
-         (locally
-           ,@body)))))
+    ;; The optimization declarations are necessary to prevent run-time
+    ;; typep in Clozure.
+    `(locally (declare (optimize (safety 1) (debug 0)))
+       (let ((,input-var ,input))
+         (multiple-value-bind (,res ,res-start ,res-end)
+             (with-rune-collector/raw (,collect)
+               (loop
+                 (let ((,c (peek-rune ,input-var)))
+                   (cond ((eq ,c :eof)
+                          ;; xxx error message
+                          (return))
+                         ((funcall ,predicate ,c)
+                          (return))
+                         (t
+                          (,collect ,c)
+                          (consume-rune ,input-var))))))
+           (locally
+               ,@body))))))
 
 (defun read-name-token (input)
   (read-data-until* ((lambda (rune)
@@ -3522,7 +3525,7 @@
                        (not (name-rune-p rune)))
                      input
                      r rs re)
-                    (intern-name r rs re)))
+    (intern-name r rs re)))
 
 (defun read-cdata (input)
   (read-data-until* ((lambda (rune)

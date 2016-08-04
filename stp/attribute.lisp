@@ -28,10 +28,6 @@
 
 (in-package :fxml.stp.impl)
 
-#+sbcl
-(declaim (optimize (debug 2)))
-
-
 ;;;; Class ATTRIBUTE
 
 (defgeneric value (attribute)
