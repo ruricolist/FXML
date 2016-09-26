@@ -393,12 +393,12 @@
 (defun (setf rod-hash-get) (new-value hashtable rod &optional (start 0) (end (length rod)))
   (rod-hash-set new-value hashtable rod start end))
 
-(defun intern-name (rod &optional (start 0) (end (length rod)))
-  (multiple-value-bind (value successp key) (rod-hash-get (name-hashtable *ctx*) rod start end)
+(defun intern-name (rod &optional (start 0) (end (length rod)) &aux (ctx *ctx*))
+  (multiple-value-bind (value successp key) (rod-hash-get (name-hashtable ctx) rod start end)
     (declare (ignore value))
     (if successp
         key
-        (nth-value 1 (rod-hash-set t (name-hashtable *ctx*) rod start end)))))
+        (nth-value 1 (rod-hash-set t (name-hashtable ctx) rod start end)))))
 
 ;;;; ---------------------------------------------------------------------------
 ;;;;
@@ -2759,20 +2759,20 @@
       (unless (find-notation name (dtd *ctx*))
         (validity-error "(23) Notation Declared: ~S" (rod-string name))))))
 
-(defun p/element (input)
+(defun p/element (input &aux (ctx *ctx*))
   (multiple-value-bind (cat n-b new-b uri lname qname attrs) (p/sztag input)
-    (fxml.sax:start-element (handler *ctx*) uri lname qname attrs)
+    (fxml.sax:start-element (handler ctx) uri lname qname attrs)
     (when (eq cat :stag)
       (let ((*namespace-bindings* n-b))
         (p/content input))
       (with-simple-restart (continue "Close the current tag")
         (p/etag input qname)))
-    (fxml.sax:end-element (handler *ctx*) uri lname qname)
+    (fxml.sax:end-element (handler ctx) uri lname qname)
     (undeclare-namespaces new-b)
-    (pop (base-stack *ctx*))
-    (validate-end-element *ctx* qname)))
+    (pop (base-stack ctx))
+    (validate-end-element ctx qname)))
 
-(defun p/sztag (input)
+(defun p/sztag (input &aux (ctx *ctx*))
   (multiple-value-bind (cat sem) (read-token input)
     (case cat
       ((:stag :ztag))
@@ -2786,15 +2786,15 @@
                      ((:stag :ztag) (return))
                      (:eof (eox input))))))))
     (destructuring-bind (&optional name &rest raw-attrs) sem
-      (validate-start-element *ctx* name)
+      (validate-start-element ctx name)
       (let* ((attrs
-               (process-attributes *ctx* name (build-attribute-list raw-attrs)))
+               (process-attributes ctx name (build-attribute-list raw-attrs)))
              (*namespace-bindings* *namespace-bindings*)
              new-namespaces)
         (when fxml.sax:*namespace-processing*
           (setf new-namespaces (declare-namespaces attrs))
           (mapc #'set-attribute-namespace attrs))
-        (push (compute-base attrs) (base-stack *ctx*))
+        (push (compute-base attrs) (base-stack ctx))
         (multiple-value-bind (uri prefix local-name)
             (if fxml.sax:*namespace-processing*
                 (restart-case
