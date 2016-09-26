@@ -2889,15 +2889,16 @@
         ((:ENTITY-REF)
          (let ((name sem))
            (consume-token input)
-           (recurse-on-entity input name :general
-                              (lambda (input)
-                                (prog1
-                                    (etypecase (checked-get-entdef name :general)
-                                      (internal-entdef (p/content input))
-                                      (external-entdef (p/ext-parsed-ent input)))
-                                  (unless (eq (peek-token input) :eof)
-                                    (wf-error input "Trailing garbage. - ~S"
-                                              (peek-token input))))))))
+           (flet ((cont (input)
+                    (prog1
+                        (etypecase (checked-get-entdef name :general)
+                          (internal-entdef (p/content input))
+                          (external-entdef (p/ext-parsed-ent input)))
+                      (unless (eq (peek-token input) :eof)
+                        (wf-error input "Trailing garbage. - ~S"
+                                  (peek-token input))))))
+             (declare (dynamic-extent #'cont))
+             (recurse-on-entity input name :general #'cont))))
         ((:<!\[)
          (let ((data (process-cdata-section input)))
            (fxml.sax:start-cdata (handler *ctx*))
