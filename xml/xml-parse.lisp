@@ -1483,6 +1483,7 @@
 (definline data-rune-p (rune)
   ;; Any Unicode character, excluding FFFE, and FFFF.
   ;; Allow surrogates if using UTF-16, else allow >= 0x10000.
+  (declare #.*fast*)
   (and rune
        (let ((c (rune-code rune)))
          (or (= c #x9) (= c #xA) (= c #xD)
