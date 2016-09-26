@@ -218,9 +218,9 @@
 
 (defstruct (stream-name
             (:print-function print-stream-name))
-  entity-name
-  entity-kind
-  uri)
+  (entity-name "Anonymous stream" :type rod)
+  (entity-kind :main :type keyword)
+  (uri (error "No URI") :type (or quri:uri null) :read-only t))
 
 (defun print-stream-name (object stream depth)
   (declare (ignore depth))
