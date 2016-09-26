@@ -442,18 +442,21 @@
             (,i 0))
        (declare (type alexandria:array-index ,n ,i))
        (macrolet
-           ((,collect (x)
-              `((lambda (x)
-                  (locally
-                      (declare #.*fast*)
-                    (when (%>= ,',i ,',n)
-                      (setf ,',n (* 2 ,',n))
-                      (setf ,',b
-                            (setf ,',scratch
-                                  (adjust-array-by-copying ,',b ,',n))))
-                    (setf (aref (the (simple-array rune (*)) ,',b) ,',i) x)
-                    (incf ,',i)))
-                ,x)))
+           ((,collect (x &rest xs)
+              (if xs
+                  `(progn (collect ,x)
+                          ,@(loop for x in xs collect `(collect ,x)))
+                  `((lambda (x)
+                      (locally
+                          (declare #.*fast*)
+                        (when (%>= ,',i ,',n)
+                          (setf ,',n (* 2 ,',n))
+                          (setf ,',b
+                                (setf ,',scratch
+                                      (adjust-array-by-copying ,',b ,',n))))
+                        (setf (aref (the (simple-array rune (*)) ,',b) ,',i) x)
+                        (incf ,',i)))
+                    ,x))))
          ,@body
          ,(ecase mode
             (:intern
@@ -1728,8 +1731,7 @@
            (unless (data-rune-p d)
              (wf-error input "Illegal char: ~S." d))
            (when (rune= d #/\]) (go state-3))
-           (collect #/\])
-           (collect d)
+           (collect #/\] d)
            (go state-1))
        state-3 ;; #/\] #/\] seen
          (let ((d (read-rune input)))
@@ -1742,9 +1744,7 @@
            (when (rune= d #/\])
              (collect #/\])
              (go state-3))
-           (collect #/\])
-           (collect #/\])
-           (collect d)
+           (collect #/\] #/\] d)
            (go state-1))))))
 
 ;; some character categories
