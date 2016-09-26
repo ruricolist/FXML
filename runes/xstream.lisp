@@ -261,10 +261,10 @@ method.")
 ;;; Line counting
 
 (defun account-for-line-break (input)
-  (declare (type xstream input))
+  (declare (type xstream input) #.*fast*)
   (incf (xstream-line-number input))
   (setf (xstream-line-start input)
-    (+ (xstream-buffer-start input) (xstream-read-ptr input))))
+        (+ (xstream-buffer-start input) (xstream-read-ptr input))))
 
 (defun unaccount-for-line-break (input)
   ;; incomplete! 
