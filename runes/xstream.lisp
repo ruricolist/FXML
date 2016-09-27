@@ -197,7 +197,7 @@ method.")
           (setf (xstream-read-ptr input) (%+ rp 1))
           (cond ((%= ch +end+)
                  (the (or (member :eof) rune)
-                   (xstream-underflow input)))
+                      (xstream-underflow input)))
                 ((%= ch #x000A)         ;line break
                  (account-for-line-break input)
                  (code-rune ch))
@@ -208,6 +208,7 @@ method.")
 (defmacro peek-rune (input)
   "Peek a single rune off the xstream `input'. In case of end of file :EOF
    is returned."
+  ;; NB Wrapping this with `the` kills performance in Clozure; why?
   `((lambda (input)
       (declare (type xstream input)
                #.*fast*)
