@@ -435,27 +435,49 @@
              :start2 0 :end2 (length old-array))
     res))
 
-(defmacro with-rune-collector-aux (scratch collect body mode)
+(defmacro with-rune-collector-aux (scratch collect body mode collect-all)
+  (setf collect-all (or collect-all (gensym #.(string 'collect-all))))
   (alexandria:with-gensyms (rod n i b)
     `(let* ((,b ,scratch)
             (,n (length ,b))
             (,i 0))
        (declare (type alexandria:array-index ,n ,i))
        (macrolet
-           ((,collect (x &rest xs)
+           ((,collect-all (xs)
+              `((lambda (xs)
+                  (declare #.*fast*)
+                  (when (%>= (+ ,',i (length xs)) ,',n)
+                    (setf ,',n (* 2 ,',n))
+                    (setf ,',b
+                          (setf ,',scratch
+                                (adjust-array-by-copying ,',b ,',n))))
+                  (loop for x across xs do
+                    (setf (aref (the (simple-array rune (*)) ,',b) ,',i) x)
+                    (incf ,',i)))
+                ,xs))
+            (,collect (x &rest xs)
               (if xs
-                  `(progn (collect ,x)
-                          ,@(loop for x in xs collect `(collect ,x)))
-                  `((lambda (x)
-                      (locally
-                          (declare #.*fast*)
-                        (when (%>= ,',i ,',n)
-                          (setf ,',n (* 2 ,',n))
-                          (setf ,',b
-                                (setf ,',scratch
-                                      (adjust-array-by-copying ,',b ,',n))))
+                  `((lambda (&rest xs)
+                      (declare (dynamic-extent xs))
+                      (declare #.*fast*)
+                      (when (%>= (+ ,',i ,(1+ (length xs))) ,',n)
+                        (setf ,',n (* 2 ,',n))
+                        (setf ,',b
+                              (setf ,',scratch
+                                    (adjust-array-by-copying ,',b ,',n))))
+                      (dolist (x xs)
                         (setf (aref (the (simple-array rune (*)) ,',b) ,',i) x)
                         (incf ,',i)))
+                    ,x ,@xs)
+                  `((lambda (x)
+                      (declare #.*fast*)
+                      (when (%>= ,',i ,',n)
+                        (setf ,',n (* 2 ,',n))
+                        (setf ,',b
+                              (setf ,',scratch
+                                    (adjust-array-by-copying ,',b ,',n))))
+                      (setf (aref (the (simple-array rune (*)) ,',b) ,',i) x)
+                      (incf ,',i))
                     ,x))))
          ,@body
          ,(ecase mode
@@ -467,23 +489,23 @@
             (:raw
              `(values ,b 0 ,i)))))))
 
-(defmacro with-rune-collector ((collect) &body body)
-  `(with-rune-collector-aux *scratch-pad* ,collect ,body :copy))
+(defmacro with-rune-collector ((collect &optional collect-all) &body body)
+  `(with-rune-collector-aux *scratch-pad* ,collect ,body :copy ,collect-all))
 
-(defmacro with-rune-collector-2 ((collect) &body body)
-  `(with-rune-collector-aux *scratch-pad-2* ,collect ,body :copy))
+(defmacro with-rune-collector-2 ((collect &optional collect-all) &body body)
+  `(with-rune-collector-aux *scratch-pad-2* ,collect ,body :copy ,collect-all))
 
-(defmacro with-rune-collector-3 ((collect) &body body)
-  `(with-rune-collector-aux *scratch-pad-3* ,collect ,body :copy))
+(defmacro with-rune-collector-3 ((collect &optional collect-all) &body body)
+  `(with-rune-collector-aux *scratch-pad-3* ,collect ,body :copy ,collect-all))
 
-(defmacro with-rune-collector-4 ((collect) &body body)
-  `(with-rune-collector-aux *scratch-pad-4* ,collect ,body :copy))
+(defmacro with-rune-collector-4 ((collect &optional collect-all) &body body)
+  `(with-rune-collector-aux *scratch-pad-4* ,collect ,body :copy ,collect-all))
 
-(defmacro with-rune-collector/intern ((collect) &body body)
-  `(with-rune-collector-aux *scratch-pad* ,collect ,body :intern))
+(defmacro with-rune-collector/intern ((collect &optional collect-all) &body body)
+  `(with-rune-collector-aux *scratch-pad* ,collect ,body :intern ,collect-all))
 
-(defmacro with-rune-collector/raw ((collect) &body body)
-  `(with-rune-collector-aux *scratch-pad* ,collect ,body :raw))
+(defmacro with-rune-collector/raw ((collect &optional collect-all) &body body)
+  `(with-rune-collector-aux *scratch-pad* ,collect ,body :raw ,collect-all))
 
 ;;;;  ---------------------------------------------------------------------------
 ;;;;  DTD
@@ -1495,7 +1517,7 @@
              (<= #x10000 c #x10FFFF)))))
 
 (defun read-att-value (zinput input mode &optional canon-space-p (delim nil))
-  (with-rune-collector-2 (collect)
+  (with-rune-collector-2 (collect collect-all)
     (labels ((muffle (input delim)
                (let (c)
                  (loop
@@ -1532,7 +1554,7 @@
                                       ;; Must it be defined?
                                       ;; allerdings: unparsed sind verboten
                                       (collect #/&)
-                                      (map nil (lambda (x) (collect x)) name)
+                                      (collect-all name)
                                       (collect #/\; )))))))
                          ((and (eq mode :ENT) (rune= c #/%))
                           (let ((d (peek-rune input)))
@@ -1662,8 +1684,7 @@
           (when (rune= d #/?)
             (collect #/?)
             (go state-2))
-          (collect #/?)
-          (collect d)
+          (collect #/? d)
           (go state-1))))))
 
 (defun read-comment-content (input &aux d)
@@ -1686,8 +1707,7 @@
         (unless (data-rune-p d)
           (wf-error input "Illegal char: ~S." d))
         (when (rune= d #/-) (go state-3))
-        (collect #/-)
-        (collect d)
+        (collect #/- d)
         (go state-1)
        state-3 ;; #/- #/- seen
         (setf d (read-rune input))
@@ -1700,9 +1720,7 @@
         (when (rune= d #/-)
           (collect #/-)
           (go state-3))
-        (collect #/-)
-        (collect #/-)
-        (collect d)
+         (collect #/- #/- d)
         (go state-1)))))
 
 (defun read-cdata-sect (input)
@@ -3634,7 +3652,7 @@
       (wf-error input
                 "Bad attribute value delimiter ~S, must be either #\\\" or #\\\'."
                 (rune-char delim)))
-    (with-rune-collector-4 (collect)
+    (with-rune-collector-4 (collect collect-all)
       (loop
         (let ((c (read-rune input)))
           (cond ((eq c :eof)
@@ -3657,7 +3675,7 @@
                           (collect (%rune exp i)))))
                      (:non-reference
                       (collect #\&)
-                      (loop for c across sem do (collect c))))))
+                      (collect-all sem)))))
                 ((space-rune-p c)
                  (collect #/u+0020))
                 (t
