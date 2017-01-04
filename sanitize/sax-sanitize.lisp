@@ -18,14 +18,14 @@
     "hr" "li" "nav" "ol" "p" "pre" "section" "ul")
   "Replace these elements with whitespace.")
 
-(defstruct (element-rule (:conc-name element.))
+(defstruct-read-only (element-rule (:conc-name element.))
   "How to sanitize an element."
-  (allowed nil :type boolean :read-only t)
-  (removed nil :type boolean :read-only t)
-  (whitespace nil :type boolean :read-only t)
-  (attributes '() :type list :read-only t)
-  (protocols '() :type list :read-only t)
-  (add-attributes '() :type list :read-only t))
+  (allowed nil :type boolean)
+  (removed nil :type boolean)
+  (whitespace nil :type boolean)
+  (attributes '() :type list)
+  (protocols '() :type list)
+  (add-attributes '() :type list))
 
 (def null-rule (make-element-rule)
   "Rule for unknown elements.")
