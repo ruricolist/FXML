@@ -437,7 +437,7 @@
 
 (defmacro with-rune-collector-aux (scratch collect body mode collect-all)
   (setf collect-all (or collect-all (gensym #.(string 'collect-all))))
-  (alexandria:with-gensyms (rod n i b)
+  (alexandria:with-gensyms (n i b)
     `(let* ((,b ,scratch)
             (,n (length ,b))
             (,i 0))
@@ -484,8 +484,7 @@
             (:intern
              `(intern-name ,b 0 ,i))
             (:copy
-             `(serapeum:lret ((,rod (make-rod ,i)))
-                (replace ,rod ,b)))
+             `(replace (make-rod ,i) ,b))
             (:raw
              `(values ,b 0 ,i)))))))
 
