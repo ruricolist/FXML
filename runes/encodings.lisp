@@ -362,11 +362,11 @@
                (xerror "Corrupted UTF-8 input (initial byte was #b~8,'0B)" byte0)) ) )) 
     (values wptr rptr))  )
 
-(defmethod encoding-p ((object (eql :utf-16-little-endian))) t)
-(defmethod encoding-p ((object (eql :utf-16-big-endian))) t)
-(defmethod encoding-p ((object (eql :utf-8))) t)
-
-(defmethod encoding-p ((object encoding)) t)
+(defgeneric encoding-p (object)
+  (:method ((object (eql :utf-16-little-endian))) t)
+  (:method ((object (eql :utf-16-big-endian))) t)
+  (:method ((object (eql :utf-8))) t)
+  (:method ((object encoding)) t))
 
 (defmethod decode-sequence ((encoding simple-8-bit-encoding)
                             in in-start in-end
@@ -409,7 +409,7 @@
                     (setf (aref out wptr) #x0A)
                     (setf wptr (%+ wptr 1))
                     (setf rptr (%+ rptr 1)))))
-                    
+            
             (t
              (setf (aref out wptr) (aref table byte))
              (setf wptr (%+ wptr 1))
