@@ -118,12 +118,14 @@
 ;;; Decoders
 
 ;; The decoders share a common signature:
-;;
-;; DECODE input input-start input-end
-;;        output output-start output-end
-;;        eof-p
+
+(defgeneric decode-sequence
+    (encoding
+     input input-start input-end
+     output output-start output-end
+     eof-p))
 ;; -> first-not-written ; first-not-read
-;;
+
 ;; These decode functions should decode as much characters off `input'
 ;; into the `output' as possible and return the indexes to the first
 ;; not read and first not written element of `input' and `output'
