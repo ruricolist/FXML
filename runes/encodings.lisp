@@ -31,10 +31,12 @@
                      (t (write-char (char-upcase ch) bag))))
          string)))
 
-(defmethod encoding-names ((encoding symbol))
+(defun encoding-names (encoding)
+  (check-type encoding symbol)
   (gethash encoding *names*))
 
-(defmethod (setf encoding-names) (new-value (encoding symbol))
+(defun (setf encoding-names) (new-value encoding)
+  (check-type encoding symbol)
   (setf (gethash encoding *names*) new-value))
 
 (defun add-name (encoding name)
