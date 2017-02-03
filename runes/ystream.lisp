@@ -368,8 +368,7 @@ CHAR."
     ((octets :initarg :octets)
      (pos :initform 0)))
 
-(defmethod close ((stream octet-input-stream) &key abort)
-  (declare (ignore abort))
+(defmethod close ((stream octet-input-stream) &key &allow-other-keys)
   (values (open-stream-p stream)))
 
 (defmethod stream-read-byte ((stream octet-input-stream))
