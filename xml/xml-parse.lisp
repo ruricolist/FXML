@@ -3071,7 +3071,7 @@
       str))
 
 (defun pathname-to-uri (pathname)
-  (quri:uri (format nil "file://~a" (uiop:native-namestring pathname))))
+  (quri:uri (format nil "file://~a" (namestring pathname))))
 
 (defun parse-name.type (str)
   (if str

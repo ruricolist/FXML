@@ -83,8 +83,13 @@
       (assert (= (length fxml-results) (length cxml-results)))
       (loop for fxml-result in fxml-results
             for cxml-result in cxml-results
-            ;; We don't care about cases where QURI is stricter than PURI.
-            do (unless (search "bad uri" fxml-result)
+            do (unless
+                   (or
+                    ;; We don't care about cases where QURI is stricter than PURI.
+                    (search "bad uri" fxml-result)
+                    ;; Conversely, we also don't care about cases that
+                    ;; include Windows paths that PURI balks at.
+                    (search "bad uri" cxml-result))
                  (is (equal fxml-result cxml-result)))))))
 
 (test sax
