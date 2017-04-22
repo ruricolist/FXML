@@ -67,7 +67,7 @@ Implementation differences:
 - FXML does not support Lisps that use UTF-16.
 - Monolithic project (absorbs closure-common, cxml-stp).
 - Uses named-readtables.
-- Does not support SCL.
+- Does not support [SCL][].
 - Does not support non-Unicode Lisps.
 - Uses QURI instead of PURI.
 
@@ -210,3 +210,4 @@ you can do it in one pass:
 [cl-html5-parser]: https://github.com/copyleft/cl-html5-parser
 [css-selectors]: https://github.com/AccelerationNet/css-selectors
 [Lisp-LGPL]: http://opensource.franz.com/preamble.html
+[SCL]: http://www.scieneer.com/scl/
