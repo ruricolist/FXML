@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/TBRSS/FXML.svg?branch=master)](https://travis-ci.org/TBRSS/FXML)
+
 FXML is a fork of [CXML][]. Like CXML, it is released under the
 [Lisp-LGPL][].
 
