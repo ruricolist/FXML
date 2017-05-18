@@ -218,9 +218,9 @@
 
 (defstruct (stream-name
             (:print-function print-stream-name))
-  entity-name
-  entity-kind
-  uri)
+  (entity-name "Anonymous stream" :type rod)
+  (entity-kind :main :type keyword)
+  (uri (error "No URI") :type (or quri:uri null) :read-only t))
 
 (defun print-stream-name (object stream depth)
   (declare (ignore depth))
@@ -393,12 +393,12 @@
 (defun (setf rod-hash-get) (new-value hashtable rod &optional (start 0) (end (length rod)))
   (rod-hash-set new-value hashtable rod start end))
 
-(defun intern-name (rod &optional (start 0) (end (length rod)))
-  (multiple-value-bind (value successp key) (rod-hash-get (name-hashtable *ctx*) rod start end)
+(defun intern-name (rod &optional (start 0) (end (length rod)) &aux (ctx *ctx*))
+  (multiple-value-bind (value successp key) (rod-hash-get (name-hashtable ctx) rod start end)
     (declare (ignore value))
     (if successp
         key
-        (nth-value 1 (rod-hash-set t (name-hashtable *ctx*) rod start end)))))
+        (nth-value 1 (rod-hash-set t (name-hashtable ctx) rod start end)))))
 
 ;;;; ---------------------------------------------------------------------------
 ;;;;
@@ -435,52 +435,76 @@
              :start2 0 :end2 (length old-array))
     res))
 
-(defmacro with-rune-collector-aux (scratch collect body mode)
-  (alexandria:with-gensyms (rod n i b)
+(defmacro with-rune-collector-aux (scratch collect body mode collect-all)
+  (setf collect-all (or collect-all (gensym #.(string 'collect-all))))
+  (alexandria:with-gensyms (n i b)
     `(let* ((,b ,scratch)
             (,n (length ,b))
             (,i 0))
        (declare (type alexandria:array-index ,n ,i))
        (macrolet
-           ((,collect (x)
-              `((lambda (x)
-                  (locally
-                      (declare #.*fast*)
-                    (when (%>= ,',i ,',n)
-                      (setf ,',n (* 2 ,',n))
-                      (setf ,',b
-                            (setf ,',scratch
-                                  (adjust-array-by-copying ,',b ,',n))))
+           ((,collect-all (xs)
+              `((lambda (xs)
+                  (declare #.*fast*)
+                  (when (%>= (+ ,',i (length xs)) ,',n)
+                    (setf ,',n (* 2 ,',n))
+                    (setf ,',b
+                          (setf ,',scratch
+                                (adjust-array-by-copying ,',b ,',n))))
+                  (loop for x across xs do
                     (setf (aref (the (simple-array rune (*)) ,',b) ,',i) x)
                     (incf ,',i)))
-                ,x)))
+                ,xs))
+            (,collect (x &rest xs)
+              (if xs
+                  `((lambda (&rest xs)
+                      (declare (dynamic-extent xs))
+                      (declare #.*fast*)
+                      (when (%>= (+ ,',i ,(1+ (length xs))) ,',n)
+                        (setf ,',n (* 2 ,',n))
+                        (setf ,',b
+                              (setf ,',scratch
+                                    (adjust-array-by-copying ,',b ,',n))))
+                      (dolist (x xs)
+                        (setf (aref (the (simple-array rune (*)) ,',b) ,',i) x)
+                        (incf ,',i)))
+                    ,x ,@xs)
+                  `((lambda (x)
+                      (declare #.*fast*)
+                      (when (%>= ,',i ,',n)
+                        (setf ,',n (* 2 ,',n))
+                        (setf ,',b
+                              (setf ,',scratch
+                                    (adjust-array-by-copying ,',b ,',n))))
+                      (setf (aref (the (simple-array rune (*)) ,',b) ,',i) x)
+                      (incf ,',i))
+                    ,x))))
          ,@body
          ,(ecase mode
             (:intern
              `(intern-name ,b 0 ,i))
             (:copy
-             `(serapeum:lret ((,rod (make-rod ,i)))
-                (replace ,rod ,b)))
+             `(replace (make-rod ,i) ,b))
             (:raw
              `(values ,b 0 ,i)))))))
 
-(defmacro with-rune-collector ((collect) &body body)
-  `(with-rune-collector-aux *scratch-pad* ,collect ,body :copy))
+(defmacro with-rune-collector ((collect &optional collect-all) &body body)
+  `(with-rune-collector-aux *scratch-pad* ,collect ,body :copy ,collect-all))
 
-(defmacro with-rune-collector-2 ((collect) &body body)
-  `(with-rune-collector-aux *scratch-pad-2* ,collect ,body :copy))
+(defmacro with-rune-collector-2 ((collect &optional collect-all) &body body)
+  `(with-rune-collector-aux *scratch-pad-2* ,collect ,body :copy ,collect-all))
 
-(defmacro with-rune-collector-3 ((collect) &body body)
-  `(with-rune-collector-aux *scratch-pad-3* ,collect ,body :copy))
+(defmacro with-rune-collector-3 ((collect &optional collect-all) &body body)
+  `(with-rune-collector-aux *scratch-pad-3* ,collect ,body :copy ,collect-all))
 
-(defmacro with-rune-collector-4 ((collect) &body body)
-  `(with-rune-collector-aux *scratch-pad-4* ,collect ,body :copy))
+(defmacro with-rune-collector-4 ((collect &optional collect-all) &body body)
+  `(with-rune-collector-aux *scratch-pad-4* ,collect ,body :copy ,collect-all))
 
-(defmacro with-rune-collector/intern ((collect) &body body)
-  `(with-rune-collector-aux *scratch-pad* ,collect ,body :intern))
+(defmacro with-rune-collector/intern ((collect &optional collect-all) &body body)
+  `(with-rune-collector-aux *scratch-pad* ,collect ,body :intern ,collect-all))
 
-(defmacro with-rune-collector/raw ((collect) &body body)
-  `(with-rune-collector-aux *scratch-pad* ,collect ,body :raw))
+(defmacro with-rune-collector/raw ((collect &optional collect-all) &body body)
+  `(with-rune-collector-aux *scratch-pad* ,collect ,body :raw ,collect-all))
 
 ;;;;  ---------------------------------------------------------------------------
 ;;;;  DTD
@@ -1483,6 +1507,7 @@
 (definline data-rune-p (rune)
   ;; Any Unicode character, excluding FFFE, and FFFF.
   ;; Allow surrogates if using UTF-16, else allow >= 0x10000.
+  (declare #.*fast*)
   (and rune
        (let ((c (rune-code rune)))
          (or (= c #x9) (= c #xA) (= c #xD)
@@ -1491,7 +1516,7 @@
              (<= #x10000 c #x10FFFF)))))
 
 (defun read-att-value (zinput input mode &optional canon-space-p (delim nil))
-  (with-rune-collector-2 (collect)
+  (with-rune-collector-2 (collect collect-all)
     (labels ((muffle (input delim)
                (let (c)
                  (loop
@@ -1528,7 +1553,7 @@
                                       ;; Must it be defined?
                                       ;; allerdings: unparsed sind verboten
                                       (collect #/&)
-                                      (map nil (lambda (x) (collect x)) name)
+                                      (collect-all name)
                                       (collect #/\; )))))))
                          ((and (eq mode :ENT) (rune= c #/%))
                           (let ((d (peek-rune input)))
@@ -1658,8 +1683,7 @@
           (when (rune= d #/?)
             (collect #/?)
             (go state-2))
-          (collect #/?)
-          (collect d)
+          (collect #/? d)
           (go state-1))))))
 
 (defun read-comment-content (input &aux d)
@@ -1682,8 +1706,7 @@
         (unless (data-rune-p d)
           (wf-error input "Illegal char: ~S." d))
         (when (rune= d #/-) (go state-3))
-        (collect #/-)
-        (collect d)
+        (collect #/- d)
         (go state-1)
        state-3 ;; #/- #/- seen
         (setf d (read-rune input))
@@ -1696,55 +1719,50 @@
         (when (rune= d #/-)
           (collect #/-)
           (go state-3))
-        (collect #/-)
-        (collect #/-)
-        (collect d)
+         (collect #/- #/- d)
         (go state-1)))))
 
-(defun read-cdata-sect (input &aux d)
+(defun read-cdata-sect (input)
   ;; <![CDATA[ is already read
   ;; read anything up to ]]>
   (with-rune-collector (collect)
     (block nil
       (tagbody
        state-1
-        (setf d (read-rune input))
-        (when (eq d :eof)
-          (eox input))
-        (unless (data-rune-p d)
-          (restart-case
-              (wf-error input "Illegal char: ~S." d)
-            (continue ()
-              :report "Skip character"
-              (go state-1))))
-        (when (rune= d #/\]) (go state-2))
-        (collect d)
-        (go state-1)
+         (let ((d (read-rune input)))
+           (when (eq d :eof)
+             (eox input))
+           (unless (data-rune-p d)
+             (restart-case
+                 (wf-error input "Illegal char: ~S." d)
+               (continue ()
+                 :report "Skip character"
+                 (go state-1))))
+           (when (rune= d #/\]) (go state-2))
+           (collect d)
+           (go state-1))
        state-2 ;; #/] seen
-        (setf d (read-rune input))
-        (when (eq d :eof)
-          (eox input))
-        (unless (data-rune-p d)
-          (wf-error input "Illegal char: ~S." d))
-        (when (rune= d #/\]) (go state-3))
-        (collect #/\])
-        (collect d)
-        (go state-1)
+         (let ((d (read-rune input)))
+           (when (eq d :eof)
+             (eox input))
+           (unless (data-rune-p d)
+             (wf-error input "Illegal char: ~S." d))
+           (when (rune= d #/\]) (go state-3))
+           (collect #/\] d)
+           (go state-1))
        state-3 ;; #/\] #/\] seen
-        (setf d (read-rune input))
-        (when (eq d :eof)
-          (eox input))
-        (unless (data-rune-p d)
-          (wf-error input "Illegal char: ~S." d))
-        (when (rune= d #/>)
-          (return))
-        (when (rune= d #/\])
-          (collect #/\])
-          (go state-3))
-        (collect #/\])
-        (collect #/\])
-        (collect d)
-        (go state-1)))))
+         (let ((d (read-rune input)))
+           (when (eq d :eof)
+             (eox input))
+           (unless (data-rune-p d)
+             (wf-error input "Illegal char: ~S." d))
+           (when (rune= d #/>)
+             (return))
+           (when (rune= d #/\])
+             (collect #/\])
+             (go state-3))
+           (collect #/\] #/\] d)
+           (go state-1))))))
 
 ;; some character categories
 
@@ -2758,20 +2776,20 @@
       (unless (find-notation name (dtd *ctx*))
         (validity-error "(23) Notation Declared: ~S" (rod-string name))))))
 
-(defun p/element (input)
+(defun p/element (input &aux (ctx *ctx*))
   (multiple-value-bind (cat n-b new-b uri lname qname attrs) (p/sztag input)
-    (fxml.sax:start-element (handler *ctx*) uri lname qname attrs)
+    (fxml.sax:start-element (handler ctx) uri lname qname attrs)
     (when (eq cat :stag)
       (let ((*namespace-bindings* n-b))
         (p/content input))
       (with-simple-restart (continue "Close the current tag")
         (p/etag input qname)))
-    (fxml.sax:end-element (handler *ctx*) uri lname qname)
+    (fxml.sax:end-element (handler ctx) uri lname qname)
     (undeclare-namespaces new-b)
-    (pop (base-stack *ctx*))
-    (validate-end-element *ctx* qname)))
+    (pop (base-stack ctx))
+    (validate-end-element ctx qname)))
 
-(defun p/sztag (input)
+(defun p/sztag (input &aux (ctx *ctx*))
   (multiple-value-bind (cat sem) (read-token input)
     (case cat
       ((:stag :ztag))
@@ -2785,15 +2803,15 @@
                      ((:stag :ztag) (return))
                      (:eof (eox input))))))))
     (destructuring-bind (&optional name &rest raw-attrs) sem
-      (validate-start-element *ctx* name)
+      (validate-start-element ctx name)
       (let* ((attrs
-               (process-attributes *ctx* name (build-attribute-list raw-attrs)))
+               (process-attributes ctx name (build-attribute-list raw-attrs)))
              (*namespace-bindings* *namespace-bindings*)
              new-namespaces)
         (when fxml.sax:*namespace-processing*
           (setf new-namespaces (declare-namespaces attrs))
           (mapc #'set-attribute-namespace attrs))
-        (push (compute-base attrs) (base-stack *ctx*))
+        (push (compute-base attrs) (base-stack ctx))
         (multiple-value-bind (uri prefix local-name)
             (if fxml.sax:*namespace-processing*
                 (restart-case
@@ -2888,15 +2906,16 @@
         ((:ENTITY-REF)
          (let ((name sem))
            (consume-token input)
-           (recurse-on-entity input name :general
-                              (lambda (input)
-                                (prog1
-                                    (etypecase (checked-get-entdef name :general)
-                                      (internal-entdef (p/content input))
-                                      (external-entdef (p/ext-parsed-ent input)))
-                                  (unless (eq (peek-token input) :eof)
-                                    (wf-error input "Trailing garbage. - ~S"
-                                              (peek-token input))))))))
+           (flet ((cont (input)
+                    (prog1
+                        (etypecase (checked-get-entdef name :general)
+                          (internal-entdef (p/content input))
+                          (external-entdef (p/ext-parsed-ent input)))
+                      (unless (eq (peek-token input) :eof)
+                        (wf-error input "Trailing garbage. - ~S"
+                                  (peek-token input))))))
+             (declare (dynamic-extent #'cont))
+             (recurse-on-entity input name :general #'cont))))
         ((:<!\[)
          (let ((data (process-cdata-section input)))
            (fxml.sax:start-cdata (handler *ctx*))
@@ -3442,49 +3461,49 @@
           (fptr (xstream-fill-ptr ,input))
           (buf  (xstream-buffer ,input))
           ,res ,res-start ,res-end)
-    (declare (type fixnum rptr fptr p0)
-             (type (simple-array read-element (*)) buf))
-    (loop
-      (cond ((%= rptr fptr)
-             ;; underflow -- hmm inject the scratch-pad with what we
-             ;; read and continue, while using read-rune and collecting
-             ;; d.h. besser waere hier auch while-reading zu benutzen.
-             (setf (xstream-read-ptr ,input) rptr)
-             (multiple-value-setq (,res ,res-start ,res-end)
-               (with-rune-collector/raw (collect)
-                 (do ((i p0 (%+ i 1)))
-                     ((%= i rptr))
-                   (collect (%rune buf i)))
-                 (let (c)
-                   (loop
-                     (cond ((%= rptr fptr)
-                            (setf (xstream-read-ptr ,input) rptr)
-                            (setf c (peek-rune input))
-                            (cond ((eq c :eof)
-                                   (return)))
-                            (setf rptr (xstream-read-ptr ,input)
-                                  fptr (xstream-fill-ptr ,input)
-                                  buf  (xstream-buffer ,input)))
-                           (t
-                            (setf c (%rune buf rptr))))
-                     (cond ((,predicate c)
-                            ;; we stop
-                            (setf (xstream-read-ptr ,input) rptr)
-                            (return))
-                           (t
-                            ;; we continue
-                            (collect c)
-                            (setf rptr (%+ rptr 1))) )))))
-             (return))
-            ((,predicate (%rune buf rptr))
-             ;; we stop
-             (setf (xstream-read-ptr ,input) rptr)
-             (setf ,res buf ,res-start p0 ,res-end rptr)
-             (return) )
-            (t
-            we continue
-             (sf rptr (%+ rptr 1))) ))
-    ,@body ))
+     (declare (type fixnum rptr fptr p0)
+              (type (simple-array read-element (*)) buf))
+     (loop
+       (cond ((%= rptr fptr)
+              ;; underflow -- hmm inject the scratch-pad with what we
+              ;; read and continue, while using read-rune and collecting
+              ;; d.h. besser waere hier auch while-reading zu benutzen.
+              (setf (xstream-read-ptr ,input) rptr)
+              (multiple-value-setq (,res ,res-start ,res-end)
+                (with-rune-collector/raw (collect)
+                  (do ((i p0 (%+ i 1)))
+                      ((%= i rptr))
+                    (collect (%rune buf i)))
+                  (let (c)
+                    (loop
+                      (cond ((%= rptr fptr)
+                             (setf (xstream-read-ptr ,input) rptr)
+                             (setf c (peek-rune input))
+                             (cond ((eq c :eof)
+                                    (return)))
+                             (setf rptr (xstream-read-ptr ,input)
+                                   fptr (xstream-fill-ptr ,input)
+                                   buf  (xstream-buffer ,input)))
+                            (t
+                             (setf c (%rune buf rptr))))
+                      (cond ((,predicate c)
+                             ;; we stop
+                             (setf (xstream-read-ptr ,input) rptr)
+                             (return))
+                            (t
+                             ;; we continue
+                             (collect c)
+                             (setf rptr (%+ rptr 1))) )))))
+              (return))
+             ((,predicate (%rune buf rptr))
+              ;; we stop
+              (setf (xstream-read-ptr ,input) rptr)
+              (setf ,res buf ,res-start p0 ,res-end rptr)
+              (return) )
+             (t
+              we continue
+              (sf rptr (%+ rptr 1))) ))
+     ,@body ))
 ||#
 
 (defmacro read-data-until* ((predicate input res res-start res-end) &body body)
@@ -3500,21 +3519,24 @@
   (let ((input-var (gensym))
         (collect (gensym))
         (c (gensym)))
-    `(let ((,input-var ,input))
-       (multiple-value-bind (,res ,res-start ,res-end)
-           (with-rune-collector/raw (,collect)
-             (loop
-               (let ((,c (peek-rune ,input-var)))
-                 (cond ((eq ,c :eof)
-                        ;; xxx error message
-                        (return))
-                       ((funcall ,predicate ,c)
-                        (return))
-                       (t
-                        (,collect ,c)
-                        (consume-rune ,input-var))))))
-         (locally
-           ,@body)))))
+    ;; The optimization declarations are necessary to prevent run-time
+    ;; typep in Clozure.
+    `(locally (declare (optimize (safety 1) (debug 0)))
+       (let ((,input-var ,input))
+         (multiple-value-bind (,res ,res-start ,res-end)
+             (with-rune-collector/raw (,collect)
+               (loop
+                 (let ((,c (peek-rune ,input-var)))
+                   (cond ((eq ,c :eof)
+                          ;; xxx error message
+                          (return))
+                         ((funcall ,predicate ,c)
+                          (return))
+                         (t
+                          (,collect ,c)
+                          (consume-rune ,input-var))))))
+           (locally
+               ,@body))))))
 
 (defun read-name-token (input)
   (read-data-until* ((lambda (rune)
@@ -3522,7 +3544,7 @@
                        (not (name-rune-p rune)))
                      input
                      r rs re)
-                    (intern-name r rs re)))
+    (intern-name r rs re)))
 
 (defun read-cdata (input)
   (read-data-until* ((lambda (rune)
@@ -3629,7 +3651,7 @@
       (wf-error input
                 "Bad attribute value delimiter ~S, must be either #\\\" or #\\\'."
                 (rune-char delim)))
-    (with-rune-collector-4 (collect)
+    (with-rune-collector-4 (collect collect-all)
       (loop
         (let ((c (read-rune input)))
           (cond ((eq c :eof)
@@ -3652,7 +3674,7 @@
                           (collect (%rune exp i)))))
                      (:non-reference
                       (collect #\&)
-                      (loop for c across sem do (collect c))))))
+                      (collect-all sem)))))
                 ((space-rune-p c)
                  (collect #/u+0020))
                 (t

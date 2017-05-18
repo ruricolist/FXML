@@ -197,7 +197,7 @@ method.")
           (setf (xstream-read-ptr input) (%+ rp 1))
           (cond ((%= ch +end+)
                  (the (or (member :eof) rune)
-                   (xstream-underflow input)))
+                      (xstream-underflow input)))
                 ((%= ch #x000A)         ;line break
                  (account-for-line-break input)
                  (code-rune ch))
@@ -208,6 +208,7 @@ method.")
 (defmacro peek-rune (input)
   "Peek a single rune off the xstream `input'. In case of end of file :EOF
    is returned."
+  ;; NB Wrapping this with `the` kills performance in Clozure; why?
   `((lambda (input)
       (declare (type xstream input)
                #.*fast*)
@@ -261,10 +262,10 @@ method.")
 ;;; Line counting
 
 (defun account-for-line-break (input)
-  (declare (type xstream input))
+  (declare (type xstream input) #.*fast*)
   (incf (xstream-line-number input))
   (setf (xstream-line-start input)
-    (+ (xstream-buffer-start input) (xstream-read-ptr input))))
+        (+ (xstream-buffer-start input) (xstream-read-ptr input))))
 
 (defun unaccount-for-line-break (input)
   ;; incomplete! 
@@ -291,7 +292,7 @@ method.")
 
 (defconstant +default-buffer-size+ 100)
 
-(defmethod xstream-underflow ((input xstream))
+(defun xstream-underflow (input)
   (declare (type xstream input))
   (with-accessors ((buffer-start  xstream-buffer-start)
                    (read-ptr      xstream-read-ptr)
@@ -400,27 +401,27 @@ method.")
                       :os-stream nil
                       :name name)))
 
-(defmethod figure-encoding ((stream null))
-  (values :utf-8 nil))
-
-(defmethod figure-encoding ((stream stream))
-  (let ((c0 (read-byte stream nil :eof)))
-    (cond ((eq c0 :eof)
-           (values :utf-8 nil))
-          (t
-           (let ((c1 (read-byte stream nil :eof)))
-             (cond ((eq c1 :eof)
-                    (values :utf-8 (list c0)))
-                   (t
-                    (cond ((and (= c0 #xFE) (= c1 #xFF)) (values :utf-16-big-endian nil))
-                          ((and (= c0 #xFF) (= c1 #xFE)) (values :utf-16-little-endian nil))
-                          ((and (= c0 #xEF) (= c1 #xBB))
-                           (let ((c2 (read-byte stream nil :eof)))
-                             (if (= c2 #xBF)
-                                 (values :utf-8 nil)
-                                 (values :utf-8 (list c0 c1 c2)))))
-                          (t
-                           (values :utf-8 (list c0 c1)))))))))))
+(defun figure-encoding (stream)
+  (etypecase stream
+    (null (values :utf-8 nil))
+    (stream
+     (let ((c0 (read-byte stream nil :eof)))
+       (cond ((eq c0 :eof)
+              (values :utf-8 nil))
+             (t
+              (let ((c1 (read-byte stream nil :eof)))
+                (cond ((eq c1 :eof)
+                       (values :utf-8 (list c0)))
+                      (t
+                       (cond ((and (= c0 #xFE) (= c1 #xFF)) (values :utf-16-big-endian nil))
+                             ((and (= c0 #xFF) (= c1 #xFE)) (values :utf-16-little-endian nil))
+                             ((and (= c0 #xEF) (= c1 #xBB))
+                              (let ((c2 (read-byte stream nil :eof)))
+                                (if (= c2 #xBF)
+                                    (values :utf-8 nil)
+                                    (values :utf-8 (list c0 c1 c2)))))
+                             (t
+                              (values :utf-8 (list c0 c1)))))))))))))
 
 ;;; misc
 
@@ -434,18 +435,16 @@ method.")
 
 ;;; controller implementations
 
-(defmethod read-octets (sequence (stream stream) start end)
+(defun read-octets (sequence stream start end)
   (declare (type (simple-array octet (*)) sequence))
-  (#+CLISP ext:read-byte-sequence
-   #-CLISP read-sequence
-           sequence stream :start start :end end))
+  (etypecase stream
+    (null 0)
+    (stream
+     (#+CLISP ext:read-byte-sequence
+      #-CLISP read-sequence
+      sequence stream :start start :end end))))
 
-(defmethod read-octets (sequence (stream null) start end)
-  (declare (ignore sequence start end))
-  0)
-
-(defmethod xstream/close ((stream stream))
-  (close stream))
-
-(defmethod xstream/close ((stream null))
-  nil)
+(defun xstream/close (stream)
+  (etypecase stream
+    (null)
+    (stream (close stream))))

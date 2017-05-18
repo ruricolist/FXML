@@ -31,10 +31,12 @@
                      (t (write-char (char-upcase ch) bag))))
          string)))
 
-(defmethod encoding-names ((encoding symbol))
+(defun encoding-names (encoding)
+  (check-type encoding symbol)
   (gethash encoding *names*))
 
-(defmethod (setf encoding-names) (new-value (encoding symbol))
+(defun (setf encoding-names) (new-value encoding)
+  (check-type encoding symbol)
   (setf (gethash encoding *names*) new-value))
 
 (defun add-name (encoding name)
@@ -116,12 +118,14 @@
 ;;; Decoders
 
 ;; The decoders share a common signature:
-;;
-;; DECODE input input-start input-end
-;;        output output-start output-end
-;;        eof-p
+
+(defgeneric decode-sequence
+    (encoding
+     input input-start input-end
+     output output-start output-end
+     eof-p))
 ;; -> first-not-written ; first-not-read
-;;
+
 ;; These decode functions should decode as much characters off `input'
 ;; into the `output' as possible and return the indexes to the first
 ;; not read and first not written element of `input' and `output'
@@ -358,11 +362,11 @@
                (xerror "Corrupted UTF-8 input (initial byte was #b~8,'0B)" byte0)) ) )) 
     (values wptr rptr))  )
 
-(defmethod encoding-p ((object (eql :utf-16-little-endian))) t)
-(defmethod encoding-p ((object (eql :utf-16-big-endian))) t)
-(defmethod encoding-p ((object (eql :utf-8))) t)
-
-(defmethod encoding-p ((object encoding)) t)
+(defgeneric encoding-p (object)
+  (:method ((object (eql :utf-16-little-endian))) t)
+  (:method ((object (eql :utf-16-big-endian))) t)
+  (:method ((object (eql :utf-8))) t)
+  (:method ((object encoding)) t))
 
 (defmethod decode-sequence ((encoding simple-8-bit-encoding)
                             in in-start in-end
@@ -405,7 +409,7 @@
                     (setf (aref out wptr) #x0A)
                     (setf wptr (%+ wptr 1))
                     (setf rptr (%+ rptr 1)))))
-                    
+            
             (t
              (setf (aref out wptr) (aref table byte))
              (setf wptr (%+ wptr 1))

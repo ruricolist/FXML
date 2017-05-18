@@ -28,9 +28,6 @@
 
 (in-package :fxml.stp.impl)
 
-#+sbcl
-(declaim (optimize (debug 2)))
-
 (defun make-builder ()
   "@return{STP builder, a SAX handler}
    @short{This function creates SAX handler that constructs an STP document.}
