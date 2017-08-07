@@ -8,7 +8,7 @@
 (defpackage :fxml
   (:use :cl :fxml.runes :fxml.runes-encoding :split-sequence)
   (:import-from #:named-readtables #:in-readtable)
-  (:import-from #:alexandria #:compose #:curry #:rcurry)
+  (:import-from #:alexandria #:compose #:curry #:rcurry #:setp)
   (:import-from #:serapeum
     #:with-thunk
     #:defstruct-read-only

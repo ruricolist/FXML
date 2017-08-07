@@ -2230,9 +2230,6 @@
           (let ((it (cadr cspec)))
             (compile-content-model `(and ,it (* ,it)) continuation))))))
 
-(defun setp (list &key (test 'eql))
-  (equal list (remove-duplicates list :test test)))
-
 (defun legal-content-model-p (cspec &optional validate)
   (or (eq cspec :PCDATA)
       (eq cspec :ANY)
