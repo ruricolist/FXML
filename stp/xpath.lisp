@@ -85,8 +85,8 @@
   (when (fxml.stp:parent node)
     (xpath-protocol:namespace-pipe (fxml.stp:parent node))))
 
-(defstruct (stp-namespace
-	     (:constructor make-stp-namespace (parent prefix uri)))
+(defstruct-read-only (stp-namespace
+                      (:constructor make-stp-namespace (parent prefix uri)))
   parent
   prefix
   uri)

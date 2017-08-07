@@ -513,7 +513,7 @@
 (defvar *validate* t)
 (defvar *external-subset-p* nil)
 
-(defstruct attdef
+(defstruct-read-only attdef
   ;; an attribute definition
   element       ;name of element this attribute belongs to
   name          ;name of attribute
@@ -955,7 +955,7 @@
     (setf (extid-system result) (absolute-uri sysid source-stream))
     result))
 
-(defstruct dtd
+(defstruct-read-only dtd
   (elements (%make-rod-hash-table))     ;elmdefs
   (gentities (%make-rod-hash-table))    ;general entities
   (pentities (%make-rod-hash-table))    ;parameter entities

@@ -30,14 +30,14 @@
 
 ;; html generation
 
-(defstruct (html-process (:type list) (:constructor
-				       make-html-process (key macro special
-							      name-attr
-							      )))
+(defstruct-read-only (html-process (:type list) (:constructor
+                                                    make-html-process (key macro special
+                                                                       name-attr
+                                                                       )))
   key		; keyword naming this tag
   macro  	; the macro to define this
   special       ; if true then call this to process the keyword and return
-                ; the macroexpansion
+                                        ; the macroexpansion
   name-attr     ; attribute symbols which can name this object for subst purposes
   )
 
