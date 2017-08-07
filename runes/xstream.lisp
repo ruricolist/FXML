@@ -429,7 +429,7 @@ method.")
   "Close INPUT, an xstream."
   (xstream/close (xstream-os-stream input)))
 
-(defun set-to-full-speed (xstream)
+(definline set-to-full-speed (xstream)
   "Cf. `xstream-encoding'."
   (setf (xstream-speed xstream) (xstream-full-speed xstream)))
 
