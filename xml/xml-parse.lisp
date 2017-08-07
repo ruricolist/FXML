@@ -709,6 +709,9 @@
         uri
         (quri:render-uri uri nil))))
 
+(definline copy-cons (x)
+  (cons (car x) (cdr x)))
+
 (defun validate-start-element (ctx name)
   (when *validate*
     (let* ((pair (car (model-stack ctx)))
@@ -722,9 +725,6 @@
                           (rod-string name)))
         (maybe-compile-cspec e)
         (push (copy-cons (elmdef-compiled-cspec e)) (model-stack ctx))))))
-
-(defun copy-cons (x)
-  (cons (car x) (cdr x)))
 
 (defun validate-end-element (ctx name)
   (when *validate*
