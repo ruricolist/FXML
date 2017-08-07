@@ -802,62 +802,91 @@
                                  (rod-string qname)))))
       (validate-attribute* ctx adef (fxml.sax:attribute-value a)))))
 
-(defun validate-attribute* (ctx adef value)
-  (let ((type (attdef-type adef))
-        (default (attdef-default adef)))
-    (when (and (listp default)
-               (eq (car default) :FIXED)
-               (not (rod= value (cadr default))))
-      (validity-error "(20) Fixed Attribute Default: expected ~S but got ~S"
-                      (rod-string (cadr default))
-                      (rod-string value)))
-    (ecase (if (listp type) (car type) type)
-      (:ID
-       (unless (valid-name-p value)
-         (validity-error "(08) ID: not a name: ~S" (rod-string value)))
-       (when (eq (gethash value (id-table ctx)) t)
-         (validity-error "(08) ID: ~S not unique" (rod-string value)))
-       (setf (gethash value (id-table ctx)) t))
-      (:IDREF
-       (validate-idref ctx value))
-      (:IDREFS
-       (let ((names (split-names value)))
-         (unless names
-           (validity-error "(11) IDREF: malformed names"))
-         (mapc (curry #'validate-idref ctx) names)))
-      (:NMTOKEN
-       (validate-nmtoken value))
-      (:NMTOKENS
-       (let ((tokens (split-names value)))
-         (unless tokens
-           (validity-error "(13) Name Token: malformed NMTOKENS"))
-         (mapc #'validate-nmtoken tokens)))
-      (:ENUMERATION
-       (unless (member value (cdr type) :test #'rod=)
-         (validity-error "(17) Enumeration: value not declared: ~S"
-                         (rod-string value))))
-      (:NOTATION
-       (unless (member value (cdr type) :test #'rod=)
-         (validity-error "(14) Notation Attributes: ~S" (rod-string value))))
-      (:ENTITY
-       (validate-entity value))
-      (:ENTITIES
-       (let ((names (split-names value)))
-         (unless names
-           (validity-error "(13) Name Token: malformed NMTOKENS"))
-         (mapc #'validate-entity names)))
-      (:CDATA))))
+(block-compile (:entry-points (validate-attribute*))
+  (defun split-names (rod)
+    (flet ((whitespacep (x)
+             (or (rune= x #/U+0009)
+                 (rune= x #/U+000A)
+                 (rune= x #/U+000D)
+                 (rune= x #/U+0020))))
+      (if (let ((n (length rod)))
+            (and (not (zerop n))
+                 (or (whitespacep (rune rod 0))
+                     (whitespacep (rune rod (1- n))))))
+          nil
+          (split-sequence-if #'whitespacep rod :remove-empty-subseqs t))))
 
-(defun validate-idref (ctx value)
-  (unless (valid-name-p value)
-    (validity-error "(11) IDREF: not a name: ~S" (rod-string value)))
-  (unless (gethash value (id-table ctx))
-    (setf (gethash value (id-table ctx)) nil)))
+  (defun validate-idref (ctx value)
+    (unless (valid-name-p value)
+      (validity-error "(11) IDREF: not a name: ~S" (rod-string value)))
+    (unless (gethash value (id-table ctx))
+      (setf (gethash value (id-table ctx)) nil)))
 
-(defun validate-nmtoken (value)
-  (unless (valid-nmtoken-p value)
-    (validity-error "(13) Name Token: not a NMTOKEN: ~S"
-                    (rod-string value))))
+  (defun validate-nmtoken (value)
+    (unless (valid-nmtoken-p value)
+      (validity-error "(13) Name Token: not a NMTOKEN: ~S"
+                      (rod-string value))))
+
+  (defun validate-entity (value)
+    (unless (valid-name-p value)
+      (validity-error "(12) Entity Name: not a name: ~S" (rod-string value)))
+    (let ((def (let ((*validate*
+                       ;; Similarly the entity refs are internal and
+                       ;; don't need normalization ... the unparsed
+                       ;; entities (and entities) aren't "references"
+                       ;;   -- sun/valid/sa03.xml
+                       nil))
+                 (get-entity-definition value :general (dtd *ctx*)
+                                              :errorp nil))))
+      (unless (and (typep def 'external-entdef) (entdef-ndata def))
+        ;; unparsed entity
+        (validity-error "(12) Entity Name: ~S" (rod-string value)))))
+
+  (defun validate-attribute* (ctx adef value)
+    (let ((type (attdef-type adef))
+          (default (attdef-default adef)))
+      (when (and (listp default)
+                 (eq (car default) :FIXED)
+                 (not (rod= value (cadr default))))
+        (validity-error "(20) Fixed Attribute Default: expected ~S but got ~S"
+                        (rod-string (cadr default))
+                        (rod-string value)))
+      (ecase (if (listp type) (car type) type)
+        (:ID
+         (unless (valid-name-p value)
+           (validity-error "(08) ID: not a name: ~S" (rod-string value)))
+         (when (eq (gethash value (id-table ctx)) t)
+           (validity-error "(08) ID: ~S not unique" (rod-string value)))
+         (setf (gethash value (id-table ctx)) t))
+        (:IDREF
+         (validate-idref ctx value))
+        (:IDREFS
+         (let ((names (split-names value)))
+           (unless names
+             (validity-error "(11) IDREF: malformed names"))
+           (mapc (curry #'validate-idref ctx) names)))
+        (:NMTOKEN
+         (validate-nmtoken value))
+        (:NMTOKENS
+         (let ((tokens (split-names value)))
+           (unless tokens
+             (validity-error "(13) Name Token: malformed NMTOKENS"))
+           (mapc #'validate-nmtoken tokens)))
+        (:ENUMERATION
+         (unless (member value (cdr type) :test #'rod=)
+           (validity-error "(17) Enumeration: value not declared: ~S"
+                           (rod-string value))))
+        (:NOTATION
+         (unless (member value (cdr type) :test #'rod=)
+           (validity-error "(14) Notation Attributes: ~S" (rod-string value))))
+        (:ENTITY
+         (validate-entity value))
+        (:ENTITIES
+         (let ((names (split-names value)))
+           (unless names
+             (validity-error "(13) Name Token: malformed NMTOKENS"))
+           (mapc #'validate-entity names)))
+        (:CDATA)))))
 
 (defstruct (entdef (:constructor)))
 
@@ -875,34 +904,6 @@
             (:conc-name #:entdef-))
   (extid (error "missing argument") :type extid)
   (ndata nil :type (or rod null)))
-
-(defun validate-entity (value)
-  (unless (valid-name-p value)
-    (validity-error "(12) Entity Name: not a name: ~S" (rod-string value)))
-  (let ((def (let ((*validate*
-                     ;; Similarly the entity refs are internal and
-                     ;; don't need normalization ... the unparsed
-                     ;; entities (and entities) aren't "references"
-                     ;;   -- sun/valid/sa03.xml
-                     nil))
-               (get-entity-definition value :general (dtd *ctx*)
-                                            :errorp nil))))
-    (unless (and (typep def 'external-entdef) (entdef-ndata def))
-      ;; unparsed entity
-      (validity-error "(12) Entity Name: ~S" (rod-string value)))))
-
-(defun split-names (rod)
-  (flet ((whitespacep (x)
-           (or (rune= x #/U+0009)
-               (rune= x #/U+000A)
-               (rune= x #/U+000D)
-               (rune= x #/U+0020))))
-    (if (let ((n (length rod)))
-          (and (not (zerop n))
-               (or (whitespacep (rune rod 0))
-                   (whitespacep (rune rod (1- n))))))
-        nil
-        (split-sequence-if #'whitespacep rod :remove-empty-subseqs t))))
 
 (defun zstream-base-sysid (zstream)
   (let ((base-sysid
@@ -2158,98 +2159,99 @@
 ;;; That is, if one of the functions ever returns NIL, the node is
 ;;; rejected as invalid.
 
-(defun cmodel-done (actual-value)
-  (null actual-value))
+(block-compile (:entry-points (compile-cspec legal-content-model-p))
+  (defun cmodel-done (actual-value)
+    (null actual-value))
 
-(defun compile-cspec (cspec &optional standalone-check)
-  (cond
-    ((atom cspec)
-      (ecase cspec
-        (:EMPTY (values #'cmodel-done (constantly nil)))
-        (:PCDATA (values #'cmodel-done (constantly t)))
-        (:ANY
+  (defun compile-cspec (cspec &optional standalone-check)
+    (cond
+      ((atom cspec)
+       (ecase cspec
+         (:EMPTY (values #'cmodel-done (constantly nil)))
+         (:PCDATA (values #'cmodel-done (constantly t)))
+         (:ANY
           (values (labels ((doit (name) (if name #'doit t))) #'doit)
                   (constantly t)))))
-    ((and (eq (car cspec) '*)
-          (let ((subspec (second cspec)))
-            (and (eq (car subspec) 'or) (eq (cadr subspec) :PCDATA))))
-      (values (compile-mixed (second cspec))
-              (constantly t)))
-    (t
-      (values (compile-content-model cspec)
-              (lambda (rod)
-                (when standalone-check
-                  (validity-error "(02) Standalone Document Declaration: whitespace"))
-                (every #'white-space-rune-p rod))))))
+      ((and (eq (car cspec) '*)
+            (let ((subspec (second cspec)))
+              (and (eq (car subspec) 'or) (eq (cadr subspec) :PCDATA))))
+       (values (compile-mixed (second cspec))
+               (constantly t)))
+      (t
+       (values (compile-content-model cspec)
+               (lambda (rod)
+                 (when standalone-check
+                   (validity-error "(02) Standalone Document Declaration: whitespace"))
+                 (every #'white-space-rune-p rod))))))
 
-(defun compile-mixed (cspec)
-  ;; das koennten wir theoretisch auch COMPILE-CONTENT-MODEL erledigen lassen
-  (let ((allowed-names (cddr cspec)))
-    (labels ((doit (actual-name)
-               (cond
-                 ((null actual-name) t)
-                 ((member actual-name allowed-names :test #'rod=) #'doit)
-                 (t nil))))
-      #'doit)))
+  (defun compile-mixed (cspec)
+    ;; das koennten wir theoretisch auch COMPILE-CONTENT-MODEL erledigen lassen
+    (let ((allowed-names (cddr cspec)))
+      (labels ((doit (actual-name)
+                 (cond
+                   ((null actual-name) t)
+                   ((member actual-name allowed-names :test #'rod=) #'doit)
+                   (t nil))))
+        #'doit)))
 
-(defun compile-content-model (cspec &optional (continuation #'cmodel-done))
-  (if (vectorp cspec)
-      (lambda (actual-name)
-        (if (and actual-name (rod= cspec actual-name))
-            continuation
-            nil))
-      (ecase (car cspec)
-        (and
-          (labels ((traverse (seq)
-                     (compile-content-model (car seq)
-                                            (if (cdr seq)
-                                                (traverse (cdr seq))
-                                                continuation))))
-            (traverse (cdr cspec))))
-        (or
-          (let ((options (mapcar (rcurry #'compile-content-model continuation)
-                                 (cdr cspec))))
-            (lambda (actual-name)
-              (some (rcurry #'funcall actual-name) options))))
-        (?
-          (let ((maybe (compile-content-model (second cspec) continuation)))
-            (lambda (actual-name)
-              (or (funcall maybe actual-name)
-                  (funcall continuation actual-name)))))
-        (*
-          (let (maybe-continuation)
-            (labels ((recurse (actual-name)
-                       (if (null actual-name)
-                           (funcall continuation actual-name)
-                           (or (funcall maybe-continuation actual-name)
-                               (funcall continuation actual-name)))))
-              (setf maybe-continuation
-                    (compile-content-model (second cspec) #'recurse))
-              #'recurse)))
-        (+
-          (let ((it (cadr cspec)))
-            (compile-content-model `(and ,it (* ,it)) continuation))))))
+  (defun compile-content-model (cspec &optional (continuation #'cmodel-done))
+    (if (vectorp cspec)
+        (lambda (actual-name)
+          (if (and actual-name (rod= cspec actual-name))
+              continuation
+              nil))
+        (ecase (car cspec)
+          (and
+           (labels ((traverse (seq)
+                      (compile-content-model (car seq)
+                                             (if (cdr seq)
+                                                 (traverse (cdr seq))
+                                                 continuation))))
+             (traverse (cdr cspec))))
+          (or
+           (let ((options (mapcar (rcurry #'compile-content-model continuation)
+                                  (cdr cspec))))
+             (lambda (actual-name)
+               (some (rcurry #'funcall actual-name) options))))
+          (?
+           (let ((maybe (compile-content-model (second cspec) continuation)))
+             (lambda (actual-name)
+               (or (funcall maybe actual-name)
+                   (funcall continuation actual-name)))))
+          (*
+           (let (maybe-continuation)
+             (labels ((recurse (actual-name)
+                        (if (null actual-name)
+                            (funcall continuation actual-name)
+                            (or (funcall maybe-continuation actual-name)
+                                (funcall continuation actual-name)))))
+               (setf maybe-continuation
+                     (compile-content-model (second cspec) #'recurse))
+               #'recurse)))
+          (+
+           (let ((it (cadr cspec)))
+             (compile-content-model `(and ,it (* ,it)) continuation))))))
 
-(defun legal-content-model-p (cspec &optional validate)
-  (or (eq cspec :PCDATA)
-      (eq cspec :ANY)
-      (eq cspec :EMPTY)
-      (and (consp cspec)
-           (eq (car cspec) '*)
-           (consp (cadr cspec))
-           (eq (car (cadr cspec)) 'or)
-           (eq (cadr (cadr cspec)) :PCDATA)
-           (every #'vectorp (cddr (cadr cspec)))
-           (if (and validate (not (setp (cddr (cadr cspec)) :test #'rod=)))
-               (validity-error "VC: No Duplicate Types (07)")
-               t))
-      (labels ((walk (x)
-                 (cond ((member x '(:PCDATA :ANY :EMPTY))
-                        nil)
-                       ((atom x) t)
-                       ((and (walk (car x))
-                             (walk (cdr x)))))))
-        (walk cspec))))
+  (defun legal-content-model-p (cspec &optional validate)
+    (or (eq cspec :PCDATA)
+        (eq cspec :ANY)
+        (eq cspec :EMPTY)
+        (and (consp cspec)
+             (eq (car cspec) '*)
+             (consp (cadr cspec))
+             (eq (car (cadr cspec)) 'or)
+             (eq (cadr (cadr cspec)) :PCDATA)
+             (every #'vectorp (cddr (cadr cspec)))
+             (if (and validate (not (setp (cddr (cadr cspec)) :test #'rod=)))
+                 (validity-error "VC: No Duplicate Types (07)")
+                 t))
+        (labels ((walk (x)
+                   (cond ((member x '(:PCDATA :ANY :EMPTY))
+                          nil)
+                         ((atom x) t)
+                         ((and (walk (car x))
+                               (walk (cdr x)))))))
+          (walk cspec)))))
 
 ;; wir fahren besser, wenn wir machen:
 
@@ -2327,35 +2329,6 @@
         :PCDATA
         cspec)))
 
-;; [52] AttlistDecl ::= '<!ATTLIST' S Name AttDef* S? '>'
-
-
-;; [52] AttlistDecl ::= '<!ATTLIST' S Name AttDefs S? '>'
-;; [52] AttlistDecl ::= '<!ATTLIST' S Name S? '>'
-;; [53] AttDefs ::= S Name S AttType S DefaultDecl AttDefs
-;; [53] AttDefs ::=
-
-(defun p/notation-decl (input)
-  (let (name id)
-    (expect input :|<!NOTATION|)
-    (p/S input)
-    (setf name (p/name input))
-    (p/S input)
-    (setf id (p/external-id input t))
-    (p/S? input)
-    (expect input :\>)
-    (fxml.sax:notation-declaration (handler *ctx*)
-                              name
-                              (if (extid-public id)
-                                  (normalize-public-id (extid-public id))
-                                  nil)
-                              (uri-rod (extid-system id)))
-    (when (and fxml.sax:*namespace-processing* (find #/: name))
-      (wf-error input "colon in notation name"))
-    (when *validate*
-      (define-notation (dtd *ctx*) name id))
-    (list :notation-decl name id)))
-
 (defun normalize-public-id (rod)
   (with-rune-collector (collect)
     (let ((gimme-20 nil)
@@ -2366,119 +2339,150 @@
                         (rune= c #/u+000A)
                         (rune= c #/u+000D)
                         (rune= c #/u+0020))
-                     (setf gimme-20 t))
+                    (setf gimme-20 t))
                    (t
-                     (when (and anything-seen-p gimme-20)
-                       (collect #/u+0020))
-                     (setf gimme-20 nil)
-                     (setf anything-seen-p t)
-                     (collect c))))
+                    (when (and anything-seen-p gimme-20)
+                      (collect #/u+0020))
+                    (setf gimme-20 nil)
+                    (setf anything-seen-p t)
+                    (collect c))))
            rod))))
 
 ;;;
 
-(defun p/conditional-sect (input)
-  (expect input :<!\[ )
-  (let ((stream (car (zstream-input-stack input))))
+(block-compile (:entry-points (p/ignore-sect p/ignore-sect p/ext-subset-decl))
+  ;; [52] AttlistDecl ::= '<!ATTLIST' S Name AttDef* S? '>'
+
+
+  ;; [52] AttlistDecl ::= '<!ATTLIST' S Name AttDefs S? '>'
+  ;; [52] AttlistDecl ::= '<!ATTLIST' S Name S? '>'
+  ;; [53] AttDefs ::= S Name S AttType S DefaultDecl AttDefs
+  ;; [53] AttDefs ::=
+
+  (defun p/conditional-sect (input)
+    (expect input :<!\[ )
+    (let ((stream (car (zstream-input-stack input))))
+      (p/S? input)
+      (multiple-value-bind (cat sem) (read-token input)
+        (cond ((and (eq cat :nmtoken)
+                    (rod= sem '#.(string-rod "INCLUDE")))
+               (p/include-sect input stream))
+              ((and (eq cat :nmtoken)
+                    (rod= sem '#.(string-rod "IGNORE")))
+               (p/ignore-sect input stream))
+              (t
+               (wf-error input "Expected INCLUDE or IGNORE after \"<![\"."))))))
+
+  (defun p/cond-expect (input cat initial-stream)
+    (expect input cat)
+    (when *validate*
+      (unless (eq (car (zstream-input-stack input)) initial-stream)
+        (validity-error "(21) Proper Conditional Section/PE Nesting"))))
+
+  (defun p/include-sect (input initial-stream)
+    ;; <![INCLUDE is already read.
     (p/S? input)
-    (multiple-value-bind (cat sem) (read-token input)
-      (cond ((and (eq cat :nmtoken)
-                  (rod= sem '#.(string-rod "INCLUDE")))
-             (p/include-sect input stream))
-            ((and (eq cat :nmtoken)
-                  (rod= sem '#.(string-rod "IGNORE")))
-             (p/ignore-sect input stream))
-            (t
-             (wf-error input "Expected INCLUDE or IGNORE after \"<![\"."))))))
+    (p/cond-expect input :\[ initial-stream)
+    (p/ext-subset-decl input)
+    (p/cond-expect input :\] initial-stream)
+    (p/cond-expect input :\] initial-stream)
+    (p/cond-expect input :\> initial-stream))
 
-(defun p/cond-expect (input cat initial-stream)
-  (expect input cat)
-  (when *validate*
+  (defun p/ignore-sect (input initial-stream)
+    ;; <![IGNORE is already read.
+    ;; XXX Is VC 21 being checked for nested sections?
+    (p/S? input)
+    (p/cond-expect input :\[ initial-stream)
+    (let ((input (car (zstream-input-stack input))))
+      (let ((level 0))
+        (do ((c1 (read-rune input) (read-rune input))
+             (c2 #/U+0000 c1)
+             (c3 #/U+0000 c2))
+            ((= level -1))
+          (declare (type fixnum level))
+          (cond ((eq c1 :eof)
+                 (eox input "EOF in <![IGNORE ... >")))
+          (cond ((and (rune= c3 #/<) (rune= c2 #/!) (rune= c1 #/\[))
+                 (incf level)))
+          (cond ((and (rune= c3 #/\]) (rune= c2 #/\]) (rune= c1 #/>))
+                 (decf level))) )))
     (unless (eq (car (zstream-input-stack input)) initial-stream)
-      (validity-error "(21) Proper Conditional Section/PE Nesting"))))
+      (validity-error "(21) Proper Conditional Section/PE Nesting")))
 
-(defun p/include-sect (input initial-stream)
-  ;; <![INCLUDE is already read.
-  (p/S? input)
-  (p/cond-expect input :\[ initial-stream)
-  (p/ext-subset-decl input)
-  (p/cond-expect input :\] initial-stream)
-  (p/cond-expect input :\] initial-stream)
-  (p/cond-expect input :\> initial-stream))
+  (defun p/ext-subset-decl (input)
+    ;; ( markupdecl | conditionalSect | S )*
+    (loop
+       (case (let ((*expand-pe-p* nil)) (peek-token input))
+         (:|<![| (let ((*expand-pe-p* t)) (p/conditional-sect input)))
+         (:S     (consume-token input))
+         (:eof   (return))
+         ((:|<!ELEMENT| :|<!ATTLIST| :|<!ENTITY| :|<!NOTATION| :PI :COMMENT)
+          (let ((*expand-pe-p* t)
+                (*external-subset-p* t))
+            (p/markup-decl input)))
+         ((:PE-REFERENCE)
+          (let ((name (nth-value 1 (read-token input))))
+            (recurse-on-entity input name :parameter
+                               (lambda (input)
+                                 (etypecase (checked-get-entdef name :parameter)
+                                   (external-entdef
+                                    (p/ext-subset input))
+                                   (internal-entdef
+                                    (p/ext-subset-decl input)))
+                                 (unless (eq :eof (peek-token input))
+                                   (wf-error input "Trailing garbage."))))))
+         (otherwise (return)))) ))
 
-(defun p/ignore-sect (input initial-stream)
-  ;; <![IGNORE is already read.
-  ;; XXX Is VC 21 being checked for nested sections?
-  (p/S? input)
-  (p/cond-expect input :\[ initial-stream)
-  (let ((input (car (zstream-input-stack input))))
-    (let ((level 0))
-      (do ((c1 (read-rune input) (read-rune input))
-           (c2 #/U+0000 c1)
-           (c3 #/U+0000 c2))
-          ((= level -1))
-        (declare (type fixnum level))
-        (cond ((eq c1 :eof)
-               (eox input "EOF in <![IGNORE ... >")))
-        (cond ((and (rune= c3 #/<) (rune= c2 #/!) (rune= c1 #/\[))
-               (incf level)))
-        (cond ((and (rune= c3 #/\]) (rune= c2 #/\]) (rune= c1 #/>))
-               (decf level))) )))
-  (unless (eq (car (zstream-input-stack input)) initial-stream)
-    (validity-error "(21) Proper Conditional Section/PE Nesting")))
-
-(defun p/ext-subset-decl (input)
-  ;; ( markupdecl | conditionalSect | S )*
-  (loop
-    (case (let ((*expand-pe-p* nil)) (peek-token input))
-      (:|<![| (let ((*expand-pe-p* t)) (p/conditional-sect input)))
-      (:S     (consume-token input))
-      (:eof   (return))
-      ((:|<!ELEMENT| :|<!ATTLIST| :|<!ENTITY| :|<!NOTATION| :PI :COMMENT)
-       (let ((*expand-pe-p* t)
-             (*external-subset-p* t))
-         (p/markup-decl input)))
-      ((:PE-REFERENCE)
-       (let ((name (nth-value 1 (read-token input))))
-         (recurse-on-entity input name :parameter
-                            (lambda (input)
-                              (etypecase (checked-get-entdef name :parameter)
-                                (external-entdef
-                                 (p/ext-subset input))
-                                (internal-entdef
-                                 (p/ext-subset-decl input)))
-                              (unless (eq :eof (peek-token input))
-                                (wf-error input "Trailing garbage."))))))
-      (otherwise (return)))) )
-
-(defun p/markup-decl (input)
-  (peek-token input)
-  (let ((stream (car (zstream-input-stack input))))
-    (multiple-value-prog1
-        (p/markup-decl-unsafe input)
+(block-compile (:entry-points (p/markup-decl))
+  (defun p/notation-decl (input)
+    (let (name id)
+      (expect input :|<!NOTATION|)
+      (p/S input)
+      (setf name (p/name input))
+      (p/S input)
+      (setf id (p/external-id input t))
+      (p/S? input)
+      (expect input :\>)
+      (fxml.sax:notation-declaration (handler *ctx*)
+                                     name
+                                     (if (extid-public id)
+                                         (normalize-public-id (extid-public id))
+                                         nil)
+                                     (uri-rod (extid-system id)))
+      (when (and fxml.sax:*namespace-processing* (find #/: name))
+        (wf-error input "colon in notation name"))
       (when *validate*
-        (unless (eq stream (car (zstream-input-stack input)))
-          (validity-error "(01) Proper Declaration/PE Nesting"))))))
+        (define-notation (dtd *ctx*) name id))
+      (list :notation-decl name id)))
 
-(defun p/markup-decl-unsafe (input)
-  ;; markupdecl ::= elementdecl | AttlistDecl       /* VC: Proper Declaration/PE Nesting */
-  ;;              | EntityDecl | NotationDecl
-  ;;              | PI | Comment               /* WFC: PEs in Internal Subset */
-  (let ((token (peek-token input))
-        (*expand-pe-p* (and *expand-pe-p* *external-subset-p*)))
-    (case token
-      (:|<!ELEMENT|  (p/element-decl input))
-      (:|<!ATTLIST|  (p/attlist-decl input))
-      (:|<!ENTITY|   (p/entity-decl input))
-      (:|<!NOTATION| (p/notation-decl input))
-      (:PI
-        (let ((sem (nth-value 1 (read-token input))))
-          (fxml.sax:processing-instruction (handler *ctx*) (car sem) (cdr sem))))
-      (:COMMENT      (consume-token input))
-      (otherwise
-        (wf-error input "p/markup-decl ~S" (peek-token input))))))
+  (defun p/markup-decl-unsafe (input)
+    ;; markupdecl ::= elementdecl | AttlistDecl       /* VC: Proper Declaration/PE Nesting */
+    ;;              | EntityDecl | NotationDecl
+    ;;              | PI | Comment               /* WFC: PEs in Internal Subset */
+    (let ((token (peek-token input))
+          (*expand-pe-p* (and *expand-pe-p* *external-subset-p*)))
+      (case token
+        (:|<!ELEMENT|  (p/element-decl input))
+        (:|<!ATTLIST|  (p/attlist-decl input))
+        (:|<!ENTITY|   (p/entity-decl input))
+        (:|<!NOTATION| (p/notation-decl input))
+        (:PI
+         (let ((sem (nth-value 1 (read-token input))))
+           (fxml.sax:processing-instruction (handler *ctx*) (car sem) (cdr sem))))
+        (:COMMENT      (consume-token input))
+        (otherwise
+         (wf-error input "p/markup-decl ~S" (peek-token input))))))
 
-(defun current-encoding ()
+  (defun p/markup-decl (input)
+    (peek-token input)
+    (let ((stream (car (zstream-input-stack input))))
+      (multiple-value-prog1
+          (p/markup-decl-unsafe input)
+        (when *validate*
+          (unless (eq stream (car (zstream-input-stack input)))
+            (validity-error "(01) Proper Declaration/PE Nesting")))))))
+
+(definline current-encoding ()
   "Return the current encoding of the input stream."
   (let ((xstream (car (zstream-input-stack (main-zstream *ctx*)))))
     (when xstream
@@ -2502,7 +2506,7 @@
             (t
              (warn "There is no such encoding: ~S." (xml-header-encoding xml-header)))))))
 
-(defun set-full-speed (input)
+(definline set-full-speed (input)
   (let ((xstream (car (zstream-input-stack input))))
     (when xstream
       (set-to-full-speed xstream))))
@@ -2639,19 +2643,6 @@
               (uri-rod (extid-system v))))
            (dtd-notations dtd)))
 
-(defun p/misc*-2 (input)
-  ;; Misc*
-  (while (member (peek-token input) '(:COMMENT :PI :S))
-    (case (peek-token input)
-      (:COMMENT
-        (fxml.sax:comment (handler *ctx*) (nth-value 1 (peek-token input))))
-      (:PI
-        (fxml.sax:processing-instruction
-         (handler *ctx*)
-         (car (nth-value 1 (peek-token input)))
-         (cdr (nth-value 1 (peek-token input))))))
-    (consume-token input)))
-
 (defun void-entity-resolver (pubid sysid)
   (declare (ignore pubid sysid))
   (flexi-streams:make-in-memory-input-stream nil))
@@ -2665,71 +2656,85 @@
       :report "Ignore this reference."
       (void-entity-resolver pubid sysid))))
 
-(defun p/document
-    (input handler
-     &key validate dtd root entity-resolver disallow-internal-subset
-          (recode t) ignore-dtd
-          forbid-dtd
-          (forbid-entities *forbid-entities*)
-          (forbid-external t))
-  ;; check types of user-supplied arguments for better error messages:
-  (check-type validate boolean)
-  (check-type recode boolean)
-  (check-type dtd (or null extid))
-  (check-type root (or null rod))
-  (check-type entity-resolver (or null function symbol))
-  (check-type disallow-internal-subset boolean)
-  (check-type ignore-dtd boolean)
-  (check-type forbid-dtd boolean)
-  (check-type forbid-entities boolean)
-  (check-type forbid-external boolean)
-  (when ignore-dtd
-    (setf entity-resolver #'void-entity-resolver))
-  (when forbid-external
-    (setf entity-resolver #'external-reference-forbidden))
-  (let* ((xstream (car (zstream-input-stack input)))
-         (name (xstream-name xstream))
-         (base (when name (stream-name-uri name)))
-         (*ctx*
-           (make-context :handler handler
-                         :main-zstream input
-                         :entity-resolver entity-resolver
-                         :base-stack (list (or base ""))
-                         :disallow-internal-subset disallow-internal-subset))
-         (*validate* validate)
-         (*namespace-bindings* *initial-namespace-bindings*))
-    (fxml.sax:register-sax-parser handler (make-instance 'fxml-parser :ctx *ctx*))
-    (fxml.sax:start-document handler)
-    ;; document ::= XMLDecl? Misc* (doctypedecl Misc*)? element Misc*
-    ;; Misc ::= Comment | PI |  S
-    ;; xmldecl::='<?xml' VersionInfo EncodingDecl? SDDecl? S? '?>'
-    ;; sddecl::= S 'standalone' Eq (("'" ('yes' | 'no') "'") | ('"' ('yes' | 'no') '"'))
-    (let ((*data-behaviour* :DTD))
-      ;; optional XMLDecl?
-      (p/xmldecl input)
-      ;; Misc*
-      (p/misc*-2 input)
-      ;; (doctypedecl Misc*)?
-      (cond
-        ((eq (peek-token input) :<!DOCTYPE)
-         (p/doctype-decl input :dtd dtd :forbid-dtd forbid-dtd)
-         (p/misc*-2 input))
-        (dtd
-         (synthesize-doctype dtd input))
-        ((and validate (not dtd))
-         (validity-error "invalid document: no doctype")))
-      (ensure-dtd)
-      ;; Override expected root element if asked to
-      (when root
-        (setf (model-stack *ctx*) (list (make-root-model root))))
-      ;; element
-      (let ((*data-behaviour* :DOC))
-        (fix-seen-< input)
-        (p/element input))
-      ;; optional Misc*
-      (p/misc*-2 input)
-      (p/eof input)
-      (fxml.sax:end-document handler))))
+(block-compile (:entry-points (p/document))
+  (defun p/misc*-2 (input)
+    ;; Misc*
+    (while (member (peek-token input) '(:COMMENT :PI :S))
+      (case (peek-token input)
+        (:COMMENT
+          (fxml.sax:comment (handler *ctx*) (nth-value 1 (peek-token input))))
+        (:PI
+         (fxml.sax:processing-instruction
+          (handler *ctx*)
+          (car (nth-value 1 (peek-token input)))
+          (cdr (nth-value 1 (peek-token input))))))
+      (consume-token input)))
+
+  (defun p/document
+      (input handler
+       &key validate dtd root entity-resolver disallow-internal-subset
+            (recode t) ignore-dtd
+            forbid-dtd
+            (forbid-entities *forbid-entities*)
+            (forbid-external t))
+    ;; check types of user-supplied arguments for better error messages:
+    (check-type validate boolean)
+    (check-type recode boolean)
+    (check-type dtd (or null extid))
+    (check-type root (or null rod))
+    (check-type entity-resolver (or null function symbol))
+    (check-type disallow-internal-subset boolean)
+    (check-type ignore-dtd boolean)
+    (check-type forbid-dtd boolean)
+    (check-type forbid-entities boolean)
+    (check-type forbid-external boolean)
+    (when ignore-dtd
+      (setf entity-resolver #'void-entity-resolver))
+    (when forbid-external
+      (setf entity-resolver #'external-reference-forbidden))
+    (let* ((xstream (car (zstream-input-stack input)))
+           (name (xstream-name xstream))
+           (base (when name (stream-name-uri name)))
+           (*ctx*
+             (make-context :handler handler
+                           :main-zstream input
+                           :entity-resolver entity-resolver
+                           :base-stack (list (or base ""))
+                           :disallow-internal-subset disallow-internal-subset))
+           (*validate* validate)
+           (*namespace-bindings* *initial-namespace-bindings*))
+      (fxml.sax:register-sax-parser handler (make-instance 'fxml-parser :ctx *ctx*))
+      (fxml.sax:start-document handler)
+      ;; document ::= XMLDecl? Misc* (doctypedecl Misc*)? element Misc*
+      ;; Misc ::= Comment | PI |  S
+      ;; xmldecl::='<?xml' VersionInfo EncodingDecl? SDDecl? S? '?>'
+      ;; sddecl::= S 'standalone' Eq (("'" ('yes' | 'no') "'") | ('"' ('yes' | 'no') '"'))
+      (let ((*data-behaviour* :DTD))
+        ;; optional XMLDecl?
+        (p/xmldecl input)
+        ;; Misc*
+        (p/misc*-2 input)
+        ;; (doctypedecl Misc*)?
+        (cond
+          ((eq (peek-token input) :<!DOCTYPE)
+           (p/doctype-decl input :dtd dtd :forbid-dtd forbid-dtd)
+           (p/misc*-2 input))
+          (dtd
+           (synthesize-doctype dtd input))
+          ((and validate (not dtd))
+           (validity-error "invalid document: no doctype")))
+        (ensure-dtd)
+        ;; Override expected root element if asked to
+        (when root
+          (setf (model-stack *ctx*) (list (make-root-model root))))
+        ;; element
+        (let ((*data-behaviour* :DOC))
+          (fix-seen-< input)
+          (p/element input))
+        ;; optional Misc*
+        (p/misc*-2 input)
+        (p/eof input)
+        (fxml.sax:end-document handler)))))
 
 (defun synthesize-doctype (dtd input)
   (let ((dummy (string->xstream "<!DOCTYPE dummy>")))
@@ -2786,61 +2791,81 @@
     (pop (base-stack ctx))
     (validate-end-element ctx qname)))
 
-(defun p/sztag (input &aux (ctx *ctx*))
-  (multiple-value-bind (cat sem) (read-token input)
-    (case cat
-      ((:stag :ztag))
-      (:eof (eox input))
-      (t (restart-case
-             (wf-error input "element expected")
-           (continue ()
-             :report "Skip garbage"
-             (loop (setf (values cat sem) (read-token input))
-                   (case cat
-                     ((:stag :ztag) (return))
-                     (:eof (eox input))))))))
-    (destructuring-bind (&optional name &rest raw-attrs) sem
-      (validate-start-element ctx name)
-      (let* ((attrs
-               (process-attributes ctx name (build-attribute-list raw-attrs)))
-             (*namespace-bindings* *namespace-bindings*)
-             new-namespaces)
-        (when fxml.sax:*namespace-processing*
-          (setf new-namespaces (declare-namespaces attrs))
-          (mapc #'set-attribute-namespace attrs))
-        (push (compute-base attrs) (base-stack ctx))
-        (multiple-value-bind (uri prefix local-name)
-            (if fxml.sax:*namespace-processing*
-                (restart-case
-                    (decode-qname name)
-                  (store-value (uri)
-                    :report "Provide a URI for the namespace."
-                    (check-type uri string)
-                    (let* ((prefix (split-qname name))
-                           (uri (rod uri))
-                           (decls (cons prefix uri)))
-                      (push decls *namespace-bindings*)
-                      (fxml.sax:start-prefix-mapping (handler *ctx*)
-                                                (car decls)
-                                                (cdr decls))
-                      (let ((attr (fxml.sax:make-attribute :qname (rod (format nil "xmlns:~a" prefix))
-                                                      :value uri
-                                                      :specified-p t)))
-                        (set-attribute-namespace attr)
-                        (push attr attrs))
-                      (decode-qname name))))
-                (values nil nil nil))
-          (declare (ignore prefix))
-          (check-attribute-uniqueness attrs)
-          (unless (or fxml.sax:*include-xmlns-attributes*
-                      (null fxml.sax:*namespace-processing*))
-            (setf attrs
-                  (remove-if (compose #'xmlns-attr-p #'fxml.sax:attribute-qname)
-                             attrs)))
-          (values cat
-                  *namespace-bindings*
-                  new-namespaces
-                  uri local-name name attrs))))))
+(block-compile (:entry-points (p/sztag))
+  ;; copy&paste from cxml-rng
+  (defun escape-uri (string)
+    (with-output-to-string (out)
+      (loop for c across (fxml::rod-to-utf8-string string) do
+        (let ((code (char-code c)))
+          ;; http://www.w3.org/TR/xlink/#link-locators
+          (if (or (>= code 127) (<= code 32) (find c "<>\"{}|\\^`"))
+              (format out "%~2,'0X" code)
+              (write-char c out))))))
+
+  (defun compute-base (attrs)
+    (let ((new (fxml.sax:find-attribute #"xml:base" attrs))
+          (current (car (base-stack *ctx*))))
+      (if new
+          (quri:merge-uris
+           (quri:uri (escape-uri (fxml.sax:attribute-value new)))
+           (quri:uri current))
+          current)))
+
+  (defun p/sztag (input &aux (ctx *ctx*))
+    (multiple-value-bind (cat sem) (read-token input)
+      (case cat
+        ((:stag :ztag))
+        (:eof (eox input))
+        (t (restart-case
+               (wf-error input "element expected")
+             (continue ()
+               :report "Skip garbage"
+               (loop (setf (values cat sem) (read-token input))
+                     (case cat
+                       ((:stag :ztag) (return))
+                       (:eof (eox input))))))))
+      (destructuring-bind (&optional name &rest raw-attrs) sem
+        (validate-start-element ctx name)
+        (let* ((attrs
+                 (process-attributes ctx name (build-attribute-list raw-attrs)))
+               (*namespace-bindings* *namespace-bindings*)
+               new-namespaces)
+          (when fxml.sax:*namespace-processing*
+            (setf new-namespaces (declare-namespaces attrs))
+            (mapc #'set-attribute-namespace attrs))
+          (push (compute-base attrs) (base-stack ctx))
+          (multiple-value-bind (uri prefix local-name)
+              (if fxml.sax:*namespace-processing*
+                  (restart-case
+                      (decode-qname name)
+                    (store-value (uri)
+                      :report "Provide a URI for the namespace."
+                      (check-type uri string)
+                      (let* ((prefix (split-qname name))
+                             (uri (rod uri))
+                             (decls (cons prefix uri)))
+                        (push decls *namespace-bindings*)
+                        (fxml.sax:start-prefix-mapping (handler *ctx*)
+                                                       (car decls)
+                                                       (cdr decls))
+                        (let ((attr (fxml.sax:make-attribute :qname (rod (format nil "xmlns:~a" prefix))
+                                                             :value uri
+                                                             :specified-p t)))
+                          (set-attribute-namespace attr)
+                          (push attr attrs))
+                        (decode-qname name))))
+                  (values nil nil nil))
+            (declare (ignore prefix))
+            (check-attribute-uniqueness attrs)
+            (unless (or fxml.sax:*include-xmlns-attributes*
+                        (null fxml.sax:*namespace-processing*))
+              (setf attrs
+                    (remove-if (compose #'xmlns-attr-p #'fxml.sax:attribute-qname)
+                               attrs)))
+            (values cat
+                    *namespace-bindings*
+                    new-namespaces
+                    uri local-name name attrs)))))))
 
 (defun p/etag (input qname)
   (multiple-value-bind (cat2 sem2) (read-token input)
@@ -2851,25 +2876,6 @@
                 (mu (cons cat2 sem2))))
     (when (cdr sem2)
       (wf-error input "no attributes allowed in end tag"))))
-
-;; copy&paste from cxml-rng
-(defun escape-uri (string)
-  (with-output-to-string (out)
-    (loop for c across (fxml::rod-to-utf8-string string) do
-          (let ((code (char-code c)))
-            ;; http://www.w3.org/TR/xlink/#link-locators
-            (if (or (>= code 127) (<= code 32) (find c "<>\"{}|\\^`"))
-                (format out "%~2,'0X" code)
-                (write-char c out))))))
-
-(defun compute-base (attrs)
-  (let ((new (fxml.sax:find-attribute #"xml:base" attrs))
-        (current (car (base-stack *ctx*))))
-    (if new
-        (quri:merge-uris
-         (quri:uri (escape-uri (fxml.sax:attribute-value new)))
-         (quri:uri current))
-        current)))
 
 (defun process-characters (input sem)
   (consume-token input)
@@ -3523,15 +3529,15 @@
          (multiple-value-bind (,res ,res-start ,res-end)
              (with-rune-collector/raw (,collect)
                (loop
-                 (let ((,c (peek-rune ,input-var)))
-                   (cond ((eq ,c :eof)
-                          ;; xxx error message
-                          (return))
-                         ((funcall ,predicate ,c)
-                          (return))
-                         (t
-                          (,collect ,c)
-                          (consume-rune ,input-var))))))
+                  (let ((,c (peek-rune ,input-var)))
+                    (cond ((eq ,c :eof)
+                           ;; xxx error message
+                           (return))
+                          ((funcall ,predicate ,c)
+                           (return))
+                          (t
+                           (,collect ,c)
+                           (consume-rune ,input-var))))))
            (locally
                ,@body))))))
 
@@ -3554,128 +3560,128 @@
                        (or (%rune= rune #/<) (%rune= rune #/&)))
                      input
                      source start end)
-                    (locally
-                     (declare (type (simple-array rune (*)) source)
-                              (type ufixnum start)
-                              (type ufixnum end)
-                              (optimize (speed 3) (safety 0)))
-                     (let ((res (make-array (%- end start) :element-type 'rune)))
-                       (declare (type (simple-array rune (*)) res))
-                       (let ((i (%- end start)))
-                         (declare (type ufixnum i))
-                         (loop
-                           (setf i (- i 1))
-                           (setf (%rune res i) (%rune source (the ufixnum (+ i start))))
-                           (when (= i 0)
-                             (return))))
-                       res))))
+    (locally
+        (declare (type (simple-array rune (*)) source)
+                 (type ufixnum start)
+                 (type ufixnum end)
+                 (optimize (speed 3) (safety 0)))
+      (let ((res (make-array (%- end start) :element-type 'rune)))
+        (declare (type (simple-array rune (*)) res))
+        (let ((i (%- end start)))
+          (declare (type ufixnum i))
+          (loop
+             (setf i (- i 1))
+             (setf (%rune res i) (%rune source (the ufixnum (+ i start))))
+             (when (= i 0)
+               (return))))
+        res))))
 
-;; used only by read-att-value-2
-(defun internal-entity-expansion (name)
-  (let ((def (get-entity-definition name :general (dtd *ctx*))))
-    (unless (typep def 'internal-entdef)
-      (wf-error nil "Entity '~A' is not an internal entity." name))
-    (or (entdef-expansion def)
-        (setf (entdef-expansion def) (find-internal-entity-expansion name)))))
+(block-compile (:entry-points (resolve-entity read-att-value-2))
+  ;; used only by read-att-value-2
+  (defun internal-entity-expansion (name)
+    (let ((def (get-entity-definition name :general (dtd *ctx*))))
+      (unless (typep def 'internal-entdef)
+        (wf-error nil "Entity '~A' is not an internal entity." name))
+      (or (entdef-expansion def)
+          (setf (entdef-expansion def) (find-internal-entity-expansion name)))))
 
-;; used only by read-att-value-2
-(defun find-internal-entity-expansion (name)
-  (with-zstream (zinput)
-    (with-rune-collector-3 (collect)
-      (labels ((muffle (input)
-                 (let (c)
-                   (loop
-                    (setf c (read-rune input))
-                    (cond ((eq c :eof)
-                           (return))
-                          ((rune= c #/&)
-                           (setf c (peek-rune input))
-                           (cond ((eql c :eof)
-                                  (eox input))
-                                 ((rune= c #/#)
-                                  (let ((c (read-character-reference input)))
-                                    (%put-unicode-char c collect)))
-                                 (t
-                                  (unless (name-start-rune-p c)
-                                    (wf-error zinput "Expecting name after &."))
-                                  (let ((name (read-name-token input)))
-                                    (setf c (read-rune input))
-                                    (check-rune input c #/\;)
-                                    (recurse-on-entity
-                                     zinput name :general
-                                     (lambda (zinput)
-                                       (muffle (car (zstream-input-stack zinput)))))))))
-                          ((rune= c #/<)
-                           (wf-error zinput "unexpected #\/<"))
-                          ((space-rune-p c)
-                           (collect #/space))
-                          ((not (data-rune-p c))
-                           (wf-error zinput "illegal char: ~S." c))
-                          (t
-                           (collect c)))))))
-        (declare (dynamic-extent #'muffle))
-        (recurse-on-entity
-         zinput name :general
-         (lambda (zinput)
-           (muffle (car (zstream-input-stack zinput)))))))))
+  ;; used only by read-att-value-2
+  (defun find-internal-entity-expansion (name)
+    (with-zstream (zinput)
+      (with-rune-collector-3 (collect)
+        (labels ((muffle (input)
+                   (let (c)
+                     (loop
+                        (setf c (read-rune input))
+                        (cond ((eq c :eof)
+                               (return))
+                              ((rune= c #/&)
+                               (setf c (peek-rune input))
+                               (cond ((eql c :eof)
+                                      (eox input))
+                                     ((rune= c #/#)
+                                      (let ((c (read-character-reference input)))
+                                        (%put-unicode-char c collect)))
+                                     (t
+                                      (unless (name-start-rune-p c)
+                                        (wf-error zinput "Expecting name after &."))
+                                      (let ((name (read-name-token input)))
+                                        (setf c (read-rune input))
+                                        (check-rune input c #/\;)
+                                        (recurse-on-entity
+                                         zinput name :general
+                                         (lambda (zinput)
+                                           (muffle (car (zstream-input-stack zinput)))))))))
+                              ((rune= c #/<)
+                               (wf-error zinput "unexpected #\/<"))
+                              ((space-rune-p c)
+                               (collect #/space))
+                              ((not (data-rune-p c))
+                               (wf-error zinput "illegal char: ~S." c))
+                              (t
+                               (collect c)))))))
+          (declare (dynamic-extent #'muffle))
+          (recurse-on-entity
+           zinput name :general
+           (lambda (zinput)
+             (muffle (car (zstream-input-stack zinput)))))))))
 
-;; callback for DOM
-(defun resolve-entity (name handler dtd)
-  (let ((*validate* nil))
-    (if (get-entity-definition name :general dtd
-                               :errorp nil)
-        (let* ((*ctx* (make-context :handler handler :dtd dtd))
-               (*data-behaviour* :DOC))
-          (with-zstream (input)
-            (with-scratch-pads ()
-              (recurse-on-entity
-               input name :general
-               (lambda (input)
-                 (prog1
-                     (etypecase (checked-get-entdef name :general)
-                       (internal-entdef (p/content input))
-                       (external-entdef (p/ext-parsed-ent input)))
-                   (unless (eq (peek-token input) :eof)
-                     (wf-error input "Trailing garbage. - ~S"
-                               (peek-token input)))))))))
-        nil)))
+  (defun resolve-entity (name handler dtd)
+    (let ((*validate* nil))
+      (if (get-entity-definition name :general dtd
+                                      :errorp nil)
+          (let* ((*ctx* (make-context :handler handler :dtd dtd))
+                 (*data-behaviour* :DOC))
+            (with-zstream (input)
+              (with-scratch-pads ()
+                (recurse-on-entity
+                 input name :general
+                 (lambda (input)
+                   (prog1
+                       (etypecase (checked-get-entdef name :general)
+                         (internal-entdef (p/content input))
+                         (external-entdef (p/ext-parsed-ent input)))
+                     (unless (eq (peek-token input) :eof)
+                       (wf-error input "Trailing garbage. - ~S"
+                                 (peek-token input)))))))))
+          nil)))
 
-(defun read-att-value-2 (input)
-  (let ((delim (read-rune input)))
-    (when (eql delim :eof)
-      (eox input))
-    (unless (member delim '(#/\" #/\') :test #'eql)
-      (wf-error input
-                "Bad attribute value delimiter ~S, must be either #\\\" or #\\\'."
-                (rune-char delim)))
-    (with-rune-collector-4 (collect collect-all)
-      (loop
-        (let ((c (read-rune input)))
-          (cond ((eq c :eof)
-                 (eox input "EOF"))
-                ((rune= c delim)
-                 (return))
-                ((rune= c #/<)
-                 (wf-error input "'<' not allowed in attribute values"))
-                ((rune= #/& c)
-                 (multiple-value-bind (kind sem) (read-entity-like input)
-                   (ecase kind
-                     (:CHARACTER-REFERENCE
-                      (%put-unicode-char sem collect))
-                     (:ENTITY-REFERENCE
-                      (let* ((exp (internal-entity-expansion sem))
-                             (n (length exp)))
-                        (declare (type (simple-array rune (*)) exp))
-                        (do ((i 0 (%+ i 1)))
-                            ((%= i n))
-                          (collect (%rune exp i)))))
-                     (:non-reference
-                      (collect #\&)
-                      (collect-all sem)))))
-                ((space-rune-p c)
-                 (collect #/u+0020))
-                (t
-                 (collect c))))))))
+  (defun read-att-value-2 (input)
+    (let ((delim (read-rune input)))
+      (when (eql delim :eof)
+        (eox input))
+      (unless (member delim '(#/\" #/\') :test #'eql)
+        (wf-error input
+                  "Bad attribute value delimiter ~S, must be either #\\\" or #\\\'."
+                  (rune-char delim)))
+      (with-rune-collector-4 (collect collect-all)
+        (loop
+           (let ((c (read-rune input)))
+             (cond ((eq c :eof)
+                    (eox input "EOF"))
+                   ((rune= c delim)
+                    (return))
+                   ((rune= c #/<)
+                    (wf-error input "'<' not allowed in attribute values"))
+                   ((rune= #/& c)
+                    (multiple-value-bind (kind sem) (read-entity-like input)
+                      (ecase kind
+                        (:CHARACTER-REFERENCE
+                         (%put-unicode-char sem collect))
+                        (:ENTITY-REFERENCE
+                         (let* ((exp (internal-entity-expansion sem))
+                                (n (length exp)))
+                           (declare (type (simple-array rune (*)) exp))
+                           (do ((i 0 (%+ i 1)))
+                               ((%= i n))
+                             (collect (%rune exp i)))))
+                        (:non-reference
+                         (collect #\&)
+                         (collect-all sem)))))
+                   ((space-rune-p c)
+                    (collect #/u+0020))
+                   (t
+                    (collect c)))))))))
 
 ;;;;;;;;;;;;;;;;;
 
@@ -3720,26 +3726,28 @@
            (undeclared-namespace prefix))))
 
 ;; FIXME: Should probably be refactored by adding :start and :end to rod=/rod-equal
-(defun rod-starts-with (prefix rod)
-  (and (<= (length prefix) (length rod))
-       (dotimes (i (length prefix) t)
-         (unless (rune= (rune prefix i) (rune rod i))
-           (return nil)))))
+(block-compile (:entry-points (xmlns-attr-p))
+  (defun rod-starts-with (prefix rod)
+    (and (<= (length prefix) (length rod))
+         (dotimes (i (length prefix) t)
+           (unless (rune= (rune prefix i) (rune rod i))
+             (return nil)))))
 
-(defun xmlns-attr-p (attr-name)
-  (rod-starts-with #.(string-rod "xmlns") attr-name))
+  (defun xmlns-attr-p (attr-name)
+    (rod-starts-with #.(string-rod "xmlns") attr-name)))
 
-(defun attrname->prefix (attrname)
-  (if (< 5 (length attrname))
-      (subseq attrname 6)
-      nil))
+(block-compile (:entry-points (find-namespace-declarations))
+  (defun attrname->prefix (attrname)
+    (if (< 5 (length attrname))
+        (subseq attrname 6)
+        nil))
 
-(defun find-namespace-declarations (attributes)
-  (loop
+  (defun find-namespace-declarations (attributes)
+    (loop
       for attribute in attributes
       for qname = (fxml.sax:attribute-qname attribute)
       when (xmlns-attr-p qname)
-      collect (cons (attrname->prefix qname) (fxml.sax:attribute-value attribute))))
+        collect (cons (attrname->prefix qname) (fxml.sax:attribute-value attribute)))))
 
 (defun declare-namespaces (attributes)
   (let ((ns-decls (find-namespace-declarations attributes)))
@@ -3783,8 +3791,8 @@
              (push (cons prefix (if (rod= #"" uri) nil uri))
                    *namespace-bindings*)
              (fxml.sax:start-prefix-mapping (handler *ctx*)
-                                       (car ns-decl)
-                                       (cdr ns-decl)))))))
+                                            (car ns-decl)
+                                            (cdr ns-decl)))))))
     ns-decls))
 
 (defun undeclare-namespaces (ns-decls)
@@ -3810,17 +3818,17 @@
   ;;
   ;; 1. is checked by read-tag-2, so we only deal with 2 here
   (loop for (attr-1 . rest) on attributes do
-        (when (and (fxml.sax:attribute-namespace-uri attr-1)
-                   (find-if (lambda (attr-2)
-                              (and (rod= (fxml.sax:attribute-namespace-uri attr-1)
-                                         (fxml.sax:attribute-namespace-uri attr-2))
-                                   (rod= (fxml.sax:attribute-local-name attr-1)
-                                         (fxml.sax:attribute-local-name attr-2))))
-                            rest))
-          (wf-error nil
-                    "Multiple definitions of attribute ~S in namespace ~S."
-                    (mu (fxml.sax:attribute-local-name attr-1))
-                    (mu (fxml.sax:attribute-namespace-uri attr-1))))))
+    (when (and (fxml.sax:attribute-namespace-uri attr-1)
+               (find-if (lambda (attr-2)
+                          (and (rod= (fxml.sax:attribute-namespace-uri attr-1)
+                                     (fxml.sax:attribute-namespace-uri attr-2))
+                               (rod= (fxml.sax:attribute-local-name attr-1)
+                                     (fxml.sax:attribute-local-name attr-2))))
+                        rest))
+      (wf-error nil
+                "Multiple definitions of attribute ~S in namespace ~S."
+                (mu (fxml.sax:attribute-local-name attr-1))
+                (mu (fxml.sax:attribute-namespace-uri attr-1))))))
 
 (defun set-attribute-namespace (attribute)
   (let ((qname (fxml.sax:attribute-qname attribute)))
@@ -3863,8 +3871,8 @@
 ;;; SAX validation handler
 
 (defclass validator ()
-    ((context :initarg :context :accessor context)
-     (cdatap :initform nil :accessor cdatap)))
+  ((context :initarg :context :accessor context)
+   (cdatap :initform nil :accessor cdatap)))
 
 (defun make-validator (dtd root)
   "@arg[dtd]{An @class{dtd} instance.}
