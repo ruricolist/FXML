@@ -9,6 +9,7 @@
   (:use :cl :fxml.runes :fxml.runes-encoding :split-sequence)
   (:import-from #:named-readtables #:in-readtable)
   (:import-from #:alexandria #:compose #:curry #:rcurry)
+  (:import-from #:serapeum #:with-thunk)
   (:export
    ;; meta
    #:xml-character-p

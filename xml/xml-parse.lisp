@@ -237,7 +237,7 @@
     (close-xstream stream)))
 
 (defmacro with-open-xstream ((var value) &body body)
-  (serapeum:with-thunk (body var)
+  (with-thunk (body var)
     `(call-with-open-xstream ,body ,value)))
 
 (defun call-with-open-xfile (continuation &rest open-args)
@@ -248,7 +248,7 @@
       (close input))))
 
 (defmacro with-open-xfile ((stream &rest open-args) &body body)
-  (serapeum:with-thunk (body stream)
+  (with-thunk (body stream)
     `(call-with-open-xfile ,body ,@open-args)))
 
 ;;;; -------------------------------------------------------------------
@@ -421,7 +421,7 @@
     (funcall thunk)))
 
 (defmacro with-scratch-pads ((&optional) &body body)
-  (serapeum:with-thunk (body)
+  (with-thunk (body)
     `(call-with-scratch-pads ,body)))
 
 (defmacro %put-unicode-char (code-var put)
@@ -1195,7 +1195,7 @@
         (close-xstream input)))))
 
 (defmacro with-zstream ((zstream &rest args) &body body)
-  (serapeum:with-thunk (body zstream)
+  (with-thunk (body zstream)
     `(call-with-zstream ,body (make-zstream ,@args))))
 
 (defun read-token (input)
