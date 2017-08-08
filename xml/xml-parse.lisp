@@ -802,6 +802,23 @@
                                  (rod-string qname)))))
       (validate-attribute* ctx adef (fxml.sax:attribute-value a)))))
 
+(defstruct (entdef (:constructor)))
+
+(defstruct (internal-entdef
+            (:include entdef)
+            (:constructor make-internal-entdef (value))
+            (:conc-name #:entdef-))
+  (value (error "missing argument") :type rod)
+  (expansion nil)
+  (external-subset-p *external-subset-p*))
+
+(defstruct (external-entdef
+            (:include entdef)
+            (:constructor make-external-entdef (extid ndata))
+            (:conc-name #:entdef-))
+  (extid (error "missing argument") :type extid)
+  (ndata nil :type (or rod null)))
+
 (block-compile (:entry-points (validate-attribute*))
   (defun split-names (rod)
     (flet ((whitespacep (x)
@@ -887,23 +904,6 @@
              (validity-error "(13) Name Token: malformed NMTOKENS"))
            (mapc #'validate-entity names)))
         (:CDATA)))))
-
-(defstruct (entdef (:constructor)))
-
-(defstruct (internal-entdef
-            (:include entdef)
-            (:constructor make-internal-entdef (value))
-            (:conc-name #:entdef-))
-  (value (error "missing argument") :type rod)
-  (expansion nil)
-  (external-subset-p *external-subset-p*))
-
-(defstruct (external-entdef
-            (:include entdef)
-            (:constructor make-external-entdef (extid ndata))
-            (:conc-name #:entdef-))
-  (extid (error "missing argument") :type extid)
-  (ndata nil :type (or rod null)))
 
 (defun zstream-base-sysid (zstream)
   (let ((base-sysid
