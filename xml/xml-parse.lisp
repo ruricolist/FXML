@@ -2350,7 +2350,7 @@
 
 ;;;
 
-(block-compile (:entry-points (p/ignore-sect p/ignore-sect p/ext-subset-decl))
+(block-compile (:entry-points (p/ignore-sect p/ext-subset-decl))
   ;; [52] AttlistDecl ::= '<!ATTLIST' S Name AttDef* S? '>'
 
 
