@@ -57,7 +57,7 @@ New features:
 - SAX handlers that return multiple values.
 - Document fragment support in STP.
 - DOM and STP are (partially) compatible.
-- A [streaming sanitizer][sanitize/README.md] (system `fxml/sanitize`).
+- A [streaming sanitizer](sanitize/README.md) (system `fxml/sanitize`).
 - Integration with [cl-html5-parser][] (system `fxml/html5`).
 - Integration with [css-selectors][] (system `fxml/css-selectors`).
 
