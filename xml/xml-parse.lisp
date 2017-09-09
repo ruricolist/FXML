@@ -2704,37 +2704,36 @@
            (*validate* validate)
            (*namespace-bindings* *initial-namespace-bindings*))
       (fxml.sax:register-sax-parser handler (make-instance 'fxml-parser :ctx *ctx*))
-      (fxml.sax:start-document handler)
-      ;; document ::= XMLDecl? Misc* (doctypedecl Misc*)? element Misc*
-      ;; Misc ::= Comment | PI |  S
-      ;; xmldecl::='<?xml' VersionInfo EncodingDecl? SDDecl? S? '?>'
-      ;; sddecl::= S 'standalone' Eq (("'" ('yes' | 'no') "'") | ('"' ('yes' | 'no') '"'))
-      (let ((*data-behaviour* :DTD))
-        ;; optional XMLDecl?
-        (p/xmldecl input)
-        ;; Misc*
-        (p/misc*-2 input)
-        ;; (doctypedecl Misc*)?
-        (cond
-          ((eq (peek-token input) :<!DOCTYPE)
-           (p/doctype-decl input :dtd dtd :forbid-dtd forbid-dtd)
-           (p/misc*-2 input))
-          (dtd
-           (synthesize-doctype dtd input))
-          ((and validate (not dtd))
-           (validity-error "invalid document: no doctype")))
-        (ensure-dtd)
-        ;; Override expected root element if asked to
-        (when root
-          (setf (model-stack *ctx*) (list (make-root-model root))))
-        ;; element
-        (let ((*data-behaviour* :DOC))
-          (fix-seen-< input)
-          (p/element input))
-        ;; optional Misc*
-        (p/misc*-2 input)
-        (p/eof input)
-        (fxml.sax:end-document handler)))))
+      (fxml.sax:with-document-events (handler)
+        ;; document ::= XMLDecl? Misc* (doctypedecl Misc*)? element Misc*
+        ;; Misc ::= Comment | PI |  S
+        ;; xmldecl::='<?xml' VersionInfo EncodingDecl? SDDecl? S? '?>'
+        ;; sddecl::= S 'standalone' Eq (("'" ('yes' | 'no') "'") | ('"' ('yes' | 'no') '"'))
+        (let ((*data-behaviour* :DTD))
+          ;; optional XMLDecl?
+          (p/xmldecl input)
+          ;; Misc*
+          (p/misc*-2 input)
+          ;; (doctypedecl Misc*)?
+          (cond
+            ((eq (peek-token input) :<!DOCTYPE)
+             (p/doctype-decl input :dtd dtd :forbid-dtd forbid-dtd)
+             (p/misc*-2 input))
+            (dtd
+             (synthesize-doctype dtd input))
+            ((and validate (not dtd))
+             (validity-error "invalid document: no doctype")))
+          (ensure-dtd)
+          ;; Override expected root element if asked to
+          (when root
+            (setf (model-stack *ctx*) (list (make-root-model root))))
+          ;; element
+          (let ((*data-behaviour* :DOC))
+            (fix-seen-< input)
+            (p/element input))
+          ;; optional Misc*
+          (p/misc*-2 input)
+          (p/eof input))))))
 
 (defun synthesize-doctype (dtd input)
   (let ((dummy (string->xstream "<!DOCTYPE dummy>")))
@@ -3295,51 +3294,50 @@
   (check-type entity-resolver (or null function symbol))
   (check-type recode boolean)
   (let ((*ctx*
-         (make-context :handler handler :entity-resolver entity-resolver))
+          (make-context :handler handler :entity-resolver entity-resolver))
         (*validate* nil)
         (extid
-         (when (or public-id system-id)
-           (extid-using-catalog (make-extid public-id system-id)))))
-    (fxml.sax:start-document handler)
-    (when extid
-      (fxml.sax:start-dtd handler
-                     qname
-                     (and public-id)
-                     (and system-id (uri-rod system-id)))
-      (setf (dtd *ctx*) (getdtd (extid-system extid) *dtd-cache*))
-      (unless (dtd *ctx*)
-        (with-scratch-pads ()
-          (let ((*data-behaviour* :DTD))
-            (let ((xi2 (xstream-open-extid extid)))
-              (with-zstream (zi2 :input-stack (list xi2))
-                (ensure-dtd)
-                (p/ext-subset zi2))))))
-      (fxml.sax:end-dtd handler)
-      (let ((dtd (dtd *ctx*)))
-        (fxml.sax:entity-resolver handler (lambda (n h) (resolve-entity n h dtd)))
-        (fxml.sax::dtd handler dtd)))
-    (ensure-dtd)
-    (when (or uri qname)
-      (let* ((attrs
-              (when uri
-                (list (fxml.sax:make-attribute :qname #"xmlns"
-                                          :value (rod uri)
-                                          :specified-p t))))
-             (*namespace-bindings* *namespace-bindings*)
-             new-namespaces)
-        (when fxml.sax:*namespace-processing*
-          (setf new-namespaces (declare-namespaces attrs))
-          (mapc #'set-attribute-namespace attrs))
-        (multiple-value-bind (uri prefix local-name)
-            (if fxml.sax:*namespace-processing* (decode-qname qname) nil)
-          (declare (ignore prefix))
-          (unless (or fxml.sax:*include-xmlns-attributes*
-                      (null fxml.sax:*namespace-processing*))
-            (setf attrs nil))
-          (fxml.sax:start-element (handler *ctx*) uri local-name qname attrs)
-          (fxml.sax:end-element (handler *ctx*) uri local-name qname))
-        (undeclare-namespaces new-namespaces)))
-    (fxml.sax:end-document handler)))
+          (when (or public-id system-id)
+            (extid-using-catalog (make-extid public-id system-id)))))
+    (fxml.sax:with-document-events (handler)
+      (when extid
+        (fxml.sax:start-dtd handler
+                            qname
+                            (and public-id)
+                            (and system-id (uri-rod system-id)))
+        (setf (dtd *ctx*) (getdtd (extid-system extid) *dtd-cache*))
+        (unless (dtd *ctx*)
+          (with-scratch-pads ()
+            (let ((*data-behaviour* :DTD))
+              (let ((xi2 (xstream-open-extid extid)))
+                (with-zstream (zi2 :input-stack (list xi2))
+                  (ensure-dtd)
+                  (p/ext-subset zi2))))))
+        (fxml.sax:end-dtd handler)
+        (let ((dtd (dtd *ctx*)))
+          (fxml.sax:entity-resolver handler (lambda (n h) (resolve-entity n h dtd)))
+          (fxml.sax::dtd handler dtd)))
+      (ensure-dtd)
+      (when (or uri qname)
+        (let* ((attrs
+                 (when uri
+                   (list (fxml.sax:make-attribute :qname #"xmlns"
+                                                  :value (rod uri)
+                                                  :specified-p t))))
+               (*namespace-bindings* *namespace-bindings*)
+               new-namespaces)
+          (when fxml.sax:*namespace-processing*
+            (setf new-namespaces (declare-namespaces attrs))
+            (mapc #'set-attribute-namespace attrs))
+          (multiple-value-bind (uri prefix local-name)
+              (if fxml.sax:*namespace-processing* (decode-qname qname) nil)
+            (declare (ignore prefix))
+            (unless (or fxml.sax:*include-xmlns-attributes*
+                        (null fxml.sax:*namespace-processing*))
+              (setf attrs nil))
+            (fxml.sax:start-element (handler *ctx*) uri local-name qname attrs)
+            (fxml.sax:end-element (handler *ctx*) uri local-name qname))
+          (undeclare-namespaces new-namespaces))))))
 
 (defun parse-dtd-file (filename &optional handler)
   "@arg[filename]{An pathname designator.}

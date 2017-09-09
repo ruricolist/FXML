@@ -154,46 +154,44 @@
       (map-node/qnames handler node include-xmlns-attributes)))
 
 (defun map-node/lnames (handler node include-xmlns-attributes)
-  (fxml.sax:start-document handler)
-  (labels ((walk (node)
-	     (unless (node-ns node)
-	       (error "serializing with :INCLUDE-NAMESPACE-URI, but node ~
+  (fxml.sax:with-document-events (handler)
+    (labels ((walk (node)
+               (unless (node-ns node)
+                 (error "serializing with :INCLUDE-NAMESPACE-URI, but node ~
                        was created without namespace URI"))
-	     (let* ((attlist
-		     (compute-attributes/lnames node include-xmlns-attributes))
-		    (uri (node-ns node))
-		    (lname (node-name node))
-		    (qname lname)	;let the normalizer fix it
-		    )
-	       (fxml.sax:start-element handler uri lname qname attlist)
-	       (dolist (child (node-children node))
-		 (typecase child
-		   (list (walk child))
-		   ((or string rod)
-		    (fxml.sax:characters handler (string-rod child)))))
-	       (fxml.sax:end-element handler uri lname qname))))
-    (walk node))
-  (fxml.sax:end-document handler))
+               (let* ((attlist
+                        (compute-attributes/lnames node include-xmlns-attributes))
+                      (uri (node-ns node))
+                      (lname (node-name node))
+                      (qname lname)	;let the normalizer fix it
+                      )
+                 (fxml.sax:start-element handler uri lname qname attlist)
+                 (dolist (child (node-children node))
+                   (typecase child
+                     (list (walk child))
+                     ((or string rod)
+                      (fxml.sax:characters handler (string-rod child)))))
+                 (fxml.sax:end-element handler uri lname qname))))
+      (walk node))))
 
 (defun map-node/qnames (handler node include-xmlns-attributes)
-  (fxml.sax:start-document handler)
-  (labels ((walk (node)
-	     (when (node-ns node)
-	       (error "serializing without :INCLUDE-NAMESPACE-URI, but node ~
+  (fxml.sax:with-document-events (handler)
+    (labels ((walk (node)
+               (when (node-ns node)
+                 (error "serializing without :INCLUDE-NAMESPACE-URI, but node ~
                        was created with a namespace URI"))
-             (let* ((attlist
-		     (compute-attributes/qnames node include-xmlns-attributes))
-		    (qname (string-rod (node-name node)))
-                    (lname (nth-value 1 (fxml::split-qname qname))))
-               (fxml.sax:start-element handler nil lname qname attlist)
-               (dolist (child (node-children node))
-                 (typecase child
-                   (list (walk child))
-                   ((or string rod)
-		    (fxml.sax:characters handler (string-rod child)))))
-               (fxml.sax:end-element handler nil lname qname))))
-    (walk node))
-  (fxml.sax:end-document handler))
+               (let* ((attlist
+                        (compute-attributes/qnames node include-xmlns-attributes))
+                      (qname (string-rod (node-name node)))
+                      (lname (nth-value 1 (fxml::split-qname qname))))
+                 (fxml.sax:start-element handler nil lname qname attlist)
+                 (dolist (child (node-children node))
+                   (typecase child
+                     (list (walk child))
+                     ((or string rod)
+                      (fxml.sax:characters handler (string-rod child)))))
+                 (fxml.sax:end-element handler nil lname qname))))
+      (walk node))))
 
 (defun compute-attributes/lnames (node xmlnsp)
   (remove nil

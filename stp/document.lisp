@@ -138,8 +138,7 @@
   (string-value (document-element node)))
 
 (defmethod serialize ((node document) handler)
-  (fxml.sax:start-document handler)
-  (map nil (lambda (x) (serialize x handler)) (%children node))
-  (fxml.sax:end-document handler))
+  (fxml.sax:with-document-events (handler)
+    (map nil (lambda (x) (serialize x handler)) (%children node))))
 
 (defreader document ())

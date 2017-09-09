@@ -1455,9 +1455,7 @@
   (let* ((handler (make-dom-builder))
          (fxml::*ctx* (fxml::make-context :handler handler))
          (result
-          (progn
-            (fxml.sax:start-document handler)
-            (fxml.sax:end-document handler))))
+           (fxml.sax:with-document-events (handler))))
     (when document-element
       (fxml.dom:append-child result (fxml.dom:import-node result document-element t)))
     result))

@@ -64,6 +64,8 @@
            #:attribute-value
            #:attribute-specified-p
 
+           #:with-document-events
+
            #:start-document
            #:start-prefix-mapping
            #:start-element
@@ -307,6 +309,13 @@ Setting this variable has no effect unless both
 
 ;;;; EVENTS
 
+(defmacro with-document-events ((handler) &body body)
+  (alexandria:once-only (handler)
+    `(progn
+       (start-document ,handler)
+       ,@body
+       (end-document ,handler))))
+
 (defmacro define-event ((name default-handler-class)
                         (&rest args))
   `(defgeneric ,name (handler ,@args)
@@ -454,7 +463,7 @@ Setting this variable has no effect unless both
   (defcallback processing-instruction (target data)))
 
 (declaim (inline make-callback-handler))
-(defun make-callback-handler (&rest args)
+(defun make-callback-handler (&rest args &key &allow-other-keys)
   (apply #'make-instance 'callback-handler args))
 
 ;;;; Documentation

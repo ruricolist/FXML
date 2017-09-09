@@ -763,9 +763,8 @@
         (*current-element* nil)
         (*unparse-namespace-bindings* *initial-namespace-bindings*)
         (*current-namespace-bindings* nil))
-    (fxml.sax:start-document sink)
-    (funcall fn)
-    (fxml.sax:end-document sink)))
+    (fxml.sax:with-document-events (sink)
+      (funcall fn))))
 
 (defun invoke-with-output-sink (fn)
   (maybe-emit-start-tag)

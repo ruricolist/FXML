@@ -178,8 +178,6 @@
   (unless (eq (fxml.klacks:peek source) :start-element)
     (error "not at start of element"))
   (fxml.sax:register-sax-parser handler (make-instance 'klacksax :source source))
-  (when document-events
-    (fxml.sax:start-document handler))
   (labels ((recurse ()
 	     (fxml.klacks:serialize-event source handler)
 	     (loop
@@ -188,11 +186,12 @@
 		   (:start-element (recurse))
 		   (:end-element (return))
 		   ((:characters :comment :processing-instruction)
-		     (fxml.klacks:serialize-event source handler)))))
+                    (fxml.klacks:serialize-event source handler)))))
 	     (fxml.klacks:serialize-event source handler)))
-    (recurse))
-  (when document-events
-    (fxml.sax:end-document handler)))
+    (if document-events
+        (fxml.sax:with-document-events (handler)
+          (recurse))
+        (recurse))))
 
 (defun fxml.klacks:find-element (source &optional lname uri)
   (loop
