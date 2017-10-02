@@ -9,7 +9,11 @@
 
 (defpackage :fxml.rune-dom
   (:use :cl :fxml.runes :named-readtables)
-  (:import-from :serapeum :->)
+  (:import-from :serapeum :-> :define-do-macro)
+  (:import-from :alexandria
+    #:ensure-function
+    #:array-index
+    #:array-length)
   (:nicknames :fxml-dom)
   (:export #:implementation #:make-dom-builder #:create-document))
 
@@ -173,44 +177,50 @@
     (dom-error :NO_MODIFICATION_ALLOWED_ERR "~S is marked read-only." node)))
 
 (defun fxml.dom:map-node-list (fn nodelist)
-  (dotimes (i (fxml.dom:length nodelist))
-    (funcall fn (fxml.dom:item nodelist i))))
+  (let ((fn (ensure-function fn)))
+    (loop for i of-type array-index below (fxml.dom:length nodelist) do
+      (funcall fn (fxml.dom:item nodelist i)))))
 
-(defmacro fxml.dom:do-node-list ((var nodelist &optional resultform) &body body)
-  `(block nil
-     (fxml.dom:map-node-list (lambda (,var) ,@body) ,nodelist)
-     ,resultform))
+(define-do-macro fxml.dom:do-node-list ((var nodelist &optional resultform) &body body)
+  `(fxml.dom:map-node-list (lambda (,var) ,@body) ,nodelist))
 
 (defun fxml.dom:map-node-map (fn node-map)
   (with-slots (items) node-map
     (mapc fn items)))
 
-(defmacro fxml.dom:do-node-map ((var node-map &optional resultform) &body body)
-  `(block nil
-     (fxml.dom:map-node-map (lambda (,var) ,@body) ,node-map)
-     ,resultform))
+(define-do-macro fxml.dom:do-node-map ((var node-map &optional resultform) &body body)
+  `(fxml.dom:map-node-map (lambda (,var) ,@body) ,node-map))
 
 (defmacro dovector ((var vector &optional resultform) &body body)
   `(loop
-       for ,var across ,vector do (progn ,@body)
-       ,@(when resultform `(finally (return ,resultform)))))
+     for ,var across ,vector do (progn ,@body)
+     ,@(when resultform `(finally (return ,resultform)))))
 
 (defun move (from to from-start to-start length)
   ;; like (setf (subseq to to-start (+ to-start length))
   ;;            (subseq from from-start (+ from-start length)))
   ;; but without creating the garbage.
   ;; Also, this is using AREF not ELT so that fill-pointers are ignored.
-  (if (< to-start from-start)
-      (loop
-          repeat length
-          for i from from-start
-          for j from to-start
-          do (setf (aref to j) (aref from i)))
-      (loop
-          repeat length
-          for i downfrom (+ from-start length -1)
-          for j downfrom (+ to-start length -1)
-          do (setf (aref to j) (aref from i)))))
+  (declare (array-length length)
+           (array-index from-start to-start)
+           (optimize speed))
+  (if (or (array-has-fill-pointer-p to)
+          (array-has-fill-pointer-p from))
+      (if (< to-start from-start)
+          (loop
+            repeat length
+            for i from from-start
+            for j from to-start
+            do (setf (aref to j) (aref from i)))
+          (loop
+            repeat length
+            for i downfrom (+ from-start length -1)
+            for j downfrom (+ to-start length -1)
+            do (setf (aref to j) (aref from i))))
+      (replace to from
+               :start1 to-start
+               :start2 from-start
+               :end2 (+ from-start length))))
 
 (defun adjust-vector-exponentially (vector new-dimension set-fill-pointer-p)
   (let ((d (array-dimension vector 0)))
