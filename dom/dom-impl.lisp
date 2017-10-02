@@ -9,6 +9,7 @@
 
 (defpackage :fxml.rune-dom
   (:use :cl :fxml.runes :named-readtables)
+  (:import-from :serapeum :->)
   (:nicknames :fxml-dom)
   (:export #:implementation #:make-dom-builder #:create-document))
 
@@ -150,8 +151,10 @@
 
 
 ;;; Implementation
-
-(defun %rod (x)
+(-> %rod
+    ((or null rod vector))
+    (or null rod vector))
+(defun %rod (x) x
   (etypecase x
     (null x)
     (rod x)
@@ -159,7 +162,7 @@
     ;; (string (string-rod x))
     (vector x)))
 
-(defun real-rod (x)
+(definline real-rod (x)
   (%rod x))
 
 (defun valid-name-p (x)

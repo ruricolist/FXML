@@ -86,6 +86,7 @@
 (definline digit-rune-p (char &optional (radix 10))
   (digit-char-p char radix))
 
+(-> rod ((or rod symbol character vector integer)) rod)
 (defun rod (x)
   (typecase x
     (rod       x)

@@ -16,6 +16,7 @@
    (:file "ystream"))
   :depends-on (:babel
                :named-readtables
+               :serapeum
                :trivial-gray-streams))
 
 (asdf:defsystem :fxml/xml
