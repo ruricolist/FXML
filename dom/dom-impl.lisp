@@ -155,7 +155,8 @@
   (etypecase x
     (null x)
     (rod x)
-    (string (string-rod x))
+    ;; Shadowed.
+    ;; (string (string-rod x))
     (vector x)))
 
 (defun real-rod (x)

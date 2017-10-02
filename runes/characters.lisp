@@ -89,7 +89,8 @@
 (defun rod (x)
   (typecase x
     (rod       x)
-    (string    (coerce x 'rod))
+    ;; Shadowed.
+    ;; (string    (coerce x 'rod))
     (symbol    (string x))
     (character (string x))
     (vector    (coerce x 'string))
