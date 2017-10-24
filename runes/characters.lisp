@@ -94,7 +94,7 @@
     ;; (string    (coerce x 'rod))
     (symbol    (string x))
     (character (string x))
-    (vector    (coerce x 'string))
+    (vector    (coerce x 'rod))
     (integer   (string (code-char x)))
     (t         (error "Cannot convert ~S to a ~S" x 'rod))))
 
