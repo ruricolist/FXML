@@ -133,10 +133,8 @@
           (with-scratch-pads ()
             (apply #'%make-source
                    zstream
-                   (loop
-                       for (name value) on args by #'cddr
-                       unless (member name '(:pathname :buffering))
-                       append (list name value)))))))
+                   :allow-other-keys t
+                   args)))))
     (stream
       (let ((xstream (make-xstream input :speed (if buffering 8192 1))))
         (setf (xstream-name xstream)
