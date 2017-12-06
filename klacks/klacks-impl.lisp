@@ -105,13 +105,13 @@
       (setf current-key nil))))
 
 (defmethod fxml.klacks:map-attributes (fn (source fxml-source))
-  (dolist (a (slot-value source 'current-attributes))
-    (funcall fn
-             (fxml.sax:attribute-namespace-uri a)
-             (fxml.sax:attribute-local-name a)
-             (fxml.sax:attribute-qname a)
-             (fxml.sax:attribute-value a)
-             (fxml.sax:attribute-specified-p a))))
+  (serapeum:fbind (fn)
+    (dolist (a (slot-value source 'current-attributes))
+      (fn (fxml.sax:attribute-namespace-uri a)
+          (fxml.sax:attribute-local-name a)
+        (fxml.sax:attribute-qname a)
+        (fxml.sax:attribute-value a)
+        (fxml.sax:attribute-specified-p a)))))
 
 (defmethod fxml.klacks:get-attribute
     ((source fxml-source) lname &optional uri)
@@ -529,10 +529,10 @@
         (quri:render-uri x nil))))
 
 (defmethod fxml.klacks:map-current-namespace-declarations (fn (source fxml-source))
-  (loop
-     for (prefix . uri) in (slot-value source 'current-namespace-declarations)
-     do
-       (funcall fn prefix uri)))
+  (serapeum:fbind (fn)
+    (loop
+      for (prefix . uri) in (slot-value source 'current-namespace-declarations)
+      do (fn prefix uri))))
 
 (defmethod fxml.klacks:find-namespace-binding (prefix (source fxml-source))
   (with-source (source)
