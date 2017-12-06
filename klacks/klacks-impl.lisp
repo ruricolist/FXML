@@ -47,23 +47,32 @@
     ;; fixme: error handling?
     (close-xstream xstream)))
 
+;;; Using a method gives us the fastest slot access, at least on SBCL.
+(defmethod call/source ((s fxml-source) (thunk function))
+  (let* ((*ctx* (slot-value s 'context))
+         (*forbid-entities* (slot-value s 'forbid-entities))
+         (*validate* (slot-value s 'validate))
+         (*data-behaviour* (slot-value s 'data-behaviour))
+         (*namespace-bindings* (car (slot-value s 'namespace-stack)))
+         (*scratch-pad* (slot-value s 'scratch-pad))
+         (*scratch-pad-2* (slot-value s 'scratch-pad-2))
+         (*scratch-pad-3* (slot-value s 'scratch-pad-3))
+         (*scratch-pad-4* (slot-value s 'scratch-pad-4)))
+    (handler-case
+        (funcall thunk)
+      (fxml.runes-encoding:encoding-error (c)
+        (wf-error (slot-value s 'error-culprit) "~A" c)))))
+
 (defmacro with-source ((source &rest slots) &body body)
-  (let ((s (gensym)))
-    `(let* ((,s ,source)
-            (*ctx* (slot-value ,s 'context))
-            (*forbid-entities* (slot-value ,s 'forbid-entities))
-            (*validate* (slot-value ,s 'validate))
-            (*data-behaviour* (slot-value ,s 'data-behaviour))
-            (*namespace-bindings* (car (slot-value ,s 'namespace-stack)))
-            (*scratch-pad* (slot-value ,s 'scratch-pad))
-            (*scratch-pad-2* (slot-value ,s 'scratch-pad-2))
-            (*scratch-pad-3* (slot-value ,s 'scratch-pad-3))
-            (*scratch-pad-4* (slot-value ,s 'scratch-pad-4)))
-       (handler-case
-           (with-slots (,@slots) ,s
-             ,@body)
-         (fxml.runes-encoding:encoding-error (c)
-           (wf-error (slot-value ,s 'error-culprit) "~A" c))))))
+  (alexandria:once-only (source)
+    (alexandria:with-unique-names (fn)
+      `(flet ((,fn ()
+                  (with-slots (,@slots) ,source
+                    ,@body)))
+         (declare (dynamic-extent #',fn))
+         (call/source
+          ,source
+          #',fn)))))
 
 (defun fill-source (source)
   (with-slots (current-key current-values continuation) source
