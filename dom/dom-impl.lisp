@@ -1269,7 +1269,7 @@
                            :cdata-section :entity-reference)))
             (etypecase parent
               (document
-                '(:element :processing-instruction :comment :document-type))
+               '(:element :processing-instruction :comment :document-type))
               (document-fragment default)
               (document-type nil)
               (entity-reference default)
@@ -1277,8 +1277,8 @@
               (attribute '(:text :entity-reference))
               (processing-instruction nil)
               (comment nil)
-              (text nil)
               (cdata-section nil)
+              (text nil)
               (entity default)
               (notation nil)))))
 
