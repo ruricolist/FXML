@@ -2797,7 +2797,9 @@
     (loop for c across (fxml::rod-to-utf8-string string) do
       (let ((code (char-code c)))
         ;; http://www.w3.org/TR/xlink/#link-locators
-        (if (or (>= code 127) (<= code 32) (find c "<>\"{}|\\^`"))
+        (if (or (<= code 32)
+                (>= code 127)
+                (find c "<>\"{}|\\^`"))
             (format out "%~2,'0X" code)
             (write-char c out))))))
 
