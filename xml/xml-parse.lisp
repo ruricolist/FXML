@@ -188,7 +188,10 @@
   base-stack
   (referenced-notations '())
   (id-table (%make-rod-hash-table))
-  ;; FIXME: Wofuer ist name-hashtable da?  Will man das wissen?
+  ;; NB This is the table used by `intern-name'. We want to use a
+  ;; rod-hashtable here, instead of a regular hash table, to avoid
+  ;; having to allocate the strings -- rod hashtables support passing
+  ;; start and end parameters to a string key.
   (name-hashtable (make-rod-hashtable :size 2000))
   (standalone-p nil)
   (entity-resolver nil)
