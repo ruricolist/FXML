@@ -175,6 +175,8 @@
 ;;;; [**] Although I haven't investigated this properly yet, I believe that
 ;;;; we check this VC together with the WFC even in non-validating mode.
 
+;;; TODO Add an option to ignore whitespace-only nodes.
+
 (in-package :fxml)
 (in-readtable :runes)
 
