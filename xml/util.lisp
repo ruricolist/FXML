@@ -45,9 +45,12 @@
 (defun primep (n)
   "Returns true, iff `n' is prime."
   (and (> n 2)
-       (do ((i 2 (+ i 1)))
-           ((> (* i i) n) t)
-         (cond ((zerop (mod n i)) (return nil))))))
+       (oddp n)
+       (loop for i from 2
+             until (> (* i i) n)
+             when (zerop (mod n i))
+               do (return nil)
+             finally (return t))))
 
 (defun nearest-greater-prime (n)
   "Returns the smallest prime number no less than `n'."

@@ -83,27 +83,26 @@
                            ,args
                            ,(process-html-forms body env)))
                      res))))
-      (do* ((xforms forms (cdr xforms))
-	    (form (car xforms) (car xforms)))
-	  ((null xforms))
-
-	(setq form (macroexpand form env))
-	
-	(if (atom form)
-            (typecase form
-              (keyword (do-ent (get-process form) nil nil nil)) 
-              (string (push `(fxml.sax:characters *html-sink* ,form) res))
-              (t (push form res)))
-            (let ((first (car form)))
-              (cond
-                ((keywordp first)
-                  ;; (:xxx . body) form
-                  (do-ent (get-process (car form)) nil t (cdr form)))
-                 ((and (consp first) (keywordp (car first)))
-                   ;; ((:xxx args ) . body)
-                   (do-ent (get-process (caar form)) (cdr first) t (cdr form)))
-                (t
-                  (push form res)))))))
+      (loop for xforms on forms
+            for form = (car xforms)
+            until (null xforms)
+            do (setq form (macroexpand form env))
+               
+               (if (atom form)
+                   (typecase form
+                     (keyword (do-ent (get-process form) nil nil nil)) 
+                     (string (push `(fxml.sax:characters *html-sink* ,form) res))
+                     (t (push form res)))
+                   (let ((first (car form)))
+                     (cond
+                       ((keywordp first)
+                        ;; (:xxx . body) form
+                        (do-ent (get-process (car form)) nil t (cdr form)))
+                       ((and (consp first) (keywordp (car first)))
+                        ;; ((:xxx args ) . body)
+                        (do-ent (get-process (caar form)) (cdr first) t (cdr form)))
+                       (t
+                        (push form res)))))))
     `(progn ,@(nreverse res))))
 
 (defun html-body-key-form (string-code args body)

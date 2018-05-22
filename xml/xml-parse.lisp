@@ -344,9 +344,7 @@
 (definline rod-hash (rod start end)
   "Compute a hash code out of a rod."
   (let ((res (%- end start)))
-    (do ((i start (%+ i 1)))
-        ((%= i end))
-      (declare (type fixnum i))
+    (loop for i from start below end do
       (setf res (stir res (rune-code (%rune rod i)))))
     res))
 
@@ -358,12 +356,11 @@
 ;;; start and end arguments may be called with invalid indices.
 (definline rod=** (x y start1 end1 start2 end2)
   (and (%= (%- end1 start1) (%- end2 start2))
-       (do ((i start1 (%+ i 1))
-            (j start2 (%+ j 1)))
-           ((%= i end1)
-            t)
-         (unless (rune= (%rune x i) (%rune y j))
-           (return nil)))))
+       (loop for i from start1 below end1
+             and j from start2
+             unless (rune= (%rune x i) (%rune y j)) do
+               (return nil)
+             finally (return t))))
 
 (defun rod-hash-get (hashtable rod &optional (start 0) (end (length rod)))
   (declare (type (simple-array rune (*)) rod))
@@ -1449,13 +1446,11 @@
     (setf atts (read-attribute-list zinput input nil))
 
     ;; check for double attributes
-    (do ((q atts (cdr q)))
-        ((null q))
+    (loop for q on atts while q do
       (cond ((find (caar q) (cdr q) :key #'car)
              (wf-error zinput "Attribute ~S has two definitions in element ~S."
                        (rod-string (caar q))
                        (rod-string name)))))
-
     (cond ((eq (peek-rune input) #/>)
            (consume-rune input)
            (values kind (cons name atts)))
@@ -2398,17 +2393,17 @@
   (p/cond-expect input :\[ initial-stream)
   (let ((input (car (zstream-input-stack input))))
     (let ((level 0))
-      (do ((c1 (read-rune input) (read-rune input))
-           (c2 #/U+0000 c1)
-           (c3 #/U+0000 c2))
-          ((= level -1))
-        (declare (type fixnum level))
-        (cond ((eq c1 :eof)
-               (eox input "EOF in <![IGNORE ... >")))
-        (cond ((and (rune= c3 #/<) (rune= c2 #/!) (rune= c1 #/\[))
-               (incf level)))
-        (cond ((and (rune= c3 #/\]) (rune= c2 #/\]) (rune= c1 #/>))
-               (decf level))) )))
+      (declare (type fixnum level))
+      (loop for c1 = (read-rune input)
+            and c2 = #/U+0000 then c1
+            and c3 = #/U+0000 then c2
+            until (= level -1)
+            do (when (eq c1 :eof)
+                 (eox input "EOF in <![IGNORE ... >"))
+               (when (and (rune= c3 #/<) (rune= c2 #/!) (rune= c1 #/\[))
+                 (incf level))
+               (when (and (rune= c3 #/\]) (rune= c2 #/\]) (rune= c1 #/>))
+                 (decf level)))))
   (unless (eq (car (zstream-input-stack input)) initial-stream)
     (validity-error "(21) Proper Conditional Section/PE Nesting")))
 
@@ -3451,6 +3446,7 @@
        kind
        internalp))))
 
+;;; TODO Is this really faster?
 #||
 (defmacro read-data-until* ((predicate input res res-start res-end) &body body)
   ;; fast variant -- for now disabled for no apparent reason
@@ -3470,8 +3466,7 @@
               (setf (xstream-read-ptr ,input) rptr)
               (multiple-value-setq (,res ,res-start ,res-end)
                 (with-rune-collector/raw (collect)
-                  (do ((i p0 (%+ i 1)))
-                      ((%= i rptr))
+                  (loop for i from p0 below rptr do
                     (collect (%rune buf i)))
                   (let (c)
                     (loop
@@ -3667,8 +3662,7 @@
                       (let* ((exp (internal-entity-expansion sem))
                              (n (length exp)))
                         (declare (type (simple-array rune (*)) exp))
-                        (do ((i 0 (%+ i 1)))
-                            ((%= i n))
+                        (loop for i from 0 below n do
                           (collect (%rune exp i)))))
                      (:non-reference
                       (collect #\&)

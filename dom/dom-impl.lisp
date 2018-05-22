@@ -565,8 +565,7 @@
     (dom-error :WRONG_DOCUMENT_ERR
                "~S cannot adopt ~S, since it was created by a different document."
                node new-child))
-  (do ((n node (fxml.dom:parent-node n)))
-      ((null n))
+  (loop for n = node then (fxml.dom:parent-node n) while n do
     (when (eq n new-child)
       (dom-error :HIERARCHY_REQUEST_ERR
                  "~S cannot adopt ~S, since that would create a cycle"
@@ -859,9 +858,7 @@
 
 (defmethod fxml.dom:item ((self named-node-map) index)
   (with-slots (items) self
-    (do ((nthcdr items (cdr nthcdr))
-         (i index (1- i)))
-        ((zerop i) (car nthcdr)))))
+    (car (nthcdr index items))))
 
 ;;; CHARACTER-DATA
 

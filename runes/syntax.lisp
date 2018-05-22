@@ -56,13 +56,15 @@
       (setf char0 (read-char input t nil t)))
     (with-output-to-string (res)
       (write-char char0 res)
-      (do ((ch (peek-char nil input nil :eof t) (peek-char nil input nil :eof t)))
-          ((or (eq ch :eof)
-               (rt-white-space-p ch)
-               (multiple-value-bind (function non-terminating-p) (get-macro-character ch)
-                 (and function (not non-terminating-p)))))
-        (write-char ch res)
-        (read-char input)))))           ;consume this character
+      (loop for ch = (peek-char nil input nil :eof t)
+            until (or (eq ch :eof)
+                      (rt-white-space-p ch)
+                      (multiple-value-bind (function non-terminating-p)
+                          (get-macro-character ch)
+                        (and function (not non-terminating-p))))
+            do (write-char ch res)
+               ;; Consume this character.
+               (read-char input)))))
 
 (defun iso-10646-char-code (char)
   (char-code char))
@@ -154,12 +156,11 @@
   (declare (ignore arg))
   (rod
    (with-output-to-string (bag)
-     (do ((c (read-char stream t nil t)
-             (read-char stream t nil t)))
-         ((char= c subchar))
-       (cond ((char= c #\\)
-              (setf c (read-char stream t nil t))))
-       (princ c bag)))))
+     (loop for c = (read-char stream t nil t)
+           until (char= c subchar)
+           do (when (char= c #\\)
+                (setf c (read-char stream t nil t)))
+              (princ c bag)))))
 
 ;;; Readtable.
 
