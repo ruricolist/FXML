@@ -12,7 +12,8 @@
   (:import-from #:serapeum
     #:with-thunk
     #:defstruct-read-only
-    #:block-compile)
+    #:block-compile
+    #:do-hash-table)
   (:export
    ;; meta
    #:xml-character-p

@@ -584,27 +584,26 @@
 			  :value (value a)))
 		       (%attributes node)))
 	(element-parent
-	 (when (typep (parent node) 'element)
-	   (parent node))))
-    (maphash (lambda (prefix uri)
-	       (unless (equal prefix "xml")
-		 (let ((upper (when element-parent
-				(find-namespace prefix element-parent))))
-		   (unless (or (equal upper uri)
-			       (and (null upper) (zerop (length uri))))
-		     (push (if (plusp (length prefix))
-			       (fxml.sax:make-attribute 
-				:namespace-uri "http://www.w3.org/2000/xmlns/"
-				:local-name prefix
-				:qname (concatenate 'string "xmlns:" prefix)
-				:value uri)
-			       (fxml.sax:make-attribute 
-				:namespace-uri "http://www.w3.org/2000/xmlns/"
-				:local-name "xmlns"
-				:qname "xmlns"
-				:value uri))
-			   attrs)))))
-	     (collect-local-namespaces node))
+          (when (typep (parent node) 'element)
+            (parent node))))
+    (do-hash-table (prefix uri (collect-local-namespaces node))
+      (unless (equal prefix "xml")
+        (let ((upper (when element-parent
+                       (find-namespace prefix element-parent))))
+          (unless (or (equal upper uri)
+                      (and (null upper) (zerop (length uri))))
+            (push (if (plusp (length prefix))
+                      (fxml.sax:make-attribute
+                       :namespace-uri "http://www.w3.org/2000/xmlns/"
+                       :local-name prefix
+                       :qname (concatenate 'string "xmlns:" prefix)
+                       :value uri)
+                      (fxml.sax:make-attribute
+                       :namespace-uri "http://www.w3.org/2000/xmlns/"
+                       :local-name "xmlns"
+                       :qname "xmlns"
+                       :value uri))
+                  attrs)))))
     (fxml.sax:start-element handler uri local-name qname attrs)
     (map nil (lambda (x) (serialize x handler)) (%children node))
     (fxml.sax:end-element handler uri local-name qname)))

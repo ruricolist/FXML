@@ -2629,21 +2629,18 @@
       (list :DOCTYPE name extid))))
 
 (defun report-cached-dtd (dtd)
-  (maphash (lambda (k v)
-             (report-entity (handler *ctx*) :general k (cdr v)))
-           (dtd-gentities dtd))
-  (maphash (lambda (k v)
-             (report-entity (handler *ctx*) :parameter k (cdr v)))
-           (dtd-pentities dtd))
-  (maphash (lambda (k v)
-             (fxml.sax:notation-declaration
-              (handler *ctx*)
-              k
-              (if (extid-public v)
-                  (normalize-public-id (extid-public v))
-                  nil)
-              (uri-rod (extid-system v))))
-           (dtd-notations dtd)))
+  (do-hash-table (k v (dtd-gentities dtd))
+    (report-entity (handler *ctx*) :general k (cdr v)))
+  (do-hash-table (k v (dtd-pentities dtd))
+    (report-entity (handler *ctx*) :parameter k (cdr v)))
+  (do-hash-table (k v (dtd-notations dtd))
+    (fxml.sax:notation-declaration
+     (handler *ctx*)
+     k
+     (if (extid-public v)
+         (normalize-public-id (extid-public v))
+         nil)
+     (uri-rod (extid-system v)))))
 
 (defun void-entity-resolver (pubid sysid)
   (declare (ignore pubid sysid))
@@ -2769,10 +2766,9 @@
     (with-simple-restart (continue "Ignore garbage")
       (wf-error input "Garbage at end of document.")))
   (when *validate*
-    (maphash (lambda (k v)
-               (unless v
-                 (validity-error "(11) IDREF: ~S not defined" (rod-string k))))
-             (id-table *ctx*))
+    (do-hash-table (k v (id-table *ctx*))
+      (unless v
+        (validity-error "(11) IDREF: ~S not defined" (rod-string k))))
 
     (dolist (name (referenced-notations *ctx*))
       (unless (find-notation name (dtd *ctx*))
