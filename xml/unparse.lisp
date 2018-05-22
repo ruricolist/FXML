@@ -591,7 +591,7 @@
     (error "output does not nest: not in a cdata section")))
 
 (defun indent (sink)
-  (dotimes (x (current-indentation sink))
+  (loop repeat (current-indentation sink) do
     (sink-write-rune #/U+0020 sink)))
 
 (defun start-indentation-block (sink)
