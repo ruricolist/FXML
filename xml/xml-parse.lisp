@@ -133,11 +133,6 @@
 ;;   space rules.
 ;;
 ;; o on a parser option, do not expand external entities.
-;;
-;; o imitate some of the newer XML parsers (as of 2018) like pugixml
-;;   by not copying strings. Note, however, this would require keeping
-;;   the original document in memory (as a string) and would not be
-;;   useful for parsing streams or for large documents.
 
 
 ;;;; Validity constraints:
