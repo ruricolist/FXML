@@ -321,12 +321,15 @@
 ;;;;  rod collector
 ;;;;
 
+(deftype scratch-pad ()
+  '(simple-array rune (*)))
+
 (defvar *scratch-pad*)
 (defvar *scratch-pad-2*)
 (defvar *scratch-pad-3*)
 (defvar *scratch-pad-4*)
 
-(declaim (type (simple-array rune (*))
+(declaim (type scratch-pad
                *scratch-pad* *scratch-pad-2* *scratch-pad-3* *scratch-pad-4*))
 
 (defun call-with-scratch-pads (thunk)
@@ -366,7 +369,8 @@
                     (setf ,',n (* 2 ,',n))
                     (setf ,',b
                           (setf ,',scratch
-                                (adjust-array-by-copying ,',b ,',n))))
+                                (the scratch-pad
+                                     (adjust-array-by-copying ,',b ,',n)))))
                   (loop for x across xs do
                     (setf (aref (the (simple-array rune (*)) ,',b) ,',i) x)
                     (incf ,',i)))
@@ -380,7 +384,8 @@
                         (setf ,',n (* 2 ,',n))
                         (setf ,',b
                               (setf ,',scratch
-                                    (adjust-array-by-copying ,',b ,',n))))
+                                    (the scratch-pad
+                                         (adjust-array-by-copying ,',b ,',n)))))
                       (dolist (x xs)
                         (setf (aref (the (simple-array rune (*)) ,',b) ,',i) x)
                         (incf ,',i)))
@@ -391,7 +396,8 @@
                         (setf ,',n (* 2 ,',n))
                         (setf ,',b
                               (setf ,',scratch
-                                    (adjust-array-by-copying ,',b ,',n))))
+                                    (the scratch-pad
+                                         (adjust-array-by-copying ,',b ,',n)))))
                       (setf (aref (the (simple-array rune (*)) ,',b) ,',i) x)
                       (incf ,',i))
                     ,x))))
