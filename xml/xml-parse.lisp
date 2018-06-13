@@ -45,30 +45,9 @@
 ;;   [for thread-safety reasons the array are allocated per context now,
 ;;   reentrancy is still open]
 
-;; o CR handling in utf-16 deocders
-;;
-;; o UCS-4 reader
-;;
 ;; o max depth together with circle detection
 ;;   (or proof, that our circle detection is enough).
 ;;   [gemeint ist zstream-push--david]
-;;
-;; o better extensibility wrt character representation, one may want to
-;;   have
-;;    - UCS-4  in vectoren
-;;
-;; o xstreams auslagern, documententieren und dann auch in SGML und
-;;   CSS parser verwenden. (halt alles was zeichen liest).
-;;   [ausgelagert sind sie; dokumentiert "so la la"; die Reintegration
-;;   in Closure ist ein ganz anderes Thema]
-;;
-;; o recording of source locations for nodes.
-;;
-;; o based on the DTD and xml:space attribute implement HTML white
-;;   space rules.
-;;
-;; o on a parser option, do not expand external entities.
-
 
 ;;;; Validity constraints:
 ;;;; (00) Root Element Type                     like (03), c.f. MAKE-ROOT-MODEL
@@ -546,8 +525,7 @@ stack.
 This input stack is also used to detect circular entity inclusion.
 
 The zstream tokenizer recognizes the following types of tokens and
-is controlled by the *DATA-BEHAVIOUR* flag. (Which should become a
-slot of zstreams instead).
+is controlled by the *DATA-BEHAVIOUR* flag.
 
 Common
    :xml-decl (<target> . <content>)    ;processing-instruction starting with \"<?xml\"
