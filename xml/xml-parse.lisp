@@ -31,71 +31,6 @@
 ;;; Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 ;;; Boston, MA  02111-1307  USA.
 
-;;; Streams
-
-;;; xstreams
-
-;; For reading runes, I defined my own streams, called xstreams,
-;; because we want to be fast. A function call or even a method call
-;; per character is not acceptable, instead of that we define a
-;; buffered stream with an advertised buffer layout, so that we
-;; could use the trick stdio uses: READ-RUNE and PEEK-RUNE are macros,
-;; directly accessing the buffer and only calling some underflow
-;; handler in case of stream underflows. This will yield to quite a
-;; performance boost vs calling READ-BYTE per character.
-
-;; Also we need to do encoding and character set conversion on input,
-;; this better done at large chunks of data rather than on a character
-;; by character basis. This way we need a dispatch on the active
-;; encoding only once in a while, instead of for each character. This
-;; allows us to use a CLOS interface to do the underflow handling.
-
-;;; zstreams
-
-;; Now, for reading tokens, we define another kind of streams, called
-;; zstreams. These zstreams also maintain an input stack to implement
-;; inclusion of external entities. This input stack contains xstreams
-;; or the special marker :STOP. Such a :STOP marker indicates, that
-;; input should not continue there, but well stop; that is simulate an
-;; EOF. The user is then responsible to pop this marker off the input
-;; stack.
-;;
-;; This input stack is also used to detect circular entity inclusion.
-
-;; The zstream tokenizer recognizes the following types of tokens and
-;; is controlled by the *DATA-BEHAVIOUR* flag. (Which should become a
-;; slot of zstreams instead).
-
-;; Common
-;;    :xml-decl (<target> . <content>)    ;processing-instruction starting with "<?xml"
-;;    :pi (<target> . <content>)        ;processing-instruction
-;;    :stag (<name> . <atts>)           ;start tag
-;;    :etag (<name> . <atts>)           ;end tag
-;;    :ztag (<name> . <atts>)           ;empty tag
-;;    :<!ELEMENT
-;;    :<!ENTITY
-;;    :<!ATTLIST
-;;    :<!NOTATION
-;;    :<!DOCTYPE
-;;    :<![
-;;    :comment <content>
-
-;; *data-behaviour* = :DTD
-;;
-;;    :nmtoken <interned-rod>
-;;    :#required
-;;    :#implied
-;;    :#fixed
-;;    :#pcdata
-;;    :s
-;;    :\[ :\] :\( :\) :|\ :\> :\" :\' :\, :\? :\* :\+
-
-;; *data-behaviour* = :DOC
-;;
-;;    :entity-ref <interned-rod>
-;;    :cdata <rod>
-
-
 ;;; TODO
 ;;
 ;; o provide for a faster DOM
@@ -207,6 +142,8 @@
 
 (defvar *expand-pe-p* nil)
 
+;;; TODO Are alists the best data structure? Since the parser is
+;;; single-threaded a persistent hash table might work.
 (defparameter *initial-namespace-bindings*
   '((#"" . nil)
     (#"xmlns" . #"http://www.w3.org/2000/xmlns/")
@@ -598,6 +535,48 @@
                name)))))
 
 (defstruct zstream
+  "Now, for reading tokens, we define another kind of streams, called
+zstreams. These zstreams also maintain an input stack to implement
+inclusion of external entities. This input stack contains xstreams
+or the special marker :STOP. Such a :STOP marker indicates, that
+input should not continue there, but well stop; that is simulate an
+EOF. The user is then responsible to pop this marker off the input
+stack.
+
+This input stack is also used to detect circular entity inclusion.
+
+The zstream tokenizer recognizes the following types of tokens and
+is controlled by the *DATA-BEHAVIOUR* flag. (Which should become a
+slot of zstreams instead).
+
+Common
+   :xml-decl (<target> . <content>)    ;processing-instruction starting with \"<?xml\"
+   :pi (<target> . <content>)        ;processing-instruction
+   :stag (<name> . <atts>)           ;start tag
+   :etag (<name> . <atts>)           ;end tag
+   :ztag (<name> . <atts>)           ;empty tag
+   :<!ELEMENT
+   :<!ENTITY
+   :<!ATTLIST
+   :<!NOTATION
+   :<!DOCTYPE
+   :<![
+   :comment <content>
+
+*data-behaviour* = :DTD
+
+   :nmtoken <interned-rod>
+   :#required
+   :#implied
+   :#fixed
+   :#pcdata
+   :s
+   :\[ :\] :\( :\) :|\ :\> :\" :\' :\, :\? :\* :\+
+
+*data-behaviour* = :DOC
+
+   :entity-ref <interned-rod>
+   :cdata <rod>"
   token-category
   token-semantic
   input-stack)
