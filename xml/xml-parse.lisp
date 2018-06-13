@@ -3384,7 +3384,11 @@ Common
   (push new-xstream (zstream-input-stack zstream))
   zstream)
 
+(serapeum:-> recurse-on-entity (zstream t keyword function &optional boolean)
+             t)
 (defun recurse-on-entity (zstream name kind continuation &optional internalp)
+  (declare (keyword kind) (function continuation)
+           (zstream zstream))
   (assert (not (zstream-token-category zstream)))
   (flet ((rec (new-xstream)
            (push :stop (zstream-input-stack zstream))
@@ -3492,6 +3496,7 @@ Common
            (locally
                ,@body))))))
 
+(serapeum:-> read-name-token (xstream) simple-rod)
 (defun read-name-token (input)
   (read-data-until* ((lambda (rune)
                        (declare (type rune rune))
@@ -3625,8 +3630,9 @@ Common
                         (loop for i from 0 below n do
                           (collect (%rune exp i)))))
                      (:non-reference
-                      (collect #\&)
-                      (collect-all sem)))))
+                      (locally (declare (simple-rod sem))
+                        (collect #\&)
+                        (collect-all sem))))))
                 ((space-rune-p c)
                  (collect #/u+0020))
                 (t
@@ -3644,7 +3650,8 @@ Common
        (name-start-rune-p (rune name 0))
        (notany #'(lambda (rune) (rune= #/: rune)) name)))
 
-(declaim (ftype (function (string) (values (or string null) string)) split-qname))
+(serapeum:-> split-qname (string)
+             (values (or string null) string &optional))
 (defun split-qname (qname)
   (declare (type fxml.runes:simple-rod qname)
            (optimize speed (safety 1) (debug 0)))
