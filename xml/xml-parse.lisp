@@ -202,12 +202,23 @@
 ;;;; rod hashtable
 ;;;;
 
-(defun intern-name (rod &optional (start 0) (end (length rod)) &aux (ctx *ctx*))
-  (multiple-value-bind (value successp key) (rod-hash-get (name-hashtable ctx) rod start end)
+(defun intern-name (rod &optional (start 0) (end (length rod))
+                                  (hash (rod-hash rod start end))
+                    &aux (ctx *ctx*))
+  (multiple-value-bind (value successp key)
+      (rod-hash-get (name-hashtable ctx) rod start end hash)
     (declare (ignore value))
     (if successp
         key
-        (nth-value 1 (rod-hash-set t (name-hashtable ctx) rod start end)))))
+        (nth-value 1 (rod-hash-set t (name-hashtable ctx) rod start end hash)))))
+
+(define-compiler-macro intern-name (&whole call
+                                           rod &rest args
+                                           &environment env)
+  (if args call
+      (let ((rod (serapeum:eval-if-constant rod env)))
+        (if (not (stringp rod)) call
+            `(intern-name ,rod 0 ,(length rod) ,(rod-hash rod 0 (length rod)))))))
 
 ;;;; ---------------------------------------------------------------------------
 ;;;;
