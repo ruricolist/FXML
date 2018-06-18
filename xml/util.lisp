@@ -40,22 +40,8 @@
 (defmacro while (test &body body)
   `(loop while ,test do ,@body))
 
-;; prime numbers
-
-(defun primep (n)
-  "Returns true, iff `n' is prime."
-  (and (> n 2)
-       (oddp n)
-       (loop for i from 2
-             until (> (* i i) n)
-             when (zerop (mod n i))
-               do (return nil)
-             finally (return t))))
-
-(defun nearest-greater-prime (n)
-  "Returns the smallest prime number no less than `n'."
-  (cond ((primep n) n)
-        ((nearest-greater-prime (+ n 1)))))
+(definline next-pow2 (n)
+  (ash 1 (integer-length n)))
 
 ;;; XML meta.
 (definline xml-character-p (c)
@@ -77,3 +63,26 @@
      (loop for c across str
            always (xml-character-p c)))))
 
+;; Let us first define fast fixnum arithmetric get rid of type
+;; checks. (After all we know what we do here).
+
+(defmacro fx-op (op &rest xs)
+  `(the fixnum (,op ,@(mapcar (lambda (x) `(the fixnum ,x)) xs))))
+(defmacro fx-pred (op &rest xs)
+  `(,op ,@(mapcar (lambda (x) `(the fixnum ,x)) xs)))
+
+(defmacro %+   (&rest xs) `(fx-op + ,@xs))
+(defmacro %-   (&rest xs) `(fx-op - ,@xs))
+(defmacro %*   (&rest xs) `(fx-op * ,@xs))
+(defmacro %/   (&rest xs) `(fx-op floor ,@xs))
+(defmacro %and (&rest xs) `(fx-op logand ,@xs))
+(defmacro %ior (&rest xs) `(fx-op logior ,@xs))
+(defmacro %xor (&rest xs) `(fx-op logxor ,@xs))
+(defmacro %ash (&rest xs) `(fx-op ash ,@xs))
+(defmacro %mod (&rest xs) `(fx-op mod ,@xs))
+
+(defmacro %=  (&rest xs)  `(fx-pred = ,@xs))
+(defmacro %<= (&rest xs)  `(fx-pred <= ,@xs))
+(defmacro %>= (&rest xs)  `(fx-pred >= ,@xs))
+(defmacro %<  (&rest xs)  `(fx-pred < ,@xs))
+(defmacro %>  (&rest xs)  `(fx-pred > ,@xs))

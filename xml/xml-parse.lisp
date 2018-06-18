@@ -15,6 +15,7 @@
 ;;;  (c) copyright 2005 David Lichteblau
 ;;;  (c) copyright 2014 Paul M. Rodriguez
 ;;;  (c) copyright 2015 Paul M. Rodriguez
+;;;  (c) copyright 2018 Paul M. Rodriguez
 
 ;;; This library is free software; you can redistribute it and/or
 ;;; modify it under the terms of the GNU Library General Public
@@ -104,7 +105,7 @@
   ;; xml:base machen wir fuer klacks mal gleich als expliziten stack:
   base-stack
   (referenced-notations '())
-  (id-table (%make-rod-hash-table))
+  (id-table (make-hash-table-for-rods))
   ;; NB This is the table used by `intern-name'. We want to use a
   ;; rod-hashtable here, instead of a regular hash table, to avoid
   ;; having to allocate the strings -- rod hashtables support passing
@@ -174,30 +175,6 @@
 ;;;; Rechnen mit Runen
 ;;;;
 
-;; Let us first define fast fixnum arithmetric get rid of type
-;; checks. (After all we know what we do here).
-
-(defmacro fx-op (op &rest xs)
-  `(the fixnum (,op ,@(mapcar (lambda (x) `(the fixnum ,x)) xs))))
-(defmacro fx-pred (op &rest xs)
-  `(,op ,@(mapcar (lambda (x) `(the fixnum ,x)) xs)))
-
-(defmacro %+   (&rest xs) `(fx-op + ,@xs))
-(defmacro %-   (&rest xs) `(fx-op - ,@xs))
-(defmacro %*   (&rest xs) `(fx-op * ,@xs))
-(defmacro %/   (&rest xs) `(fx-op floor ,@xs))
-(defmacro %and (&rest xs) `(fx-op logand ,@xs))
-(defmacro %ior (&rest xs) `(fx-op logior ,@xs))
-(defmacro %xor (&rest xs) `(fx-op logxor ,@xs))
-(defmacro %ash (&rest xs) `(fx-op ash ,@xs))
-(defmacro %mod (&rest xs) `(fx-op mod ,@xs))
-
-(defmacro %=  (&rest xs)  `(fx-pred = ,@xs))
-(defmacro %<= (&rest xs)  `(fx-pred <= ,@xs))
-(defmacro %>= (&rest xs)  `(fx-pred >= ,@xs))
-(defmacro %<  (&rest xs)  `(fx-pred < ,@xs))
-(defmacro %>  (&rest xs)  `(fx-pred > ,@xs))
-
 ;;; XXX Geschwindigkeit dieser Definitionen untersuchen!
 
 (defmacro rune-op (op &rest xs)
@@ -224,90 +201,6 @@
 ;;;; ---------------------------------------------------------------------------
 ;;;; rod hashtable
 ;;;;
-
-;;; make-rod-hashtable
-;;; rod-hash-get hashtable rod &optional start end -> value ; successp
-;;; (setf (rod-hash-get hashtable rod &optional start end) new-value
-;;;
-
-(defstruct (rod-hashtable (:constructor make-rod-hashtable/low))
-  (size (error "No size") :type alexandria:array-index) ;size of table
-  (table (error "No table") :type simple-vector))
-
-(defun make-rod-hashtable (&key (size 200) (real-size (nearest-greater-prime size)))
-  (make-rod-hashtable/low
-   :size real-size
-   :table (make-array real-size :initial-element nil)))
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (defconstant +fixnum-bits+
-    (1- (integer-length most-positive-fixnum))
-    "Pessimistic approximation of the number of bits of fixnums.")
-
-  (defconstant +fixnum-mask+
-    (1- (expt 2 +fixnum-bits+))
-    "Pessimistic approximation of the largest bit-mask, still being a fixnum."))
-
-(definline stir (a b)
-  (%and +fixnum-mask+
-        (%xor (%ior (%ash (%and a #.(ash +fixnum-mask+ -5)) 5)
-                    (%ash a #.(- 5 +fixnum-bits+)))
-              b)))
-
-(definline rod-hash (rod start end)
-  "Compute a hash code out of a rod."
-  (let ((res (%- end start)))
-    (loop for i from start below end do
-      (setf res (stir res (rune-code (%rune rod i)))))
-    res))
-
-(defmacro rod=* (x y &key (start1 0) (end1 (length x))
-                          (start2 0) (end2 (length y)))
-  `(rod=** ,x ,y ,start1 ,end1 ,start2 ,end2))
-
-;;; NB This is *not* the same thing as string=. In particular, the
-;;; start and end arguments may be called with invalid indices.
-(definline rod=** (x y start1 end1 start2 end2)
-  (and (%= (%- end1 start1) (%- end2 start2))
-       (loop for i from start1 below end1
-             and j from start2
-             unless (rune= (%rune x i) (%rune y j)) do
-               (return nil)
-             finally (return t))))
-
-(defun rod-hash-get (hashtable rod &optional (start 0) (end (length rod)))
-  (declare (type (simple-array rune (*)) rod))
-  (let ((j (%mod (rod-hash rod start end)
-                 (rod-hashtable-size hashtable))))
-    (dolist (q (svref (rod-hashtable-table hashtable) j)
-               (values nil nil nil))
-      (declare (type cons q))
-      (when (rod=** (car q) rod 0 (length (the (simple-array rune (*)) (car q))) start end)
-        (return (values (cdr q) t (car q)))))))
-
-(definline rod-subseq* (source start &optional (end (length source)))
-  (subseq source start end))
-
-(definline rod-subseq** (source start &optional (end (length source)))
-  (subseq source start end))
-
-(defun rod-hash-set (new-value hashtable rod &optional (start 0) (end (length rod)))
-  (let ((j (%mod (rod-hash rod start end)
-                 (rod-hashtable-size hashtable)))
-        (key nil))
-    (dolist (q (svref (rod-hashtable-table hashtable) j)
-               (progn
-                 (setf key (rod-subseq* rod start end))
-                 (push (cons key new-value)
-                       (aref (rod-hashtable-table hashtable) j))))
-      (when (rod=* (car q) rod :start2 start :end2 end)
-        (setf key (car q))
-        (setf (cdr q) new-value)
-        (return)))
-    (values new-value key)))
-
-(defun (setf rod-hash-get) (new-value hashtable rod &optional (start 0) (end (length rod)))
-  (rod-hash-set new-value hashtable rod start end))
 
 (defun intern-name (rod &optional (start 0) (end (length rod)) &aux (ctx *ctx*))
   (multiple-value-bind (value successp key) (rod-hash-get (name-hashtable ctx) rod start end)
@@ -919,10 +812,10 @@ Common
     result))
 
 (defstruct-read-only dtd
-  (elements (%make-rod-hash-table))     ;elmdefs
-  (gentities (%make-rod-hash-table))    ;general entities
-  (pentities (%make-rod-hash-table))    ;parameter entities
-  (notations (%make-rod-hash-table)))
+  (elements (make-hash-table-for-rods))     ;elmdefs
+  (gentities (make-hash-table-for-rods))    ;general entities
+  (pentities (make-hash-table-for-rods))    ;parameter entities
+  (notations (make-hash-table-for-rods)))
 
 (defun define-entity (source-stream name kind def)
   (setf name (intern-name name))
@@ -1041,8 +934,12 @@ Common
 ;; element was actually defined.  It is NIL until set to a content model
 ;; when the element type declaration is processed.
 
-(defun %make-rod-hash-table ()
-  (make-hash-table :test 'equal))
+(defun make-hash-table-for-rods ()
+  (make-hash-table :test 'equal
+                   ;; These tables will be discarded when parsing is
+                   ;; finished, so make them a little bigger to avoid
+                   ;; rehashing.
+                   :size 128))
 
 (defun make-dtd-cache ()
   (make-hash-table :test 'equalp))

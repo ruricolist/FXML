@@ -22,7 +22,10 @@
    (:file "util"                :depends-on ("package"))
    (:file "sax-handler")
    (:file "xml-name-rune-p"     :depends-on ("package" "util"))
-   (:file "xml-parse"           :depends-on ("package" "util" "sax-handler" "xml-name-rune-p"))
+   (:file "rod-hashtable"       :depends-on ("package" "util"))
+   (:file "xml-parse"           :depends-on ("package"
+                                             "util" "sax-handler" "xml-name-rune-p"
+                                             "rod-hashtable"))
    (:file "unparse"             :depends-on ("xml-parse"))
    (:file "xmls-compat"         :depends-on ("xml-parse"))
    (:file "recoder"             :depends-on ("xml-parse"))
