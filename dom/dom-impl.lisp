@@ -1446,8 +1446,9 @@
     (setf (slot-value document 'dtd) (dtd node))
     (setf (slot-value document 'entity-resolver)
 	  (slot-value node 'entity-resolver))
-    (setf (slot-value (fxml.dom:entities doctype) 'read-only-p) t)
-    (setf (slot-value (fxml.dom:notations doctype) 'read-only-p) t)
+    (when doctype
+      (setf (slot-value (fxml.dom:entities doctype) 'read-only-p) t)
+      (setf (slot-value (fxml.dom:notations doctype) 'read-only-p) t))
     (when (and doctype (slot-boundp doctype 'fxml.dom::%internal-subset))
       (setf (fxml.dom::%internal-subset doctype)
 	    (fxml.dom::%internal-subset original-doctype)))
