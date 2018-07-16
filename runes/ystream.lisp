@@ -75,36 +75,6 @@
 	     (:conc-name "YSTREAM-"))
   (os-stream (error "No stream")))
 
-(defun map-splits (fn split-fn string &key start end)
-  (let ((start (or start 0))
-        (end (or end (length string))))
-    (loop with len = (length string)
-          for left = start then (1+ right)
-          for right = (min (or (position-if split-fn string
-                                            :start left)
-                               len)
-                           end)
-          do (let ((char (if (= right end)
-                             nil
-                             (aref string right))))
-               (funcall fn left right char))
-          until (>= right end))))
-
-(defmacro do-splits (((l r char)
-                      (string &optional (start 0) end)
-                      split-fn
-                      &optional return)
-                     &body body)
-  `(block nil
-     (map-splits (lambda (,l ,r ,char)
-                   (tagbody ,@body))
-                 ,split-fn
-                 ,string
-                 :start ,start :end ,end)
-     (let (,l ,r ,char)
-       (declare (ignorable ,l ,r ,char))
-       (return ,return))))
-
 (definline rune-newline-p (rune)
   (eql rune #/U+000A))
 
@@ -145,7 +115,7 @@ CHAR."
                    (in-ptr ystream-in-ptr)
                    (column ystream-column))
       ystream
-    (do-splits ((l r nl?) (rod start end) #'rune-newline-p)
+    (do-splits ((l r nl?) (rod #'rune-newline-p :start start :end end))
       (when (= in-ptr (length in))
         (flush-ystream ystream))
       (let* ((room (- (length in) in-ptr))
@@ -173,11 +143,11 @@ CHAR."
       (let ((encoding (ystream-encoding ystream)))
         (flet ((encodablep (rune)
                  (encodablep rune encoding)))
-          (do-splits ((l r rune) (rod start end) #'encodablep)
+          (do-splits ((l r rune?) (rod #'encodablep :start start :end end))
             (unless (= l r)
               (ystream-write-rod rod ystream :start l :end r))
-            (when rune
-              (ystream-escape-rune rune ystream)))))))
+            (when rune?
+              (ystream-escape-rune (aref rod r) ystream)))))))
 
 (defun ystream-escape-rune (rune ystream)
   (let ((cr (string-rod (format nil "&#~D;" (rune-code rune)))))

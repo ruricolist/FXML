@@ -11,7 +11,7 @@
 (defpackage :fxml.runes
   (:use :cl :named-readtables :trivial-gray-streams)
   (:import-from #:alexandria #:array-index #:emptyp)
-  (:import-from #:serapeum #:->)
+  (:import-from #:serapeum #:-> #:do-splits)
   (:export #:definline
 
            ;; runes.lisp

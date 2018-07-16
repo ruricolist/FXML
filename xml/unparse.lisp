@@ -630,10 +630,10 @@
         esc)
     (flet ((needs-escape? (c)
              (setq esc (funcall escape-fn c))))
-      (fxml.runes:do-splits ((l r rune) (rod start end) #'needs-escape?)
+      (serapeum:do-splits ((l r rune?) (rod #'needs-escape? :start start :end end))
         (unless (= l r)
           (ystream-write-escapable-rod rod y :start l :end r))
-        (when rune
+        (when rune?
           (ystream-write-escapable-rod esc y))))))
 
 (defun sink-write-escapable-rod (rod sink &key (start 0) (end (length rod)))
