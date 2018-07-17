@@ -8,7 +8,9 @@ env:
 
 install:
   # Install cl-travis
-  - curl https://raw.githubusercontent.com/luismbo/cl-travis/master/install.sh | bash
+  - curl -L https://github.com/luismbo/cl-travis/raw/master/install.sh | sh
+  # Always use the latest Serapeum.
+  - git clone --depth=1 https://github.com/ruricolist/serapeum.git ~/lisp/serapeum
 
 script:
   - cl -l fiveam -l FXML -l FXML/test
@@ -18,4 +20,4 @@ script:
                  (lambda (c h)
                    (declare (ignore c h))
                    (uiop:quit -1)))'
-       -e '(fxml.test:run-tests)'
+       -e '(or (fxml.test:run-tests) (uiop:quit 1))'
