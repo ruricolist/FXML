@@ -9,6 +9,8 @@ env:
 install:
   # Install cl-travis
   - curl https://raw.githubusercontent.com/luismbo/cl-travis/master/install.sh | bash
+  # Always use the latest Serapeum.
+  - git clone https://github.com/ruricolist/serapeum.git ~/quicklisp/serapeum
 
 script:
   - cl -l fiveam -l FXML -l FXML/test
