@@ -3252,7 +3252,8 @@ Common
 
    All SAX parsing functions share the same keyword arguments.  Refer to
    @fun{parse} for details on keyword arguments."
-  (let ((xstream (string->xstream string)))
+  (let* ((*forbid-entities* (getf args :forbid-entities t))
+         (xstream (string->xstream string)))
     (setf (xstream-name xstream)
           (make-stream-name
            :entity-name "main document"

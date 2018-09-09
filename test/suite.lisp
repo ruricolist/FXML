@@ -4,6 +4,9 @@
 
 (in-suite fxml)
 
+(test parse-rod
+  (finishes (fxml:parse-rod "<div>hello <i>world</i></div>" nil)))
+
 (def-suite defused-xml :in fxml)
 
 (in-suite defused-xml)
