@@ -26,7 +26,7 @@
 
 (deftype rune () #-lispworks 'character #+lispworks 'lw:simple-char)
 (deftype rod () '(vector rune))
-(deftype simple-rod () '(simple-array rune))
+(deftype simple-rod () '(simple-array rune (*)))
 
 (definline rune (rod index)
   (char rod index))
