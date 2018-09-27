@@ -50,6 +50,8 @@
 (test allow-expansion
   (finishes (parse-test-file xml-bomb2 :forbid-entities nil)))
 
+(in-suite fxml)
+
 (test dtd-embedding
   ;; https://stackoverflow.com/questions/26738465/non-valid-output-of-broadcast-handler-in-common-lisp-closure-xml-package/28528117#28528117
   (let ((teste
