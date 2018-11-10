@@ -29,10 +29,10 @@
 (defun parse-test-file (name &rest args)
   (apply #'fxml:parse (test-file-path name) nil args))
 
-(defun debug-test (test &key (error t) (failure t))
+(defun debug-test (test &key (error :debug) (failure :debug))
   "Run TEST, breaking on error or failure."
-  (let ((5am:*debug-on-error* error)
-        (5am:*debug-on-failure* failure))
+  (let ((5am:*on-error* error)
+        (5am:*on-failure* failure))
     (run! test)))
 
 (defun run-tests ()
