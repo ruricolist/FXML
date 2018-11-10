@@ -1,0 +1,6 @@
+<!ELEMENT b EMPTY>
+
+<!ELEMENT c EMPTY>
+
+<!ELEMENT a ((b?)*, c?)>
+  

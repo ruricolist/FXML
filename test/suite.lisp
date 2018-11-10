@@ -62,6 +62,27 @@
                           :forbid-external nil)))))
     (is (equal teste (read-file-into-string (test-file-path xml-teste))))))
 
+(test modus
+  (flet ((xml-test (path dtd-path)
+           (flet ((resolver (pubid sysid)
+                    (declare (ignorable pubid sysid))
+                    (open dtd-path :element-type '(unsigned-byte 8))))
+             (fxml.klacks:with-open-source
+                 (s (fxml:make-source path :validate t :entity-resolver #'resolver
+                                           :forbid-external nil))
+               (loop for key = (fxml.klacks:peek s) while key do
+                 (case key
+                   (:start-element
+                    (format t ":start-element ~a~%" (fxml.klacks:current-qname s)))
+                   (:end-element
+                    (format t ":end-element ~a~%" (fxml.klacks:current-qname s)))
+                   (t
+                    (format t "key: ~a~%" key)))
+                 (fxml.klacks:consume s))))))
+    (finishes
+      (xml-test (test-file-path #p"modus/xml-test.xml")
+                (test-file-path  #p"modus/xml-test.dtd")))))
+
 (def-suite xmlconf :in fxml)
 
 (in-suite xmlconf)
