@@ -2353,7 +2353,7 @@ Common
     (when xstream
       (xstream-encoding xstream))))
 
-(defstruct xml-header
+(defstruct-read-only xml-header
   version
   encoding
   (standalone-p nil))
@@ -2806,8 +2806,8 @@ Common
   (p/content input))
 
 (defun parse-xml-decl (content)
-  (let* ((res (make-xml-header))
-         (i (make-rod-xstream content)))
+  (let ((i (make-rod-xstream content))
+        header-encoding header-version header-standalone-p)
     (with-zstream (z :input-stack (list i))
       (let ((atts (read-attribute-list z i t)))
         (unless (eq (peek-rune i) :eof)
@@ -2829,7 +2829,7 @@ Common
                                   (rune= x #/-)))
                             (cdar atts)))
           (wf-error i"Bad XML version number: ~S." (rod-string (cdar atts))))
-        (setf (xml-header-version res) (rod-string (cdar atts)))
+        (setf header-version (rod-string (cdar atts)))
         (pop atts)
         (when (eq (caar atts) (intern-name '#.(string-rod "encoding")))
           (unless (and (>= (length (cdar atts)) 1)
@@ -2846,25 +2846,28 @@ Common
                               (rune<= #/A x #/Z)))
                         (aref (cdar atts) 0)))
             (wf-error i "Bad XML encoding name: ~S." (rod-string (cdar atts))))
-          (setf (xml-header-encoding res) (rod-string (cdar atts)))
+          (setf header-encoding (rod-string (cdar atts)))
           (pop atts))
         (when (eq (caar atts) (intern-name '#.(string-rod "standalone")))
           (unless (or (rod= (cdar atts) '#.(string-rod "yes"))
                       (rod= (cdar atts) '#.(string-rod "no")))
             (wf-error i "XMLDecl's 'standalone' attribute must be exactly \"yes\" or \"no\" and not ~S."
                       (rod-string (cdar atts))))
-          (setf (xml-header-standalone-p res)
+          (setf header-standalone-p
                 (if (rod-equal '#.(string-rod "yes") (cdar atts))
                     :yes
                     :no))
           (pop atts))
         (when atts
           (wf-error i "Garbage in XMLDecl: ~A" (rod-string content)))
-        res))))
+        (make-xml-header
+         :version header-version
+         :encoding header-encoding
+         :standalone-p header-standalone-p)))))
 
 (defun parse-text-decl (content)
-  (let* ((res (make-xml-header))
-         (i (make-rod-xstream content)))
+  (let ((i (make-rod-xstream content))
+        header-version header-encoding header-standalone-p)
     (with-zstream (z :input-stack (list i))
       (let ((atts (read-attribute-list z i t)))
         (unless (eq (peek-rune i) :eof)
@@ -2884,7 +2887,7 @@ Common
                                     (rune= x #/-)))
                               (cdar atts)))
             (wf-error i "Bad XML version number: ~S." (rod-string (cdar atts))))
-          (setf (xml-header-version res) (rod-string (cdar atts)))
+          (setf header-version (rod-string (cdar atts)))
           (pop atts))
         (unless (eq (caar atts) (intern-name '#.(string-rod "encoding")))
           (wf-error i "TextDecl needs encoding."))
@@ -2903,11 +2906,13 @@ Common
                             (rune<= #/0 x #/9)))
                       (aref (cdar atts) 0)))
           (wf-error i "Bad XML encoding name: ~S." (rod-string (cdar atts))))
-        (setf (xml-header-encoding res) (rod-string (cdar atts)))
+        (setf header-encoding (rod-string (cdar atts)))
         (pop atts)
         (when atts
           (wf-error i "Garbage in TextDecl: ~A" (rod-string content)))))
-    res))
+    (make-xml-header
+     :version header-version
+     :encoding header-encoding)))
 
 ;;;; ---------------------------------------------------------------------------
 ;;;;  mu
