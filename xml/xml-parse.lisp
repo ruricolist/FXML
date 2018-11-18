@@ -2856,7 +2856,7 @@ Common
 
 (defun parse-text-decl (content)
   (let ((i (make-rod-xstream content))
-        header-version header-encoding header-standalone-p)
+        header-version header-encoding)
     (with-zstream (z :input-stack (list i))
       (let ((atts (read-attribute-list z i t)))
         (unless (eq (peek-rune i) :eof)
