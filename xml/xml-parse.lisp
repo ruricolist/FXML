@@ -2031,20 +2031,17 @@ Common
   (null actual-value))
 
 (defun compile-cspec (cspec &optional standalone-check)
-  (cond
-    ((atom cspec)
-     (ecase cspec
-       (:EMPTY (values #'cmodel-done (constantly nil)))
-       (:PCDATA (values #'cmodel-done (constantly t)))
-       (:ANY
-        (values (labels ((doit (name) (if name #'doit t))) #'doit)
-                (constantly t)))))
-    ((and (eq (car cspec) '*)
-          (let ((subspec (second cspec)))
-            (and (eq (car subspec) 'or) (eq (cadr subspec) :PCDATA))))
-     (values (compile-mixed (second cspec))
+  (trivia:match cspec
+    (:EMPTY (values #'cmodel-done (constantly nil)))
+    (:PCDATA (values #'cmodel-done (constantly t)))
+    (:ANY
+     (values (alexandria:named-lambda doit (name)
+               (if name #'doit t))
              (constantly t)))
-    (t
+    ((list '* (and subspec (list* 'or :PCDATA _)))
+     (values (compile-mixed subspec)
+             (constantly t)))
+    (otherwise
      (values (compile-content-model cspec)
              (lambda (rod)
                (when standalone-check
@@ -2054,50 +2051,49 @@ Common
 (defun compile-mixed (cspec)
   ;; das koennten wir theoretisch auch COMPILE-CONTENT-MODEL erledigen lassen
   (let ((allowed-names (cddr cspec)))
-    (labels ((doit (actual-name)
-               (cond
-                 ((null actual-name) t)
-                 ((member actual-name allowed-names :test #'rod=) #'doit)
-                 (t nil))))
-      #'doit)))
+    (alexandria:named-lambda doit (actual-name)
+      (cond
+        ((null actual-name) t)
+        ((member actual-name allowed-names :test #'rod=) #'doit)
+        (t nil)))))
 
 (defun compile-content-model (cspec &optional (continuation #'cmodel-done))
-  (if (vectorp cspec)
-      (lambda (actual-name)
-        (if (and actual-name (rod= cspec actual-name))
-            continuation
-            nil))
-      (ecase (car cspec)
-        (and
-         (labels ((traverse (seq)
-                    (compile-content-model (car seq)
-                                           (if (cdr seq)
-                                               (traverse (cdr seq))
-                                               continuation))))
-           (traverse (cdr cspec))))
-        (or
-         (let ((options (mapcar (rcurry #'compile-content-model continuation)
-                                (cdr cspec))))
-           (lambda (actual-name)
-             (some (rcurry #'funcall actual-name) options))))
-        (?
-         (let ((maybe (compile-content-model (second cspec) continuation)))
-           (lambda (actual-name)
-             (or (funcall maybe actual-name)
-                 (funcall continuation actual-name)))))
-        (*
-         (let (maybe-continuation)
-           (labels ((recurse (actual-name)
-                      (if (null actual-name)
-                          (funcall continuation actual-name)
-                          (or (funcall maybe-continuation actual-name)
-                              (funcall continuation actual-name)))))
-             (setf maybe-continuation
-                   (compile-content-model (second cspec) #'recurse))
-             #'recurse)))
-        (+
-         (let ((it (cadr cspec)))
-           (compile-content-model `(and ,it (* ,it)) continuation))))))
+  (trivia:ematch cspec
+    ((and cspec (type vector))
+     (alexandria:named-lambda and-cont (actual-name)
+       (if (and actual-name (rod= cspec actual-name))
+           continuation
+           nil)))
+    ((list* 'and xs)
+     (reduce (lambda (x cont)
+               (compile-content-model x cont))
+             xs
+             :from-end t
+             :initial-value continuation))
+    ((list* 'or xs)
+     (let ((options
+             (mapcar (serapeum:op (compile-content-model _ continuation))
+                     xs)))
+       (alexandria:named-lambda or-cont (actual-name)
+         (some (serapeum:op (funcall _ actual-name))
+               options))))
+    ((list '? x)
+     (let ((x (compile-content-model x continuation)))
+       (alexandria:named-lambda maybe-cont (actual-name)
+         (or (funcall x actual-name)
+             (funcall continuation actual-name)))))
+    ((list '* x)
+     (let (maybe-continuation)
+       (flet ((recurse (actual-name)
+                (if (null actual-name)
+                    (funcall continuation actual-name)
+                    (or (funcall maybe-continuation actual-name)
+                        (funcall continuation actual-name)))))
+         (setf maybe-continuation
+               (compile-content-model x #'recurse))
+         #'recurse)))
+    ((list '+ it)
+     (compile-content-model `(and ,it (* ,it)) continuation))))
 
 (defun legal-content-model-p (cspec &optional validate)
   (or (eq cspec :PCDATA)
@@ -2130,7 +2126,7 @@ Common
 
 (defun p/cspec (input &optional recursivep)
   (let ((term
-          (let ((names nil) op-cat op res stream)
+          (let (names op-cat op res stream)
             (multiple-value-bind (cat sem) (peek-token input)
               (cond ((eq cat :nmtoken)
                      (consume-token input)
@@ -2183,18 +2179,11 @@ Common
   ;; Dazu normalisieren wir einfach in eine der beiden folgenden Formen:
   ;;   (* (or :PCDATA ...rods...))     -- und zwar exakt so!
   ;;   :PCDATA                         -- sonst ganz trivial
-  (flet ((trivialp (c)
-           (and (consp c)
-                (and (eq (car c) 'and)
-                     (eq (cadr c) :PCDATA)
-                     (null (cddr c))))))
-    (if (or (trivialp cspec)            ;(and PCDATA)
-            (and (consp cspec)          ;(* (and PCDATA))
-                 (and (eq (car cspec) '*)
-                      (null (cddr cspec))
-                      (trivialp (cadr cspec)))))
-        :PCDATA
-        cspec)))
+  (trivia:match cspec
+    ((or (list 'and :PCDATA)
+         (list '* (list 'and :PCDATA)))
+     :PCDATA)
+    (otherwise cspec)))
 
 (defun normalize-public-id (rod)
   (with-rune-collector (collect)
