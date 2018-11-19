@@ -115,7 +115,10 @@
                     (search "bad uri" fxml-result)
                     ;; Conversely, we also don't care about cases that
                     ;; include Windows paths that PURI balks at.
-                    (search "bad uri" cxml-result))
+                    (search "bad uri" cxml-result)
+                    ;; Ignore some CXML breakage for the moment.
+                    (search "duplicate internal subset" cxml-result)
+                    )
                  (is (equal fxml-result cxml-result)))))))
 
 (test sax
