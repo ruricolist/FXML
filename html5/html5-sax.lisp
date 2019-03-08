@@ -78,8 +78,7 @@
 
 (defun serialize-dom (node handler)
   "Serialize NODE, an HTML5 document, to HANDLER as SAX events."
-  (let ((fxml.sax:*use-xmlns-namespace* nil)
-        (*base* nil))
+  (let ((*base* nil))
     (fxml:with-xml-output handler
       (fxml:with-namespace ("" xhtml-ns)
         (serialize node)))))
