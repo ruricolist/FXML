@@ -445,7 +445,7 @@
     :name name
     :owner document))
 
-(defmethod get-elements-by-tag-name-internal (node tag-name)
+(defun get-elements-by-tag-name-internal (node tag-name)
   (let* ((tag-name (%rod tag-name))
          (result (make-node-list))
          (wild-p (rod= tag-name #"*")))
@@ -458,7 +458,7 @@
       (walk node))
     result))
 
-(defmethod get-elements-by-tag-name-internal-ns (node uri lname)
+(defun get-elements-by-tag-name-internal-ns (node uri lname)
   (let* ((uri (%rod uri))
          (lname (%rod lname))
          (result (make-node-list))
