@@ -33,12 +33,12 @@
 (defmethod fxml.dom:get-attribute ((el element) attr)
   (attribute-value el attr))
 
-(defmethod fxml.dom:get-attribute-ns ((el element) attr ns)
-  (attribute-value el attr ns))
+(defmethod fxml.dom:get-attribute-ns ((el element) uri lname)
+  (attribute-value el lname uri))
 
 (defmethod attribute-value ((el fxml.dom:element) attr &optional ns)
   (if ns
-      (fxml.dom:get-attribute-ns el attr ns)
+      (fxml.dom:get-attribute-ns el ns attr)
       (fxml.dom:get-attribute el attr)))
 
 (defmethod map-children (result-type fn (node fxml.dom:node))
