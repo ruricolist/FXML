@@ -21,6 +21,8 @@
 
 (in-readtable :runes)
 
+(serapeum:defconst xhtml-ns "http://www.w3.org/1999/xhtml")
+
 ;; Classes
 
 (define-condition dom-exception (error)
@@ -474,8 +476,34 @@
       (walk node))
     result))
 
+(defun get-elements-by-class-name-internal (node class-name)
+  (serapeum:lret ((class-names (serapeum:tokens class-name))
+                  (result (make-node-list)))
+    (unless (alexandria:emptyp class-names)
+      (labels ((walk (n)
+                 (dovector (c (fxml.dom:child-nodes n))
+                   (when (fxml.dom:element-p c)
+                     (alexandria:when-let
+                         ((class-string
+                           (or (and (equal (fxml.dom:namespace-uri c) xhtml-ns)
+                                    (fxml.dom:has-attribute c "class")
+                                    (fxml.dom:get-attribute c "class"))
+                               (and (fxml.dom:has-attribute-ns c xhtml-ns "class")
+                                    (fxml.dom:get-attribute-ns c xhtml-ns "class")))))
+                       (when (loop for class in class-names
+                                     thereis (serapeum:string~= class class-string))
+                         (vector-push-extend c result (extension result))))
+                     (walk c)))))
+        (walk node)))))
+
+(defgeneric fxml.dom:get-elements-by-class-name (document class-name)
+  (:documentation "Get descendant elements of DOCUMENT (in the HTML namespace) with a class attribute matching CLASS-NAME."))
+
 (defmethod fxml.dom:get-elements-by-tag-name ((document document) tag-name)
   (get-elements-by-tag-name-internal document tag-name))
+
+(defmethod fxml.dom:get-elements-by-class-name ((document document) class-name)
+  (get-elements-by-class-name-internal document class-name))
 
 (defmethod fxml.dom:get-elements-by-tag-name-ns ((document document) uri lname)
   (get-elements-by-tag-name-internal-ns document uri lname))
@@ -1154,6 +1182,10 @@
 (defmethod fxml.dom:get-elements-by-tag-name ((element element) name)
   (assert-writeable element)
   (get-elements-by-tag-name-internal element name))
+
+(defmethod fxml.dom:get-elements-by-class-name ((element element) name)
+  (assert-writeable element)
+  (get-elements-by-class-name-internal element name))
 
 (defmethod fxml.dom:get-elements-by-tag-name-ns ((element element) uri lname)
   (assert-writeable element)

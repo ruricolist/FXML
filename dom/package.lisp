@@ -8,6 +8,8 @@
 (defpackage :fxml.dom
   (:use)
   (:export
+   #:get-elements-by-class-name
+
    ;; DOM 2 functions
    #:owner-element
    #:import-node
