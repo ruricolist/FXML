@@ -1039,6 +1039,8 @@
   (assert-writeable element)
   (fxml.dom:set-named-item-ns (fxml.dom:attributes element) new-attr))
 
+;;; TOOD DOM4 specifies these should return null instead of an empty string.
+
 (defmethod fxml.dom:get-attribute ((element element) name)
   (let ((a (fxml.dom:get-attribute-node element name)))
     (if a
