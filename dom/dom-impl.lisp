@@ -260,7 +260,9 @@
     (:SYNTAX_ERR                        12)
     (:INVALID_MODIFICATION_ERR          13)
     (:NAMESPACE_ERR                     14)
-    (:INVALID_ACCESS_ERR                15)))
+    (:INVALID_ACCESS_ERR                15)
+    (:VALIDATION_ERR                    16)
+    (:TYPE_MISMATCH_ERR                 17)))
 
 ;; dom-implementation protocol
 
@@ -547,11 +549,21 @@
 (defmethod fxml.dom:first-child ((node node))
   (fxml.dom:item (slot-value node 'children) 0))
 
+(defmethod fxml.dom:first-element-child ((node node))
+  (find-if #'fxml.dom:element-p (slot-value node 'children)))
+
 (defmethod fxml.dom:last-child ((node node))
   (with-slots (children) node
     (if (plusp (length children))
         (elt children (1- (length children)))
         nil)))
+
+(defmethod fxml.dom:last-element-child ((node node))
+  (with-slots (children) node
+    (find-if #'fxml.dom:element-p children :from-end t)))
+
+(defmethod fxml.dom:child-element-count ((node node))
+  (count-if #'fxml.dom:element-p (slot-value node 'children)))
 
 (defmethod fxml.dom:previous-sibling ((node node))
   (with-slots (parent) node
@@ -562,6 +574,18 @@
               nil
               (elt children index)))))))
 
+(defmethod fxml.dom:previous-element-sibling ((node node))
+  (with-slots (parent) node
+    (when parent
+      (with-slots (children) parent
+        (let ((index (1- (position node children))))
+          (if (eql index -1)
+              nil
+              (find-if #'fxml.dom:element-p children :end index :from-end t)))))))
+
+(defmethod fxml.dom:previous-element-sibling ((node document-type))
+  (no-applicable-method #'fxml.dom:previous-element-sibling))
+
 (defmethod fxml.dom:next-sibling ((node node))
   (with-slots (parent) node
     (when parent
@@ -570,6 +594,18 @@
           (if (eql index (length children))
               nil
               (elt children index)))))))
+
+(defmethod fxml.dom:next-element-sibling ((node node))
+  (with-slots (parent) node
+    (when parent
+      (with-slots (children) parent
+        (let ((index (1+ (position node children))))
+          (if (eql index (length children))
+              nil
+              (find-if #'fxml.dom:element-p children :start index)))))))
+
+(defmethod fxml.dom:next-element-sibling ((node document-type))
+  (no-applicable-method #'fxml.dom:next-element-sibling))
 
 (defmethod fxml.dom:owner-document ((node node))
   (slot-value node 'owner))
@@ -660,12 +696,82 @@
 (defmethod fxml.dom:has-child-nodes ((node node))
   (plusp (length (slot-value node 'children))))
 
+(defmethod fxml.dom:contains ((node node) (descendant node))
+  (or (eql node descendant)
+      (loop for child across (slot-value node 'children)
+              thereis (fxml.dom:contains child descendant))))
+
 (defmethod fxml.dom:append-child ((node node) (new-child document-fragment))
   (assert-writeable node)
   (let ((children (fxml.dom:child-nodes new-child)))
     (fxml::while (plusp (length children))
       (fxml.dom:append-child node (elt children 0))))
   new-child)
+
+(defmethod fxml.dom:text-content ((node node))
+  nil)
+
+(defmethod fxml.dom:text-content ((node text))
+  (fxml.dom:data node))
+
+(defmethod fxml.dom:text-content ((node processing-instruction))
+  (fxml.dom:data node))
+
+(defmethod fxml.dom:text-content ((node comment))
+  (fxml.dom:data node))
+
+(defmethod fxml.dom:text-content ((node attribute))
+  (fxml.dom:value node))
+
+(defun concatenate-text-content (node)
+  (with-output-to-string (s)
+    (labels ((rec (node)
+               (loop for node in (slot-value node 'children)
+                     when (typep node 'text)
+                       do (write-string (fxml.dom:data s))
+                     else if (typep node 'element)
+                            do (rec node))))
+      (rec node))))
+
+(defmethod fxml.dom:text-content ((node document-fragment))
+  (concatenate-text-content node))
+
+(defmethod fxml.dom:text-content ((node element))
+  (concatenate-text-content node))
+
+(defmethod (setf fxml.dom:text-content) ((value null) node)
+  ;; "The textContent attribute’s setter must, if the given value is
+  ;; null, act as if it was the empty string instead."
+  (setf (fxml.dom:text-content node) ""))
+
+(defmethod (setf fxml.dom:text-content) ((value string) (node node))
+  value)
+
+(defmethod (setf fxml.dom:text-content) ((value string) (node text))
+  (setf (fxml.dom:node-value node) value))
+
+(defmethod (setf fxml.dom:text-content) ((value string) (node processing-instruction))
+  (setf (fxml.dom:node-value node) value))
+
+(defmethod (setf fxml.dom:text-content) ((value string) (node comment))
+  (setf (fxml.dom:node-value node) value))
+
+(defmethod (setf fxml.dom:text-content) ((value string) (node attribute))
+  (setf (fxml.dom:node-value node) value))
+
+(defun set-text-content (node string)
+  (loop while (fxml.dom:has-child-nodes node)
+        do (fxml.dom:remove-child node (fxml.dom:first-child node)))
+  (let* ((document (fxml.dom:owner-document node))
+         (text-node (fxml.dom:create-text-node document string)))
+    (fxml.dom:append-child node text-node))
+  string)
+
+(defmethod (setf fxml.dom:text-content) ((value string) (node document-fragment))
+  (set-text-content node value))
+
+(defmethod (setf fxml.dom:text-content) ((value string) (node element))
+  (set-text-content node value))
 
 ;; was auf node noch implemetiert werden muss:
 ;; - node-type
@@ -1460,21 +1566,21 @@
   (let* ((document (make-instance 'document))
 	 (original-doctype (fxml.dom:doctype node))
 	 (doctype 
-	  (when original-doctype
-	    (make-instance 'document-type
-	      :owner document
-	      :name (fxml.dom:name original-doctype)
-	      :public-id (fxml.dom:public-id original-doctype)
-	      :system-id (fxml.dom:system-id original-doctype)
-	      :notations (make-instance 'named-node-map
-			   :element-type :notation
-			   :owner document
-			   :items (fxml.dom:items (fxml.dom:notations original-doctype)))
-	      :entities (make-instance 'named-node-map
-			  :element-type :entity
-			  :owner document
-			  :items (fxml.dom:items
-				  (fxml.dom:entities original-doctype)))))))
+           (when original-doctype
+             (make-instance 'document-type
+                            :owner document
+                            :name (fxml.dom:name original-doctype)
+                            :public-id (fxml.dom:public-id original-doctype)
+                            :system-id (fxml.dom:system-id original-doctype)
+                            :notations (make-instance 'named-node-map
+                                                      :element-type :notation
+                                                      :owner document
+                                                      :items (fxml.dom:items (fxml.dom:notations original-doctype)))
+                            :entities (make-instance 'named-node-map
+                                                     :element-type :entity
+                                                     :owner document
+                                                     :items (fxml.dom:items
+                                                             (fxml.dom:entities original-doctype)))))))
     (setf (slot-value document 'owner) nil)
     (setf (slot-value document 'doc-type) doctype)
     (setf (slot-value document 'dtd) (dtd node))

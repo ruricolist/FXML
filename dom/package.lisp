@@ -8,7 +8,17 @@
 (defpackage :fxml.dom
   (:use)
   (:export
+   ;; DOM 4 functions.
+   #:next-element-sibling
+   #:previous-element-sibling
+   #:first-element-child
+   #:last-element-child
+   #:child-element-count
+   #:contains
    #:get-elements-by-class-name
+
+   ;; DOM 3 functions.
+   #:text-content
 
    ;; DOM 2 functions
    #:owner-element
