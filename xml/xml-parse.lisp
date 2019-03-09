@@ -2481,7 +2481,7 @@ Common
         (fxml.sax:entity-resolver
          (handler *ctx*)
          (lambda (name handler) (resolve-entity name handler dtd)))
-        (fxml.sax::dtd (handler *ctx*) dtd))
+        (fxml.sax:dtd (handler *ctx*) dtd))
       (list :DOCTYPE name extid))))
 
 (defun report-cached-dtd (dtd)

@@ -122,7 +122,7 @@
 	  (fxml.sax:end-dtd handler)
 	  (fxml.sax:entity-resolver handler
 			       (slot-value source 'dom-impl-entity-resolver))
-	  (fxml.sax::dtd handler (slot-value source 'dom-impl-dtd)))
+	  (fxml.sax:dtd handler (slot-value source 'dom-impl-dtd)))
 	(:start-element
 	  (fxml.klacks:map-current-namespace-declarations
 	   (lambda (prefix uri)

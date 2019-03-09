@@ -36,7 +36,7 @@
     (push document (element-stack handler))))
 
 ;; fixme
-(defmethod fxml.sax::dtd ((handler dom-builder) dtd)
+(defmethod fxml.sax:dtd ((handler dom-builder) dtd)
   (setf (slot-value (document handler) 'dtd) dtd))
 
 (defmethod fxml.sax:end-document ((handler dom-builder))

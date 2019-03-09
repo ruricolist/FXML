@@ -460,7 +460,7 @@
 (defmethod fxml.sax:entity-resolver ((handler klacks-dtd-handler) fn)
   (setf (slot-value (handler-source handler) 'dom-impl-entity-resolver) fn))
 
-(defmethod fxml.sax::dtd ((handler klacks-dtd-handler) dtd)
+(defmethod fxml.sax:dtd ((handler klacks-dtd-handler) dtd)
   (setf (slot-value (handler-source handler) 'dom-impl-dtd) dtd))
 
 (defmethod fxml.sax:end-dtd ((handler klacks-dtd-handler))
