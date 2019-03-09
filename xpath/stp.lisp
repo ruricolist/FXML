@@ -30,6 +30,9 @@
 
 (in-package :fxml.stp.impl)
 
+(eval-when (:compile-toplevel :load-toplevel)
+  (import 'xpath-protocol:define-default-method))
+
 (defun vector->pipe (vector &optional (start 0))
   (if (>= start (length vector))
       nil

@@ -284,5 +284,5 @@
 (defpackage :fxml.stp.impl
   (:use :cl :fxml.stp)
   (:shadow #:document #:document-type)
-  (:import-from #:serapeum #:do-hash-table)
+  (:import-from #:serapeum #:do-hash-table #:defstruct-read-only)
   #+ () (:import-from :xpath-protocol #:define-default-method))
