@@ -59,3 +59,11 @@
              collect `(define-translation ,spec))))
 
 (define-translations)
+
+(flet ((dtd-not-supported (dtd)
+         (declare (ignore dtd))
+         (warn "Persisting DTDs between FXML and CXML is not (yet) supported.")))
+  (defmethod sax::dtd ((handler fxml.sax:abstract-handler) dtd)
+    (dtd-not-supported dtd))
+  (defmethod fxml.sax:dtd ((handler sax:abstract-handler) dtd)
+    (dtd-not-supported dtd)))

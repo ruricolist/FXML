@@ -312,8 +312,3 @@
 (define-default-method xpath-protocol:processing-instruction-target
     ((node fxml.stp:processing-instruction))
   (fxml.stp:target node))
-
-(defun run-xpath-tests ()
-  (let ((xpath::*dom-builder* (fxml.stp:make-builder))
-	(xpath::*document-element* #'fxml.stp:document-element))
-    (xpath::run-all-tests)))

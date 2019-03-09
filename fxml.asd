@@ -70,8 +70,9 @@
   :depends-on ("uiop"
                "fiveam"
                "fxml/xml" "fxml/klacks" "fxml/dom"
-               "cxml" "cxml/dom" "cxml/klacks"
-               "alexandria"))
+               "fxml/cxml"
+               "alexandria"
+               "fxml/stp" "xpath/test"))
 
 (defsystem "fxml"
   :components ()

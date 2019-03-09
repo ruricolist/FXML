@@ -83,6 +83,15 @@
       (xml-test (test-file-path #p"modus/xml-test.xml")
                 (test-file-path  #p"modus/xml-test.dtd")))))
 
+(def-suite xpath :in fxml)
+
+(in-suite xpath)
+
+(test xpath-stp
+  (let ((xpath-test:*dom-builder* (fxml.stp:make-builder))
+        (xpath-test:*document-element* #'fxml.stp:document-element))
+    (xpath-test:run-all-tests)))
+
 (def-suite xmlconf :in fxml)
 
 (in-suite xmlconf)
