@@ -159,6 +159,12 @@
   :perform (test-op (o c) (uiop:symbol-call :fxml.sanitize.test :run-tests))
   :components ((:file "test")))
 
+(defsystem "fxml/xpath"
+  :depends-on ("fxml/stp" "xpath")
+  :pathname "xpath"
+  :components ((:file "dom")
+               (:file "stp")))
+
 (register-system-packages "fxml" '(:fxml :fxml-dom :fxml.dom :fxml.klacks :fxml.sax))
 (register-system-packages "fxml/stp" '(:fxml.stp))
 (register-system-packages "fxml/html5" '(:fxml.html5))
