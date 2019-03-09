@@ -726,7 +726,7 @@
 (defun concatenate-text-content (node)
   (with-output-to-string (s)
     (labels ((rec (node)
-               (loop for node in (slot-value node 'children)
+               (loop for node across (slot-value node 'children)
                      when (typep node 'text)
                        do (write-string (fxml.dom:data s))
                      else if (typep node 'element)
