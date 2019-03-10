@@ -19,6 +19,7 @@
 
    ;; DOM 3 functions.
    #:text-content
+   #:rename-node
 
    ;; DOM 2 functions
    #:owner-element

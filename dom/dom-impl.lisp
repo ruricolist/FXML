@@ -406,6 +406,29 @@
       (add-default-attributes result)
       result)))
 
+(defgeneric fxml.dom:rename-node (node uri qname)
+  (:method (node uri qname)
+    (declare (ignore uri qname))
+    (dom-error :NOT_SUPPORTED_ERR "Cannot rename ~a" node)))
+
+(defmethod fxml.dom:rename-node ((element element) uri qname)
+  (setf qname (%rod qname))
+  (multiple-value-bind (prefix local-name)
+      (safe-split-qname qname uri)
+    (setf
+     (slot-value element 'tag-name) qname
+     (slot-value element 'namespace-uri) uri
+     (slot-value element 'local-name) local-name
+     (slot-value element 'prefix) prefix)
+    ;; Remove defaulted attributes.
+    (let ((attributes (fxml.dom:attributes element)))
+      (setf (slot-value attributes 'items)
+            (delete-if-not (lambda (item)
+                             (slot-value item 'specified-p))
+                           (slot-value attributes 'items))))
+    (add-default-attributes element))
+  element)
+
 (defmethod fxml.dom:create-document-fragment ((document document))
   (make-instance 'document-fragment
     :owner document))
@@ -467,6 +490,17 @@
       :specified-p t
       :owner-element nil
       :owner document)))
+
+(defmethod fxml.dom:rename-node ((attribute attribute) uri qname)
+  (let* ((old-attr attribute)
+         (el (slot-value old-attr 'owner))
+         (doc (fxml.dom:owner-document el))
+         (new-attr (fxml.dom:create-attribute-ns doc uri qname)))
+    (setf (fxml.dom:value new-attr)
+          (fxml.dom:value old-attr))
+    (fxml.dom:remove-attribute-node el old-attr)
+    (fxml.dom:set-attribute-node el new-attr)
+    new-attr))
 
 (defmethod fxml.dom:create-entity-reference ((document document) name)
   (setf name (%rod name))
