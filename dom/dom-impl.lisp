@@ -242,11 +242,37 @@
 
 ;; dom-exception
 
+(deftype dom-exception-key ()
+  '(member
+    :INDEX_SIZE_ERR
+    :DOMSTRING_SIZE_ERR
+    :HIERARCHY_REQUEST_ERR
+    :WRONG_DOCUMENT_ERR
+    :INVALID_CHARACTER_ERR
+    :NO_DATA_ALLOWED_ERR
+    :NO_MODIFICATION_ALLOWED_ERR
+    :NOT_FOUND_ERR
+    :NOT_SUPPORTED_ERR
+    :INUSE_ATTRIBUTE_ERR
+    :INVALID_STATE_ERR
+    :SYNTAX_ERR
+    :INVALID_MODIFICATION_ERR
+    :NAMESPACE_ERR
+    :INVALID_ACCESS_ERR
+    :VALIDATION_ERR
+    :TYPE_MISMATCH_ERR))
+
 (defun dom-error (key fmt &rest args)
   (error 'dom-exception :key key :string fmt :arguments args))
 
+(define-compiler-macro dom-error (&whole call key fmt &rest args)
+  (declare (ignore fmt args))
+  (when (keywordp key)
+    (assert (typep key 'dom-exception-key)))
+  call)
+
 (defmethod fxml.dom:code ((self dom-exception))
-  (ecase (dom-exception-key self)
+  (serapeum:ecase-of dom-exception-key (dom-exception-key self)
     (:INDEX_SIZE_ERR                    1)
     (:DOMSTRING_SIZE_ERR                2)
     (:HIERARCHY_REQUEST_ERR             3)
