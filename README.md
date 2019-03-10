@@ -63,7 +63,6 @@ New features:
 
 Removed features:
 - FXML does not support HAX.
-- FXML does not support XPath.
 
 Implementation differences:
 - FXML does not support Lisps that use UTF-16.
@@ -72,6 +71,14 @@ Implementation differences:
 - Does not support [SCL][].
 - Does not support non-Unicode Lisps.
 - Uses QURI instead of PURI.
+
+# XPath
+
+In order to use [Plexippus XPath][xpath] with FXML, load the `fxml/xpath` system:
+
+    (asdf:load-system "fxml/xpath")
+
+This system implements the XPath protocol for both DOM and STP, so you can use XPath with all FXML documents.
 
 # DOM and STP compatibility
 
@@ -213,3 +220,4 @@ you can do it in one pass:
 [css-selectors]: https://github.com/AccelerationNet/css-selectors
 [Lisp-LGPL]: http://opensource.franz.com/preamble.html
 [SCL]: http://www.scieneer.com/scl/
+[xpath]: https://github.com/sharplispers/xpath
