@@ -947,7 +947,8 @@
            :local-name lname
            :qname (or qname
                       (if prefix (concatenate 'rod prefix #":" lname) lname))
-           :value (rod value))
+           :value (rod value)
+           :specified-p t)
           (cdr *current-element*))))
 
 (defun cdata (data &aux (sink *sink*))
