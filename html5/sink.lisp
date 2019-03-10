@@ -70,7 +70,8 @@ The stream is returned as a second value."
       (format stream "<!-- ~a -->" text)))
 
   (:method fxml.sax:start-element (self ns lname qname attrs)
-    (declare (ignore qname))
+    (unless lname
+      (setf lname (nth-value 1 (fxml:split-qname qname))))
     ;; Suppress charset declarations from the original document.
     (when (string= lname "meta")
       (when (some #'charset-declaration? attrs)
@@ -95,7 +96,9 @@ The stream is returned as a second value."
       (fxml.sax:end-element self ns "meta" "meta")))
 
   (:method fxml.sax:end-element (self ns lname qname)
-    (declare (ignore ns qname))
+    (declare (ignore ns))
+    (unless lname
+      (setf lname (nth-value 1 (fxml:split-qname qname))))
     ;; Finish suppressing the meta.
     (when (and (string= lname "meta")
                meta-blocked)
