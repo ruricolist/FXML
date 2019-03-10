@@ -61,7 +61,7 @@ The stream is returned as a second value."
   (:method fxml.sax:start-dtd (self name public-id system-id)
     (declare (ignore name public-id system-id))
     (write-string "<!doctype html>" stream))
-  (:method fxml.sax:characters (self text)
+  (:method fxml.sax:characters (self (text string))
     (when (and (omit-whitespace? self) (blankp text))
       (return-from fxml.sax:characters))
     (escape text text-escapes :stream stream))
