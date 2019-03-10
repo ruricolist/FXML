@@ -92,6 +92,11 @@
         (xpath-test:*document-element* #'fxml.stp:document-element))
     (xpath-test:run-all-tests)))
 
+(test xpath-dom
+  (let ((xpath-test:*dom-builder* (fxml.rune-dom:make-dom-builder))
+        (xpath-test:*document-element* #'fxml.dom:document-element))
+    (xpath-test:run-all-tests)))
+
 (def-suite xmlconf :in fxml)
 
 (in-suite xmlconf)
