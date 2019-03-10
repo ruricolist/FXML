@@ -104,8 +104,14 @@ The stream is returned as a second value."
                meta-blocked)
       (setf meta-blocked nil)
       (return-from fxml.sax:end-element))
-    (let (*print-pretty*)
-      (format stream "</~a>" lname))))
+    (unless (string-case lname
+              (("br"
+                "hr" "area" "base" "col" "command"
+                "embed" "img" "input" "keygen" "link" "param"
+                "source" "track" "wbr" "nobr")
+               t))
+      (let (*print-pretty*)
+        (format stream "</~a>" lname)))))
 
 (defun charset-declaration? (attr)
   "Is ATTR a charset declaration from the original document?"
