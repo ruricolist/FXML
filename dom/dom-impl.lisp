@@ -13,7 +13,8 @@
   (:import-from :alexandria
     #:ensure-function
     #:array-index
-    #:array-length)
+    #:array-length
+    #:of-type)
   (:nicknames :fxml-dom)
   (:export #:implementation #:make-dom-builder #:create-document))
 
@@ -550,7 +551,7 @@
   (fxml.dom:item (slot-value node 'children) 0))
 
 (defmethod fxml.dom:first-element-child ((node node))
-  (find-if #'fxml.dom:element-p (slot-value node 'children)))
+  (find-if (of-type 'element) (slot-value node 'children)))
 
 (defmethod fxml.dom:last-child ((node node))
   (with-slots (children) node
@@ -560,10 +561,10 @@
 
 (defmethod fxml.dom:last-element-child ((node node))
   (with-slots (children) node
-    (find-if #'fxml.dom:element-p children :from-end t)))
+    (find-if (of-type 'element) children :from-end t)))
 
 (defmethod fxml.dom:child-element-count ((node node))
-  (count-if #'fxml.dom:element-p (slot-value node 'children)))
+  (count-if (of-type 'element) (slot-value node 'children)))
 
 (defmethod fxml.dom:previous-sibling ((node node))
   (with-slots (parent) node
@@ -581,7 +582,7 @@
         (let ((index (1- (position node children))))
           (if (eql index -1)
               nil
-              (find-if #'fxml.dom:element-p children :end index :from-end t)))))))
+              (find-if (of-type 'element) children :end index :from-end t)))))))
 
 (defmethod fxml.dom:previous-element-sibling ((node document-type))
   (no-applicable-method #'fxml.dom:previous-element-sibling))
@@ -602,7 +603,7 @@
         (let ((index (1+ (position node children))))
           (if (eql index (length children))
               nil
-              (find-if #'fxml.dom:element-p children :start index)))))))
+              (find-if (of-type 'element) children :start index)))))))
 
 (defmethod fxml.dom:next-element-sibling ((node document-type))
   (no-applicable-method #'fxml.dom:next-element-sibling))
