@@ -61,18 +61,20 @@
   :depends-on ("fxml/xml"))
 
 (defsystem "fxml/test"
-  :pathname "test/"
-  :serial t
-  :perform (test-op (o c) (uiop:symbol-call :fxml.test :run-tests))
-  :components ((:file "test")
-               (:file "xmlconf")
-               (:file "suite"))
-  :depends-on ("uiop"
-               "fiveam"
-               "fxml/xml" "fxml/klacks" "fxml/dom"
-               "fxml/cxml"
-               "alexandria"
-               "fxml/stp" "xpath/test"))
+    :pathname "test/"
+    :serial t
+    :perform (test-op (o c) (uiop:symbol-call :fxml.test :run-tests))
+    :components ((:file "test")
+                 (:file "xmlconf")
+                 (:file "suite"))
+    :depends-on ("uiop"
+                 "fiveam"
+                 "fxml/xml" "fxml/klacks" "fxml/dom"
+                 "fxml/cxml"
+                 "alexandria"
+                 "fxml/stp"
+                 "xpath/test"
+                 "fxml/xpath"))
 
 (defsystem "fxml"
   :components ()
