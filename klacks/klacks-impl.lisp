@@ -241,24 +241,25 @@
                           (klacks/doctype source input :forbid-dtd forbid-dtd)))))))
 
 (defun klacks/misc*-2 (source input successor)
-  (with-source (source current-key current-values)
-    (multiple-value-bind (cat sem) (peek-token input)
-      (case cat
-        (:COMMENT
-          (setf current-key :comment)
-          (setf current-values (list sem))
-          (consume-token input)
-          (lambda () (klacks/misc*-2 source input successor)))
-        (:PI
-          (setf current-key :processing-instruction)
-          (setf current-values (list (car sem) (cdr sem)))
-          (consume-token input)
-          (lambda () (klacks/misc*-2 source input successor)))
-        (:S
-          (consume-token input)
-          (klacks/misc*-2 source input successor))
-        (t
-          (funcall successor))))))
+  (serapeum:nlet rec ()
+    (with-source (source current-key current-values)
+      (multiple-value-bind (cat sem) (peek-token input)
+        (case cat
+          (:COMMENT
+            (setf current-key :comment)
+            (setf current-values (list sem))
+            (consume-token input)
+            (lambda () (klacks/misc*-2 source input successor)))
+          (:PI
+           (setf current-key :processing-instruction)
+           (setf current-values (list (car sem) (cdr sem)))
+           (consume-token input)
+           (lambda () (klacks/misc*-2 source input successor)))
+          (:S
+            (consume-token input)
+            (rec))
+          (t
+           (funcall successor)))))))
 
 (defun klacks/doctype (source input &key forbid-dtd)
   (with-source (source current-key current-values validate dtd)
