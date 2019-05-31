@@ -1666,6 +1666,7 @@ Common
       (wf-error input "Expected ~S saw ~S [~S]" category cat sem))
     (values cat sem)))
 
+(declaim (inline consume-token))
 (defun consume-token (input)
   (read-token input))
 
