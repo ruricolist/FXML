@@ -141,7 +141,9 @@
   :pathname "cxml/"
   :depends-on ("fxml" "cxml")
   :components ((:file "package")
-               (:file "protocol"   :depends-on ("package"))
+               (:file "translation")
+               (:file "protocol"   :depends-on ("translation"))
+               (:file "klacks"     :depends-on ("translation"))
                (:file "attributes" :depends-on ("package"))
                (:file "class"      :depends-on ("package"))))
 
