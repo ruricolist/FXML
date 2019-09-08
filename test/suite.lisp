@@ -97,6 +97,30 @@
         (xpath-test:*document-element* #'fxml.dom:document-element))
     (xpath-test:run-all-tests)))
 
+(def-suite relax-ng :in fxml)
+
+(in-suite relax-ng)
+
+(test rng-sax
+  (finishes
+    (fxml:parse (test-file-path "address-book.xml")
+                (cxml-rng:make-validator
+                 (cxml-rng:parse-schema
+                  (test-file-path "address-book.rng"))
+                 (fxml-dom:make-dom-builder)))))
+
+(test rng-klacks
+  (finishes
+    (fxml.klacks:with-open-source
+        (s (cxml-rng:make-validating-source
+            (test-file-path "address-book.xml")
+            (cxml-rng:parse-schema (test-file-path "address-book.rng"))))
+      (loop for key = (fxml.klacks:peek-next s)
+            while key
+            count 1 into count
+            finally (is (= 29 count))))))
+
+
 (def-suite xmlconf :in fxml)
 
 (in-suite xmlconf)
