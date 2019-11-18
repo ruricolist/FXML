@@ -63,7 +63,7 @@
    @arg[uri]{a string, the namespace URI}
    @return{an @class{element}}
    @short{This function creates an element node of the given name.}"
-  (check-type name runes:rod)
+  (check-type name fxml.runes:rod)
   (let ((result (make-instance 'element)))
     (multiple-value-bind (prefix local-name)
 	(fxml:split-qname name)
@@ -312,7 +312,7 @@
                                             (if (and (listp entry) (cdr entry))
                                                 entry
                                                 (list entry (coerce (string-downcase entry)
-                                                                    'runes:simple-rod)))
+                                                                    'fxml.runes:simple-rod)))
                                           `(,var (attribute-value ,element ,name ,uri))))
                                       entries)
                            ,@body)))
