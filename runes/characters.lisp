@@ -25,7 +25,7 @@
 (in-package :fxml.runes)
 
 (deftype rune () #-lispworks 'character #+lispworks 'lw:simple-char)
-(deftype rod () '(vector rune))
+(deftype rod () #-sbcl '(vector rune) #+sbcl '(or (vector rune) simple-base-string))
 (deftype simple-rod () #-sbcl '(simple-array rune) #+sbcl '(or (simple-array rune) simple-base-string))
 
 (definline rune (rod index)
