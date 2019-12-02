@@ -73,7 +73,7 @@
 
 (eval-when (:compile-toplevel :load-toplevel)
   (defvar *basic-keywords*
-    '(canonical indentation encoding omit-xml-declaration)))
+    '(canonical indentation text-indentation encoding omit-xml-declaration)))
 
 ;;;; SINK: an xml output sink
 
@@ -82,6 +82,7 @@
    (width :initform 79 :initarg :width :accessor width)
    (canonical :initform nil :initarg :canonical :accessor canonical)
    (indentation :initform nil :initarg :indentation :accessor indentation)
+   (text-indentation :initform nil :initarg :text-indentation :accessor text-indentation)
    (current-indentation :initform 0 :accessor current-indentation)
    (notations :initform (make-buffer :element-type t) :accessor notations)
    (name-for-dtd :accessor name-for-dtd)
@@ -568,7 +569,7 @@
       (map nil (lambda (c) (sink-write-rune c sink)) data)
       (sink-write-rod #"]]>" sink))
     (t
-      (if (indentation sink)
+      (if (text-indentation sink)
           (unparse-indented-text data sink)
           (if (canonical sink)
               (sink-write-escapable-rod/canonical data sink)
