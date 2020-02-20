@@ -87,9 +87,6 @@
 (definline rod-subseq* (source start &optional (end (length source)))
   (subseq source start end))
 
-(definline rod-subseq** (source start &optional (end (length source)))
-  (subseq source start end))
-
 (defun rod-hash-set (new-value hashtable rod &optional (start 0) (end (length rod))
                                                        (hash (rod-hash rod start end)))
   (let ((j (hash-index hash
