@@ -28,6 +28,17 @@
 (deftype rod () #-sbcl '(vector rune) #+sbcl '(or (vector rune) simple-base-string))
 (deftype simple-rod () #-sbcl '(simple-array rune) #+sbcl '(or (simple-array rune) simple-base-string))
 
+(defmacro with-simple-rod ((s) &body body)
+  "Specialize BODY for the subtypes of `simple-rod'."
+  (if (or #+sbcl t)
+      `(serapeum:with-subtype-dispatch simple-rod
+           ((simple-array rune)
+            simple-base-string)
+           ,s
+         ,@body)
+      `(locally (declare (simple-rod ,s))
+         ,@body)))
+
 (definline rune (rod index)
   (char rod index))
 

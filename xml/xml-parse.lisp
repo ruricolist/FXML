@@ -3538,7 +3538,7 @@ Common
                         (loop for i from 0 below n do
                           (collect (%rune exp i)))))
                      (:non-reference
-                      (locally (declare (simple-rod sem))
+                      (with-simple-rod (sem)
                         (collect #\&)
                         (collect-all sem))))))
                 ((space-rune-p c)

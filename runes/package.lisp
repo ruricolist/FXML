@@ -18,6 +18,7 @@
            #:rune
            #:rod
            #:simple-rod
+           #:with-simple-rod
            #:%rune
            #:rod-capitalize
            #:code-rune
