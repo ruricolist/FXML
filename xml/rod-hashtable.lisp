@@ -73,7 +73,8 @@
 (defun rod-hash-get (hashtable rod &optional (start 0) (end (length rod))
                                              (hash (rod-hash rod start end)))
   (declare (type (simple-array rune (*)) rod)
-           (type (and unsigned-byte fixnum) hash))
+           (type (and unsigned-byte fixnum) hash)
+           (optimize speed (safety 1) (debug 0)))
   (let ((j (hash-index hash
                        (rod-hashtable-size hashtable))))
     (dolist (q (svref (rod-hashtable-table hashtable) j)
@@ -89,6 +90,9 @@
 
 (defun rod-hash-set (new-value hashtable rod &optional (start 0) (end (length rod))
                                                        (hash (rod-hash rod start end)))
+  (declare (type string rod)
+           (type (and unsigned-byte fixnum) hash)
+           (optimize speed (safety 1) (debug 0)))
   (let ((j (hash-index hash
                        (rod-hashtable-size hashtable)))
         (key nil))
@@ -103,6 +107,6 @@
         (return)))
     (values new-value key)))
 
-(defun (setf rod-hash-get) (new-value hashtable rod &optional (start 0) (end (length rod))
-                                                              (hash (rod-hash rod start end)))
+(definline (setf rod-hash-get) (new-value hashtable rod &optional (start 0) (end (length rod))
+                                          (hash (rod-hash rod start end)))
   (rod-hash-set new-value hashtable rod start end hash))
