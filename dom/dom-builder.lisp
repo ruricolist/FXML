@@ -84,43 +84,44 @@
 
 (defmethod fxml.sax:start-element
     ((handler dom-builder) namespace-uri local-name qname attributes)
-  (check-type qname rod)		;catch recoder/builder mismatch
+  (check-type qname rod)               ;catch recoder/builder mismatch
   (flush-characters handler)
   (with-slots (document element-stack) handler
-    (let* ((nsp fxml.sax:*namespace-processing*)
-	   (element (make-instance 'element 
-                     :tag-name qname
-                     :owner document
-		     :namespace-uri (when nsp namespace-uri)
-		     :local-name (when nsp local-name)
-		     :prefix (%rod (when nsp (fxml::split-qname (real-rod qname))))))
-	  (parent (car element-stack))
-          (anodes '()))
-      (dolist (attr attributes)
-	(let ((anode
-               (if nsp
-		   (fxml.dom:create-attribute-ns document
-					    (fxml.sax:attribute-namespace-uri attr)
-					    (fxml.sax:attribute-qname attr))
-		   (fxml.dom:create-attribute document (fxml.sax:attribute-qname attr))))
-              (text
-               (fxml.dom:create-text-node document (fxml.sax:attribute-value attr))))
-          (setf (slot-value anode 'specified-p)
-                (fxml.sax:attribute-specified-p attr))
-	  (setf (slot-value anode 'owner-element) element)
-          (fxml.dom:append-child anode text)
-          (push anode anodes)))
+    (let* ((parent (car element-stack))
+           (nsp sax:*namespace-processing*)
+           (prefix (%rod (when nsp
+                           (cxml::split-qname (real-rod qname)))))
+           (map (make-instance 'attribute-node-map
+                               :element-type :attribute
+                               :owner document))
+           (element (make-instance 'element
+                                   :tag-name qname
+                                   :attributes map
+                                   :owner document
+                                   :namespace-uri (when nsp namespace-uri)
+                                   :local-name (when nsp local-name)
+                                   :prefix prefix)))
+      ;; Link to parent
       (setf (slot-value element 'parent) parent)
       (fast-push element (slot-value parent 'children))
-      (let ((map
-	      (make-instance 'attribute-node-map
-		:items anodes
-		:element-type :attribute
-		:element element
-		:owner document)))
-	(setf (slot-value element 'attributes) map)
-	(dolist (anode anodes)
-	  (setf (slot-value anode 'map) map)))
+      ;; Link map and create attributes
+      (flet ((make-attribute (attr)
+               (let* ((qname (sax:attribute-qname attr))
+                      (namespace-uri (sax:attribute-namespace-uri attr))
+                      (value (sax:attribute-value attr))
+                      (specified-p (sax:attribute-specified-p attr))
+                      (node (if nsp
+                                (dom:create-attribute-ns
+                                 document namespace-uri qname)
+                                (dom:create-attribute document qname)))
+                      (text (dom:create-text-node document value)))
+                 (setf (slot-value node 'specified-p)   specified-p
+                       (slot-value node 'owner-element) element
+                       (slot-value node 'map)           map)
+                 (dom:append-child node text)
+                 node)))
+        (setf (slot-value map 'element) element
+              (slot-value map 'items) (mapcar #'make-attribute attributes)))
       (push element element-stack))))
 
 (defmethod fxml.sax:end-element ((handler dom-builder) namespace-uri local-name qname)
