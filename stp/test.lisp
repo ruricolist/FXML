@@ -1236,7 +1236,7 @@
 				     "zzz:zzz"
 				     "http://www.example.org"))
       (serialize-to-string element))
-  "<test xmlns:zzz=\"http://www.example.org\" zzz:zzz=\"preserve\" xml:space=\"preserve\"/>")
+  "<test xmlns:zzz=\"http://www.example.org\" xml:space=\"preserve\" zzz:zzz=\"preserve\"/>")
 
 (deftest element.xml-prefix
     (let ((element (make-element "xml:test"
@@ -2153,7 +2153,7 @@
       (add-attribute e (make-attribute "'" "a4"))
       (add-attribute e (make-attribute "&" "a5"))
       (serialize-to-string e))
-  "<test a5=\"&amp;\" a4=\"'\" a3=\"&quot;\" a2=\"&gt;\" a1=\"&lt;\"/>")
+  "<test a1=\"&lt;\" a2=\"&gt;\" a3=\"&quot;\" a4=\"'\" a5=\"&amp;\"/>")
 
 (deftest attribute.serialize.2
     (let ((e (make-element "test")))
@@ -2162,7 +2162,7 @@
       (add-attribute e (make-attribute (string (code-char 13)) "a3"))
       (add-attribute e (make-attribute (string (code-char 9)) "a4"))
       (serialize-to-string e))
-  "<test a4=\"&#9;\" a3=\"&#13;\" a2=\"&#10;\" a1=\" \"/>")
+  "<test a1=\" \" a2=\"&#10;\" a3=\"&#13;\" a4=\"&#9;\"/>")
 
 (deftest attribute.serialize.3
     (let ((e (make-element "test")))
