@@ -39,7 +39,7 @@
 
 (defun stp-test (filename handler &rest args)
   (declare (ignore handler))
-  (apply #'fxml:parse-file
+  (apply #'fxml:parse
 	 filename
 	 (read-from-string "#.(fxml.stp:make-builder)")
 	 :recode t
