@@ -110,7 +110,8 @@
   (:documentation "A document fragment."))
 
 (defclass element (parent-node named-node-mixin)
-  ((attributes :initform nil :accessor %attributes :accessor element.attributes)
+  ((attributes :initform (serapeum:queue)
+               :accessor %raw-attributes)
    (namespaces :initform nil :accessor %namespaces :accessor element.namespaces))
   (:documentation
    "@short{Instances of this class represent XML elements with their attributes
@@ -140,6 +141,16 @@
     @see{remove-extra-namespace}
     @see{map-extra-namespaces}
    @see-constructor{make-element}"))
+
+(defmethod element.attributes ((e element))
+  (serapeum:qlist (%raw-attributes e)))
+
+(defmethod %attributes ((e element))
+  (serapeum:qlist (%raw-attributes e)))
+
+(defmethod (setf %attributes) (value (e element))
+  (setf (%raw-attributes e)
+        (apply #'serapeum:queue value)))
 
 (defclass leaf-node (node) ())
 

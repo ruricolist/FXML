@@ -215,7 +215,8 @@
     (setf (%parent attribute) element)))
 
 (defun %add-attribute (attribute element)
-  (alexandria:appendf (%attributes element) (list attribute)))
+  (serapeum:enq attribute (%raw-attributes element))
+  (%attributes element))
 
 (defun %remove-attribute (attribute)
   (alexandria:deletef (%attributes (parent attribute)) attribute)
