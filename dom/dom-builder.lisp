@@ -88,9 +88,9 @@
   (flush-characters handler)
   (with-slots (document element-stack) handler
     (let* ((parent (car element-stack))
-           (nsp sax:*namespace-processing*)
+           (nsp fxml.sax:*namespace-processing*)
            (prefix (%rod (when nsp
-                           (cxml::split-qname (real-rod qname)))))
+                           (fxml:split-qname (real-rod qname)))))
            (map (make-instance 'attribute-node-map
                                :element-type :attribute
                                :owner document))
@@ -106,19 +106,19 @@
       (fast-push element (slot-value parent 'children))
       ;; Link map and create attributes
       (flet ((make-attribute (attr)
-               (let* ((qname (sax:attribute-qname attr))
-                      (namespace-uri (sax:attribute-namespace-uri attr))
-                      (value (sax:attribute-value attr))
-                      (specified-p (sax:attribute-specified-p attr))
+               (let* ((qname (fxml.sax:attribute-qname attr))
+                      (namespace-uri (fxml.sax:attribute-namespace-uri attr))
+                      (value (fxml.sax:attribute-value attr))
+                      (specified-p (fxml.sax:attribute-specified-p attr))
                       (node (if nsp
-                                (dom:create-attribute-ns
+                                (fxml.dom:create-attribute-ns
                                  document namespace-uri qname)
-                                (dom:create-attribute document qname)))
-                      (text (dom:create-text-node document value)))
+                                (fxml.dom:create-attribute document qname)))
+                      (text (fxml.dom:create-text-node document value)))
                  (setf (slot-value node 'specified-p)   specified-p
                        (slot-value node 'owner-element) element
                        (slot-value node 'map)           map)
-                 (dom:append-child node text)
+                 (fxml.dom:append-child node text)
                  node)))
         (setf (slot-value map 'element) element
               (slot-value map 'items) (mapcar #'make-attribute attributes)))
