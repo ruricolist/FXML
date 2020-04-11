@@ -127,7 +127,7 @@ allows us to use a CLOS interface to do the underflow handling."
   (read-ptr      0 :type buffer-index)
   ;; points to the first element of `buffer' not containing a rune to
   ;; be read.
-  (fill-ptr      0 :type buffer-index)
+  (fill-pointer  0 :type buffer-index)
 
   ;;; OS buffer
   
@@ -296,7 +296,7 @@ method.")
   (declare (type xstream input))
   (with-accessors ((buffer-start  xstream-buffer-start)
                    (read-ptr      xstream-read-ptr)
-                   (fill-ptr      xstream-fill-ptr)
+                   (fill-pointer  xstream-fill-pointer)
                    (os-left-start xstream-os-left-start)
                    (os-left-end   xstream-os-left-end)
                    (os-buffer     xstream-os-buffer)
@@ -307,7 +307,7 @@ method.")
       input
     ;; we are about to fill new data into the buffer, so we need to
     ;; adjust buffer-start.
-    (incf buffer-start (- fill-ptr 0))
+    (incf buffer-start (- fill-pointer 0))
     ;; when there is something left in the os-buffer, we move it to
     ;; the start of the buffer.
     (let ((m (- os-left-end os-left-start)))
@@ -330,8 +330,8 @@ method.")
                                  (+ m speed)))))
         (cond ((%= n 0)
                (setf read-ptr 0
-                     fill-ptr n)
-               (setf (aref buffer fill-ptr) +end+)
+                     fill-pointer n)
+               (setf (aref buffer fill-pointer) +end+)
                :eof)
               (t
                ;; first-not-written, first-not-read
@@ -348,8 +348,8 @@ method.")
                  (setf os-left-start fnr
                        os-left-end n
                        read-ptr 0
-                       fill-ptr fnw
-                       (aref buffer fill-ptr) +end+)
+                       fill-pointer fnw
+                       (aref buffer fill-pointer) +end+)
                  (read-rune input))))))))
 
 ;;; constructor
@@ -373,7 +373,7 @@ method.")
                  (setf (elt r 0) #xFFFF)
                  r)
        :read-ptr 0
-       :fill-ptr 0
+       :fill-pointer 0
        :os-buffer osbuf
        :speed initial-speed
        :full-speed speed
@@ -396,7 +396,7 @@ method.")
     (setf (aref buffer n) +end+)
     (make-xstream/low :buffer buffer
                       :read-ptr 0
-                      :fill-ptr n
+                      :fill-pointer n
                       :speed 1
                       :os-stream nil
                       :name name)))

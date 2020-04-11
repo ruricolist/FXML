@@ -3325,7 +3325,7 @@ Common
   ;; -> res, res-start, res-end
   `(let* ((rptr (xstream-read-ptr ,input))
           (p0   rptr)
-          (fptr (xstream-fill-ptr ,input))
+          (fptr (xstream-fill-pointer ,input))
           (buf  (xstream-buffer ,input))
           ,res ,res-start ,res-end)
      (declare (type fixnum rptr fptr p0)
@@ -3348,7 +3348,7 @@ Common
                              (cond ((eq c :eof)
                                     (return)))
                              (setf rptr (xstream-read-ptr ,input)
-                                   fptr (xstream-fill-ptr ,input)
+                                   fptr (xstream-fill-pointer ,input)
                                    buf  (xstream-buffer ,input)))
                             (t
                              (setf c (%rune buf rptr))))
