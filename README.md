@@ -22,11 +22,24 @@ SAX      -> FXML.SAX
 STP      -> FXML.STP
 ```
 
-Because the package names are different, it is possible to load FXML
-and CXML in the same image. In fact, if you load the `fxml/cxml`
-compatibility system, you can freely mix SAX sources and sinks from
-FXML and CXML. Most usefully, you can keep any existing CXML code for
-querying and manipulating documents but drop in the FXML parser:
+On Lisps that support package-local nicknames, an easy way to switch
+(if you use the package prefixes) is to shadow the CXML packages with
+their FXML equivalents:
+
+``` lisp
+(:local-nicknames (:cxml :fxml)
+                  (:cxml-dom :fxml-dom)
+                  (:dom :fxml.dom)
+                  (:klacks :fxml.klacks)
+                  (:sax :fxml.sax)
+                  (:stp :fxml.stp))
+```
+
+However, because the package names are different, it is possible to
+load FXML and CXML in the same image. In fact, if you load the
+`fxml/cxml` compatibility system, you can mix SAX sources and sinks
+from FXML and CXML. Most usefully, you can keep any existing CXML code
+for querying and manipulating documents but drop in the FXML parser:
 
     (fxml:parse #p"file.xml" (cxml-dom:make-dom-builder))
 
