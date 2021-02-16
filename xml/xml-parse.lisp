@@ -3525,7 +3525,8 @@ Common
                 ((rune= c delim)
                  (return))
                 ((rune= c #/<)
-                 (wf-error input "'<' not allowed in attribute values"))
+                 (with-simple-restart (continue "Omit it")
+                   (wf-error input "'<' not allowed in attribute values")))
                 ((rune= #/& c)
                  (multiple-value-bind (kind sem) (read-entity-like input)
                    (ecase kind
