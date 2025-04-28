@@ -79,7 +79,7 @@
                        (rod-hashtable-size hashtable))))
     (dolist (q (svref (rod-hashtable-table hashtable) j)
                (values nil nil nil))
-      (declare (type cons q))
+      (declare (type list q))
       (when (rod=** (car q) rod
                     0 (length (the (simple-array rune (*)) (car q)))
                     start end)
