@@ -75,7 +75,8 @@
                "fxml/stp"
                "xpath/test"
                "fxml/xpath"
-               "cxml-rng"))
+               "cxml-rng"
+               "fxml/xpath/xmls"))
 
 (defsystem "fxml"
   :components ()

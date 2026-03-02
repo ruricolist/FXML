@@ -164,3 +164,52 @@
 
 (test klacks
   (compare-results 'fxml.xmlconf:klacks-test))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Test copied from Plexippus XPath
+
+;;; Copyright (c) 2007 Ivan Shvedunov. All rights reserved.
+;;; Copyright (c) 2007 David Lichteblau. All rights reserved.
+
+;;; Redistribution and use in source and binary forms, with or without
+;;; modification, are permitted provided that the following conditions
+;;; are met:
+;;;
+;;;   * Redistributions of source code must retain the above copyright
+;;;     notice, this list of conditions and the following disclaimer.
+;;;
+;;;   * Redistributions in binary form must reproduce the above
+;;;     copyright notice, this list of conditions and the following
+;;;     disclaimer in the documentation and/or other materials
+;;;     provided with the distribution.
+;;;
+;;; THIS SOFTWARE IS PROVIDED BY THE AUTHOR 'AS IS' AND ANY EXPRESSED
+;;; OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+;;; WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+;;; ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+;;; DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+;;; DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+;;; GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+;;; INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+;;; WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+;;; NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+;;; SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+(test fxml.xmls
+  (let ((xpath:*navigator* (fxml.xmls:make-xpath-navigator))
+        (d
+          '("foo" (("a" "b"))
+            " "
+            ("a" (("id" "1")))
+            " " ("b" (("id" "2")))
+            " " ("c" (("id" "3")))
+            " " ("a" (("id" "4")))
+            " " ("b" (("id" "5")))
+            " " ("c" (("id" "6")))
+            " " ("a" (("id" "7")))
+            " " ("b" (("id" "8")))
+            " " ("c" (("id" "9")))
+            " " ("last" NIL))))
+    (is (equal
+         '(("a" (("id" "1"))) ("c" (("id" "6"))))
+         (xpath:all-nodes (xpath:evaluate "//c[position()=2]|//a[@id='1']" d))))))
