@@ -75,7 +75,8 @@
                "fxml/stp"
                "xpath/test"
                "fxml/xpath"
-               "cxml-rng"))
+               "cxml-rng"
+               "fxml/xpath/xmls"))
 
 (defsystem "fxml"
   :components ()
@@ -170,6 +171,11 @@
   :pathname "xpath"
   :components ((:file "dom")
                (:file "stp")))
+
+(defsystem "fxml/xpath/xmls"
+  :depends-on ("fxml/xml" "xpath")
+  :pathname "xpath"
+  :components ((:file "xmls-xpath-methods")))
 
 (register-system-packages "fxml" '(:fxml :fxml-dom :fxml.dom :fxml.klacks :fxml.sax))
 (register-system-packages "fxml/stp" '(:fxml.stp))
